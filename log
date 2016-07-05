@@ -103,6 +103,543 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+* start fimoService (22 jun 2016)
+
+
+  --- is it already running?
+    ps x | grep run
+
+     1:01 /users/pshannon/R324/lib64/R/bin/exec/R -f runMetNets.R
+     0:00 python -i runServer.py 5558 /local/Cory/meme_4.10.2/src/fimo /local/Cory/trn/working/GRCh38/JASPAR_CORE_plus_seth.meme
+
+  --- if not
+    cd ~/github/fimoService/server
+    nohup python -i runServer.py 5558 /local/Cory/meme_4.10.2/src/fimo /local/Cory/trn/working/GRCh38/JASPAR_CORE_plus_seth.meme&
+
+
+  --- single test on riptide, my laptop
+    /usr/local/bin/R -f /Users/paul/github/fimoService/client-R/FimoClient/inst/unitTests/test_FimoClient.R 
+
+  --- crontab test on riptide
+    cd ~/crontabs
+    whovianFimoServer.cron
+    crontab -l
+    */5 * * * * /usr/local/bin/R -f /Users/paul/github/fimoService/client-R/FimoClient/inst/unitTests/test_FimoClient.R  > /Users/paul/crontabs/logs/ms.log 2>&1
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* add seth's enhancer tables to postgres (5 jul 2016)
+
+   cd /users/pshannon/s/data/postgres-fill
+   for background, see entries in ~/s/log/notes on riptide
+   mkdir enhancers; cd enhancers
+
+*------------------------------------------------------------------------------------------------------------------------
+* all the tables for postgres fill (20 jun 2016)
+
+   cd /users/pshannon/s/data/postgres-fill
+   dir */*.tsv
+     593,861,194 May  3 22:03 gtf/ensembl-gtf.tsv
+     734,745,528 May  3 11:10 lymphoblast/lymphoblast_fp.tsv
+         279,011 May 19 15:57 motifsgenes/motifGenes.tsv
+         142,237 May  3 09:52 motifsgenes/motifToMultipleGenes.tsv
+      353790k431 Apr 27 12:12 wholeBrain/fpAnnotated.tsv
+   3,156,774,744 May 10 12:09 wholeBrain/wholeBrain.tsv
+
+*------------------------------------------------------------------------------------------------------------------------
+* add slightly revised motif/genes table to wholeBrain database
+
+    cd ~/s/data/postgres-fill/motifsgenes
+    psql
+    \c wholeBrain
+    \dt
+                  List of relations
+      Schema |    Name     | Type  |  Owner   
+     --------+-------------+-------+----------
+      public | footprints  | table | pshannon
+      public | motifsgenes | table | pshannon
+
+    select * from motifsgenes limit 3;
+      motif   |   tf   
+    ----------+--------
+     MA0002.2 | RUNX1
+     MA0003.3 | TFAP2A
+     MA0004.1 | ARNT
+
+   wholeBrain=> drop table motifsgenes;
+    mv ~/tmp/motifGenes.tsv .
+    (delete colnames in 1st line)
+
+    create table motifsgenes(motif varchar, tf_name varchar, tf_ensg varchar);
+    \copy motifsgenes from 'motifGenes.tsv' delimiter E'\t' CSV;
+    \copy motifsgenes from 'motifToMultipleGenes.tsv' delimiter E'\t' CSV;
+    COPY 9017
+
+  GRANT select on all tables in SCHEMA public to trena;
+
+    select * from motifsgenes limit 4;
+      motif   | tf_name |     tf_ensg     
+    ----------+---------+-----------------
+     MA0002.2 | RUNX1   | ENSG00000159216
+     MA0003.3 | TFAP2A  | ENSG00000137203
+     MA0004.1 | ARNT    | ENSG00000143437
+     MA0006.1 | AHR     | ENSG00000106546
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* add latest footprints (wholeBrain and lymphoblast) from cory (10 may 2016)
+
+  --- email (9 may 2016)
+
+   I've put the footprint files on whovian here:  /local/Cory/trn/final_fp_files
+   Both brain and lymphoblast are there. They were both made using the same scripts. 
+
+  --- cory's files, in place
+    dir /local/Cory/trn/final_fp_files/
+       2 926 976 570 May  6 14:13 brain_fp_uniq.bed
+         853 181 432 May  9 17:01 lympho_fp_uniq.bed
+
+  --- fill wholeBrain
+   cd ~/s/data/postgres-fill/wholeBrain
+   head -3 /local/Cory/trn/final_fp_files/brain_fp_uniq.bed 
+       1	10021	10042	MA0073.1	1	20	+	4.16514	5.89e-05	CCCTAACCCTAACCCTAACC
+       1	10044	10083	MA0073.1	2	21	+	4.16514	5.89e-05	CCCTAACCCTAACCCTAACC
+       1	10085	10121	MA0073.1	14	33	+	4.55046	5.23e-05	ACCCTAACCCAACCCTAACC
+
+   psql -U pshannon wholeBrain
+   select count(*) from footprints;      4 692 138
+ select * from footprints limit 3;
+ chr  | mfpstart | mfpend  | strand | motifname | motiflength | footprintlength | score |   pval   | qval  |   sequence    
+------+----------+---------+--------+-----------+-------------+-----------------+-------+----------+-------+---------------
+ chr1 |  1000050 | 1000077 | -      | MA0813.1  |          13 |              26 |  50.4 | 9.15e-06 | 0.492 | CGCCCTAGGGGCT
+ chr1 |  1000050 | 1000077 | -      | MA0815.1  |          13 |              26 |  53.2 | 4.82e-06 | 0.462 | CGCCCTAGGGGCT
+ chr1 |  1000050 | 1000077 | -      | MA0872.1  |          13 |              26 |  51.7 | 6.72e-06 | 0.483 | CGCCCTAGGGGCT
+
+
+   --- despite size, will try to add "chr" prefix to all chromosome names, and rearrange columns
+     tbl <- read.table("/local/Cory/trn/final_fp_files/brain_fp_uniq.bed", header=FALSE, as.is=TRUE, sep="\t")
+     head(tbl$V1) # [1] "1" "1" "1" "1" "1" "1"
+     tbl$V1 <- paste("chr", tbl$V1, sep="")
+     colnames(tbl) <- c("chr","mfpstart","mfpend","motifname","motifStartOffset","motifEndOffset","strand","score","pval","sequence")
+     tbl$motiflength <- 1 + tbl$motifEndOffset - tbl$motifStartOffset
+     tbl$footprintlength <- 1 + tbl$mfpend - tbl$mfpstart
+     tbl$qval <- rep(0.0, nrow(tbl))
+
+     some qc:
+      fivenum(tbl$motiflength)     #   7 10 11 14 29
+      fivenum(tbl$footprintlength) #   22  30  34  36 180
+
+     tbl.2 <- tbl[, c("chr","mfpstart","mfpend","strand","motifname","motiflength","footprintlength","score","pval","qval","sequence")]
+     dim(tbl.2) # 43 301 380       11
+     write.table(tbl.2, file="wholeBrain.tsv", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
+
+   ---- empty and fill
+     truncate footprints;
+     wholeBrain=> select count(*) from footprints; # 0
+     \copy footprints from 'wholeBrain.tsv' delimiter E'\t' CSV;
+
+*------------------------------------------------------------------------------------------------------------------------
+* create database for each genome assembly, for each tissue/s-specific project (9 may 2016)
+
+  --- the hg38 genome.db
+    cd ~/s/data/postgres-fill/motifsgenes
+    psql
+    \c hg38
+    create table motifsgenes(motif varchar, tf varchar);
+    \copy motifsgenes from 'motifToMultipleGenes.tsv' delimiter E'\t' CSV;
+    COPY 9289
+   
+*------------------------------------------------------------------------------------------------------------------------
+* add ensembl gtf to postgres (3 may 2016)
+
+  cd ~/s/data/postgres-fill/gtf
+  print(load("tbl.ensembl.gtf.RData")) # [1] "tbl3"
+  write.table(tbl3, sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE, file="ensembl-gtf.tsv")
+
+  bash> createdb -U pshannon hg38
+  psql
+  pshannon> \c gtf
+  pshannon> create table gtf(chr varchar, start int, endpos int, score varchar, strand varchar,
+                             frame varchar, moleculeType varchar, gene_id varchar,
+                             gene_version varchar,
+                             gene_name  varchar,
+                             gene_source  varchar,
+                             gene_biotype  varchar,
+                             havana_gene  varchar,
+                             havana_gene_version  varchar,
+                             transcript_id  varchar,
+                             transcript_version  varchar,
+                             transcript_name  varchar,
+                             transcript_source  varchar,
+                             transcript_biotype  varchar,
+                             havana_transcript  varchar,
+                             havana_transcript_version  varchar,
+                             tag  varchar,
+                             transcript_support_level  varchar,
+                             exon_number  varchar,
+                             exon_id  varchar,
+                             exon_version  varchar,
+                             ccds_id  varchar,
+                             protein_id varchar,
+                             protein_version  varchar,
+                             annotation varchar);
+
+\c hg38
+\copy gtf from 'ensembl-gtf.tsv' delimiter E'\t' CSV;
+COPY 2568100
+hg38=> 
+  GRANT connect on database "hg38" to trena;
+  GRANT select on all tables in SCHEMA public to trena;
+
+   --- test from whovian
+      library(RPostgreSQL)
+      db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="gtf", host="whovian")
+      db
+      query <- "select count(*) from footprints"
+      dbGetQuery(db, query)
+      dbListTables(db)  # [1] "hg38human"
+      dbGetQuery(db, "select count(*) from hg38human")
+      #    count
+      # 1 2568100
+      colnames(dbGetQuery(db, "select * from hg38human limit 1"))
+ [1] "chr"                       "start"                    
+ [3] "endpos"                    "score"                    
+ [5] "strand"                    "frame"                    
+ [7] "moleculetype"              "gene_id"                  
+ [9] "gene_version"              "gene_name"                
+[11] "gene_source"               "gene_biotype"             
+[13] "havana_gene"               "havana_gene_version"      
+[15] "transcript_id"             "transcript_version"       
+[17] "transcript_name"           "transcript_source"        
+[19] "transcript_biotype"        "havana_transcript"        
+[21] "havana_transcript_version" "tag"                      
+[23] "transcript_support_level"  "exon_number"              
+[25] "exon_id"                   "exon_version"             
+[27] "ccds_id"                   "protein_id"               
+[29] "protein_version"           "annotation"               
+
+  tbl.mef2c <- dbGetQuery(db, "select * from hg38human where gene_name = 'MEF2C'")
+  dim(tbl.mef2c) # [1] 568  30
+  head(tbl.mef2c[, c("chr", "start", "endpos", "moleculetype", "gene_biotype")])
+      chr    start   endpos moleculetype   gene_biotype
+   1 chr5 88717117 88904257         gene protein_coding
+   2 chr5 88717117 88883464   transcript protein_coding
+   3 chr5 88882955 88883464         exon protein_coding
+   4 chr5 88823735 88823930         exon protein_coding
+   5 chr5 88823735 88823788          CDS protein_coding
+   6 chr5 88823786 88823788  start_codon protein_coding
+
+   as.data.frame(table(tbl.mef2c$moleculetype))
+                Var1 Freq
+   1             CDS  190
+   2            exon  235
+   3  five_prime_utr   51
+   4            gene    1
+   5     start_codon   25
+   6      stop_codon   17
+   7 three_prime_utr   15
+   8      transcript   34
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* add lymphoblast footprints to postgres (3 may 2016)
+
+  cd ~/s/data/postgres-fill/lymphoblast/
+  cp /local/Cory/trn/lympho/lymphoblast_fp.bed .
+
+   --- wholeBrain tsv input file format
+     whovian.lymphoblast> head ../wholeBrain/fpAnnotated.tsv 
+     chr1	1000050	1000077	-	MA0813.1	13	26	50.4	9.15e-06	0.492	CGCCCTAGGGGCT
+     chr1	1000050	1000077	-	MA0815.1	13	26	53.2	4.82e-06	0.462	CGCCCTAGGGGCT
+     chr1	1000050	1000077	-	MA0872.1	13	26	51.7	6.72e-06	0.483	CGCCCTAGGGGCT
+     chr1	1000095	1000120	+	MA0632.1	10	26	54	4e-06	0.332	CGCGCGCGCC
+
+   --- incoming lymphoblast tsv input file format: change this in R to match wholeBrain
+
+     whovian.lymphoblast> head lymphoblast_fp.bed 
+     1	10799	10834	KLF16_DBD	23	33	-	14.9082	5.09e-06	0	GCCACGCCTCC
+     1	10799	10834	MA0039.2	24	33	+	9.93878	9.81e-05	0	GAGGCGTGGC
+     1	10799	10834	MA0079.3	17	27	-	11.0192	6.47e-05	0	CCTCCACCCCG
+     1	10799	10834	MA0162.2	20	33	-	13.7692	1.04e-05	0	GCCACGCCTCCACC
+
+    --- slight reformat
+     tbl <- read.table("lymphoblast_fp.bed", sep="\t", as.is=TRUE, header=FALSE)
+     colnames(tbl) <- c("chr", "start", "end", "motif", "offset.1", "offset.2", "strand", "q", "p", "score", "sequence")
+     tbl$chr <- paste("chr", tbl$chr, sep="")
+     new.column.order <- c("chr", "start", "end", "strand", "motif", "offset.1", "offset.2", "q", "p", "score", "sequence")
+     tbl <- tbl[, new.column.order]
+
+    --- result
+      head(tbl)
+         chr start   end strand     motif offset.1 offset.2        q        p score        sequence
+      1 chr1 10799 10834      - KLF16_DBD       23       33 14.90820 5.09e-06     0     GCCACGCCTCC
+      2 chr1 10799 10834      +  MA0039.2       24       33  9.93878 9.81e-05     0      GAGGCGTGGC
+      3 chr1 10799 10834      -  MA0079.3       17       27 11.01920 6.47e-05     0     CCTCCACCCCG
+      4 chr1 10799 10834      -  MA0162.2       20       33 13.76920 1.04e-05     0  GCCACGCCTCCACC
+      5 chr1 10799 10834      -  MA0599.1       18       27 11.59180 5.64e-05     0      CCTCCACCCC
+      6 chr1 10799 10834      -  MA0697.1       11       25  8.50000 5.87e-05     0 TCCACCCCGACGCGC
+
+     write.table(tbl, file="lymphoblast_fp.tsv", sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE)
+        -rw-r--r--. 1 pshannon pricelab 704475018 May  3 10:45 lymphoblast_fp.bed
+        -rw-r--r--. 1 pshannon pricelab 734745528 May  3 11:10 lymphoblast_fp.tsv
+
+
+    --- now do the fill
+      previously:    createdb -U pshannon lymphoblast
+      psql>     
+        \c lymphoblast
+        create table footprints(chr varchar,  mfpStart int, mfpEnd int, strand char(1),
+                                motifName varchar,  motifLength int, footprintLength int,  
+                                score real, pval real, qval real,  sequence varchar);
+
+        \dt   
+        \copy footprints from 'lymphoblast_fp.tsv' delimiter E'\t' CSV;
+        COPY 10091138
+          lymphoblast=> select count(*) from footprints;   #  10091138
+
+     lymphoblast> GRANT select on all tables in SCHEMA public to trena;
+     lymphoblast=> create table motifsgenes(motif varchar, tf varchar);
+      CREATE TABLE
+   lymphoblast=> \dt
+               List of relations
+     Schema |    Name     | Type  |  Owner   
+    --------+-------------+-------+----------
+     public | footprints  | table | pshannon
+     public | motifsgenes | table | pshannon
+
+   lymphoblast=> \copy motifsgenes from '../wholeBrain/motifToMultipleGenes.tsv' delimiter E'\t' CSV;
+   COPY 9289
+
+    lymphoblast> GRANT select on all tables in SCHEMA public to trena;
+
+
+   
+*------------------------------------------------------------------------------------------------------------------------
+* add trena user
+
+  cd ~/s/data/postgres-fill/wholeBrain/
+  sudo -i -u postgres psql
+
+  create role trena with password 'trena' login;
+  bash> createdb trena
+  GRANT connect on database "wholeBrain" to trena;
+  GRANT select on all tables in SCHEMA public to trena;
+
+*----------------------------------------------------------------------------------------------------
+* test fill wholeBrain footprints (3 may 2016)
+
+   cd ~/s/data/postgres-fill/wholeBrain/
+   R -f test.R
+ 
+  stolen from ~/s/data/postgres-fill/wholeBrain/test_FootprintFinder.R 
+
+    test_privateFootprintDatabaseOnWhovian()
+
+*----------------------------------------------------------------------------------------------------
+* fill wholeBrain motif-to-protein table (3 may 2016)
+
+  laptop> scp /Users/paul/github/Private_Cory_Data/data/tbl.motifToMultipleGenes.RData pshannon@whovian:tmp/
+  whovian> cd  ~/s/data/postgres-fill/wholeBrain/
+  print(load("~/tmp/tbl.motifToMultipleGenes.RData"))
+  write.table(tbl.motifToMultipleGenes, sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE, file="motifToMultipleGenes.tsv")
+
+  psql
+   \c wholeBrain
+    wholeBrain=> create table motifsgenes(motif varchar, tf varchar);
+     CREATE TABLE
+   wholeBrain=> \dt
+               List of relations
+     Schema |    Name     | Type  |  Owner   
+    --------+-------------+-------+----------
+     public | footprints  | table | pshannon
+     public | motifsgenes | table | pshannon
+
+   wholeBrain=> \copy motifsgenes from 'motifToMultipleGenes.tsv' delimiter E'\t' CSV;
+   COPY 9289
+
+  wholeBrain> GRANT select on all tables in SCHEMA public to trena;
+
+   ---- now run some simple tests from laptop
+
+*----------------------------------------------------------------------------------------------------
+* fill wholeBrain footprints (27 apr 2016)
+
+  cd ~/s/data/postgres-fill/wholeBrain
+  from riptide:
+    cd ~/github/Private_Cory_Data/data
+    scp tbl.fpAnnotated.RData pshannon@whovian:tmp/     # 136MB
+  mv ~/tmp/tbl.fpAnnotated.Rdata .
+  print(load("tbl.fpAnnotated.RData"))
+  dim(tbl.fpAnnotated) #  4,692,138      17
+
+     # add two columns
+  tbl.fpAnnotated$footprintLength = with(tbl.fpAnnotated,1 + fpEnd-fpStart)
+  tbl.fpAnnotated$motifLength = with(tbl.fpAnnotated,1 + motifEnd-motifStart)
+
+  colnames(tbl.fpAnnotated)[grep("motifStrand", colnames(tbl.fpAnnotated))] <- "strand"
+  colnames(tbl.fpAnnotated)[grep("pvalue", colnames(tbl.fpAnnotated))] <- "pval"
+  colnames(tbl.fpAnnotated)[grep("qvalue", colnames(tbl.fpAnnotated))] <- "qval"
+  colnames(tbl.fpAnnotated)[grep("motifScore", colnames(tbl.fpAnnotated))] <- "score"
+
+  coi <- c("chr","mfpStart","mfpEnd","strand","motifName","motifLength","footprintLength","score","pval","qval","sequence")
+  write.table(tbl.fpAnnotated[,coi], quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t", file="fpAnnotated.tsv")
+
+   psql
+   \c wholeBrain
+   create table footprints(chr varchar,  mfpStart int, mfpEnd int, strand char(1),
+                           motifName varchar,  motifLength int, footprintLength int,  
+                           score real, pval real, qval real,  sequence varchar);
+   \dt   
+   \copy footprints from 'fpAnnotated.tsv' delimiter E'\t' CSV;
+    COPY 4692138
+
+  wholeBrain> GRANT select on all tables in SCHEMA public to trena;
+
+*----------------------------------------------------------------------------------------------------
+* add trena user (27 apr 2016)
+
+   cd ~/s/data/postgres-fill/wholeBrain/
+
+   sudo -i -u postgres psql
+   create role trena with password 'trena' login createdb;
+
+*----------------------------------------------------------------------------------------------------
+* remove password on pshannon user (27 apr 2016)
+
+   alter role pshannon password null; # ALTER ROLE
+   postgres=# select * from pg_shadow;
+   usename  | usesysid | usecreatedb | usesuper | usecatupd | userepl | passwd | valuntil | useconfig 
+  ----------+----------+-------------+----------+-----------+---------+--------+----------+-----------
+   postgres |       10 | t           | t        | t         | t       |        |          | 
+   pshannon |    16384 | t           | f        | f         | f       |        |          | 
+   (2 rows)
+
+
+*----------------------------------------------------------------------------------------------------
+* first use (27 apr 2016)
+
+   whovian> sudo -i -u postgres psql
+   psql (9.4.7)
+   postgres=# create role pshannon with password 'pshannon' login createdb;
+
+   createdb pshannon
+   psql  # default user in my login, pshannon.  this now works
+   createdb -U pshannon wholeBrain
+   createdb -U pshannon lymphoblast
+
+*----------------------------------------------------------------------------------------------------
+* email from russ after installation on whovian (25 apr 2016)
+
+
+   Paul, postgresql 9.4 is installed on whovian. I've granted you sudo permissions to the postgres user 
+   which should allow you to do any of the administrative tasks involved in managing your databases. You 
+   should, for instance, be able to do the following to create a pshannon user, if you so desire:
+
+$ sudo -i -u postgres psql
+psql (9.4.7)
+Type "help" for help.
+
+postgres=# create role pshannon with password 'pshannon' login createdb;
+postgres=# \q
+$
+
+Let me know if anyone else should also have this privilege.
+
+
+
+
+*----------------------------------------------------------------------------------------------------
+* postgres tips (24 apr 2016)
+
+  found version 9.3 ships with osx.  installed it.  root user: posgres, pw=postgres, on port 5432
+  installed as /Applications/PostgreSQL 9.3
+  utilities here:
+
+     /Library/PostgreSQL/9.3/bin
+
+    clusterdb createdb createlang createuser dropdb droplang dropuser
+    ecpg initdb oid2name pg_archivecleanup pg_basebackup pg_config
+    pg_controldata pg_ctl pg_dump pg_dumpall pg_isready pg_receivexlog
+    pg_resetxlog pg_restore pg_standby pg_test_fsync pg_test_timing
+    pg_upgrade pg_xlogdump pgbench pltcl_delmod pltcl_listmod
+    pltcl_loadmod postgres postmaster psql reindexdb vacuumdb vacuumlo
+
+  --- added to PATH, in ~/.bashrc
+     PATH=$PATH:/Library/PostgreSQL/9.3/bin
+
+  --- create new user:  add me (pshannon) with db creation privileges
+     login as postgres root:
+        psql -U postgres
+     create role pshannon with password 'pshannon' login createdb;
+      \du
+                                   List of roles
+       Role name |                   Attributes                   | Member of
+      -----------+------------------------------------------------+-----------
+       postgres  | Superuser, Create role, Create DB, Replication | {}
+       pshannon  | Create DB                                      | {}
+
+  --- every user apparently needs a database of their own, with their name:
+
+   /Library/PostgreSQL/9.3/bin/createdb -U postgres pshannon
+
+  --- test this out by creating tcx (temporal cortex) database, fill with tbl.fp
+    /Library/PostgreSQL/9.3/bin/createdb -U pshannon tcx
+
+  --- list databases
+    psql -U postgres
+    \l
+                                   List of databases
+         Name    |  Owner   | Encoding | Collate | Ctype |   Access privileges
+      -----------+----------+----------+---------+-------+-----------------------
+       postgres  | postgres | UTF8     | C       | C     |
+       pshannon  | postgres | UTF8     | C       | C     |
+       tcx       | pshannon | UTF8     | C       | C     |
+       template0 | postgres | UTF8     | C       | C     | =c/postgres  postgres=CTc/postgres
+       template1 | postgres | UTF8     | C       | C     | =c/postgres  postgres=CTc/postgres
+
+
+   --- create footprints table withing tcx (temporal cortext) database
+     psql -U pshannon
+     \l
+     \c tcx
+     tcx=> create table footprints(chr char(40),  mfpStart int, mfpEnd int, motifName char(24),  motifLength int,
+                             footprintLength int, strand char(1),  score real, pvalue real, mystery int,   sequence char(36))
+     \dt
+                 List of relations
+       Schema |    Name    | Type  |  Owner
+      --------+------------+-------+----------
+       public | footprints | table | pshannon
+      (1 row)
+
+    tcx=> \copy footprints from '/Users/paul/github/TReNA.lymphoblast/inst/extdata/lymphoblast_fp.bed' delimiter E'\t' CSV;
+    tcx-> select count(*) from footprints;  #  10091138
+
+    --- abandoned RPostgreSQL since it failed to connect:
+      db <- dbConnect(PostgreSQL(), user= "pshannon", password="pshannon", dbname="tcx")
+      Error in postgresqlNewConnection(drv, ...) :
+       RS-DBI driver: (could not connect pshannon@local on dbname "tcx"
+
+    --- finally figured out how to connect: make host explicit, default 'local' does not exist
+     db <- dbConnect(PostgreSQL(), user="pshannon", password="pshannon", port=5432, dbname="tcx", host="localhost")
+     query <- "select count(*) from footprints"
+     dbGetQuery(db, query)
+          count
+     1 10091138
+     # or
+     rs <- dbSendQuery(db, query)
+     length(rs)  #
+     fetch(rs, 1)
+        count
+     1 10 091 138
+     #  get data.frame
+     query <- "select * from footprints limit(4)"
+     dim(dbGetQuery(db, query)) # 4, 11
+     colnames(dbGetQuery(db, query))
+       [1] "chr"             "mfpstart"        "mfpend"          "motifname"
+       [5] "motiflength"     "footprintlength" "strand"          "score"
+       [9] "pvalue"          "mystery"         "sequence"
+
+*------------------------------------------------------------------------------------------------------------------------
 * test fimoServer fimo server on whovian from riptide (5 jul 2016)
 
    /usr/local/bin/R -f /Users/paul/github/fimoService/client-R/FimoClient/inst/unitTests/test_FimoClient.R  
