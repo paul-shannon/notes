@@ -103,6 +103,56 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+* igv.js mouseDown events (11 jul 2016)
+
+./browser.js
+            isMouseDown = false,
+            mouseDownX = undefined;
+        $(trackContainerDiv).mousedown(function (e) {
+            isMouseDown = true;
+            mouseDownX = lastMouseX;
+            if (isMouseDown) { // Possibly dragging
+                if (mouseDownX && Math.abs(coords.x - mouseDownX) > igv.browser.constants.dragThreshold) {
+            mouseDownX = undefined;
+            isMouseDown = false;
+
+./igv-create.js
+        $(document).mousedown(function (e) {
+            //console.log("browser.isMouseDown = true");
+            browser.isMouseDown = true;
+            //console.log("browser.isMouseDown = undefined");
+            browser.isMouseDown = undefined;
+
+./trackView.js
+            $(self.igvTrackManipulationHandle).mousedown(function (e) {
+                self.isMouseDown = true;
+                self.isMouseDown = undefined;
+        var isMouseDown = undefined,
+            mouseDownXY = undefined,
+        $(document).mousedown(function (e) {
+            mouseDownXY = igv.translateMouseCoordinates(e, trackView.contentDiv);
+            left = mouseDownXY.x;
+        $(trackView.contentDiv).mousedown(function (e) {
+            isMouseDown = true;
+            if (isMouseDown && isMouseIn) {
+                dx = mouseMoveXY.x - mouseDownXY.x;
+                        left = mouseDownXY.x + dx;
+            if (isMouseDown) {
+                isMouseDown = false;
+        var isMouseDown = false,
+            mouseDownX = undefined,
+        $(trackView.canvas).mousedown(function (e) {
+            isMouseDown = true;
+            mouseDownX = lastMouseX;
+                } else if (Math.abs(canvasCoords.x - mouseDownX) <= igv.browser.constants.dragThreshold && trackView.track.popupData) {
+                            mouseDownX = undefined;
+            mouseDownX = undefined;
+            isMouseDown = false;
+        $(this.innerScrollDiv).mousedown(function (event) {
+
+./ui/colorpicker.js
+            $userColorInput.mousedown(function () {
+
 *------------------------------------------------------------------------------------------------------------------------
 * load HINT footprints into prosgres (11 jul 2016)
 
@@ -123,7 +173,64 @@ chr     fp_start   fp_end  fp_scor  motif     motif_start   motif_end  strand  c
 1       10175       10186      108  MA0073.1        1       20           +       4.53211       5.26e-05        ACCCTAACCTAACCCTAACC
 1       10276       10298       65  MA0073.1        10      29           +       3.09174       8.17e-05        ACCCTAACCCCAACCCCAAC
 
-   
+    --- my questions for cory
+
+lymph_hint_fp.bed is definitely new. You reran wellington also?  Do we discard the May 3rd wellington/lymphoblast?
+
+The extra column in the new lymph_wellington_fp.bed is not found in the old, nor in the HINT table.  Shall I just discard it?
+
+How about a quick phone call?
+
+Thanks!
+
+- Paul
+
+
+     head ../lymphoblast/lymphoblast_fp.bed   # from May 3rd
+     1       10799   10834   KLF16_DBD       23      33      -       14.9082 5.09e-06        0       GCCACGCCTCC 
+     1       10799   10834   MA0039.2        24      33      +       9.93878 9.81e-05        0       GAGGCGTGGC 
+     1       10799   10834   MA0079.3        17      27      -       11.0192 6.47e-05        0       CCTCCACCCCG 
+     1       10799   10834   MA0162.2        20      33      -       13.7692 1.04e-05        0       GCCACGCCTCCACC 
+     
+     head /local/Cory/trn/working/for_seth/lympho_wellington_fp.bed    # new wellington, different input? different parameters?
+     1       10804   10829           40.4247398376   KLF16_DBD       23      33      -       14.9082 5.09e-06        GCCACGCCTCC 
+     1       10804   10829           40.4247398376   MA0039.2        24      33      +       9.93878 9.81e-05        GAGGCGTGGC 
+     1       10804   10829           40.4247398376   MA0079.3        17      27      -       11.0192 6.47e-05        CCTCCACCCCG 
+     1       10804   10829           40.4247398376   MA0162.2        20      33      -       13.7692 1.04e-05        GCCACGCCTCCACC 
+     1       10804   10829           40.4247398376   MA0599.1        18      27      -       11.5918 5.64e-05        CCTCCACCCC 
+     1       10804   10829           40.4247398376   MA0697.1        11      25      -       8.5     5.87e-05        TCCACCCCGACGCGC 
+     
+     head /local/Cory/trn/working/for_seth/lympho_hint_fp.bed      # new hint
+     1       10158   10169   108     MA0073.1        1       20      +       4.16514 5.89e-05        CCCTAACCCTAACCCTAACC 
+     1       10175   10186   108     MA0073.1        1       20      +       4.53211 5.26e-05        ACCCTAACCTAACCCTAACC 
+     1       10276   10298   65      MA0073.1        10      29      +       3.09174 8.17e-05        ACCCTAACCCCAACCCCAAC 
+     1       10276   10298   65      MA0155.1        20      31      -       8.86735 9.32e-05        GGGTTGGGGTTG 
+     1       10313   10325   72      MA0073.1        2       21      +       4.75229 4.92e-05        AACCCCAACCCCAACCCTAA 
+     1       10313   10325   72      MA0155.1        1       12      -       8.86735 9.32e-05        GGGTTGGGGTTG
+     
+    --- cory sets me straight
+     11 columns in both lympho_wellington and lympho_hint
+
+    --- old footprint schema
+psql 
+\c lymphoblast;
+\dt    
+select * from footprints limit 3;
+  chr  | mfpstart | mfpend | strand | motifname | motiflength | footprintlength |  score  |   pval   | qval |     sequence     
+-------+----------+--------+--------+-----------+-------------+-----------------+---------+----------+------+------------------
+ chr11 |   747400 | 747435 | -      | MA0088.2  |          11 |              26 | 14.8621 | 1.28e-06 |    0 | GGCCCACAATGCCCCG
+ chr11 |   747400 | 747435 | +      | MA0131.2  |          23 |              34 | 12.8636 | 2.17e-05 |    0 | GGCCGTCCGCGC
+ chr11 |   747400 | 747435 | +      | MA0696.1  |           2 |              15 | 7.89362 | 4.04e-05 |    0 | AGCCGCCCGCGGGG
+
+     --- prep on whovian
+          see "* add seth's enhancer tables to postgres (5 jul 2016)" below
+           ~/s/data/postgres-fill/lymphoblastHINT/
+      ~/s/data/postgres-fill/lymphoblastWellington/
+
+      cd /users/pshannon/s/data/postgres-fill/HINT
+
+
+
 *------------------------------------------------------------------------------------------------------------------------
 * R subset operator, drop=FALSE
 *------------------------------------------------------------------------------------------------------------------------
@@ -395,8 +502,9 @@ chr     fp_start   fp_end  fp_scor  motif     motif_start   motif_end  strand  c
    make
 
 *------------------------------------------------------------------------------------------------------------------------
-* test fimoServer fimo server on whovian from riptide (5 jul 2016)
+* test dnaSequence & fimoServer fimo server on whovian from riptide (5 jul 2016)
 
+   /usr/local/bin/R -f /Users/paul/github/getDNAService/client-R/getDNAClient/inst/unitTests/test_getDNAClient.R 
    /usr/local/bin/R -f /Users/paul/github/fimoService/client-R/FimoClient/inst/unitTests/test_FimoClient.R  
 
    cd ~/s/work/priceLab/cory/piq/motifWrangling/
