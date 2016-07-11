@@ -103,6 +103,322 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+* load HINT footprints into prosgres (11 jul 2016)
+
+   --- email from cory (8 jul 2016)
+
+     The two files are here on whovian:
+       /local/Cory/trn/working/for_seth/lympho_wellington_fp.bed
+       /local/Cory/trn/working/for_seth/lympho_hint_fp.bed
+
+    The columns are mostly the same, with one additional column that is now the 4th column for the
+    score (see attached). There's one value for which I can't remember the name, but it should be
+    the same as in the old files.
+
+   ---- attached
+
+chr     fp_start   fp_end  fp_scor  motif     motif_start   motif_end  strand  cant_remember   FIMO_pvalue     motif_sequence
+1       10158       10169      108  MA0073.1        1       20           +       4.16514       5.89e-05        CCCTAACCCTAACCCTAACC
+1       10175       10186      108  MA0073.1        1       20           +       4.53211       5.26e-05        ACCCTAACCTAACCCTAACC
+1       10276       10298       65  MA0073.1        10      29           +       3.09174       8.17e-05        ACCCTAACCCCAACCCCAAC
+
+   
+*------------------------------------------------------------------------------------------------------------------------
+* R subset operator, drop=FALSE
+*------------------------------------------------------------------------------------------------------------------------
+* human genome assembly names and versions (8 jul 2016)
+
+   http://www.ncbi.nlm.nih.gov/projects/genome/assembly/grc/human/
+
+   grc: Genome Reference Consortium
+
+   from biostars:
+
+    GRCh37/hg19 and GRCh38 are genome builds rather than annotations, which describe where features
+    are in a given genome build. The actual sequences you'll get from NCBI/UCSC/Ensembl will be
+    identical, but their annotations will be different and (importantly) updated at different
+    frequencies. NCBI's annotation is the "refseq" dataset (the "refGene" track in UCSC), which is
+    essentially a subset of the UCSC and Ensembl annotations. UCSC's annotations are kind of a
+    mess. You'll find genes with the same ID on multiple strand and multiple chromosomes, which
+    makes them a bit useless. Ensembl's annotations typically contain more features than UCSC (so a
+    bit more noise), but they're otherwise much better put together (e.g., you'll never find a gene
+    ID on different strand or different chromosomes) and their IDs are typically easier to map to
+    other things (e.g., gene names, GO and pathway memberships). Ensembl also updates its annotation
+    fairly often and versions everything nicely, so it's quite convenient to report what version you
+    used in a paper (reproducibility is always a good thing). Given the choice, use the Ensembl
+    annotation.
+
+    BTW, don't forget that the various sources can use different names for chromosomes (e.g., chr1
+    in UCSC is just 1 in Ensembl), so don't mix and match them.
+
+    get hg19 from, eg
+
+       http://hgdownload.cse.ucsc.edu/goldenPath/hg19/chromosomes/chr22.fa.gz
+
+*------------------------------------------------------------------------------------------------------------------------
+* install samtools for faidx (index fasta for igv.js) (8 jul 2016)
+
+  /Users/paul/source/samtools/samtools-1.3.1
+  executable:
+    /Users/paul/source/samtools/samtools-1.3.1/samtools
+
+  --- sample use, with liz blue's chr22 data
+    cd   ~/s/work/priceLab/lizBlue/try1/
+    curl -O http://ftp.ensembl.org/pub/release-77/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.chromosome.22.fa.gz
+    gunzip Homo_sapiens.GRCh38.dna.chromosome.22.fa.gz
+    /Users/paul/source/samtools/samtools-1.3.1/samtools faidx Homo_sapiens.GRCh38.dna.chromosome.22.fa
+    gzip Homo_sapiens.GRCh38.dna.chromosome.22.fa
+    mv Homo_sapiens.GRCh38.dna.chromosome.22.fa.fai Homo_sapiens.GRCh38.dna.chromosome.22.fa.gz.fai
+
+*------------------------------------------------------------------------------------------------------------------------
+* vcf to matrix, to table (8 jul 2016)
+
+  mentioned in https://www.bioconductor.org/packages/devel/bioc/vignettes/VariantAnnotation/inst/doc/VariantAnnotation.pdf
+
+   res <- genotypeToSnpMatrix(vcf)
+
+  
+*------------------------------------------------------------------------------------------------------------------------
+* liz blue, try1 (8 jul 2016) first look, use igv.js
+
+  cd ~/s/work/priceLab/lizBlue/try1/
+
+  cp  ~/s/examples/igv/igv-web/snpFootBed/index.html
+
+   curl -O http://ftp.ensembl.org/pub/release-77/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.chromosome.22.fa.gz
+*------------------------------------------------------------------------------------------------------------------------
+* liz blue, try1 (8 jul 2016) first look, grok the vcf file
+
+  cd ~/s/work/priceLab/lizBlue/try1/
+  install_github("PriceLab/getDNA", subdir="client-R/getDNAClient")
+
+  tbl.ped <- read.table("trio.ped", sep="\t", as.is=TRUE, comment.char="", header=TRUE, fill=TRUE)
+
+  family_id sample_id paternal_id maternal_id sex phenotype ethnicity
+    family1      1805          -9          -9   2         1       CEU
+    family1      1847          -9          -9   1         1       CEU
+    family1      4805        1847        1805   1         2       CEU
+
+  tbl.geno[, 1:6]
+       22:35797333_T/C 22:35799542_C/T 22:35808708_C/T 22:35817553_C/T 22:35817597_C/A 22:35947585_C/A
+  1805              03              03              01              02              02              02
+  1847              02              02              02              02              03              02
+  4805              03              03              01              03              03              03
+
+
+   --- these geno values are coded:  (this from ?genotypeToSnpMatrix)
+
+     Genotypes are stored in the SnpMatrix as 0, 1, 2 or 3 where
+         0 = missing
+         1 = "0/0"
+         2 = "0/1" or "1/0"
+         3 = "1/1".
+
+     In SnpMatrix terminology, "A" is the reference allele and "B" is the risk allele.
+     Equivalent statements to those made with 0 and 1 allele values would be
+       0 = missing
+       1 = "A/A"
+       2 = "A/B" or "B/A"
+       3 = "B/B"
+   
+
+  --- what's the reference genome?
+   library(getDNAClient)
+   dnaClient<- getDNAClient("hg38")
+
+
+   --- interpret the first variant
+
+    chrom: 22
+      pos: 35797333
+       id: .
+      ref: T
+      alt: C
+    qual: 12352.2
+   filter: PASS
+     info: .
+   format: GT:AD:DP:GQ:PL
+       GT: genotype
+       AD: Allelic depths for the ref and alt alleles in the order listed
+       DP: Approximate read depth; some reads may have been filtered
+       GQ: Genotype Quality
+       PL: Normalized, Phred-scaled likelihoods for genotypes as defined in the VCF specification
+
+            GT      AD      DP   GQ       PL
+    1805:  1/1    0,  83    83   99   3187, 250,    0
+    1847:  0/1   96,  73   169   99   2315,   0, 3248
+    4805:  1/1    0, 213   216   99   6849, 554,    0
+
+
+   
+*------------------------------------------------------------------------------------------------------------------------
+* liz blue, try1 (8 jul 2016) from email
+
+   --- GOAL
+
+   Creating a web-based visualization tools to investigate the potential regulatory effects of
+   sequence variants. We are thinking of the ADSP/AMP-AD pilot regions to start, but would be
+   generalizable to other regions. The user would upload a multisample VCF with the variants that
+   they care about, as well as a pedigree and phenotype file (like a PLINK .fam file).
+
+   --- THOUGHTS
+
+   (1) It would be limited to a region of interest, defined by linkage signals, shared haplotypes,
+       LD blocks surrounding association hits, etc. It needs to be limited to a region, rather than a
+       genome, in order for the user to wrap their brain around all the info coming at them.
+
+   (2) Display static annotations, like the variants uploaded by the user, footprints, gene locations, FIMO
+       predicted consequences, histone modifications, DHS, known eQTLs, etc. The trick will be to avoid
+       getting too complicated, but the UCSC genome browser for example can show lots of info to illustrate
+       patterns without being overwhelming. It would be helpful to have brief definitions for what these
+       things are, and their general interpretation in a friendly readme.
+
+   (3) A button to run TReNA in real time. This identifies, via their cognate motifs and TFs,
+       footprints that might be regulatory.  This requires picking a model, and keeping the focus on AD is
+       helpful for this (influenced Cory's choices when building the model). The details of the model
+       influence interpretation, so we'd need a similar friendly readme to explain what data went into the
+       model... so people don't go back to those data sets and think they have independent supporting
+       evidence.
+
+   (4) Evidence for cosegregation within a pedigree We talked about this idea during the
+       meeting. Would require integrating info from a pedigree file, phenotype file, and possibly a
+       covariate file. For large pedigrees, a traditional pedigree drawing might be too hard to see on
+       screen, but Paul was interested in trying a network-like drawing that might be more
+       legible. Highlighting who carries a variant would be helpful. It would also be helpful to see if the
+       variant genotypes aren't Mendelian consistent, and either indicate problems with the pedigree or the
+       genotypes.
+
+    (5) Multiple windows Cory brought up using an EMACS-like interface, so that one could see the
+        big picture in one window while zooming in on a single feature in another. This would be pretty
+        novel and useful.
+
+   GROWTH 
+
+    I think we want to restrict the scope of things initially, but there are lots of ways this could
+    grow. For example:
+
+    (1) We can help the user filter variants by how they segregate in the pedigree(s)
+        We also talked about the user uploading a VCF and using the browser to pick out variants that fit a
+        dominant/recessive/etc. model. Generalizing the logic for these can be tricky, especially when there
+        is missing data. You might look at GEMINI to see if we could use their algorithms, and integrate it
+        with the fast VCF query developed at ISB.
+
+    (2) Or filter by additional annotations, like allele frequency or conservation or ...  If you
+        have reference allele frequencies (ie, KAVIAR, UK10K, 1000genomes, ESP, ExAC, etc), I am sure people
+        would want to filter by frequency. They then will also want to filter by annotation, and you might
+        want to have things like CADD/GERP/PolyPhen2/SIFT/etc available. --> Note, these are all things
+        GEMINI does. If you collaborated with them, GEMINI could do the heavy lifting on this and we just
+        need to figure out how to get the user's GEMINI database to talk to the web tool.
+
+    RESOURCES
+
+     (1) NIAGADS has a large database with loads of annotation for variants/genes related to AD,
+       see: https://www.niagads.org/genomics/ They also have this info implemented as a genome browser,
+       see: https://www.niagads.org/genomics/jbrowse.jsp
+
+     (2) GEMINI basically turns an annotated VCF into a database and has premade queries for modes of inheritance, see: http://gemini.readthedocs.io/en/latest/
+         It might be useful to use their logic for the queries without implementing their databasing/annotation. Talk to them about a collaboration. (3) In the meeting, we talked about the idea of including a pedigree check/builder. There are a lot of caveats I don't know we want to get into. Estimating kinship coeffients accurately requires appropriate reference allele frequencies which aren't always available, or using a method like KING-robust which is not always as accurate as you would like. This is a level of QC someone analyzing a pedigree should have done on their own before investigating variants. That said, an indicator that a variant is not Mendelian consistent in the data set would be helpful. If you are interested in how to reconstruct pedigrees from kinship estimates, see PRIMUS/PADRE here, http://www.ncbi.nlm.nih.gov/pubmed/27374771.
+
+     HOMEWORK
+
+    I needed to get a multisample VCF and pedigree file to Paul so he can start playing with the
+    data. I can't email ADSP data to people who aren't on the project, so I've modified a CEU data
+    set from GEMINI. I chose the region of interest after poking at GWAS signals in the NIAGADS
+    browser. There are some weak signals in this area for AD, and a few stronger signals from the
+    GWAS catalog and I am not sure what studies those p-values belong to.
+
+       --> curl https://s3.amazonaws.com/gemini-tutorials/chr22.VEP.vcf > chr22.VEP.vcf
+
+       --> curl https://s3.amazonaws.com/gemini-tutorials/trio.ped > trio.ped
+       --> vcftools --vcf chr22.VEP.vcf --chr 22 --from-bp 35785001 --to-bp 37897000 --remove-filtered-all --recode --out chr22ROI
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* learn jupyter widgets
+
+  from https://github.com/ipython/ipywidgets went to
+     https://github.com/ipython/ipywidgets/blob/master/docs/source/examples/Index.ipynb
+
+    many examples under ~/github/ipywidgets/docs/source/examples
+
+    my exploration and examples
+    cd ~/s/examples/jupyter/widgets; jupyter-notebook
+
+*------------------------------------------------------------------------------------------------------------------------
+* fresh install of anaconda (7 jul 2016)
+* fresh install of anaconda (7 jul 2016)
+
+    2016-06-28 4.1.0:       Anaconda3-4.1.0-MacOSX-x86_64.pkg
+    ~/anaconda/bin/conda update anaconda
+
+       python is /Users/paul/anaconda/bin/python    # 3.5.1, apple build 07dec2015
+       pip is /Users/paul/anaconda/bin/pip
+       jupyter-notebook also ~/anaconda/bin
+
+*------------------------------------------------------------------------------------------------------------------------
+* pwm motif options
+
+  --- jaspar format
+  
+   ~/github/piq-single/pwms/jaspar.txt: 457
+   ~/github/piq-single/pwms/jasparfix.txt: 1316
+   ~/github/TReNA/inst/extdata/jasparVertebrateCore2016-519-matrices.txt: 519
+
+  --- meme format
+     ~/github/TReNA/inst/extdata/all_motifs.meme    586
+     
+*------------------------------------------------------------------------------------------------------------------------
+* R tips write test file (7 jul 2016)
+
+  --- by example, writing pwms
+
+     count <- 3
+     output <- vector("character", count * 5)
+     base <- 1
+     for(motif.name in moi.present[1:count]){
+         start.line <- title.line.locs[motif.name] + 1
+         end.line <- start.line + 3
+         printf("%s: %d", motif.name, start.line)
+         output[base] <- sprintf(">%s", motif.name)
+         browser()
+         output[(base+1):(base+4)] <- lines[start.line:end.line]
+         base <- base + 5
+         }
+
+     writeLines(output, "test.pwm")
+  
+*------------------------------------------------------------------------------------------------------------------------
+* cory piq run: create jaspar-format motif file (pcm) for each motif in seth's all_motifs.meme
+
+   cd ~/s/work/priceLab/cory/piq/
+   make
+
+*------------------------------------------------------------------------------------------------------------------------
+* test fimoServer fimo server on whovian from riptide (5 jul 2016)
+
+   /usr/local/bin/R -f /Users/paul/github/fimoService/client-R/FimoClient/inst/unitTests/test_FimoClient.R  
+
+   cd ~/s/work/priceLab/cory/piq/motifWrangling/
+   grep -c MOTIF all_motifs.meme  # 586   -- used in TReNA
+   grep MOTIF all_motifs.meme > meme.motif.ids
+   R> motifs <- scan("meme.motif.ids", what=character(0), sep="\n")
+      tokens <- strsplit(motifs, " ")
+      motifs <- unlist(lapply(tokens, "[", 2)) # 586
+      tokens <- strsplit(motifs, ".", fixed=TRUE)
+      motifs <- unlist(lapply(tokens, "[", 1)) #  "MA0002" "MA0003" "MA0004" "MA0006" "MA0007" "MA0009"
+      write(motifs, sep="\n", file="motifs.586.meme.txt")
+
+
+  --- next up
+    stem motif names in motifs.586.meme.txt
+    for each, dig out pcm matrix, with 4 predictable lines (A,C,G,T) after header line
+    find the line number of the matrix name match, then get next 4 lines also
+
+
+   --- ~/s/work/priceLab/cory/piq/motifWrangling/go.R creates 3 motif sample, for testing.  use it in make
+
+*------------------------------------------------------------------------------------------------------------------------
 * start fimoService (22 jun 2016)
 
 
