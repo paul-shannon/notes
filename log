@@ -154,7 +154,88 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
             $userColorInput.mousedown(function () {
 
 *------------------------------------------------------------------------------------------------------------------------
-* load HINT footprints into prosgres (11 jul 2016)
+* load HINT (and refurbished wellington) footprints into prosgres (11 jul 2016): fimo columns identified
+
+
+
+   cd /users/pshannon/s/data/postgres-fill/lymphoblast-HINT
+   wc -l /local/Cory/trn/working/for_seth/lympho_hint_fp.bed #    58255589 
+
+   seth is most interested in HINT
+
+   --- new data table
+   head -3 /local/Cory/trn/working/for_seth/lympho_hint_fp.bed
+   1	10158	10169	108	MA0073.1	1	20	+	4.16514	5.89e-05	CCCTAACCCTAACCCTAACC
+   1	10175	10186	108	MA0073.1	1	20	+	4.53211	5.26e-05	ACCCTAACCTAACCCTAACC
+   1	10276	10298	65	MA0073.1	10	29	+	3.09174	8.17e-05	ACCCTAACCCCAACCCCAAC
+
+   bash> psql
+   psql> \c lymphoblast
+   psql> \dt
+ Schema |    Name     | Type  |  Owner   
+--------+-------------+-------+----------
+ public | footprints  | table | pshannon
+ public | motifsgenes | table | pshannon
+
+
+    drop table HINT_footprints;
+    create table HINT_footprints(chr varchar,  mfpStart int, mfpEnd int, 
+                            motifScore real,  motifName varchar,  
+                            motifStart int, motifEnd int, motifStrand char(1),
+                            motifPval real, motifQval real,  motifSequence varchar);
+
+   \copy HINT_footprints from '/local/Cory/trn/working/for_seth/lympho_hint_fp.bed' delimiter E'\t' CSV;
+ 
+   some bad lines, find and eliminate them
+   cat /local/Cory/trn/working/for_seth/lympho_hint_fp.bed | sed -f badLines310.sed > /tmp/lympho_hint_fp.bed
+   \copy HINT_footprints from '/tmp/lympho_hint_fp.bed' delimiter E'\t' CSV;
+    COPY 58255279
+
+   --- test on macbook
+library(RPostgreSQL)
+Loading required package: DBI
+> db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="lymphoblast", host="whovian")
+> dbGetQuery(db, "select * from hint_footprints limit 4")
+  chr mfpstart mfpend motifscore motifname motifstart motifend motifstrand motifpval motifqval        motifsequence
+1   1    10158  10169        108  MA0073.1          1       20           +   4.16514  5.89e-05 CCCTAACCCTAACCCTAACC
+2   1    10175  10186        108  MA0073.1          1       20           +   4.53211  5.26e-05 ACCCTAACCTAACCCTAACC
+3   1    10276  10298         65  MA0073.1         10       29           +   3.09174  8.17e-05 ACCCTAACCCCAACCCCAAC
+4   1    10276  10298         65  MA0155.1         20       31           -   8.86735  9.32e-05         GGGTTGGGGTTG
+> 
+
+
+   still bad lines:
+     ERROR:  invalid input syntax for type real: "Klf12_DBD"
+     CONTEXT:  COPY hint_footprints, line 593, column motifscore: "Klf12_DBD"
+
+   --- sed/grep fix
+  grep -c "10$" tabCount.txt  # 58255279
+   wc -l tabCount.txt         # 58255589   310 bad lines
+
+   --- our traditional columns
+        create table footprints(chr varchar,  mfpStart int, mfpEnd int, strand char(1),
+                                motifName varchar,  motifLength int, footprintLength int,  
+                                score real, pval real, qval real,  sequence varchar);
+
+
+
+   here are the fimo columns:
+    
+        X.pattern.name sequence.name start stop strand   score  p.value  q.value matched.sequence
+    1             MA0076.2      tert_mut     1   11      + 13.1818 2.22e-05 0.000133      CCCCTTCCGGG
+    2 ELK1,4_GABP{A,B1}.p3      tert_mut     2   11      - 11.7000 4.50e-05 0.000539       CCCGGAAGGG
+    3          ETV6_full_2      tert_mut     2   11      - 10.7245 9.30e-05 0.001120       CCCGGAAGGG
+    4             MA0645.1      tert_mut     2   11      - 10.7308 9.54e-05 0.001150       CCCGGAAGGG
+
+   head -3 /local/Cory/trn/working/for_seth/lympho_hint_fp.bed
+   1	10158	10169	108	MA0073.1	1	20	+	4.16514	5.89e-05	CCCTAACCCTAACCCTAACC
+   1	10175	10186	108	MA0073.1	1	20	+	4.53211	5.26e-05	ACCCTAACCTAACCCTAACC
+   1	10276	10298	65	MA0073.1	10	29	+	3.09174	8.17e-05	ACCCTAACCCCAACCCCAAC
+
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* load HINT (and refurbished wellington) footprints into prosgres (11 jul 2016)
 
    --- email from cory (8 jul 2016)
 
@@ -184,7 +265,7 @@ How about a quick phone call?
 Thanks!
 
 - Paul
-
+v
 
      head ../lymphoblast/lymphoblast_fp.bed   # from May 3rd
      1       10799   10834   KLF16_DBD       23      33      -       14.9082 5.09e-06        0       GCCACGCCTCC 
