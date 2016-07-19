@@ -102,6 +102,227 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+* adx chinook app (19 jul 2016)
+
+  got working igv.js code from cd ~/s/work/priceLab/lizBlue/try1/index.html
+  cd ~/github/adx/chinook/webapplets/igv
+
+   for now, serve bed files from lizBlue
+   cd  ~/s/work/priceLab/lizBlue/try1/
+   python -m http.server 8005
+
+*------------------------------------------------------------------------------------------------------------------------
+* chinook demoTab, demo tab, template (18 jul 2016)
+
+   a good place to start in crafting a new tab
+   
+   cd ~/github/Chinook/ChinookServer/inst/scripts/demoTab
+
+   just two messages registered, first calls second, dataset item names displayed in the demo tab:
+   
+        hub.addMessageHandler("datasetSpecified", datasetSpecified);
+        hub.addMessageHandler("demoDisplayDatasetItemNames", displayDatasetItemNames); 
+
+   
+
+*------------------------------------------------------------------------------------------------------------------------
+* d3 heatmap: clustergrammer (15 jul 2016)
+
+  https://github.com/MaayanLab/clustergrammer
+  looks promising.
+
+ --- using python 2.7.10
+sudo /usr/bin/python -m pip install pandas  
+/usr/bin/python
+from clustergrammer import Network
+net = Network()
+net.load_file('txt/rc_two_cats.txt')
+net.make_clust(dist_type='cos',views=['N_row_sum', 'N_row_var'])
+net.write_json_to_file('viz', 'json/rc_two_cats.json', 'no-indent')
+
+
+--- load webapp
+
+cd ~/github/clustergrammer/
+add this line to load_clustergram.js:
+
+   make_clust('rc_two_cats.json')
+
+python -m http.server 10001
+
+
+   --- now try this with allFactors.tsv
+
+     /Users/paul/github/clevelandHighSchool/datasets/SouthSeattleHealthImpacts/inst/extdata/allFactors.tsv
+
+/usr/bin/python
+from clustergrammer import Network
+net = Network()
+filename = '/Users/paul/github/clevelandHighSchool/datasets/SouthSeattleHealthImpacts/inst/extdata/allFactorsNormalized.tsv'
+net.load_file(filename)
+net.make_clust(dist_type='cos',views=['N_row_sum', 'N_row_var'])
+net.write_json_to_file('viz', 'json/allFactorsNormalized.json', 'no-indent')
+
+
+
+   --- matrix upload: try it out here
+     http://amp.pharm.mssm.edu/clustergrammer/
+
+   --- build json from matrix using python  3.5.1 [abandoned]
+     cd ~/github/clustergrammer/    # has python package in clustergrammer/clustergrammer
+     changed all import statements, except numpy, to (eg), from
+           import initialize_net
+       to
+           from . import initialize_net
+
+      in load_data.py, changed "import StringIO" to "from io import StringIO"
+      
+     python 3.5.1
+from clustergrammer import *
+net = Network()
+net.load_file('txt/rc_two_cats.txt')
+net.make_clust(dist_type='cos',views=['N_row_sum', 'N_row_var'])
+net.write_json_to_file('viz', 'json/mult_view.json', 'no-indent')
+     
+*------------------------------------------------------------------------------------------------------------------------
+* heatmap demo for feaven, mtcars and cleveland data (14 jul 2016)
+
+  ~/github/clevelandHighSchool/misc/exampleCode/heatmap.R
+  
+*------------------------------------------------------------------------------------------------------------------------
+* eduardo viverios de castro, who is afraid of the ontological wolf? (15 jul 2016)
+
+  https://sisu.ut.ee/sites/default/files/biosemio/files/cusas_strathern_lecture_2014.pdf
+  saved into ~/Documents
+  
+*------------------------------------------------------------------------------------------------------------------------
+* snp and pedigree viz for liz blue, igv.js, rcyjs, demo (14 jul 2016)
+
+  added library(SNPlocs.Hsapiens.dbSNP144.GRCh37) in order to get better names for bed file and igv
+  
+
+*------------------------------------------------------------------------------------------------------------------------
+* snploc tips, rsid, dbSNP from R (14 jul 2016)
+
+  library(SNPlocs.Hsapiens.dbSNP144.GRCh37)
+  snps <- SNPlocs.Hsapiens.dbSNP144.GRCh37
+
+   # have this snploc form liz blue: "22:37771985_A/G"
+  snpsByOverlaps(snps, "ch22:37771980-37771990")
+
+  as.data.frame(snpsByOverlaps(snps, "ch22:37771980-37771990")) 
+     seqnames      pos strand RefSNP_id alleles_as_ambig   # IUPAC nucleotide ambiguity code
+   1     ch22 37771985      + rs4821653                R
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* javascript heatmap, looks very promising (14 jul 2016)
+
+  http://openscreen.cz/software/inchlib/home/
+
+  --- get code
+    cd ~/github
+    git clone https://github.com/skutac/InCHlib.js.git
+
+  --- first look: reproduce example from http://openscreen.cz/software/inchlib/examples/18
+    cd ~/s/examples/js/heatmaps/inchlib/webDemo
+
+  --- install the clustering software,     instructions and docs: http://openscreen.cz/software/inchlib/inchlib_clust
+    cd ~/s/examples/js/heatmaps/inchlib/webDemo/cluster
+    unzip /Users/paul/Downloads/inchlib_clust-0.1.4.zip
+    cd inchlib_clust-0.1.4
+    python inchlib_clust.py # to debug with python3
+      edited 3 exception handling statements:
+           #except Exception, e:
+           except Exception:
+      replaced urllib2 with urllib
+      pip install fastcluster
+
+   python setup.py install
+
+   cd ~/s/examples/js/heatmaps/inchlib/webDemo
+   run make:
+       python ./cluster/inchlib_clust-0.1.4/build/lib/inchlib_clust.py \
+          example_data.csv -m example_metadata.csv -cm example_column_metadata.csv -dh -mh -cmh -o example.json
+
+                         
+   
+*------------------------------------------------------------------------------------------------------------------------
+* igv.js tips
+
+   --- good overview of api
+     https://github.com/igvteam/igv.js/wiki/Browser
+     
+*------------------------------------------------------------------------------------------------------------------------
+* parallel, mclapply, Rscript, passing command line args (12 jul 2016)
+
+   --- see full workup, starting with Hadley's work, at ~/s/examples/R/parallel/go.R
+   
+library(parallel)
+cores <- detectCores()
+
+coryDemo3 <- function(bamfileName, motifNumber) {
+   function(bamfileName, motifNumber) {
+       cmd <- sprintf("/usr/local/bin/Rscript demo2.R %s %d", bamfileName, motifNumber)
+       print(cmd)
+       system(cmd)
+       }
+   }
+
+# this works
+f <- coryDemo3(bamfileName, motifNumber)
+f("a", 7)
+
+bamfileNames <- LETTERS[1:10]
+motifNumbers <- 1:10
+
+system.time(lapply(1:10, function(i) f(bamfileNames[i], motifNumbers[i])))
+system.time(mclapply(1:10, function(i) f(bamfileNames[i], motifNumbers[i]), mc.cores = cores))
+
+
+#——— demo2.R
+printf <- function(...) print(noquote(sprintf(...)))
+printf("executing demo2.R")
+args <- commandArgs(trailingOnly=TRUE)
+stopifnot(length(args) == 2)
+
+bamfileName <- args[1]
+motifNumber <- as.integer(args[2])
+printf("demo.R recieved these args: bamfileName '%s' and motifNumber %d", bamfileName, motifNumber)
+printf("sleeping %d seconds", motifNumber)
+Sys.sleep(motifNumber)
+printf("sleep complete”)
+*------------------------------------------------------------------------------------------------------------------------
+* get grunt install, grokked and working (12 jul 2016)
+
+  ~/s/examples/grunt/try0/
+
+  --- install latest node (4.4.7)
+    https://nodejs.org/en/download/     # a pkg installer, quick and easy
+    node -v  # v4.4.7
+    npm -v   # 2.15.8
+
+  sudo /usr/local/bin/npm install -g grunt-cli
+
+  cd ~/github/
+  npm install   // reads package.json, installs everything mentioned there
+  grunt
+
+  File "dist/igv.js" created.
+
+    Running "uglify:igv" (uglify) task
+    File dist/igv.min.map created (source map).
+    File dist/igv.min.js created: 826.43 kB → 387.48 kB
+
+
+   --- try this out with liz blue's app
+     cd ~/s/work/priceLab/lizBlue/try1/ 
+
+*------------------------------------------------------------------------------------------------------------------------
+* build locally modified igv.js (12 jul 2016)
+
+  
+  npm update -g npm
 *------------------------------------------------------------------------------------------------------------------------
 * igv.js mouseDown events (11 jul 2016)
 
@@ -155,8 +376,6 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 
 *------------------------------------------------------------------------------------------------------------------------
 * load HINT (and refurbished wellington) footprints into prosgres (11 jul 2016): fimo columns identified
-
-
 
    cd /users/pshannon/s/data/postgres-fill/lymphoblast-HINT
    wc -l /local/Cory/trn/working/for_seth/lympho_hint_fp.bed #    58255589 
@@ -378,7 +597,7 @@ select * from footprints limit 3;
 *------------------------------------------------------------------------------------------------------------------------
 * liz blue, try1 (8 jul 2016) first look, grok the vcf file
 
-  cd ~/s/work/priceLab/lizBlue/try1/
+  cd ~/s/work/priceLab/lizBlue/try1
   install_github("PriceLab/getDNA", subdir="client-R/getDNAClient")
 
   tbl.ped <- read.table("trio.ped", sep="\t", as.is=TRUE, comment.char="", header=TRUE, fill=TRUE)
@@ -4961,7 +5180,7 @@ education.   We predict these  concrete results:
   spoke with leslie, who reluctantly promised to contact me with resolution.
 
 *----------------------------------------------------------------------------------------------------
-* haldly ggplot2 heatmap (14 apr 2016)
+* hadley ggplot2 heatmap (14 apr 2016)
 
   cd ~/s/work/robMoritz/cholesterolRegulation/
   this worked, after lots of fuss:.  the limits parameter keeps the
@@ -16912,6 +17131,7 @@ sudo /usr/sbin/mysqld
   imp.find_module('websocket')
      (None, '/home/klatoza/.local/lib/python2.7/site-packages/websocket', ('', '', 5))
 
+*----------------------------------------------------------------------------------------------------
 * python tips, PYTHONPATH for macos python3.4 websockets packages
 
 export PYTHONPATH=/Library/Frameworks/Python.framework/Versions/3.4/lib/python3.4/site-packages
@@ -20931,8 +21151,10 @@ presumed to be a flaw in the old websockets package
 see it if happens in onco13 using httpuv
 options(error=recover) when running interactively did not claify
 *----------------------------------------------------------------------------------------------------
-* js heatmap
-http://openscreen.cz/software/inchlib/home/
+* js heatmap (2014)
+
+   mentioned http://stackoverflow.com/questions/8491097/interactive-heatmap-matrix-visualization
+   http://openscreen.cz/software/inchlib/home/
 
 requires
 jQuery (tested with version 2.0.3, download jQuery 2.0.3)
