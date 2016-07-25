@@ -94,13 +94,486 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 
 * top
 *------------------------------------------------------------------------------------------------------------------------
+* python tip: list imported modules
+
+  import sys;
+  sys.modules.keys()
+  
 *------------------------------------------------------------------------------------------------------------------------
+* python tip, jupyter tip, notebook tip: are jupyter widgets installed? (24 jul 2016)
+
+   import ipywidgets as widgets
+   widgets.Widget.widget_types.values()
+
 *------------------------------------------------------------------------------------------------------------------------
+* bqplot: another example of ipywidgets, allegedly with the same structure as hello world (25 jul 2016)
+
+  git clone https://github.com/bloomberg/bqplot.git
+  cd bqplot
+  pip install -e .
+  jupyter nbextension install --py --symlink --user bqplot
+  jupyter nbextension enable --py --user bqplot
+
+   find . -name "*.ipynb"
+     ./examples/Advanced Plotting/Advanced Plotting.ipynb
+     ./examples/Advanced Plotting/Animations.ipynb
+     ./examples/Advanced Plotting/Axis Properties.ipynb
+     ./examples/Advanced Plotting/Plotting Dates.ipynb
+     ./examples/Applications/Wealth of Nations.ipynb
+     ./examples/Basic Plotting/Basic Plotting.ipynb
+     ./examples/Basic Plotting/Pyplot.ipynb
+     ./examples/Index.ipynb
+     ./examples/Interactions/Interaction Layer.ipynb
+     ./examples/Interactions/Mark Interactions.ipynb
+     ./examples/Marks/Bars.ipynb
+     ./examples/Marks/Boxplot.ipynb
+     ./examples/Marks/Candles.ipynb
+     ./examples/Marks/FlexLine.ipynb
+     ./examples/Marks/GridHeatMap.ipynb
+     ./examples/Marks/Hist.ipynb
+     ./examples/Marks/Label.ipynb
+     ./examples/Marks/Lines.ipynb
+     ./examples/Marks/Map.ipynb
+     ./examples/Marks/Market Map.ipynb
+     ./examples/Marks/Pie.ipynb
+     ./examples/Marks/Scatter.ipynb
+     
+   cd ~/github/bqplot/examples
+   jupyter notebook
 *------------------------------------------------------------------------------------------------------------------------
+* jupyter-widget, ipywidgets:  directory structure
+
+   ---- bgplot ~/s/github/bgplot
+
+      bgplot/  [some interesting files and subdirectories]
+         __init__.py: defines the bgplot module
+         __pycache__/: directory of compiled (.pyc) files
+         _version.py:  defines __version__ as '0.7.1'
+         axes.py" defines module bgplot.axes
+         interacts.py: module bqplot.interacts, class Interaction(Widget): a mouse interaction layer
+         map_data/: EuropeMapData.json, USMapData.json, WorldMapData.json
+         static/:   built up by webpack?
+            extension.js: seems to be instructions for require to load nbextensions
+            index.js:  lots of functions for style, d3, __webpack_require__(i) function calls
+            index.js.map: not sure
+         toolbar.py: panzoom, save, reset, ...
+
+       js/   [node related only?]
+         package.json: 
+            devDependencies 
+            dependencies (bootstrap, d3, jquery, jupyter-js-widgets, topojson, underscore)
+         dist/ index.js, index.js.map
+         src/  > 70 javascript file
+         webpack.config.js: how to build bqplot bundle for notetook and for an embeddable (?) bqplot
+
+       setup.py: run by pip?
+
+
+  ---- ipywidgetexample  ~/s/examples/jupyter/jupyter-widget-example
+
+     ipywidgetexample/
+        __init__.py
+        __pycahce__:
+        _versio.py
+        example.py: imports modules it needs (ipywidgets, traitles), registers('hello.Hello'), 
+                      defines class HelloWorld(widgets.DOMWidget)
+        static/: built up by webpack?
+            extension.js: seems to be instructions for require to load nbextensions
+            index.js:  lots of functions for style, d3, __webpack_require__(i) function calls
+            index.js.map: not sure
+
 *------------------------------------------------------------------------------------------------------------------------
+* jupyter-widget-example (24 jul 2016)
+
+   --- code and README's 
+
+   http://ipywidgets.readthedocs.io/en/latest/examples/Widget%20Low%20Level.html
+   http://ipywidgets.readthedocs.io/en/latest/examples/Custom%20Widget%20-%20Hello%20World.html
+   https://github.com/ipython/ipywidgets
+   https://github.com/jupyter/widget-cookiecutter
+
+   pip install cookiecutter  
+   cd ~/s/examples/jupyter
+   cookiecutter https://github.com/jupyter/widget-cookiecutter.git
+   cd ~/s/examples/jupyter/jupyter-widget-example/
+   pip install -e .
+   jupyter nbextension install --py --symlink --user ipywidgetexample
+   jupyter nbextension enable --py --user ipywidgetexample
+   jupyter notebook
+
+   within notebook:
+      from ipywidgetexample import *
+      HelloWorld()   # displays simple text "Hello World!" in the "widget space" below the input cell
+      
+   --- now change the message, the simplest possible modification
+     ~/s/examples/jupyter/jupyter-widget-example/ipywidgetexample/example.py
+      now reads
+
+@widgets.register('hello.Hello')
+class HelloWorld(widgets.DOMWidget):
+    """"""
+    _view_name = Unicode('HelloView').tag(sync=True)
+    _model_name = Unicode('HelloModel').tag(sync=True)
+    _view_module = Unicode('jupyter-widget-example').tag(sync=True)
+    _model_module = Unicode('jupyter-widget-example').tag(sync=True)
+    value = Unicode('Hello Universe!').tag(sync=True)
+
+   --- rebuild
+
+    pip install -e .
+    jupyter nbextension install --py --symlink --user ipywidgetexample
+    jupyter nbextension enable --py --user ipywidgetexample
+    jupyter notebook
+
+
+   --- run
+     cd ~/s/examples/jupyter/jupyter-widget-example/
+     jupyter notebook
+     load and run helloWorld.ipynb
+
 *------------------------------------------------------------------------------------------------------------------------
+* macos wget
+
+    brew install wget --with-libressl
 *------------------------------------------------------------------------------------------------------------------------
+* gemini tutorial (24 jul 2016)
+
+   cd ~/s/examples/gemini/intro/
+   reading: 
+     https://gist.githubusercontent.com/arq5x/9e1928638397ba45da2e/raw/5dd52cc3b49a80ce7c6daf4ba1d8f82565b0fb97/gemini-intro.sh
+
+   --- get data
+     curl https://s3.amazonaws.com/gemini-tutorials/learnSQL.db > learnSQL.db
+     curl https://s3.amazonaws.com/gemini-tutorials/learnSQL2.db > learnSQL2.db
+     curl https://s3.amazonaws.com/gemini-tutorials/chr22.VEP.vcf > chr22.VEP.vcf
+     curl https://s3.amazonaws.com/gemini-tutorials/trio.ped > trio.ped
+
+   --- the result
+  2563155 Jul 24 12:29 chr22.VEP.vcf
+     2048 Jul 24 12:28 learnSQL.db
+     3072 Jul 24 12:29 learnSQL2.db
+      154 Jul 24 12:29 trio.ped
+
+   ---- try out command line access
+      PATH=/Users/paul/source/gemini/tools/bin:$PATH
+      gemini query -q "SELECT name FROM samples" learnSQL.db
+      KeyError: 'variants'
+
+   --- debug using RSQLite
+    library(RSQLite)
+     db <- dbConnect(dbDriver("SQLite"), "learnSQL.db")
+     dbListTables(db) # [1] "samples"
+     dbGetQuery(db, "select * from samples limit 1")
+       sample_id name family_id paternal_id maternal_id sex phenotype ethnicity
+     1         1 John         1         Bob         Sue   1         2       CEU
+
+
 *------------------------------------------------------------------------------------------------------------------------
+* install gemini (23 jul 2016)
+
+  cd ~/source/gemini
+  curl -O https://raw.githubusercontent.com/arq5x/gemini/master/gemini/scripts/gemini_install.py
+  needs python 2.7
+  needs wget (see above)
+
+  /usr/bin/python gemini_install.py tools data/
+
+  --- Gemini data files updated
+     Finished: gemini, tools and data installed
+     Tools installed in:
+      /Users/paul/source/gemini/tools
+     NOTE: be sure to add /Users/paul/source/gemini/tools/bin to your PATH.
+     Data installed in:
+      /Users/paul/source/gemini/data
+     NOTE: Install data files for GERP_bp & CADD_scores (not installed by default).
+     
+     Run tests with:
+      cd /Users/paul/source/gemini/data/github_gemini && bash master-test.sh
+
+   error:  github_gemini directory does not exist
+
+   --- solution
+      git clone https://github.com/arq5x/gemini.git
+         /Users/paul/github/gemini/master-test.sh       2320 Jul 24 12:06
+
+    PATH=/Users/paul/source/gemini/tools/bin:$PATH
+    PATH=/Users/paul/source/gemini/data/anaconda/bin:$PATH      
+
+  --- a few more data files
+    CADD scores are not being loaded because the annotation file could not be found.
+       gemini update --dataonly --extra cadd_score    # 13 hours predicted!
+    GERP per bp is not being loaded because the annotation file could not be found.
+       gemini update --dataonly --extra gerp_bp      #  3 hours predicted
+
+   --- run master tests
+      cd ~/github/geminia
+      bash master-test.sh
+
+
+  --- gemini gists
+     https://gist.github.com/arq5x
+
+  --- gemini-intro.sh, a gist
+
+   https://gist.githubusercontent.com/arq5x/9e1928638397ba45da2e/raw/5dd52cc3b49a80ce7c6daf4ba1d8f82565b0fb97/gemini-intro.sh
+
+*------------------------------------------------------------------------------------------------------------------------
+* cyjs in a notebook (22 jul 2016)
+
+
+
+  --- reproduce
+   cd  ~/http/js/
+   python -m http.server 9999    # serves up local copy of cytoscape-2.7.6.js
+
+   cd ~/s/examples/jupyter/cyjs/firstTry  
+   jupyter notebook              # serves up cyjs.ipynb
+
+
+   
+  -- email to max franz
+  
+have narrowed down the problem a bit.  I’ll be grateful for any insight you can offer.
+
+It seems to be some sort of an interaction between the libraries loaded by the default & empty notebook, and (I am guessing) some feature of the cytoscape.js file.
+
+urlA = “http://localhost:9999/dummy.js"
+urlB = "http://localhost:9999/cytoscape-2.7.6.js"
+var script = document.createElement( 'script' );
+script.src = urlA or urlB
+document.head.appendChild( script );
+
+1) if Jupyter has NOT been loaded, then I can execute the above 5 lines (urlA or urlB) and cytoscape() is defined
+2) if Jupyter has been loaded, and I execute the lines in the js console, urlA results in a defined “dummy()” function, but urlB leads to “cytoscape()” producing a ReferenceError, cytoscape is not defined.
+3) with Jupyter loaded, igv.js evaluates fine.  It is quite straightforward in javascript style.  Maybe it lacks some features you have used for cytoscape.js, which clash with standard included libraries for Jupyter?
+
+That’s my best guess: that somehow even the empty jupyter notebook loads libraries which somehow clash with cytoscape.js
+
+
+My jupyter version:
+
+jupyter notebook —version    # 4.2.1
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* igv.js in a notebook
+
+   cd ~/s/examples/jupyter/igv/preview/
+
+*------------------------------------------------------------------------------------------------------------------------
+* prepare for jupyterlab
+
+  [status: not ready yet for real exploration]
+  jupyter --version # 4.1.0
+  jupyter notebook --version 4.1.0
+  conda update notebook
+     notebook: 4.1.0-py35_2 --> 4.2.1-py35_0
+  jupyter notebook --version # 4.2.1
+
+  pip install jupyterlab   # Successfully installed jupyterlab-0.1.1
+  book.notebook> jupyter serverextension enable --py jupyterlab
+Enabling: jupyterlab
+- Writing config: /Users/paul/.jupyter
+    - Validating...
+      jupyterlab  OK
+
+  cd ~/github/jupyterlab/
+  jupyter lab
+  note ready...
+
+
+* draft #2 email to jerry large (21 jul 2016)
+*------------------------------------------------------------------------------------------------------------------------
+* draft #3 email to jerry large (2 jul 2016), with hsiao-ching's suggestions
+Dear Mr. Large,
+
+I was moved by  your column yesterday in the Seattle Times, "Police conflicts are a symptom of a
+larger, often unacknowledged disease" and by this statement in particular: "Racism kills, poverty
+kills, and the two together are especially deadly."
+
+You may be interested in a collaboration to address aspects of this problem, between Cleveland High
+School and the Institute for Systems Biology. (ISB is a nonprofit biomedical research institute
+located around the corner from the Seattle Times on Terry Avenue.)
+
+In this collaboration Cleveland students will analyze environmental, health and socioeconomic data
+for ten Seattle zip codes using visualization and analytical software developed at the ISB.  The
+data are from a 2013 EPA-funded study by Linn Gould et al. Linn provides ongoing guidance to the
+project.  Cleveland teachers suggested this project, and shaped its design.
+
+The software is an interactive data exploration webapp, available here:
+
+ http://clevelandehc.systemsbiology.net
+
+Two especially damning examples are easily seen:
+
+ Poverty strongly predicts child hospitalization rates for asthma.
+ Race correlates loosely with life expectancy, producing life spans 10 years shorter for some.
+
+Another aspect of our community involvement is the participation (as a software developer) by an ISB
+summer intern, a young Eirtrean woman, a Rainier Scholar, who now attends SMU, and who grew up in
+one of the most affected neighborhoods covered in the study.
+
+At the ISB we often use statistics and computer visualzation to discover patterns in complex
+systems.  We are excited to apply these techniques outside of molecular biomedicine -
+our usual concern - in order to address historically intractable inequities and injustices in our community.
+
+We predict that Cleveland students this year will benefit not only by learning these new analytical
+techniques, but also by becoming informed citizens who, with a newly enriched grasp of the
+sometimes inequitable circumstances in which we live, may find the means to improve them.
+
+I come to this work inspired by several experiences from my own (white, and fairly privileged) life:
+
+  - I dropped out of college in order to feel more useful, taking up carpentry, learning
+    the trade from a distinguished elder, a man whose grandparents had been slaves
+
+  - Over the past two summers, while working in computational biology at the Fred Hutch,
+    I mentored two summer students, both of them Caucuasian sons of UW brain surgeions.
+    Good, smart kids, but their prospects in life were quite good with or without our
+    work together.
+
+  - I have lived in South Seattle, and daily observe the structural inequalities that
+    reach back into our national history, and hope that we can together ameliorate
+    them, and soon!
+
+*------------------------------------------------------------------------------------------------------------------------
+* linn's 2013 seattle times story.
+
+  http://www.seattletimes.com/seattle-news/study-finds-life-is-shorter-for-some-in-the-98108-zip-code/  mapes, gould
+  
+*------------------------------------------------------------------------------------------------------------------------
+* draft #2 email to jerry large (21 jul 2016)
+
+Dear Mr. Large,
+
+I was moved when I read your column today in the Seattle Times, "Police conflicts are a symptom of a
+larger, often unacknowledged disease" and by this statement in particular: "Racism kills, poverty
+kills, and the two together are especially deadly."
+
+You may be interested in a collaboration to address aspects of this problem, between Cleveland High
+School and the Institute for Systems Biology.
+
+In this collaboration Cleveland students will analyze environmental, health and socioeconomic data for
+ten Seattle zip codes using visualization and analytical software developed at the ISB.  The data
+are from a 2013 EPA-funded study by Linn Gould et al. Linn provides ongoing guidance to the project.
+Cleveland teachers suggested this project, and shaped its design.
+
+The software is an interactive data exploration webapp, available here:
+
+ http://clevelandehc.systemsbiology.net
+
+Two especially damning examples are easily seen:
+
+ Poverty strongly predicts child hospitalization rates for asthma.
+ Race correlates loosely with life expectancy, producing life spans 10 years shorter for some.
+
+Another aspect of our community involvement is the participation (as a software developer) by an ISB
+summer intern, a young woman, a Rainier Scholar, who now attends SMU, and who grew up in one of
+the most affected neighborhoods covered in the study.
+
+At the ISB we often use statistics and computer visualzation to discover patterns in complex
+systems.  We are excited to apply these techniques outside of molecular biomedicine -
+our usual concern - in order to address historically intractable inequities and injustices in our community.
+
+We predict that Cleveland students this year will benefit not only by learning these new analytical
+techniques, but also by becoming informed citizens who, with a newly enriched grasp of the
+sometimes inequitable circumstances in which we live, may find the means to improve them.
+
+*------------------------------------------------------------------------------------------------------------------------
+* draft email to jerry large (21 jul 2016)
+
+Dear Mr. Large,
+
+I was moved when I read your column today in the Seattle Times, "Police conflicts are a symptom of a
+larger, often unacknowledged disease" and by this statement in particular: "Racism kills, poverty
+kills, and the two together are especially deadly."
+
+You may be interested in a collaboration to address aspects of this problem, between Cleveland High
+School and the Institute for Systems Biology.
+
+In this collaboration Cleveland students will analyze environmental, health and socioeconomic data for
+ten Seattle zip codes using visualization and analytical software developed at the ISB.  The data
+are from a 2013 EPA-funded study by Linn Gould et al. Linn provides ongoing guidance to the project.
+
+The software, an interactive data exploration webapp,  is available here:
+
+  http://clevelandehc.systemsbiology.net
+
+Two especially damning examples are easily seen:
+
+  Poverty predicts child hospitalization rates for asthma.
+  Race correlates loosely with life expectancy, producing life spans 10 years shorter for some.
+
+Another aspect of our community involvement is the participation (as a software developer) by an ISB
+summer intern, a young woman, a Rainier Scholar now attending SMU who grew up in one of
+the most affected neighborhoods found in the study.
+
+At the ISB we often use computation and computer visualzation to discover patterns in complex
+systems.  We are excited to apply these sophisticated techniques outside of molecular biomedicine,
+our usual concern, to address historically intractable inequities and injustice in our community.
+We predict that Cleveland students this year will benefit not only by learning these new analytical
+techniques, but also by becoming informed citizens -- citizens with a newly enriched grasp of the
+sometimes inequitable, and sometimes improvable circumstances in which we live.
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* simple 3-node, no edge graph, json (21 jul 2016)
+
+   g = [{"data": {"id":"A"}}, {"data":{"id":"B"}}, {"data":{"id":"C"}}];
+     // surrounding quotes must be single, internal must be double
+   gString = '[{"data": {"id": "x"}}, {"data":{"id": "y"}}, {"data":{"id": "z"}}]'; 
+   cy.load(JSON.parse(gString))
+   cy.load(g)
+   cy.layout({"name": "grid"})
+   g2 =  [{"data": {"id": "x"}}, {"data":{"id": "y"}}, {"data":{"id": "z"}}]
+   style2 = [{selector: 'node', style: {content: 'data(id)', 'text-halign': 'center', 'text-valign': 'center', 'background-color': 'white', 'border-color':'red', 'border-width': "1px"}}]
+   cy.style(style2)
+
+*------------------------------------------------------------------------------------------------------------------------
+* create readable json from RCy graph (20 jul 2016)
+
+library(RCyjs)
+library(RUnit)
+
+g <- simpleDemoGraph()
+rcy <- RCyjs(9000:9010, graph=g)
+s <- getJSON(rcy)
+s2 <- gsub("\\\"", "'",  s)
+s3 <- gsub("},", "},\n", s2)
+s4 <- gsub("'", "\"", s3)
+write(s4, file="s4.json")
+s5 <- fromJSON("s4.json")
+checkTrue(is.list(s5))
+checkTrue(length(s5) >= 12)
+
+
+   --- now start a py3 kernel
+from py2cytoscape import cytoscapejs as cyjs
+import json
+file = "s4.json"
+file = "maripaludis.json"
+g = json.load(open(file))
+g
+cyjs.render(g)
+   
+*------------------------------------------------------------------------------------------------------------------------
+* explore cy/jupyter (20 jul 2016)
+
+  cd ~/github/py2cytoscape/examples/
+  jupyter-notebook
+
+*------------------------------------------------------------------------------------------------------------------------
+* chrome cors, open from command line without security (20 jul 2016)
+
+  chrom version 51
+
+   open /Applications/Google\ Chrome.app --args --disable-web-security --user-data-dir -–allow-file-access-from-files
+*------------------------------------------------------------------------------------------------------------------------
+* figure out igv.js/chinook difficulty, with igv minimal (20 jul 2016)
+
+  cd ~/s/examples/igv/igv.js/minimal
+  drawing from slightly more complex ~/s/work/priceLab/lizBlue/try1/index.html and bed files
+  
+
 *------------------------------------------------------------------------------------------------------------------------
 * adx chinook app (19 jul 2016)
 
@@ -751,6 +1224,10 @@ select * from footprints limit 3;
 
     my exploration and examples
     cd ~/s/examples/jupyter/widgets; jupyter-notebook
+
+
+   --- custom widget, hello world (21 jul 2016)
+     confusing.  turning to ~/github/ipywidgets/docs/source/examples
 
 *------------------------------------------------------------------------------------------------------------------------
 * fresh install of anaconda (7 jul 2016)
