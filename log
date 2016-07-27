@@ -94,16 +94,137 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 
 * top
 *------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+* igv.js for jupyter (27 jul 2016)
+
+*------------------------------------------------------------------------------------------------------------------------
+* python tips execfile
+
+   python 2: execfile("./filename") 
+   python 3: exec(open("./filename").read())
+*------------------------------------------------------------------------------------------------------------------------
+* python tips: traitlets
+
+  https://traitlets.readthedocs.io/en/stable/
+
+  attach attributes to python classes, with
+     type checking
+     dynamically calculated default values
+     "on change" callbacks
+
+   https://github.com/ipython/ipywidgets/blob/master/ipywidgets/widgets/widget.py#L118
+
+   shows
+
+      class Widget(LoggingConfigurable)
+
+
+   --- used in threejs notebook examples
+     ball = Mesh(geometry=SphereGeometry(radius=1), material=LambertMaterial(color='red'), position=[2,1,0])
+
+
+  in pythreejs.py
+
+    class Mesh(Object3d):
+
+      _view_name = Unicode('MeshView').tag(sync=True)
+      _model_name = Unicode('MeshModel').tag(sync=True)
+      geometry = Instance(Geometry).tag(sync=True, **widget_serialization)
+      material = Instance(Material).tag(sync=True, **widget_serialization)
+
+    Extra metadata can be associated with the traitlet using the .tag() convenience method
+    or by using the traitlet instance's .metadata dictionary.
+     
+
+*------------------------------------------------------------------------------------------------------------------------
+* pythreejs, install, study, extend? (26 jul 2016)
+
+  git clone https://github.com/jovyan/pythreejs.git
+  cd pythreejs/
+  pip install -e .
+  jupyter nbextension install --py --symlink --user pythreejs
+  jupyter nbextension enable --py --user pythreejs
+  cd examples
+  jupyter notebook
+  
+*------------------------------------------------------------------------------------------------------------------------
 * python tip: list imported modules
 
   import sys;
   sys.modules.keys()
   
 *------------------------------------------------------------------------------------------------------------------------
-* python tip, jupyter tip, notebook tip: are jupyter widgets installed? (24 jul 2016)
+* python tip, jupyter tip, notebook tip: which jupyter widgets are installed? (24 jul 2016)
 
    import ipywidgets as widgets
    widgets.Widget.widget_types.values()
+
+*------------------------------------------------------------------------------------------------------------------------
+* python tip, setup.py, packaging, wheels & etc
+
+   https://hynek.me/articles/sharing-your-labor-of-love-pypi-quick-and-dirty/
+
+   "every project that you want to package needs a setup.py file that is executed whenever you build a distribution 
+    and – unless you install a wheel – on each installation."
+
+*------------------------------------------------------------------------------------------------------------------------
+* futher anatomy of ipywidgetexample: distributed files and directories, nothing built or setup (26 jul 2016)
+
+  cd ~/s/examples/jupyter/jupyter-widget-example-asDownloaded;  ls -lR
+
+      53 MANIFEST.in  (specifies dynamically-created MANIFEST)
+     617 README.md
+     475 RELEASE.md
+      26 setup.cfg    ([bdist_wheel]; universal=1   # a universal wheel, good for py 2 and 3
+    5543 setup.py     # includes boilerplate, setup_args (name, version, data_files, ipywidgets version required
+
+       D ipywidgetexampleUnbuilt/
+           280  __init__.py
+            79  _version.py
+           438  example.py         # defines class HelloWorld(widgets.DOMWidget)
+       D js/
+           168  README.md           # explains node is prereq, and npm install --save jupyter-widget-example
+           650  package.json        # node modules to install, "main" is src/index.js
+          2295  webpack.config.js   # module.exports, and array, each with entry field: src/extension.js, index.js, embed.js
+             D  src/
+                 453  embed.js      # entry point for the npmcdn bundle
+                1139  example.js    # 39 lines: HelloModel, HelloView, each a derived class
+                 627  extension.js
+                 589  index.js      # few lines, Entry point for the notebook bundle containing custom model definitions.
+                                    # points to example.js
+   
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* python tips, setup and install
+
+  ---  MANIFEST.in
+     creates a MANIFEST, the exact list of files to include in your distribution.
+     the sdist command processes this template, generates a manifest based on
+     its instructions and what it finds in the filesystem. sdist -> "source distribution"
+     
+  from ~/~/s/examples/jupyter/jupyter-widget-example-asDownloaded/MANIFEST.in
+     recursive-include ipywidgetexample/static *.*
+     somehow js/src/extenions.js and index.js end up in ipywidgetexample/static/
+     some separate step must do that
+     then from ipywidgetexample/static/ they end up in the egg? installed?
+     
+
+  from ~/github/bqplot/MANIFEST.in
+        recursive-include bqplot/static *.*
+        include bqplot/map_data/*.json
+
+*------------------------------------------------------------------------------------------------------------------------
+* futher anatomy of ipywidgetexample (26 jul 2016)
+
+  cd ~/s/examples/jupyter/jupyter-widget-example/
+  bumped minor version number in ipy7widgetexaple/_version.py
+  pip -v install -e .
 
 *------------------------------------------------------------------------------------------------------------------------
 * bqplot: another example of ipywidgets, allegedly with the same structure as hello world (25 jul 2016)
@@ -140,6 +261,24 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
      
    cd ~/github/bqplot/examples
    jupyter notebook
+
+    --- which files change with build & install?
+      cd ~/github/bqplot/
+      touch timestamp
+      pip install -e .
+      find . -newer timestamp 
+          ./bqplot/static/extension.js
+          ./bqplot/static/index.js
+          ./bqplot/static/index.js.map
+          ./bqplot.egg-info/dependency_links.txt
+          ./bqplot.egg-info/PKG-INFO
+          ./bqplot.egg-info/requires.txt
+          ./bqplot.egg-info/SOURCES.txt
+          ./bqplot.egg-info/top_level.txt
+          ./js/dist/index.js
+          ./js/dist/index.js.map
+          ./js/node_modules
+
 *------------------------------------------------------------------------------------------------------------------------
 * jupyter-widget, ipywidgets:  directory structure
 
@@ -181,6 +320,16 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
             extension.js: seems to be instructions for require to load nbextensions
             index.js:  lots of functions for style, d3, __webpack_require__(i) function calls
             index.js.map: not sure
+
+     build/lib/ipywidgetexample:
+          __init__.py
+          _version.py
+          example.py
+          static
+            extension.js
+            index.js
+            index.js.map
+
 
 *------------------------------------------------------------------------------------------------------------------------
 * jupyter-widget-example (24 jul 2016)
