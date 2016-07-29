@@ -137,6 +137,62 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 
    put all 519 files for ENCSR000DBY from PIQ on whovian here:
 
+  --- proposal
+
+     Cory and I came up with this, for your review.  It is presented here
+     in transposed form, since 19 columns are easier to assess when
+     transposed into 19 rows.  Some notes on the columns are found below.
+     
+     - Paul
+                           row 1       row 2       row 3       row 4      row 5
+                                                 =====       =====       =====       =====      =====
+     
+     chrom                  chr1        chr1        chr1        chr1        chr1
+     motifStart            15050       44200      109353      113212      170671
+     motifEnd              15061       44211      109364      113223      170682
+     motifName          MA0002.2    MA0002.2    MA0002.2    MA0002.2    MA0002.2
+     normalizedScore   0.0000000   0.4233021   0.6320342   1.0000000   0.1071845
+     strand                    -           -           -           +           -
+     footprintStart         <NA>        <NA>        <NA>        <NA>        <NA>
+     footprintEnd           <NA>        <NA>        <NA>        <NA>        <NA>
+     motifLength              12          12          12          12          12
+     footprintLength        <NA>        <NA>        <NA>        <NA>        <NA>
+     sampleID        ENCSR000DBY ENCSR000DBY ENCSR000DBY ENCSR000DBY ENCSR000DBY
+     method                  piq         piq         piq         piq         piq
+     provenance       minid.XXXX  minid.XXXX  minid.XXXX  minid.XXXX  minid.XXXX
+     score1             9.671067   10.098560   10.049386   10.323649    9.437782
+     score2           -1.0370301  -0.9215501  -0.8156147  -0.9875232  -0.9419930
+     score3          -0.05261156  1.45767722  2.40180208  4.11611185  0.60521606
+     score4            0.5007372   0.5125384   0.5299446   0.5083878   0.5040531
+     score5                 <NA>        <NA>        <NA>        <NA>        <NA>
+     score6                 <NA>        <NA>        <NA>        <NA>        <NA>
+     
+     motifStart, motifEnd, footprintStart, footprintEnd: some methods report all 4.  piq reports only the motif
+
+     normalizedScore: a sensible algorithm will be figured out.  In
+     this example, I add piq’s four independent scores, then
+     normalized the sum.  Silly, but adequate as a placeholder.
+
+     provenance: a BDDS minid, perhaps pointing at an archived docker
+     image, with input data and run-time parameters
+
+     score1-6: enough slots to hold any number of scores, each with a
+     method-specific meaning.  piq has four scores, the most we have
+     yet seen.  A description of what these per-method scores mean
+     will need to be maintained separately.
+
+     not present here: mapping of transcription factor gene symbol,
+     possibly dimers or …, will be kept in another table.
+
+     The first six columns recapitulate the BED format.
+
+     My next step will be to fill a test database table with
+     chromosome 22 data from all three of our current methods.  I hope
+     to put them, and an igv.js genome track viewer into a jupyter
+     notebook for everyone to examine.
+
+  
+
 *------------------------------------------------------------------------------------------------------------------------
 * recap:  run gemini jupyter notebook on whovian, display on laptop (28 jul 2016)
 
@@ -262,7 +318,10 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 * igv.js for jupyter (27 jul 2016)
 
-  pip install -i https://testpypi.python.org/pypi igv
+  pip install -i https://testpypi.python.org/pypi igv    # failed likely due to confused 2.7/3.5 pythons & pips
+
+   so thorin proposes this:
+      conda install -c igv igv
 
   jupyter nbextension install --py igv
   jupyter nbextension enable --py igv
