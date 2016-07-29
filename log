@@ -95,10 +95,140 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 * top
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+* standardize footprint schema, seccond lookat cory's piq output  (28 jul 2016)
+
+   cd ~/s/data/postgres-fill/piq/try1
+
+   go.R
+   
+   --- files from cory
+   directory <- "/local/Cory/for_Paul/piq_out2"
+   files <- dir(directory, pattern=".*.bed")
+
+   MA00022RUNX1-style names to be replaced by MA00022.01, using
+       whovian: /local/Cory/for_Paul/all_motifs.meme
+
+   mapping: 
+
+   put all 519 files for ENCSR000DBY from PIQ on whovian here:
+
 *------------------------------------------------------------------------------------------------------------------------
+* recap:  run gemini jupyter notebook on whovian, display on laptop (28 jul 2016)
+
+   cd ~/local/src/    # /local/pshannon/src
+   latest anaconda supports "jupyter notebook" command
+
+   type -a jupyter # jupyter is /local/pshannon/anaconda3/bin/jupyter
+
+   3 customizations made in my ~/.jupyter/jupyter_notebook_config.py
+
+   gemini for python 2.7 installed via big script into
+
+    /local/phsannon/src/gemini basics.ipynb
+
+     import sys, os
+     sys.path.append("/local/pshannon/gemini/anaconda/lib/python2.7/site-packages")
+     from gemini import GeminiQuery
+     db = "../gemini/sampleData/learnSQL.db"
+     os.path.isfile(db)
+     gq = GeminiQuery(db)
+     gq.run("select name from samples")
+     for row in gq:
+       print row
+
+      John
+      Bob
+      Mary
+      Sue
+
 *------------------------------------------------------------------------------------------------------------------------
+* install anaconda on whovian (28 jul 2016)
+
+   downloaded to macbook from https://www.continuum.io/downloads
+     425991075 Jul 28 12:17 Anaconda3-4.1.1-Linux-x86_64.sh
+
+   scp  Anaconda3-4.1.1-Linux-x86_64.sh pshannon@whovian:/local/pshannon/src
+   whovian, cd /local/pshannon/src
+   bash Anaconda3-4.1.1-Linux-x86_64.sh
+
+   PATH="/local/pshannon/anaconda3/bin:$PATH"
+
+   --- configure so that it may be reached from macbook
+     on whovian:
+       jupyter notebook --generate-config
+       Writing default config to: /users/pshannon/.jupyter/jupyter_notebook_config.py
+
+   --- relaxed configuration on whovian
+     c.NotebookApp.ip = '*'
+     c.NotebookApp.open_browser = False
+     c.NotebookApp.port = 9999
+
 *------------------------------------------------------------------------------------------------------------------------
+* test & learn gemini on whovian (28 jul 2016)
+
+   cd /local/pshannon/gemini-examples/intro/
+   on whovian (28 jul 2016): cd /local/pshannon/gemini-examples/intro
+   reading: 
+     https://gist.githubusercontent.com/arq5x/9e1928638397ba45da2e/raw/5dd52cc3b49a80ce7c6daf4ba1d8f82565b0fb97/gemini-intro.sh
+
+   --- get data
+     curl https://s3.amazonaws.com/gemini-tutorials/learnSQL.db > learnSQL.db
+     curl https://s3.amazonaws.com/gemini-tutorials/learnSQL2.db > learnSQL2.db
+     curl https://s3.amazonaws.com/gemini-tutorials/chr22.VEP.vcf > chr22.VEP.vcf
+     curl https://s3.amazonaws.com/gemini-tutorials/trio.ped > trio.ped
+
+   --- the result
+  2563155 Jul 24 12:29 chr22.VEP.vcf
+     2048 Jul 24 12:28 learnSQL.db
+     3072 Jul 24 12:29 learnSQL2.db
+      154 Jul 24 12:29 trio.ped
+
+   ---- try out command line access
+      PATH=/Users/paul/source/gemini/tools/bin:$PATH
+      gemini query -q "SELECT name FROM samples" learnSQL.db
+        John
+        Bob
+        Mary
+        Sue
+
+
+
 *------------------------------------------------------------------------------------------------------------------------
+* install gemini on whovian (27 jul 2016)
+
+  ---- now try manual installation, so that separately installed python27 for jupyter can see it
+    
+    system default /usr/bin/python is 2.7.5
+    cd ~/github/gemini
+    /usr/bin/pip install --install-option="--prefix=/users/pshannon/pylibs" SQLAlchemy
+    /usr/bin/python setup.py build_ext --inplace
+    
+    export PYTHONPATH="/users/pshannon/pylibs/lib64/python2.7/site-packages"
+    export PYTHONPATH="/local/pshannon/gemini/anaconda/lib/python2.7/site-packages"
+    
+
+  --- install using 
+  cd /local/pshannon/gemini
+  wget https://raw.github.com/arq5x/gemini/master/gemini/scripts/gemini_install.py
+  nohup python gemini_install.py /local/pshannon /local/pshannon/gemini
+
+   ...
+   Finished: gemini, tools and data installed
+    Tools installed in:
+     /local/pshannon
+      NOTE: be sure to add /local/pshannon/bin to your PATH.
+   Data installed in:
+       /local/pshannon/gemini
+    NOTE: Install data files for GERP_bp & CADD_scores (not installed by default).
+
+   /local/pshannon/bin:
+     lrwxrwxrwx. 1 pshannon pricelab   29 Jul 27 17:02 gemini -> ../gemini/anaconda/bin/gemini
+     lrwxrwxrwx. 1 pshannon pricelab   28 Jul 27 17:02 gemini_conda -> ../gemini/anaconda/bin/conda
+     lrwxrwxrwx. 1 pshannon pricelab   26 Jul 27 17:02 gemini_pip -> ../gemini/anaconda/bin/pip
+     lrwxrwxrwx. 1 pshannon pricelab   29 Jul 27 17:02 gemini_python -> ../gemini/anaconda/bin/python
+     lrwxrwxrwx. 1 pshannon pricelab   29 Jul 27 17:02 grabix -> ../gemini/anaconda/bin/grabix
+
+
 *------------------------------------------------------------------------------------------------------------------------
 * igv.js for jupyter (27 jul 2016)
 
@@ -153,6 +283,76 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
   jupyter notebook
   
 *------------------------------------------------------------------------------------------------------------------------
+* R tips: tryCatch, to display error without stopping
+
+   for (i in 1:5) tryCatch(read.table("xasdf"), error=function(e) print(e))
+   
+*------------------------------------------------------------------------------------------------------------------------
+* install R 3.3.1 on whovian (25 jul 2016)
+
+  cd ~/src
+  curl -O https://cran.r-project.org/src/base/R-3/R-3.3.1.tar.gz
+  tar zxf R-3.3.1.tar.gz 
+  cd R-3.3.1
+
+   ./configure --prefix=/users/pshannon/localInstall/ --with-readline=no --with-x=no
+  failed with incorrect JAVA_HOME
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* build emacs from source on whovian (25 jul 2016)
+
+  cd ~/src
+  curl -O ftp://ftp.gnu.org/pub/gnu/emacs/emacs-24.5.tar.gz   # 59,216,034
+
+   cd /users/pshannon/src/emacs-24.5
+   mkdir ~/localInstall
+   ./configure --prefix=/users/pshannon/localInstall/ --with-x-toolkit=no --with-xpm=no --with-jpeg=no --with-gif=no --with-tiff=no
+   make
+   make install
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* start looking at cory's piq output, in preparation for a big single-schema footprint postgres database (25 jul 2016)
+
+   cd ~/s/data/postgres-fill/piq/
+
+   put all 519 files for ENCSR000DBY from PIQ on whovian here:
+
+   whotivan:/local/Cory/for_Paul/piq_out
+
+   They are still downloading, so give them at least 10 minutes.  I
+   need to get you samples for HINT and Wellington, but they should
+   actually be the same that you have, just an individual file name
+   (i.e. ENCSR000DBY.bam) for each one.
+
+   cd /~s/data/postgres-fill/piq
+   ls -1 /local/Cory/for_Paul/piq_out/ | wc -l  # 162
+
+   cd ~/s/data/postgres-fill/piq/try0
+   cp /local/Cory/for_Paul/piq_out/MA04961MAFK.ENCSR000DBY.bed .
+   wc -l MA04961MAFK.ENCSR000DBY.bed  # 86205 
+
+   gibberish starting at line 38340
+  
+
+*------------------------------------------------------------------------------------------------------------------------
+* python tip: list imported modules
+
+  import sys;
+  sys.modules.keys()
+  
+*------------------------------------------------------------------------------------------------------------------------
+* python tip, jupyter tip, notebook tip: are jupyter widgets installed? (24 jul 2016)
+
+   import ipywidgets as widgets
+   widgets.Widget.widget_types.values()
+
+*------------------------------------------------------------------------------------------------------------------------
+
+
+
+
 * python tip: list imported modules
 
   import sys;
@@ -388,6 +588,7 @@ class HelloWorld(widgets.DOMWidget):
 * gemini tutorial (24 jul 2016)
 
    cd ~/s/examples/gemini/intro/
+   on whovian (28 jul 2016): cd /local/pshannon/gemini-examples/intro
    reading: 
      https://gist.githubusercontent.com/arq5x/9e1928638397ba45da2e/raw/5dd52cc3b49a80ce7c6daf4ba1d8f82565b0fb97/gemini-intro.sh
 
