@@ -120,6 +120,24 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
    Vol. 44, No. 1 (Feb., 1975), pp. 1-21
 
 *------------------------------------------------------------------------------------------------------------------------
+* load piq footprints into psql (29 jul 2016)
+
+   cd ~/s/data/postgres-fill/piq/try1/
+
+
+   write.table(tbl, file="current.tsv", row.names=FALSE, col.names=FALSE, quote=FALSE, sep="\t", na="NULL")
+   \copy footprints from 'current.tsv' delimiter E'\t' CSV NULL as 'NULL';
+
+    bash> psql
+    pshannon> select * from footprints limit 3;
+              select chrom, motifstart, motifend, footprintstart from footprints limit 3;
+              chrom | motifstart | motifend | footprintstart 
+             -------+------------+----------+----------------
+              chr1  |      15050 |    15061 |               
+              chr1  |      44200 |    44211 |               
+
+
+*------------------------------------------------------------------------------------------------------------------------
 * standardize footprint schema, seccond lookat cory's piq output  (28 jul 2016)
 
    cd ~/s/data/postgres-fill/piq/try1
