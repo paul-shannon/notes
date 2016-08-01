@@ -136,7 +136,11 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
               chr1  |      15050 |    15061 |               
               chr1  |      44200 |    44211 |               
 
+   --- 620p Friday (29 jul 2016)
 
+     tail -f ~/s/data/postgres-fill/piq/try1/nohup.out
+     look for errors when done, then improve motif.name.map, then rerun those samples
+   
 *------------------------------------------------------------------------------------------------------------------------
 * standardize footprint schema, seccond lookat cory's piq output  (28 jul 2016)
 
