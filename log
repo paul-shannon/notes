@@ -105,7 +105,41 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+* create index on postgres footprint database on whovian (31 jul 2016)
+
+  --- something odd about chr22: no footprints in first 10M bases
+
+    select count(*) from footprints;   121,422,779
+    select count(*) from footprints where chrom='chr22' and motifstart <  1000000;  # 16 seconds, 0 records
+    select count(*) from footprints where chrom='chr22' and motifstart <  10 000 000; # 0
+    select count(*) from footprints where chrom='chr22' and motifstart <  10586626; # 3475
+
+
 *------------------------------------------------------------------------------------------------------------------------
+* after nearly complete fill of piq data on whovian (29 jul 2016)
+
+  cd ~/s/data/postgres-fill/piq/try1/
+
+    --- 620p Friday (29 jul 2016)
+      tail -f ~/s/data/postgres-fill/piq/try1/nohup.out
+      look for errors when done, then improve motif.name.map, then rerun those samples
+    
+
+  select count(*) from footprints;  #  118,866,200
+  select count(*) from footprints where chrom='chr22';  #  1,566,677
+ 
+   grep error nohup.out 
+ [1] error processing /local/Cory/for_Paul/piq_out2/MA00631Nkx25.ENCSR000DBY.bed
+ [1] error processing /local/Cory/for_Paul/piq_out2/MA01222NKX32.ENCSR000DBY.bed
+ [1] error processing /local/Cory/for_Paul/piq_out2/MA01242Nkx31.ENCSR000DBY.bed
+ [1] error processing /local/Cory/for_Paul/piq_out2/MA01491EWSR1FLI1.ENCSR000DBY.bed
+ [1] error processing /local/Cory/for_Paul/piq_out2/MA05031Nkx25var2.ENCSR000DBY.bed
+ [1] error processing /local/Cory/for_Paul/piq_out2/MA06211mixa.ENCSR000DBY.bed
+ [1] error processing /local/Cory/for_Paul/piq_out2/MA06721NKX23.ENCSR000DBY.bed
+ [1] error processing /local/Cory/for_Paul/piq_out2/MA06731NKX28.ENCSR000DBY.bed
+ [1] error processing /local/Cory/for_Paul/piq_out2/MA06741NKX61.ENCSR000DBY.bed
+ [1] error processing /local/Cory/for_Paul/piq_out2/MA06751NKX62.ENCSR000DBY.bed
+
 *------------------------------------------------------------------------------------------------------------------------
 * lasso for chia (29 jul 2016)
 
