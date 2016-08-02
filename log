@@ -100,7 +100,119 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+* notes on ipywidgets (1 aug 2016)
+
+  https://github.com/ipython/ipywidgets/blob/master/ipywidgets/widgets/widget.py
+    Widget class subclasses LoggingConfigurable)
+      has these traits:
+        _model_module = Unicode('jupyter-js-widgets', help="""A requirejs module name
+           in which to find _model_name. If empty, look in the global registry.""").tag(sync=True)
+        _model_name = Unicode('WidgetModel', help="""Name of the backbone model
+           registered in the front-end to create and sync this widget with.""").tag(sync=True)
+        _view_module = Unicode(None, allow_none=True, help="""A requirejs module in which to find _view_name.
+           If empty, look in the global registry.""").tag(sync=True)
+        _view_name = Unicode(None, allow_none=True, help="""Default view registered in the front-end
+           to use to represent the widget.""").tag(sync=True)
+        comm = Instance('ipykernel.comm.Comm', allow_none=True)
+
+    has subclass DOMWidget
+      https://github.com/ipython/ipywidgets/blob/master/ipywidgets/widgets/domwidget.py
+      which has these additional traits:
+        _dom_classes
+        layout
+  
+   import ipywidgets as widgets
+   from traitlets import Unicode, CInt
+   class HelloWidget(widgets.DOMWidget):
+     _view_name = Unicode('HelloView').tag(sync=True)  // widget name
+     _view_module = Unicode('hello').tag(sync=True)    // javscript module name, define'd below in a require.js statement
+
+      // define a module called hello, which loads the jupter-js-widgets modules, 
+      // after which an anonymous function is called with an instance (?) of each required module,
+      // as its arg.  this function defines the operation of the new module, returning a few public 
+      // member functions
+      // https://www.sitepoint.com/understanding-requirejs-for-effective-javascript-module-loading/
+      
+    define('hello', ["jupyter-js-widgets"], function(widgets) {});
+
+   --- the DOMWidgetView class
+     defined  in ./jupyter-js-widgets/src/widget.ts  // a typescript file
+     the hello module provides HelloView, a (typescript-mediated?) subclass (extension) of DOMWidgetView
+     
+      // The IPython widget framework front end relies heavily on Backbone.js, an MVC
+      // (model view controller) framework. Widgets defined in the back end are automatically
+      // synchronized with generic Backbone.js models in the front end. The traitlets are added to the
+      // front end instance automatically on first state push. The _view_name trait  defined
+      // above is used by the widget framework to create the corresponding Backbone.js view and link
+      // that view to the model.
+
+      // thus the "HelloView" name in the ctor of HelloWidget allows backbone to 
+      define('hello', ["jupter-js-widgets"], function(widgets){
+        var HelloView = widgets.DOMWidgetView.extend({
+            render: function(){
+               this.value_changed();
+               this.model.on('change:value', this.value_changed, this);
+               },
+             value_changed: function(){
+                   // this.el: the DOM element of this view
+                   // DOMWidgetView, frontend, defined in javascript is backbone-associated with
+                   // the python HelloWidget (a DOMWidget), which is an MVC model
+                this.el.textContent = this.model.get('value');
+                },
+             });
+        return{
+           HelloView: HelloView
+           };
+        })
+
+
+    --- now the spinner
+
+     from traitlets import CInt
+     class SpinnerWidget(widgets.DOMWidget):
+        _view_name = Unicode('SpinnerView').tag(sync=True)
+        _view_module = Unicode('spinner').tag(sync=True)
+        value = CInt().tag(sync=True)
+
+     %%javascript
+     requirejs.undef('spinner');
+     define('spinner', ["jupyter-js-widgets"], function(widgets) {
+         var SpinnerView = widgets.DOMWidgetView.extend({
+            render: function() { 
+               var that = this;
+               this.$input = $('<input />');
+               this.$el.append(this.$input);
+               this.$spinner = this.$input.spinner({
+                    // in these two anonymous functions, "this" is the event, not the SpinnerView, to which "that" is a reference
+                  change: function(event, ui) {that.handle_spin(that.$spinner.spinner('value'));},
+                  spin: function(event, ui)   {that.handle_spin(ui.value);} //ui.value is the new value of the spinner
+                  });
+               this.value_changed();
+               this.model.on('change:value', this.value_changed, this);
+               }, // render
+            value_changed: function()      {this.$spinner.spinner('value', this.model.get('value'));},
+            handle_spin:   function(value) {this.model.set('value', value); this.touch();},
+            });
+         return {
+             SpinnerView: SpinnerView
+         };
+     });
+
+
+    
 *------------------------------------------------------------------------------------------------------------------------
+* jason grout and sylvain corlay suggest notebook widgets to learn on (1 aug 2016)
+
+  --- email (27 jul 2016)
+     
+   https://github.com/ipython/ipywidgets/blob/master/docs/source/examples/Custom%20Widget%20-%20Hello%20World.ipynb
+   https://github.com/ipython/ipywidgets/blob/master/docs/source/examples/Date%20Picker%20Widget.ipynb
+
+
+  --- made a local copy of the first, to trace, track and debug
+    cd /s/examples/jupyter/customWidgetFromIpyWidgetsGithub
+    cp  ~/github/ipywidgets/docs/source/examples/Custom\ Widget\ -\ Hello\ World.ipynb spinner.ipynb
+
 *------------------------------------------------------------------------------------------------------------------------
 * chia, asthma
 
@@ -436,6 +548,7 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 
    python 2: execfile("./filename") 
    python 3: exec(open("./filename").read())
+
 *------------------------------------------------------------------------------------------------------------------------
 * python tips: traitlets
 
