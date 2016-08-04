@@ -100,6 +100,164 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+* fill dani's hint footprints into postgres (3 aug 2016)
+
+  cd ~/s/data/postgres-fill/hint/dani
+  gdc <- getDNAClient("mm10")
+  tbl <- read.table("sample_ftpts.bed", sep="\t")
+  tbl[43,]:  chr1 158464280 158464318  58 MA0597.1 21 29  + 11.44740 7.67e-06   CTGCCCTCA  NA
+  getSequenceByLoc(gdc, "chr1", 158464280, 158464318)          "CAACTCCCACCTGCGACTGCCCTCAGACATGGCGATCTG"
+                                                                                    |       |
+                                                                                    21      29
+     
+  
+*------------------------------------------------------------------------------------------------------------------------
+* put mm10 gtf into postgres on whovian (3 aug 2016)
+
+  cd ~/s/data/postgres-fill/gtf/mm10
+  ln -s /proj/price4/dbergey/postgres_prep/Mus_musculus.GRCm38.85.chr.gtf mm10.gtf
+   1,613,252  lines
+   
+  tbl <- read.table("mm10.gtf", sep="\t", nrows=5, as.is=TRUE) 
+  dim(tbl) # [1] 5 9
+  --> how to tame column 9?  code included here, not saved in script?
+  
+  see below: "* put ensembl gtf file into postgres?  (3 may 2016)"
+
+   cd ~/s/data/public/ensembl/
+   tbl <- read.table("Homo_sapiens.GRCh38.84.chr.gtf", sep="\t", nrows=5, as.is=TRUE)  # [1] 5 9
+  V1     V2         V3    V4    V5 V6 V7 V8    V9 is a mishmash
+1  1 havana       gene 11869 14409  .  +  .
+2  1 havana transcript 11869 14409  .  +  .
+3  1 havana       exon 11869 12227  .  +  .
+4  1 havana       exon 12613 12721  .  +  .
+5  1 havana       exon 13221 14409  .  +  .
+
+
+   --- taming the V9 column
+    c9 <- tbl$V9
+    length(c9) # [1] 2568100
+    c9[1]
+    c9.toks <- strsplit(c9, "; ")
+    all.toks <- unlist(c9.toks)
+    length(all.toks) # [1] 47782409
+    head(all.toks)
+        [1] "gene_id ENSG00000223972"                         "gene_version 5"
+        [3] "gene_name DDX11L1"                               "gene_source havana"
+        [5] "gene_biotype transcribed_unprocessed_pseudogene" "havana_gene OTTHUMG00000000961"
+    all.tok.toks <- strsplit(all.toks, " ")
+    length(all.tok.toks) # [1] 47782409
+    c9.titles <- lapply(all.tok.toks, "[", 1)
+    length(unique(unlist(c9.titles))) # [1] 22
+    unique(unlist(c9.titles))
+       [1] "gene_id"                   "gene_version"              "gene_name"                 "gene_source"
+       [5] "gene_biotype"              "havana_gene"               "havana_gene_version"       "transcript_id"
+       [9] "transcript_version"        "transcript_name"           "transcript_source"         "transcript_biotype"
+      [13] "havana_transcript"         "havana_transcript_version" "tag"                       "transcript_support_level"
+      [17] "exon_number"               "exon_id"                   "exon_version"              "ccds_id"
+      [21] "protein_id"                "protein_version"
+
+    c9.titles.unique <- unique(unlist(c9.titles))
+    save(tbl, c9.titles.unique, file="column9.parse.inputs.RData")
+    print(load("list.of.parsedColumn9s.RData"))
+    print(load("column9.parse.inputs.RData"))
+     # [1] "tbl"              "c9.titles.unique"
+    dim(tbl); dim(tbl.wide)
+      # [1] 2568100       9
+      # [1] 2568100      22
+   tbl2 <- cbind(tbl, tbl.wide)
+   dim(tbl2)  # [1] 2568100      31
+   colnames(tbl2)[1:9] <- c ("chr", "annotation", "moleculeType", "start", "end", "score", "strand", "frame", "attribute")
+   tbl2$chr <- paste("chr", tbl2$chr, sep="")
+   reordered.cols <- c("chr",                      "start",
+                       "end",                      "score",                    "strand",                   "frame",
+                       "annotation",               "moleculeType",
+                       "gene_id",                  "gene_version",             "gene_name",
+                       "gene_source",              "gene_biotype",             "havana_gene",               "havana_gene_version",
+                       "transcript_id",            "transcript_version",       "transcript_name",           "transcript_source",
+                       "transcript_biotype",       "havana_transcript",        "havana_transcript_version", "tag",
+                       "transcript_support_level", "exon_number",              "exon_id",                   "exon_version",
+                       "ccds_id",                  "protein_id",               "protein_version",           "annotation")
+
+   tbl3 <- tbl2[, reordered.cols]
+   dim(tbl3)  # 2568100      31
+   save(tbl3, file="tbl.ensembl.gtf.RData")
+
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* install & deploy R kernel for jupyter on whovian (2 aug 2016)
+
+  conda install -c r r-essentials
+
+*------------------------------------------------------------------------------------------------------------------------
+* install psycopg on whovian, the most popular python postgres library (2 aug 2016)
+
+   needs to have pg_config to do pip install
+   export PATH=/usr/pgsql-9.4/bin:$PATH
+   check:
+   type pg_config  # pg_config is hashed (/usr/pgsql-9.4/bin/pg_config)
+   pip install psycopg2
+
+   --- test, in ipython shell
+     from psycopg2 import *
+     conn = connect("dbname=pshannon user=pshannon")
+     cur = conn.cursor()
+     cur.execute("select count(*) from footprints where chrom='chr22'")
+     cur.fetchone()  # Out[7]: (1591259,)
+
+
+  ---- test 2: get the first 4 footprints from chr22, return into pandas DataFrame
+     cur.execute("select * from footprints where chrom='chr22' and motifstart < 10510285")
+     tbl = DataFrame(cur.fetchall())   # colnames missing
+
+   --- all in one line, colnames preserved
+     pd.read_sql_query("select * from footprints where chrom='chr22' and motifstart < 10510285", conn)
+     coi = "chrom, motifstart, motifname, normalizedscore, strand"
+     query = "select %s  from footprints where chrom='chr22' and motifstart < 10510285" % coi
+     tbl = pd.read_sql_query(query,  conn)
+         chrom  motifstart motifname  normalizedscore strand
+      0  chr22    10510185  MA0151.1         0.811947      +
+      1  chr22    10510200  MA0158.1         0.258267      +
+      2  chr22    10510282  MA0494.1         0.496226      -
+      3  chr22    10510277  MA0740.1         0.349608      -
+     
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* access postgres footprints on whovia from whovian notebook (2 aug 2016)
+
+  version 2.6.2 http://initd.org/psycopg/
+   
+*------------------------------------------------------------------------------------------------------------------------
+* first footprint notebook on whovian (2 aug 2016)
+
+  cd ~/github/notebooks
+  pip install -i https://testpypi.python.org/pypi igv
+
+   --- these failed since i have no access to /usr/local/share
+     jupyter nbextension install --py igv
+     jupyter nbextension enable --py igv
+
+   --- so tried this
+     jupyter nbextension install --prefix ~/jupyter.extensions --py igv
+     jupyter nbextension enable --py igv    # - Validating: OK
+     
+
+
+     
+     
+
+
+*------------------------------------------------------------------------------------------------------------------------
 * notes on ipywidgets (1 aug 2016)
 
   https://github.com/ipython/ipywidgets/blob/master/ipywidgets/widgets/widget.py
@@ -258,7 +416,15 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 * create index on postgres footprint database on whovian (31 jul 2016)
 
-  --- something odd about chr22: no footprints in first 10M bases
+  cd ~/s/data/postgres-fill/piq/try1
+  index.sql:  create index test_index on footprints (chrom, motifStart)
+  date; psql -f index.sql; date  #  16:48:43 -> 17:26:33  (38 minutes
+
+   select count(*) from footprints where chrom='chr22' and motifstart <  10586626; # 3475
+   before index: 16 seconds
+          after: instantly!
+
+  --- something odd about chr22: no footprints in first 10M bases  (cory says this is also true for HINT)
 
     select count(*) from footprints;   121,422,779
     select count(*) from footprints where chrom='chr22' and motifstart <  1000000;  # 16 seconds, 0 records
@@ -352,7 +518,7 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
      
      - Paul
                            row 1       row 2       row 3       row 4      row 5
-                                                 =====       =====       =====       =====      =====
+                           =====       =====       =====       =====      =====
      
      chrom                  chr1        chr1        chr1        chr1        chr1
      motifStart            15050       44200      109353      113212      170671
@@ -542,6 +708,7 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
      jupyter nbextension enable --py --user pythreejs
 
   --- try it out
+
 
 *------------------------------------------------------------------------------------------------------------------------
 * python tips execfile
