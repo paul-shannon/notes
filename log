@@ -103,10 +103,75 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+* bullitt foundation grant inquiry questions
+
+  http://www.bullitt.org/wp-content/uploads/2016/04/2.0-Overview-Of-Grant-Inquiry-And-Grant-Proposal-Application.pdf
+
 *------------------------------------------------------------------------------------------------------------------------
+* GenomicRanges, granges, findOverlaps (4 aug 2016)
+
+   from ~/github/snpFoot/R/snpFoot.R
+
+   gr.fp <- with(tbl.fpSub, GRanges(seqnames=chr, IRanges(start=mfpStart, end=mfpEnd)))
+   gr.snp <- GRanges(seqnames=snp.chromosome, IRanges(start=snp.loc-padding, end=snp.loc+padding))
+   tbl.overlaps <- as.data.frame(findOverlaps(gr.fp, gr.snp))
+   snp <- rep(-1, length(gr.fp))
+   snp[tbl.overlaps$queryHits] <- snp.loc[tbl.overlaps$subjectHits]
+
+   tbl.fpSub$snp <- snp
+   result <- subset(tbl.fpSub, snp != -1)
+   result[, c("chr", "mfpStart", "mfpEnd", "motifStart", "motifEnd", "sequence", "motifName", "snp", "tfsMatched")]
+   
+
 *------------------------------------------------------------------------------------------------------------------------
+* sed tips
+
+  --- replace two tabs with one
+
+    sed -E $'s/\t\t/\t/g' junk   # "ANSI-C" quoting
+
 *------------------------------------------------------------------------------------------------------------------------
+* cory's hint example, fimo output from chr22, single HINT bed file ENCSR000DBY (4 aug 2016)
+
+  goal: combine fimo output with HINT output, fit it into the evolving ensembl format (developed
+        first with piq, see below)
+
+  whovian, cd ~/s/data/postgres-fill/hint/combineWithFimo
+
+  --- email from cory("HINT sample", 4 aug 2016)
+   I've put the fimo output from chr22 and a single bed file from hint (ENCSR000DBY) on whovian here:
+      /local/Cory/for_Paul/hint_sample/
+
+   The FIMO output is somewhat large but the HINT output is small. Let's discuss what makes the most sense in terms of
+   doing the intersect of these file.
+
+   --- first look
+      426467056 Aug  4 09:10 22.fimo.txt
+       20030824 Jun 21 16:23 ENCSR000DBY.hint.bed
+
+   --- two tabs in the fimo output, due to qScore not being reported
+    sed -E $'s/\t\t/\t/g' 22.fimo.txt > chr22.fimo.txt
+
+
+  ~/s/data/postgres-fill/hint/combineWithFimo/go.R
+     runTests <- function()
+     explore <- function()   # initial explorations
+     combineFootprintsAndFimo <- function(tbl.footprints, tbl.fimoMotifs, chromosome)  # the new workhorse
+     test.combineFootprintsAndFimo <- function()  # runs 10 footprints from hint chr22
+     run.combineFootprintsAndFimo <- function()   # runs all of hint chr22
+
+
 *------------------------------------------------------------------------------------------------------------------------
+* title ideas for feaven's poster (4 aug 2016)
+
+   Scientific Wellness: do black lives matter?
+   Exploratory data analysis, event-driven programming and lasso regression
+   applied to health inequities in south Seattle.
+
+  scientific wellness: do black lives matter?
+  exploratory data analysis, event-driven programming and lasso regression applied to health inequities in south Seattle
+  
+   
 *------------------------------------------------------------------------------------------------------------------------
 * fill dani's hint footprints into postgres (3 aug 2016)
 
@@ -1582,7 +1647,7 @@ system.time(lapply(1:10, function(i) f(bamfileNames[i], motifNumbers[i])))
 system.time(mclapply(1:10, function(i) f(bamfileNames[i], motifNumbers[i]), mc.cores = cores))
 
 
-#——— demo2.R
+# demo2.R
 printf <- function(...) print(noquote(sprintf(...)))
 printf("executing demo2.R")
 args <- commandArgs(trailingOnly=TRUE)
@@ -1593,7 +1658,7 @@ motifNumber <- as.integer(args[2])
 printf("demo.R recieved these args: bamfileName '%s' and motifNumber %d", bamfileName, motifNumber)
 printf("sleeping %d seconds", motifNumber)
 Sys.sleep(motifNumber)
-printf("sleep complete”)
+printf("sleep complete)
 *------------------------------------------------------------------------------------------------------------------------
 * get grunt install, grokked and working (12 jul 2016)
 
