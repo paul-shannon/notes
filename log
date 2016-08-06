@@ -98,6 +98,11 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+* baconian and humboldtian science (6 aug 2016)
+
+  ~/Documents/Alexander_von_Humboldt_Humboldtian_Science_and_the.pdf
+   Science in Culture: The Early Victorian Period, susan faye cannon
+
 *------------------------------------------------------------------------------------------------------------------------
 * heatmap of cleveland data, bound for a notebook (5 aug 2016)
 
