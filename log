@@ -99,9 +99,32 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+* heatmap of cleveland data, bound for a notebook (5 aug 2016)
+
+   ~/github/clevelandHighSchool/misc/exampleCode/heatmap.R
+
+  
 *------------------------------------------------------------------------------------------------------------------------
+* jupyter R kernela always dead (5 aug 2016)
+
+   https://github.com/IRkernel/IRkernel/issues/204
+
+   --- these worked for me
+
+    install.packages(c('repr', 'IRdisplay', 'pbdZMQ', 'devtools'))
+    devtools::install_github('IRkernel/IRkernel')
+    IRkernel::installspec()  # to register the kernel in the current R installation
+
 *------------------------------------------------------------------------------------------------------------------------
-*------------------------------------------------------------------------------------------------------------------------
+* mm10 gtf into postgres for dani (5 aug 2016)
+
+  cd ~/s/data/postgres-fill/gtf/mm10
+  createStandardTable.R
+  mm10.gtf -> /proj/price4/dbergey/postgres_prep/Mus_musculus.GRCm38.85.chr.gtf
+     # parsed out all 1,613,247 column nines
+  x <- lapply(tbl$col9, function(col9) parseColumnNine(all.keys, col9))
+  save(x, file="lapplyParseColumnNine.RData")
+  
 *------------------------------------------------------------------------------------------------------------------------
 * bullitt foundation grant inquiry questions
 
@@ -176,6 +199,7 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 * fill dani's hint footprints into postgres (3 aug 2016)
 
   cd ~/s/data/postgres-fill/hint/dani
+
   gdc <- getDNAClient("mm10")
   tbl <- read.table("sample_ftpts.bed", sep="\t")
   tbl[43,]:  chr1 158464280 158464318  58 MA0597.1 21 29  + 11.44740 7.67e-06   CTGCCCTCA  NA
