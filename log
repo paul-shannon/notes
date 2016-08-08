@@ -98,6 +98,102 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+* psql tips
+
+   --- connect to database, drop & create table:
+       \connect fimo;
+       drop table hg38;
+       create table hg38(motifname varchar,
+                         chr varchar,
+                         start int,
+                         endpos int,
+                         strand varchar,
+                         motifscore float,
+                         pval float,
+                         empty char(1),
+                         sequence varchar
+                         );
+   
+
+   --- file file with header
+   \connect fimo;
+   \copy hg38 from 'tiny.txt' delimiter E'\t' CSV header NULL as 'NULL';
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* genome-wide fimo files from Cory (8 aug 2016)
+
+   cd ~/s/data/postgres-fill/fimo
+   
+   dir /local/Cory/for_Paul/fimo_out/*.fimo.txt
+     28672130668 Aug  6 20:02 /local/Cory/for_Paul/fimo_out/GRCh38.fimo.txt
+     26516524484 Aug  6 20:11 /local/Cory/for_Paul/fimo_out/GRm38.fimo.txt
+
+  /local/Cory/for_Paul/fimo_out/GRCh38.fimo.txt
+  
+   head -10 /local/Cory/for_Paul/fimo_out/GRCh38.fimo.txt
+   #pattern name	sequence name	start	stop	strand	score	p-value	matched sequence
+   MA0002.2	10	12880	12890	+	11.4483	6.04e-05		GCTTGTGGCCT
+   MA0002.2	10	18991	19001	-	12.4655	2.73e-05		TTCTGTGGTTC
+   MA0002.2	10	19478	19488	-	13.3448	1.17e-05		TTCTGTGGTTG
+
+   --- the two-tab problem: don't want to sed two 30G files!
+     see if we can fill from 
+     head -10 /local/Cory/for_Paul/fimo_out/GRCh38.fimo.txt > tiny.txt
+
+   createdb -U pshannon fimo
+   psql fimo -f create.sql 
+     DROP TABLE
+     CREATE TABLE
+    psql fimo -f fill.sql   # tiny.txt
+      COPY 9
+
+  --- next problem: the big file is actually 12 files combined, thus 12 header lines,
+     and this bug:
+
+      whovian.fimo> psql -f fill.sql 
+        You are now connected to database "fimo" as user "pshannon".
+        psql:fill.sql:2: ERROR:  invalid input syntax for integer: "start"
+        CONTEXT:  COPY hg38, line 20583881, column start: "start"
+
+     remedy: cory will grep -v start on the file, give me a new one.
+
+*------------------------------------------------------------------------------------------------------------------------
+* psql tips
+
+  psql -U trena --host whovian   # password trena
+  psql -U pshannon               # without --host, and with me linux-logged in as pshannon, no password needed
+  psql -U pshannon <dbname>      # eg, mm10, hg38, footprints
+  list all databases:  \l or \list  [see sample output below]
+  choose database: \c hg38
+  query current database: SELECT current_database();
+  list tables in current database: \dt
+     public | gtf         | table | pshannon
+     public | motifsgenes | table | pshannon
+  create new database 
+  bash> createdb -U pshannon hg38
+  
+   --- 6 aug 2016
+     enhancers.hg38    | pshannon 
+     gtf               | pshannon 
+     gtf-hsapiens-hg38 | pshannon 
+     hg38              | pshannon 
+     lymphoblast       | pshannon 
+     postgres          | postgres 
+     pshannon          | pshannon 
+     template0         | postgres 
+     template1         | postgres 
+     trena             | pshannon 
+     wholeBrain        | pshannon 
+
+   
+  
+*------------------------------------------------------------------------------------------------------------------------
 * baconian and humboldtian science (6 aug 2016)
 
   ~/Documents/Alexander_von_Humboldt_Humboldtian_Science_and_the.pdf
@@ -121,7 +217,177 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
     IRkernel::installspec()  # to register the kernel in the current R installation
 
 *------------------------------------------------------------------------------------------------------------------------
-* mm10 gtf into postgres for dani (5 aug 2016)
+* mm10 gtf into postgres for dani: test (8 aug 2016)
+
+  ~/s/data/postgres-fill/gtf/mm10/quickLook.R
+
+  --- access bug?
+   dbGetQuery(db, query)
+     Error in postgresqlExecStatement(conn, statement, ...) : 
+     RS-DBI driver: (could not Retrieve the result : ERROR:  permission denied for relation gtf
+
+   some combination of these, but maybe especially the last line, required for successful query
+     GRANT select on all tables in SCHEMA public to trena;
+     GRANT connect on database "mm10" to trena;
+     GRANT ALL PRIVILEGES ON TABLE "gtf" to trena;   # needed, but did not suffice
+      grant all on table gtf to trena;                # this made trena user queries on mm10/gtf work
+  
+
+  --- psql
+    psql -U pshannon mm10
+    \dt
+               List of relations
+        Schema | Name | Type  |  Owner   
+       --------+------+-------+----------
+        public | gtf  | table | pshannon
+
+
+  --- from quickLook.R
+
+    library(RPostgreSQL)
+    library(RUnit)
+    db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="mm10", host="whovian")
+    checkTrue(dbExistsTable(db, "gtf"))
+    query <- "select count(*) from gtf"
+    tbl <- dbGetQuery(db, query)
+    checkTrue(tbl[1,1] > 1600000)
+    
+    
+    # a representative query:  find all the protein-coding genes within 1M of mef2c
+    # first find Mef2c
+    tbl <- dbGetQuery(db, "select * from gtf where gene_name='Mef2c' and moleculetype='gene'")
+    checkEquals(dim(tbl), c(1, 30))
+    checkEquals(tbl$chr[1], "chr13")
+    checkEquals(tbl$gene_id[1], "ENSMUSG00000005583")
+    
+    start <- tbl$start[1]
+    checkEquals(start, 83504034)
+    
+    upstream.start <- start - 10^6
+    downstream.start <- start + 10^6
+    # now look up and downstream
+    clause.1 <- "chr='chr13'"
+    clause.2 <- sprintf("start > %d", upstream.start)
+    clause.3 <- sprintf("start < %d", downstream.start)
+    clause.4 <- sprintf("moleculetype='gene'")
+    query <- sprintf("select * from gtf where %s and %s and %s and %s", clause.1, clause.2, clause.3, clause.4)
+    tbl <- dbGetQuery(db, query)
+    checkTrue(nrow(tbl) > 10)
+    checkTrue(all(c("Mir3961", "Mef2c", "C130071C03Rik", "Gm26803") %in% tbl$gene_name))
+  
+
+*------------------------------------------------------------------------------------------------------------------------
+* mm10 gtf into postgres for dani: the database fill (6 aug 2016)
+
+  cd ~/s/data/postgres-fill/gtf/mm10/
+  bash> createdb -U pshannon mm10
+  file exists (from step found just below)  mm10-gtf.tsv
+     mm10-gtf.tsv  1613247 lines, no rownames, no colnames
+
+whovian.mm10> head -1 mm10-gtf.tsv | tr "\t" "\n" | nl
+     1	chr1
+     2	3073253
+     3	3074322
+     4	.
+     5	+
+     6	.
+     7	gene
+     8	ENSMUSG00000102693
+     9	1
+    10	4933401J01Rik
+    11	havana
+    12	TEC
+    13	OTTMUSG00000049935
+    14	1;
+    15	NA
+    16	NA
+    17	NA
+    18	NA
+    19	NA
+    20	NA
+    21	NA
+    22	NA
+    23	NA
+    24	NA
+    25	NA
+    26	NA
+    27	NA
+    28	NA
+    29	NA
+    30	havana
+
+  psql -U pshannon mm10
+  psql -U pshannon mm10 -f fill.sql
+  
+  GRANT select on all tables in SCHEMA public to trena;
+  GRANT connect on database "mm10" to trena;
+  GRANT ALL PRIVILEGES ON TABLE "gtf" to trena;   # needed, but did not suffice
+  grant all on table gtf to trena;                # this made trena user queries on mm10/gtf work
+
+
+
+  but still, from quickLook.R:
+     library(RPostgreSQL)
+     db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="mm10", host="whovian")
+     query <- "select count(*) from gtf"
+     dbGetQuery(db, query)
+  
+     RS-DBI driver: (could not Retrieve the result : ERROR:  permission denied for relation gtf
+
+
+   --- test from whovian
+      library(RPostgreSQL)
+      db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="gtf", host="whovian")
+      db
+      query <- "select count(*) from footprints"
+      dbGetQuery(db, query)
+      dbListTables(db)  # [1] "hg38human"
+      dbGetQuery(db, "select count(*) from hg38human")
+      #    count
+      # 1 2568100
+      colnames(dbGetQuery(db, "select * from hg38human limit 1"))
+ [1] "chr"                       "start"                    
+ [3] "endpos"                    "score"                    
+ [5] "strand"                    "frame"                    
+ [7] "moleculetype"              "gene_id"                  
+ [9] "gene_version"              "gene_name"                
+[11] "gene_source"               "gene_biotype"             
+[13] "havana_gene"               "havana_gene_version"      
+[15] "transcript_id"             "transcript_version"       
+[17] "transcript_name"           "transcript_source"        
+[19] "transcript_biotype"        "havana_transcript"        
+[21] "havana_transcript_version" "tag"                      
+[23] "transcript_support_level"  "exon_number"              
+[25] "exon_id"                   "exon_version"             
+[27] "ccds_id"                   "protein_id"               
+[29] "protein_version"           "annotation"               
+
+  tbl.mef2c <- dbGetQuery(db, "select * from hg38human where gene_name = 'MEF2C'")
+  dim(tbl.mef2c) # [1] 568  30
+  head(tbl.mef2c[, c("chr", "start", "endpos", "moleculetype", "gene_biotype")])
+      chr    start   endpos moleculetype   gene_biotype
+   1 chr5 88717117 88904257         gene protein_coding
+   2 chr5 88717117 88883464   transcript protein_coding
+   3 chr5 88882955 88883464         exon protein_coding
+   4 chr5 88823735 88823930         exon protein_coding
+   5 chr5 88823735 88823788          CDS protein_coding
+   6 chr5 88823786 88823788  start_codon protein_coding
+
+   as.data.frame(table(tbl.mef2c$moleculetype))
+                Var1 Freq
+   1             CDS  190
+   2            exon  235
+   3  five_prime_utr   51
+   4            gene    1
+   5     start_codon   25
+   6      stop_codon   17
+   7 three_prime_utr   15
+   8      transcript   34
+
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* mm10 gtf into postgres for dani: create a full 1.6M row, 30 column data.frame (5,6 aug 2016)
 
   cd ~/s/data/postgres-fill/gtf/mm10
   createStandardTable.R
@@ -129,7 +395,39 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
      # parsed out all 1,613,247 column nines
   x <- lapply(tbl$col9, function(col9) parseColumnNine(all.keys, col9))
   save(x, file="lapplyParseColumnNine.RData")
-  
+
+  --- this is a list of 1-row data.frames, consolidate, then cbind?
+    length(x) # [1] 1613247
+    x3 <- x[1:3]
+    tbl.x3 <- do.call(rbind, x3)  # seems to work
+
+
+   tbl.x <- do.call(rbind, x)
+   dim(tbl.x) # [1] 1613247      22
+
+   --- from createStandardTable.R
+     if(!exists("col9.df.list")){
+        load("lapplyParseColumnNine.RData")
+        col9.df.list <<- x
+        }
+   
+     tbl.col9 <<- do.call(rbind, col9.df.list), -9]  # we already have column 9, read & parsed
+     tbl <- read.table("mm10.gtf", sep="\t", header=FALSE, nrows=-1, stringsAsFactors=FALSE) [, -9]
+     colnames(tbl) <- c("chrom", "annotation",  "moleculeType", "start", "end", "score", "strand", "frame")
+     colnames(tbl) <- c("chrom", "annotation",  "moleculeType", "start", "end", "score", "strand", "frame")
+     tbl$chrom <- paste("chr", tbl$chrom, sep="")
+     stopifnot(nrow(tbl) == nrow(tbl.col9))
+      tbl.2 <- cbind(tbl, tbl.col9, stringsAsFactors=FALSE)
+
+     # rectify colnames and column order
+
+     changer <- grep("^end$", colnames(tbl.2))
+     if(length(changer) == 1)
+        colnames(tbl.2)[changer] <- "endpos"
+     tbl.mm10 <<- tbl.2[, standardColnames()]
+     save(tbl.mm10, file="tbl.mm10.RData")
+     write.table(tbl.mm10, file="mm10-gtf.tsv", sep="\t", quote=FALSE, col.names=FALSE, row.names=FALSE)
+     
 *------------------------------------------------------------------------------------------------------------------------
 * bullitt foundation grant inquiry questions
 
