@@ -102,6 +102,61 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+* getting back to ipywidgets study, jason grout and sylvain corlay suggest notebook widgets to learn on (1 aug 2016)
+
+   hello world + spinner
+   cd ~/s/examples/jupyter/customWidgetFromIpyWidgetsGithub
+   jupyter notebook
+
+   --- from pascal bugnion of the ipywidgets repo
+        https://github.com/ipython/ipywidgets/issues/695#issuecomment-237461147
+
+     It's fairly common practice to name variables (or object fields) that hold a jQuery element with names starting
+     with a $. There is no programmatic meaning to the $ itself in the variable name. It's just convention. See this
+     Stack Overflow question, for instance.
+
+     For instance, in a DOMWidgetView, you have access to both this.el, which represents the actual DOM element the
+     widget view is attached to, and this.$el, a jQuery element equivalent to $(this.el). Thus, both this:
+
+       this.$el.text('Hi Paul');
+       this.el.textContent = 'Hi Paul';
+
+     will have the same behaviour.
+
+
+    --- annotated spinner widget code
+
+     from traitlets import CInt
+     class SpinnerWidget(widgets.DOMWidget):
+        _view_name = Unicode('SpinnerView').tag(sync=True)
+        _view_module = Unicode('spinner').tag(sync=True)
+        value = CInt().tag(sync=True)
+
+     %%javascript
+     requirejs.undef('spinner');
+     define('spinner', ["jupyter-js-widgets"], function(widgets) {
+         var SpinnerView = widgets.DOMWidgetView.extend({
+            render: function() { 
+               var that = this;
+               this.$input = $('<input />');
+               this.$el.append(this.$input);
+               this.$spinner = this.$input.spinner({
+                    // in these two anonymous functions, "this" is the event, not the SpinnerView, to which "that" is a reference
+                  change: function(event, ui) {that.handle_spin(that.$spinner.spinner('value'));},
+                  spin: function(event, ui)   {that.handle_spin(ui.value);} //ui.value is the new value of the spinner
+                  });
+               this.value_changed();
+               this.model.on('change:value', this.value_changed, this);
+               }, // render
+            value_changed: function()      {this.$spinner.spinner('value', this.model.get('value'));},
+            handle_spin:   function(value) {this.model.set('value', value); this.touch();},
+            });
+         return {
+             SpinnerView: SpinnerView
+         };
+     });
+
+
 *------------------------------------------------------------------------------------------------------------------------
 * psql tips
 
@@ -718,6 +773,21 @@ whovian.mm10> head -1 mm10-gtf.tsv | tr "\t" "\n" | nl
 
     --- now the spinner
 
+     note this from pascal bugnion of the ipywidgets repo
+        https://github.com/ipython/ipywidgets/issues/695#issuecomment-237461147
+
+     It's fairly common practice to name variables (or object fields) that hold a jQuery element with names starting
+     with a $. There is no programmatic meaning to the $ itself in the variable name. It's just convention. See this
+     Stack Overflow question, for instance.
+
+     For instance, in a DOMWidgetView, you have access to both this.el, which represents the actual DOM element the
+     widget view is attached to, and this.$el, a jQuery element equivalent to $(this.el). Thus, both this:
+
+       this.$el.text('Hi Paul');
+       this.el.textContent = 'Hi Paul';
+
+     will have the same behaviour.
+
      from traitlets import CInt
      class SpinnerWidget(widgets.DOMWidget):
         _view_name = Unicode('SpinnerView').tag(sync=True)
@@ -760,7 +830,7 @@ whovian.mm10> head -1 mm10-gtf.tsv | tr "\t" "\n" | nl
 
 
   --- made a local copy of the first, to trace, track and debug
-    cd /s/examples/jupyter/customWidgetFromIpyWidgetsGithub
+    cd ~/s/examples/jupyter/customWidgetFromIpyWidgetsGithub
     cp  ~/github/ipywidgets/docs/source/examples/Custom\ Widget\ -\ Hello\ World.ipynb spinner.ipynb
 
 *------------------------------------------------------------------------------------------------------------------------
