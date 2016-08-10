@@ -99,12 +99,126 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+* the big fill: piq, wellington, hint (9,10 aug 2016)
+
+  whovian: cd ~/s/data/postgres-fill/footprints
+
+  --- next up
+    continue with the canonicalization of a (footprint-free) piq sample file, creating these
+    as-yet missing columns:
+     [1] "normalized.score" "footprint.start"  "footprint.end"    "motif.length"     "footprint.length" "sample.id"       
+     [7] "method"           "provenance"       "score5"           "score6"          
+
+    
 *------------------------------------------------------------------------------------------------------------------------
+* fimo + footprints: make sure combination works well with new fimo database, table hg38 (9 aug 2016)  
+
+  cd ~/s/data/postgres-fill/hint/combineWithFimo
+
+  hg38 fimo is now in postgres.  create postgres fp/fimo table from postgres fimo
+
+  reproduce experiment below, with fimo hits read from file
+   "* cory's hint example, fimo output from chr22, single HINT bed file ENCSR000DBY (4 aug 2016)  fimo + footprints"
+
+   --- reproduce (4 aug work)
+     reload(); runTests()
+     system.time(run.combineFootprintsAndFimo())  25 seconds elapsed time
+
+
+  --- compare reading fimo file vs postgres query
+
+    system.time(tbl.fimo22 <- read.table("chr22.fimo.txt", sep="\t", as.is=TRUE, nrow=-1,
+                                         comment.char='',row.names=NULL, header=TRUE))  # 55.6 seconds
+    system.time(tbl.22 <- dbGetQuery(db, "select * from hg38 where chr='22'"))   # 28.713 seconds
+
+   --- same table structure, but additional "empty" column in 
+
+     dim(tbl.22)     # [1] 6649014       9
+     dim(tbl.fimo22) # [1] 6649014       8
+
+   --- the successful test
+   reload(); runTests()
+      [1] --- test.combineFootprintsAndFimo
+      [1] --- calculating motif.footprint.overlap
+      [1] --- test.combineFootprintsAndDatabasedFimo
+      [1] --- calculating motif.footprint.overlap
+      [1] TRUE
+
+
 *------------------------------------------------------------------------------------------------------------------------
+* cory estimates 1.1M footprints per sample (all motifs) from hint
+
+  18 samples, thus 20M footprints
+
+  --- footprint files (wellington, hint, piq) (email 5 aug 2016)
+     /local/Cory/for_Paul/piq_complete
+     /local/Cory/for_Paul/hint_sample
+     /local/Cory/for_Paul/wellington_results
+
+  --- hint  (18 samples)
+     20030824 Jun 21 16:23 ENCSR000DBY.hint.bed
+     66862683 Jun 21 16:23 ENCSR000DBZ.hint.bed
+     61907013 Jun 21 16:23 ENCSR000DCA.hint.bed
+     64155124 Jun 21 16:23 ENCSR000DCB.hint.bed
+     58095251 Jun 21 16:23 ENCSR000DCC.hint.bed
+     68249741 Jun 21 16:23 ENCSR000EJB.hint.bed
+     76900718 Jun 21 16:23 ENCSR000EJD.hint.bed
+     77068367 Jun 21 16:23 ENCSR000EJE.hint.bed
+     72379306 Jun 21 16:23 ENCSR000EJF.hint.bed
+      9484641 Jun 21 16:23 ENCSR000EJG.hint.bed
+     64317246 Jun 21 16:23 ENCSR000EJI.hint.bed
+     62346066 Jun 21 16:24 ENCSR000EJJ.hint.bed
+     72179773 Jun 21 16:24 ENCSR000EJK.hint.bed
+     56008384 Jun 21 16:24 ENCSR000EJL.hint.bed
+     81331675 Jun 21 16:24 ENCSR000EMQ.hint.bed
+     33689919 Jun 21 16:24 ENCSR000EMR.hint.bed
+     86710485 Jun 21 16:24 ENCSR000EMS.hint.bed
+     81804245 Jun 21 16:24 ENCSR000EMT.hint.bed
+  
+
+  --- wellington (18 samples)
+
+      1088460 Apr  8 14:06 ENCSR000DBY.sorted.bam.ENCSR000DBY.peaks.400.bed.WellingtonFootprints.-10.bed
+      3791608 Apr  8 16:08 ENCSR000DBZ.sorted.bam.ENCSR000DBZ.peaks.400.bed.WellingtonFootprints.-10.bed
+      1672833 Apr  8 17:36 ENCSR000DCA.sorted.bam.ENCSR000DCA.peaks.400.bed.WellingtonFootprints.-10.bed
+      2122290 Apr  8 19:29 ENCSR000DCB.sorted.bam.ENCSR000DCB.peaks.400.bed.WellingtonFootprints.-10.bed
+       677430 Apr  8 20:46 ENCSR000DCC.sorted.bam.ENCSR000DCC.peaks.400.bed.WellingtonFootprints.-10.bed
+     14120208 Apr  9 01:48 ENCSR000EJB.sorted.bam.ENCSR000EJB.peaks.400.bed.WellingtonFootprints.-10.bed
+     32412272 Apr  9 09:32 ENCSR000EJD.sorted.bam.ENCSR000EJD.peaks.400.bed.WellingtonFootprints.-10.bed
+      4609833 Apr  9 13:29 ENCSR000EJE.sorted.bam.ENCSR000EJE.peaks.400.bed.WellingtonFootprints.-10.bed
+      5896543 Apr  9 17:41 ENCSR000EJF.sorted.bam.ENCSR000EJF.peaks.400.bed.WellingtonFootprints.-10.bed
+      3873998 Apr  9 19:06 ENCSR000EJG.sorted.bam.ENCSR000EJG.peaks.400.bed.WellingtonFootprints.-10.bed
+      1580587 Apr  9 20:46 ENCSR000EJI.sorted.bam.ENCSR000EJI.peaks.400.bed.WellingtonFootprints.-10.bed
+      6044576 Apr 10 00:09 ENCSR000EJJ.sorted.bam.ENCSR000EJJ.peaks.400.bed.WellingtonFootprints.-10.bed
+      4144224 Apr 10 03:28 ENCSR000EJK.sorted.bam.ENCSR000EJK.peaks.400.bed.WellingtonFootprints.-10.bed
+      5295564 Apr 10 06:20 ENCSR000EJL.sorted.bam.ENCSR000EJL.peaks.400.bed.WellingtonFootprints.-10.bed
+     26687776 Apr 10 11:24 ENCSR000EMQ.sorted.bam.ENCSR000EMQ.peaks.400.bed.WellingtonFootprints.-10.bed
+      6362101 Apr 10 12:33 ENCSR000EMR.sorted.bam.ENCSR000EMR.peaks.400.bed.WellingtonFootprints.-10.bed
+     33806460 Apr 10 17:07 ENCSR000EMS.sorted.bam.ENCSR000EMS.peaks.400.bed.WellingtonFootprints.-10.bed
+      9620200 Apr 10 20:02 ENCSR000EMT.sorted.bam.ENCSR000EMT.peaks.400.bed.WellingtonFootprints.-10.bed
+
+
+   --- piq (9342 files) (18 samples # 519 motifs)
+
+      21310556 Jul 18 11:29 MA00022RUNX1.ENCSR000DBY.bed
+      21291450 Jul 16 11:20 MA00022RUNX1.ENCSR000DBZ.bed
+      21292511 Jul 16 22:10 MA00022RUNX1.ENCSR000DCA.bed
+      21396568 Jul 17 10:27 MA00022RUNX1.ENCSR000DCB.bed
+      21294328 Jul 17 20:06 MA00022RUNX1.ENCSR000DCC.bed
+
+
+
+
+
+
 *------------------------------------------------------------------------------------------------------------------------
 * getting back to ipywidgets study, jason grout and sylvain corlay suggest notebook widgets to learn on (1 aug 2016)
 
    hello world + spinner
+
+  [now in ~/s/examples/jupyter/customWidgetFromIpyWidgetsGithub] (9 aug 2016)
+   
+   ~/s/examples/jupyter/customWidgetFromIpyWidgetsGithub/ipywidgets-hello-spinner-annotated.ipynb 
    cd ~/s/examples/jupyter/customWidgetFromIpyWidgetsGithub
    jupyter notebook
 
@@ -159,6 +273,15 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 
 *------------------------------------------------------------------------------------------------------------------------
 * psql tips
+
+   --- inspection commands
+     list databases:  \l    or     select datname from pg_database where datistemplate = false;
+     connect to databases: \connect databasename   or \c databasename
+
+     list tables in current database:  \dt
+        or  SELECT table_schema,table_name FROM information_schema.tables ORDER BY table_schema,table_name;
+     
+     
 
    --- connect to database, drop & create table:
        \connect fimo;
@@ -218,6 +341,25 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 
      remedy: cory will grep -v start on the file, give me a new one.
 
+  --- timing (no indices yet)
+
+    system.time(dbGetQuery(db, "select * from hg38 where chr='10' and start < 19000"))
+      user  system elapsed 
+      0.008   0.001  55.610 
+
+  --- built 3 indices
+   index.sql:
+     \connect fimo;
+     create index on hg38 (chr);
+     create index on hg38 (start);
+     create index on hg38 (endpos);
+    
+   system.time(dbGetQuery(db, "select * from hg38 where chr='10' and start < 19000"))
+     user  system elapsed 
+    0.013   0.000  17.456 
+
+
+
 *------------------------------------------------------------------------------------------------------------------------
 * psql tips
 
@@ -265,7 +407,11 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 
    https://github.com/IRkernel/IRkernel/issues/204
 
-   --- these worked for me
+   --- fresh install & deploy R kernel for jupyter on whovian (2 aug 2016)
+
+      conda install -c r r-essentials
+   
+   --- to update and fix the dead kernel problem, these worked for me
 
     install.packages(c('repr', 'IRdisplay', 'pbdZMQ', 'devtools'))
     devtools::install_github('IRkernel/IRkernel')
@@ -512,7 +658,7 @@ whovian.mm10> head -1 mm10-gtf.tsv | tr "\t" "\n" | nl
     sed -E $'s/\t\t/\t/g' junk   # "ANSI-C" quoting
 
 *------------------------------------------------------------------------------------------------------------------------
-* cory's hint example, fimo output from chr22, single HINT bed file ENCSR000DBY (4 aug 2016)
+* cory's hint example, fimo output from chr22, single HINT bed file ENCSR000DBY (4 aug 2016)  fimo + footprints
 
   goal: combine fimo output with HINT output, fit it into the evolving ensembl format (developed
         first with piq, see below)
@@ -639,11 +785,6 @@ whovian.mm10> head -1 mm10-gtf.tsv | tr "\t" "\n" | nl
    save(tbl3, file="tbl.ensembl.gtf.RData")
 
 
-
-*------------------------------------------------------------------------------------------------------------------------
-* install & deploy R kernel for jupyter on whovian (2 aug 2016)
-
-  conda install -c r r-essentials
 
 *------------------------------------------------------------------------------------------------------------------------
 * install psycopg on whovian, the most popular python postgres library (2 aug 2016)
