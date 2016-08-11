@@ -102,13 +102,23 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
   regression line error?
 
    Non.white.minority.population (x) vs. Adults.No.Leisure.Time (y)
-    
-
-   before: beacon hill is reoved
+   before: beacon hill is removed
          correlation: 0.7439  
    after: recalculated correlation: 0.6414
-
    and slope  seems not to change
+
+   ---- explored in LinearModel.R and test_LinearModel.R, with no resolution yet
+     # plotting "Non.white.minority.population" vs  "Adults.No.Leisure.Time" in the cleveland webapp
+     # then leaving out Beacon Hill, an outlier at (70, 30), -reduces- the correlation, and
+     # does not change the regression line in the way I expect.
+     # explore this here, by making the same base R calls found in LinearModel.R
+     #
+     # status (11 aug 2016): need to hand-check the correlation calculation.  still confused
+     #
+     test_correlateSomeLeftOut_confusion <- function()
+     
+   
+
    
 *------------------------------------------------------------------------------------------------------------------------
 * create minids for per-source footprint creation (10 aug 2016)
