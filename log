@@ -97,7 +97,56 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+* chia todo (10 aug 2016)
+
+  regression line error?
+
+   Non.white.minority.population (x) vs. Adults.No.Leisure.Time (y)
+    
+
+   before: beacon hill is reoved
+         correlation: 0.7439  
+   after: recalculated correlation: 0.6414
+
+   and slope  seems not to change
+   
 *------------------------------------------------------------------------------------------------------------------------
+* create minids for per-source footprint creation (10 aug 2016)
+
+  whovian, cd ~/github
+  git clone https://github.com/ini-bdds/minid.git
+  cd minid/minid_client
+
+   Your minid registration code is: 8bd72477-3e5c-4410-a8f1-db552d4375ca
+   Copy this code and put it in your minid configuration file.
+
+   /bin/python minid.py --register_user --email pshannon@systemsbiology.org --name paul-shannon  
+     2016-08-10 13:58:21,234 - INFO - No default configuration file found, creating one
+     2016-08-10 13:58:21,260 - INFO - Registering new user "paul-shannon" with email "pshannon@systemsbiology.org"
+     2016-08-10 13:58:21,275 - INFO - Starting new HTTP connection (1): minid.bd2k.org
+
+   edited ~/.minid/minid-config.cfg on whovian
+      [general]
+      minid_server: http://minid.bd2k.org/minid
+      username: paul-shannon
+      email: pshannon@systemsbiology.org
+      orcid: 
+      code: 8bd72477-3e5c-4410-a8f1-db552d4375ca
+
+   --- temporarly fix from @kylechard of the bdds group
+
+    minid test_file.txt --test --register --name "testing" --locations http://example.com/file.txt
+
+   --- my version
+    /bin/python minid.py  piqFootprintPipeline-jul2016.txt --register --name piqFootprintPipeline-jul2016 --locations http://systemsbioloyg.net/bdds/piqFootprintPipeline-jul2016.txt
+      2016-08-10 15:47:36,953 - INFO - Computing checksum for piqFootprintPipeline-jul2016.txt using <sha256 HASH object @ 0x187d8f0>
+      2016-08-10 15:47:36,954 - INFO - Checking if the entity af1f45343af73c22dd26acd61e5c236392d3458a50b549e4d9bf6e40d21cf5c7 already exists on the server: http://minid.bd2k.org/minid
+      2016-08-10 15:47:37,009 - INFO - Starting new HTTP connection (1): minid.bd2k.org
+      2016-08-10 15:47:37,166 - INFO - Creating new identifier
+      2016-08-10 15:47:37,168 - INFO - Starting new HTTP connection (1): minid.bd2k.org
+      2016-08-10 15:47:39,154 - INFO - Created/updated minid: ark:/57799/b94s3c
+
+
 *------------------------------------------------------------------------------------------------------------------------
 * the big fill: piq, wellington, hint (9,10 aug 2016)
 
@@ -216,7 +265,9 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 
    hello world + spinner
 
-  [now in ~/s/examples/jupyter/customWidgetFromIpyWidgetsGithub] (9 aug 2016)
+  [now in ~/github/notebooks/study/ipywidgets-hello-spinner-annotated.ipynb](10 aug 2016)
+  riptide | whovian: cd ~/github/notebooks; jupyter notebook
+  [used to be in ~/s/examples/jupyter/customWidgetFromIpyWidgetsGithub] (9 aug 2016)
    
    ~/s/examples/jupyter/customWidgetFromIpyWidgetsGithub/ipywidgets-hello-spinner-annotated.ipynb 
    cd ~/s/examples/jupyter/customWidgetFromIpyWidgetsGithub
@@ -273,6 +324,9 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 
 *------------------------------------------------------------------------------------------------------------------------
 * psql tips
+
+   --- create database from bash command line
+      createdb -U pshannon footprints
 
    --- inspection commands
      list databases:  \l    or     select datname from pg_database where datistemplate = false;
