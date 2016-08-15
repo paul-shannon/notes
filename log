@@ -97,6 +97,129 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+* how big can a postgres table be?  (15 aug 2016)
+
+   http://stackoverflow.com/questions/21866113/how-big-is-too-big-for-a-postgresql-table
+   
+    Another way to speed up your queries significantly on a table with
+    > 100 million rows is in the off hours cluster the table on the
+    index that is most often used in your queries. We have a table
+    with > 218 million rows and have found 30X improvements.
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* postgres, piq, timing a simple query (15 aug 2016)
+
+    query <- "select chrom, motif_start, motif_end, motif_name, sample_id, score1 from \
+              footprints where chrom='chr5' and motif_start >88900000 and motif_end < 88904257"
+
+    system.time(tbl <- dbGetQuery(db, query))
+     user  system elapsed 
+    0.011   0.001 363.880 
+    dim(tbl) # [1] 4284    6
+
+*------------------------------------------------------------------------------------------------------------------------
+* big fill
+
+  cd ~/s/data/postgres-fill/footprints/
+  select count(*) from footprints;  2,185,610,022   # takes > 8 minutes
+   select * from footprints limit 1;
+ chrom | motif_start | motif_end | motif_name | normalizedscore | strand | footprint_start | footprint_end | motif_length 
+       | footprint_ength |  sample_id  | method |    provenance     | score1  |  score2  |   score3   |  score4
+       | score5 | score6
+       
+ chr1  |       15050 |     15061 | MA0002.2   |                 | -      |                 |               |           12
+       |                 | ENCSR000DBY | piq    | ark:/57799/b94s3c | 9.67107 | -1.03703 | -0.0526116 | 0.500737 |
+       |       
+
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* backbone.js tutorial for ipywidgets (22 aug 2016)
+
+  http://adrianmejia.com/blog/2012/09/11/backbone-dot-js-for-absolute-beginners-getting-started/
+
+     example code in ~/s/examples/js/backbone
+
+   as good, maybe better:
+
+      https://www.sitepoint.com/backbone-basics-models-views-collections-templates/
+
+*------------------------------------------------------------------------------------------------------------------------
+* alternate zmq client for R (12 aug 2016)
+
+  https://github.com/RBigData/pbdZMQ.git   (7 commits ahead, 10 commits behind snoweye:master)
+  https://github.com/snoweye/pbdZMQ.git    (last updated 6 days ago)
+  
+*------------------------------------------------------------------------------------------------------------------------
+* ipywidget tips
+
+
+  -- from jason grout, sylvain corlay (emails 27 july 2016)
+    Yes, the notebook explain in details how to implement jupyter widgets in an interactive fashion in 
+       the jupyter notebook.
+    The cookiecutter project is meant for people who want to package them in an installable package.
+
+  --- examples, Hello World (a notebook)
+
+     https://github.com/ipython/ipywidgets/blob/master/docs/source/examples/Custom%20Widget%20-%20Hello%20World.ipynb
+
+  --- examples, Date Picker Widget (a notebook)
+
+    https://github.com/ipython/ipywidgets/blob/master/docs/source/examples/Date%20Picker%20Widget.ipynb
+
+     Before reading, make sure to review
+     MVC prgramming
+     Backbone.js
+     The widget IPEP
+     The original widget PR discussion
+
+*------------------------------------------------------------------------------------------------------------------------
+* R tips ess tips, use other versions (11 aug 2016)
+
+
+   Also M-x customize-variable and then inferior-R-program-name. – Martin Morgan May 6 '11 at
+   
+*------------------------------------------------------------------------------------------------------------------------
+* bug: anaconda R version 3.3.1 has system() readline missing symbol problem (11 aug 2016)
+
+   cd ~/s/data/postgres-fill/footprints/
+   
+   system("/bin/psql -f fill.sql")
+    /bin/psql: symbol lookup error: /local/pshannon/anaconda3/lib/libreadline.so.6: undefined symbol: PC
+
+  ---- remedy 1, poor choice
+     but by switching to R3.2.3 the problem seems to go away
+     M-x customize-variable and then inferior-R-program-name /usr/bin/R
+
+  --- remedy 2, better conda remove --force readline
+    https://github.com/ContinuumIO/anaconda-issues/issues/152
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* psql tips: run psql from within R, for fill
+
+  --- original example ~/s/data/postgres-fill/hint/dani/fill.R
+   tips: row.names=col.names<-FALSE
+         na written out as "NULL"
+
+   for(full.path in full.paths){
+      printf("about to read %s [%4d/%4d]", full.path, grep(full.path, full.paths), length(full.paths))
+      sampleName <- strsplit(basename(full.path), ".", fixed=TRUE)[[1]][2]       
+      tbl <- processFile(full.path, sampleName)
+      if(all(is.na(tbl))){
+          printf("error processing %s", full.path)
+          next;
+          }
+      printf("writing %d lines to current.tsv", nrow(tbl))
+      write.table(tbl, file="current.tsv", row.names=FALSE, col.names=FALSE, quote=FALSE, sep="\t", na="NULL")
+      system("/bin/psql -f fill.sql")
+      printf("after fill");
+      } # for full.path
+  
+
+*------------------------------------------------------------------------------------------------------------------------
 * chia todo (10 aug 2016)
 
   regression line error?
@@ -156,6 +279,15 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
       2016-08-10 15:47:37,168 - INFO - Starting new HTTP connection (1): minid.bd2k.org
       2016-08-10 15:47:39,154 - INFO - Created/updated minid: ark:/57799/b94s3c
 
+
+*------------------------------------------------------------------------------------------------------------------------
+* the big fill: piq complete (12 aug 2016)
+
+  cd ~/s/data/postgres-fill/footprints/
+  finished at 1020 Friday night, about 30 hours
+  hg38=> select count(*) from footprints;    2,185,610,022
+
+  nohup psql -f index.sql &
 
 *------------------------------------------------------------------------------------------------------------------------
 * the big fill: piq, wellington, hint (9,10 aug 2016)
@@ -316,7 +448,8 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
                this.$input = $('<input />');
                this.$el.append(this.$input);
                this.$spinner = this.$input.spinner({
-                    // in these two anonymous functions, "this" is the event, not the SpinnerView, to which "that" is a reference
+                    // in these two anonymous functions, "this" is the event, not the SpinnerView,
+                    // to which "that" is a reference
                   change: function(event, ui) {that.handle_spin(that.$spinner.spinner('value'));},
                   spin: function(event, ui)   {that.handle_spin(ui.value);} //ui.value is the new value of the spinner
                   });
@@ -337,6 +470,12 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 
    --- create database from bash command line
       createdb -U pshannon footprints
+
+  --- fill from R data.frame
+   row.names <- FALSE
+   col.names <- FALSE
+
+         na written out as "NULL"
 
    --- inspection commands
      list databases:  \l    or     select datname from pg_database where datistemplate = false;
