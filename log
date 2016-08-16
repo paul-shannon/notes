@@ -96,7 +96,53 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+* spatial and climate analysis of BigLeaf Maple decline in western washington (15 aug 2016)
+
+  http://www.cfr.washington.edu/academicprograms/undergrad/esrm/posterDeCordoba.pdf
+  
 *------------------------------------------------------------------------------------------------------------------------
+* unified hg38 footprints table, and sample table on whovian:  make it much smaller (not > 2B rows!) (15 aug 2016)
+
+  cd ~/s/data/postgres-fill/footprints/
+  source("fill.R"); runTests()
+
+     --- test.mapMotifName
+     --- test.readPiqTable
+     --- test.load.piq.samples.for.motif.and.sampleID
+
+   --- next up
+     create fp and sample tables
+     fill to each of them, sample by sample, motif by motif
+     keep an accumulating list of known locs - the primary key in each table, which must be unique in the fp table
+     
+*------------------------------------------------------------------------------------------------------------------------
+* unified hg38 footprints table on whovian:  make it much smaller (not > 2B rows!) (15 aug 2016)
+
+  cd ~/s/data/postgres-fill/footprints/
+  limit motif-centric table to chr22 and some/all of seth's 77 TFs with ChIP-seq data
+
+   ls /proj/price1/sament/lymphoblast_trn/known_tfbs/hg38/*.bedo | wc -l    # 77
+
+  tokens <- strsplit(list.files("/proj/price1/sament/lymphoblast_trn/known_tfbs/hg38", pattern="*.bed"), "_")
+  tfs.withChIPSeq <- unlist(lapply(tokens, "[", 1))  
+  head(tfs.withChIPSeq) # [1] "ATF2"   "ATF3"   "BATF"   "BCL11A" "BCL3"   "BCLAF1"
+
+  library(RPostgreSQL)
+  db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="hg38", host="whovian")
+  checkTrue(dbExistsTable(db, "motifsgenes"))
+
+  dbGetQuery(db, "select * from motifsgenes limit 5")
+       motif     tf
+  1 MA0002.2  RUNX1
+  2 MA0003.3 TFAP2A
+  3 MA0004.1   ARNT
+  4 MA0006.1    AHR
+  5 MA0006.1   ARNT
+
+   tbl.gm <- dbGetQuery(db, "select * from motifsgenes")
+   dim(tbl.gm) # [1] 9289    2
+
+  
 *------------------------------------------------------------------------------------------------------------------------
 * how big can a postgres table be?  (15 aug 2016)
 
