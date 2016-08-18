@@ -96,6 +96,62 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+* two table fill of hint, with fimo intersections (17 aug 2016)
+
+  cd ~/s/data/postgres-fill/hint/combineWithFimo
+  source("fill.R")
+  runTests()
+
+  --- next step
+    implement test.getFimoForRegion()
+
+*------------------------------------------------------------------------------------------------------------------------
+* two table fill to fptest, all of seth's tf motifs, all 18 piq samples (17 aug 2016)
+
+  cd ~/s/data/postgres-fill/footprints/
+
+  library(RPostgreSQL)
+  library(RUnit)
+  db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="fptest", host="whovian")
+  checkTrue(dbExistsTable(db, "footprints"))
+  checkTrue(dbExistsTable(db, "motifhits"))
+  query <- paste("select * from footprints fp",
+                 "inner join motifhits mh", 
+                 "on fp.loc = mh.loc",
+                 "where fp.chrom = 'chr21' and fp.motif_start < 5010300")
+  tbl <- dbGetQuery(db, query)
+
+  --- with fill completed:
+    db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="fptest", host="whovian")
+    dbGetQuery(db, "select count(*) from footprints")  #    442802
+    dbGetQuery(db, "select count(*) from motifhits")    #  10578654
+
+  
+
+*------------------------------------------------------------------------------------------------------------------------
+* joe lirette, PT, Renew, provides access to exercise videos (17 aug 2016)
+
+
+   I have created a custom home exercise program for you. The
+   frequency and dosage are guides. If you perform 3-4 times per week
+   vs 1x/day that should suffice.
+
+  This program provides video demonstrations and detailed instructions
+  to help you perform each exercise.  Keep this email so you can
+  access your program for any reminders or new exercises we add to
+  your routine during therapy.
+
+   To view your exercise program:
+
+     1. Go to http://renew-pt.medbridgego.com
+     2. Enter the access code:  6J3GA7NC
+     3. Click "Continue to Patient Portal"
+
+*------------------------------------------------------------------------------------------------------------------------
 * spatial and climate analysis of BigLeaf Maple decline in western washington (15 aug 2016)
 
   http://www.cfr.washington.edu/academicprograms/undergrad/esrm/posterDeCordoba.pdf
@@ -121,7 +177,7 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
   cd ~/s/data/postgres-fill/footprints/
   limit motif-centric table to chr22 and some/all of seth's 77 TFs with ChIP-seq data
 
-   ls /proj/price1/sament/lymphoblast_trn/known_tfbs/hg38/*.bedo | wc -l    # 77
+   ls /proj/price1/sament/lymphoblast_trn/known_tfbs/hg38/*.bed | wc -l    # 77
 
   tokens <- strsplit(list.files("/proj/price1/sament/lymphoblast_trn/known_tfbs/hg38", pattern="*.bed"), "_")
   tfs.withChIPSeq <- unlist(lapply(tokens, "[", 1))  
@@ -137,6 +193,7 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
   2 MA0003.3 TFAP2A
   3 MA0004.1   ARNT
   4 MA0006.1    AHR
+
   5 MA0006.1   ARNT
 
    tbl.gm <- dbGetQuery(db, "select * from motifsgenes")
@@ -180,6 +237,11 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
        |       
 
 
+
+*------------------------------------------------------------------------------------------------------------------------
+* kei ono points to latest ipywidgets docs (17 aug 2016)
+
+   https://ipywidgets.readthedocs.io/en/latest/
 
 *------------------------------------------------------------------------------------------------------------------------
 * backbone.js tutorial for ipywidgets (22 aug 2016)
