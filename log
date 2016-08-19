@@ -191,7 +191,8 @@ Seward Park's old growth "Magnificent Forest"
   runTests()
 
   --- next step
-    implement test.getFimoForRegion()
+     create locs.schema, hits.schema
+     append tbl.locs and tbl.hits to fptest database.
 
 *------------------------------------------------------------------------------------------------------------------------
 * two table fill to fptest, all of seth's tf motifs, all 18 piq samples (17 aug 2016)
