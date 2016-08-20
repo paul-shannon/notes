@@ -97,7 +97,97 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+* create minids for footprinting documents f
+
+   --- email from ben (17 aug 2016)
+    for the minids, we can use /local/local_webservices/bdds/html/ on whovian. It will be accessible at http://bdds.systemsbiology.net/<your_file>
+    just to keep things tidy, please make a subdirectory for the footprinting work (perhaps /local/local_webservices/bdds/html/footprinting ?)
+    with that, the location for the minids would be http://bdds.systemsbiology.net/footprinting/<your_file>
+
+    mkdir -p /local/local_webservices/bdds/html/trena
+
+      # mistake! echo "cory's howto on the BIND footprint process will appear here" > /local/local_webservices/bdds/html/trena/bind-footprinting.html
+
+    echo "cory's howto on the HINT footprint process will appear here" > /local/local_webservices/bdds/html/trena/hint-footprinting.html
+    echo "cory's howto on the piq footprint process will appear here" > /local/local_webservices/bdds/html/trena/piq-footprinting.html
+    echo "cory's howto on the wellington footprint process will appear here" > /local/local_webservices/bdds/html/trena/wellington-footprinting.html
+
+    /bin/python ~/github/minid/minid_client/minid.py  /local/local_webservices/bdds/html/trena/hint-footprinting.html --register --name hintFootprintPipeline-aug2016 --locations http://bdds.systemsbiology.net/hint-footprinting.html
+    /bin/python ~/github/minid/minid_client/minid.py  /local/local_webservices/bdds/html/trena/piq-footprinting.html --register --name piqFootprintPipeline-aug2016 --locations http://bdds.systemsbiology.net/piq-footprinting.html
+    /bin/python ~/github/minid/minid_client/minid.py  /local/local_webservices/bdds/html/trena/wellington-footprinting.html --register --name wellingtonFootprintPipeline-aug2016 --locations http://bdds.systemsbiology.net/wellington-footprinting.html
+
 *------------------------------------------------------------------------------------------------------------------------
+* jupyter notebook and igv.js: a simple demo on whovian (19 aug 2016)
+
+  
+   cd ~/github/notebooks/paul-shannon/
+   jupyter notebook
+
+   load notebook "hint-footprints-chr21-igv-display"
+    
+  ~/github/notebooks/paul-shannon/misc/hint-footprints-chr21-igv-display.ipynb
+
+  status:  cannot get 13 footprints in bed file to load
+
+  ---- query, create table, write it out:
+
+ 
+   import pandas as pd, psycopg2 as psql
+   conn = psql.connect("dbname=hint-test user=pshannon")
+   def toBed(chrom, start, stop):
+       query = """select r.chrom, r.start, r.stop, h.name, h.score1 
+                   from regions r inner join hits h on r.loc = h.loc                                                                            where r.chrom = '%s' and r.start > %d and r.start < %d""" % (chrom, start, stop)
+       tbl = pd.read_sql_query(query, conn)
+       return(tbl)
+   tbl = toBed("chr21", 25860335, 25862720)
+   tbl.to_csv("foo.tsv", sep="\t")
+   footTrack = Track(name="foo", format="bed", url="http://whovian:9999/edit/misc/foo.bed", display_mode='EXPANDED')
+   igv.load_track(footTrack)
+   
+  --- now add data from the hint chr21 trial fill, using pands and psycopg2 (psql)
+    cribbing from (2 aug 2016) work, on whovian it looks like this:
+       ~/github/notebooks-pshannon/psql footprints demo.ipynb
+
+  --- python notebook code
+    import pandas as pd, psycopg2 as psql
+    conn = psql.connect("dbname=pshannon user=pshannon")   
+    coi = "chrom, motifstart, motifname, normalizedscore, strand"
+    query = "select %s  from footprints where chrom='chr22' and motifstart < 10510285" % coi
+    tbl = pd.read_sql_query(query,  conn)
+
+        chrom	motifstart	motifname	normalizedscore	strand
+      0	chr22	10510185	MA0151.1	0.811947	+
+      1	chr22	10510200	MA0158.1	0.258267	+
+      2	chr22	10510282	MA0494.1	0.496226	-
+      3	chr22	10510277	MA0740.1	0.349608	-
+    
+
+   --- with hint-test
+
+*------------------------------------------------------------------------------------------------------------------------
+* jupyter notebook and igv.js: a simple demo on laptop riptide (19 aug 2016)
+
+   laptop (riptide)
+   cd ~/s/examples/igv/jupyter/
+   juypter notebok
+   http://localhost:8889/notebooks/simple-igv-demo.ipynb
+
+   running in python3
+   
+   from igv import IGV, Reference, Track
+
+   IGV(locus="chr1:155,160,475-155,184,282", reference=Reference(id="hg19"), tracks=[Track(
+       name="Genes",
+       url="//s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/genes/gencode.v18.collapsed.bed",
+       index_url="//s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/genes/gencode.v18.collapsed.bed.idx",
+       display_mode="EXPANDED")])
+
+*------------------------------------------------------------------------------------------------------------------------
+* filled whovian database hint-test from all regions & hits in chr21 (19 aug 2016)
+
+   cd ~/s/data/postgres-fill/hint/combineWithFimo
+   fill.R
+   
 *------------------------------------------------------------------------------------------------------------------------
 *
 
@@ -7943,6 +8033,29 @@ getPromoterRegion <- function(geneSymbol, size=10000) {
    MET4         0.1254078
    PHD1         0.1491330
 
+
+*----------------------------------------------------------------------------------------------------
+* igv.js team, advice on displaying regions (bed-like, hint footprints) within a notebook into igv (19 aug 2016)
+
+   If you create a subset of a bed file and save it locally to your
+   Jupyter workspace, you should be able load the file into igv.js
+   easily enough. The URL for the file will be something like
+   http://localhost:8888/files/foo.bed, assuming that you're running
+   Jupyter on your local machine.
+
+   If you're working with your data in a pandas DataFrame, you'll need
+   to write the data to disk first so it can be served up to igv.js as
+   a file. (pandas.DataFrame.to_csv(sep='\t'))
+
+
+   --- use the api
+   dbsnp_track = Track(
+       name="dbSNP 137",
+       format="bed",
+       url="https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz",
+       index_url="https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz.tbi",
+       visibility_window=200000)
+   igv_instance.load_track(dbsnp_track)
 
 *----------------------------------------------------------------------------------------------------
 * igj.js tips: load hg38 gene annotation
