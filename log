@@ -99,6 +99,60 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+* why are welt, hint and piq producing such different results? (23 aug 2016
+
+  APP.tss <- 25880550
+  loc.chrom <- "chr21"
+  loc.start <- APP.tss - 1000
+  loc.stop  <- APP.tss + 0
+
+  --- welt: no results here
+  --- hint: 1 result: chr21:25879839-25879847 chr21 25879839 25879847 MA0738.1      + ENCSR000EJB     13
+  --- piq: 1187 resuts, 43 unique locs
+
+*------------------------------------------------------------------------------------------------------------------------
+* vastly different numbers of footprints for the 18 lymphoblast samples across methods (23 aug 2016)
+
+   /local/Cory/for_Paul/wellington_results:   18 bed files,       3,162,023 total lines
+   /local/Cory/for_Paul/piq_complete:       9342 bed files,   2,185,610,022 total lines
+   /local/Cory/for_Paul/hint_sample:          18 bed files       20,736,455 total lines
+
+  Note that, for piq,  9342 files seems to come from 18 samples * 519 motifs
+
+  -- similar scale of footprints found if we look at just one motif, and one sample in piq
+
+  --- next up:  move this EDA to riptide macbook for use with desktop igv
+
+*------------------------------------------------------------------------------------------------------------------------
+* piq chr21 into new regions/hits schema (22 aug 2016)
+
+  cd ~/s/data/postgres-fill/piq/newSchema
+  started (22 aug, 349pm)
+  with 8013/9342 files processed: 26,426,766 hits in 1072128 regions: density of 24.6 hits per region
+  with 9342/9342:  30,072,096 hits in 115,8121 regions
+
+*------------------------------------------------------------------------------------------------------------------------
+* hint & wellington notebook, tutorial and demo for cory (22 aug 2016)
+
+   ~/github/notebooks/paul-shannon/demos/footprints/chr21-hint-vs-wellington.ipynb
+   developed in chr21.R in the same directory, for convenience
+
+   at least temporarily running at
+
+     http://whovian:10000/notebooks/footprints/chr21-hint-vs-wellington.ipynb
+
+   shows 3 motifs-in-footprints in tss of APP, 1 for wellington, not overlapping
+
+*------------------------------------------------------------------------------------------------------------------------
 * hint, redo, chr21
 
   cd ~/s/data/postgres-fill/hint/combineWithFimo/
