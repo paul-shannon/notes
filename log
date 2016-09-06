@@ -92,6 +92,8 @@ eval(parse(text=sprintf("%s <- '%s'", tolower(as.character(tmp)), names(tmp))))
 
 symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSYMBOL, ifnotfound=NA))
 
+bed format: chrom, start, end, name, score, strand
+
 * top
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
@@ -99,10 +101,127 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+* cdn
+
+  https://cdnjs.cloudflare.com/ajax/libs/three.js/r79/three.js
+  https://cdnjs.cloudflare.com/ajax/libs/three.js/r80/three.js
+  https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.2/d3.min.js
+  
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+* cc consignment store sofa bed (4 sep 2016)
+
+  89 wide, 36 deep, 84 long when opened up,
+  mattress 60 wide by 70 long
+
+  suggests "sleepers in seattle"
+  queen: 60 x 80
+  double or full: 54 x 75
+  memory foam from tuft&needle: $600 queen, $500 full
+*------------------------------------------------------------------------------------------------------------------------
+* attempting pythree.js py3js py3.js example in a notebook: 3d scatter plot (2 sep 2016)
+
+  see below "* three.js 3js 3.js example: 3d scatter plot (2 sep 2016)"
+
+  --- update pythreejs
+    cd pythreejs/
+    pip install -e .
+    jupyter nbextension install --py --symlink --user pythreejs
+    jupyter nbextension enable --py --user pythreejs
+    cd examples
+    jupyter notebook
+
+
+
+  jupyter notebook &
+  good examples here: http://localhost:8888/notebooks/examples/Examples.ipynb
+
+  --- now try my own
+
+    cd ~/github/notebooks/paul-shannon/demos/pythreejs/
+    jupyter notebook &
+    
+  
+*------------------------------------------------------------------------------------------------------------------------
+* three.js 3js 3.js example: 3d scatter plot (2 sep 2016)
+
+  cd ~/s/examples/js/three/scatterPlot/jsfiddleDemo
+
+  10k points, vertices and colors pushed, nicely distributed across a rectangular solid
+  my version: index.html
+  
+
+  from: http://jsfiddle.net/joequant/fvSrq/
+
+  --- see also
+    http://msbarry.github.io/threejs-tool-page/
+    http://bl.ocks.org/phil-pedruco/9852362
+    
+*------------------------------------------------------------------------------------------------------------------------
+* three.js set up for local no-internet use (29 aug 2016)
+
+   cd ~/github/threejs-cookbook/
+   /Users/paul/anaconda/bin/python -m http.server 8003
+   load in browser:
+     /Users/paul/github/threejs-cookbook/experiments/e01-barn.html
+
+   this also seems to work:
+
+     http://localhost:8003/06-particles-postprocessing/06.01-create-particle-system-from-geometry.html
+
+  --- pythreejs (for jupyter)
+   cd ~/github/pythreejs/
+   git pull origin
+
+*------------------------------------------------------------------------------------------------------------------------
+* backbone set up for no-internet use (29 aug 2016)
+
+  cd ~/s/examples/js/backbone/js/
+
+   -rw-r--r--  1 paul  staff  16464 Aug 29 11:56 backbone-min.js
+   -rw-r--r--  1 paul  staff   1567 Aug 29 11:56 backbone.localStorage-min.js
+   -rw-r--r--  1 paul  staff  94840 Aug 29 11:55 jquery.min.js
+   -rw-r--r--  1 paul  staff  12821 Aug 29 11:56 underscore-min.js
+
+  python -m http.server 8008
+
+    /Users/paul/s/examples/js/backbone/helloWorld/helloWorld.html
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* igv reference tracks, used in jupyter notebooks
+
+   --- discovery: study xml at
+     http://s3.amazonaws.com/igv.broadinstitute.org
+
+   --- hg19
+   igv = IGV(locus="chr21:25877550-25880550", reference=Reference(id="hg19"), 
+          tracks=[Track(
+                   name="Genes", 
+                    url="//s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/genes/gencode.v18.collapsed.bed",
+                    index_url="//s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/genes/gencode.v18.collapsed.bed.idx", 
+                    display_mode="EXPANDED")])
+
+   --- hg38
+   igv = IGV(locus="chr21:25,863,045-25,887,052", reference=Reference(id="hg38"), 
+          tracks=[Track(
+                   name="Genes hg38 v24",
+                   format="gtf",
+                   url="//s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/genes/gencode.v24.annotation.sorted.gtf.gz",
+                   indexURL="//s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/genes/gencode.v24.annotation.sorted.gtf.gz.tbi",
+                   visibility_window=10000000,
+                   display_mode="SQUISHED")])
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* whovian notebook, in github, displays hg38 reference genome, hint and piq tracks around gene APP's tss on chr21
+
+  ~/github/notebooks/paul-shannon/demos/footprints/piqAndHINT-compared-chr21.ipynb 
+
 *------------------------------------------------------------------------------------------------------------------------
 * pto paychex flex, request time off
 
@@ -5133,7 +5252,8 @@ end
 *------------------------------------------------------------------------------------------------------------------------
 * 3js browserViz (4 jun 2016)
 
-  cd ~/github/browserViz/3js
+  ~/github/threejs-cookbook/experiments/
+  # cd ~/github/browserViz/3js  (not sure about this)
 
   use ~/s/examples/js/three/particles/index.html for minimalist exploration
 
@@ -18871,7 +18991,8 @@ layouts (a la Eric) will help.  Well-known pathways will help also.
 the full fiddle: http://jsfiddle.net/5WsEt/
 just the result: http://jsfiddle.net/5WsEt/embedded/result
 get the source of the results frame:  right-click on the displayed table, choose "view frame source"
-*----------------------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------
 * seward park ford ad filming incident (11 jul 2015) saturday
 
   --- valancy blackwell, mayor's staff, dug up by cheryl brush  (14 sep 2015) 684.8817
