@@ -97,9 +97,155 @@ bed format: chrom, start, end, name, score, strand
 * top
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+* postgres piq test database, programmatic merge - much faster than my sql merge (7 sep 2016)
+
+  both about 50 times faster than inner join
+  
+  --- R version
+    getHits2 <- function(chrom, start, stop){
+       query.p0 <- "select loc, chrom, start, stop from regions"
+       query.p1 <- sprintf("where chrom='%s' and start > %d and stop < %d", chrom, start, stop)
+       query.regions <- paste(query.p0, query.p1)
+       tbl.regions <- dbGetQuery(dbpiq, query.regions)
+       if(nrow(tbl.regions) == 0)
+          return(data.frame())
+       loc.set <- sprintf("('%s')", paste(tbl.regions$loc, collapse="','"))
+       query.hits <- sprintf("select * from hits where loc in %s", loc.set)
+       tbl.hits <- dbGetQuery(dbpiq, query.hits)
+       merge(tbl.regions, tbl.hits, on="loc")
+       }
+
+   --- python 3 version
+  
+      def getHits2(db, chrom, start, stop):
+        queryRegions_0 = "select loc, chrom, start, stop from regions"
+        queryRegions_1 = "where chrom='%s' and start >= %d and stop <= %d" % (chrom, start, stop)
+        queryRegions = "%s %s" % (queryRegions_0, queryRegions_1)
+        tbl_regions = pd.read_sql_query(queryRegions, db)
+        locs = tbl_regions.loc[:, "loc"].tolist()
+
+       queryHits = "select * from hits where loc in %s" % str(locs)
+       queryHits = queryHits.replace("[", "(").replace("]", ")")
+       tbl_hits = pd.read_sql_query(queryHits, db)
+       return(pd.merge(tbl_regions, tbl_hits, on="loc"))
+
+
+  --- inner join approach in python
+  
+   def getHits(db, chrom, start, end, scoreColumnNameToUse):
+      query = """select * from regions r
+      inner join hits h on r.loc = h.loc
+      where r.chrom = '%s' and r.start > %d and r.stop < %d""" % (chrom, start, end)
+      tbl = pd.read_sql_query(query, db)
+      tbl['desc']  = tbl.name + "|" + tbl.sample_id  + "|" + tbl[scoreColumnNameToUse].astype(str)
+      return(tbl[["chrom", "start", "stop", "desc", scoreColumnNameToUse, "strand"]])
+      
 *------------------------------------------------------------------------------------------------------------------------
+* pandas tips, psycopg2 tips:
+
+  ---- what tables are in the database?
+  import pandas as pd, psycopg2 as psql
+  conn = psql.connect("dbname=piqTest user=pshannon")
+  query = "select relname from pg_class where relkind='r' and relname !~ '^(pg_|sql_)';"
+  pd.read_sql_query(query, conn).loc[:, "relname"].tolist()
+
+  --- pandas tips, rbind, rownames
+    tbl_counts = pd.read_sql_query("select count(*) from regions", dbpiq).append(
+                 pd.read_sql_query("select count(*) from hits", dbpiq))
+    tbl_counts.index = ["regions", "hits"]
+
+
+  --- pandas tips, subset dataframe by range of row and column indices, by row and column names
+     tbl.iloc[0:5, 1:14]
+     tbl.loc[0:4, "chrom":"score1"]     
+
+     
 *------------------------------------------------------------------------------------------------------------------------
+* jupyter tips, port
+
+  jupyter notebook --port=10001
+
 *------------------------------------------------------------------------------------------------------------------------
+* piq footprints: piqTest db, regions + hits table, merge in python for speed (7 sep 2016)
+
+  cd ~/github/notebooks/paul-shannon/demos/footprints
+  working in ~/github/notebooks/paul-shannon/demos/footprints/merge.py
+
+  import pandas as pd, psycopg2 as psql
+   conn = psql.connect("dbname=hint-test user=pshannon")
+   def toBed(chrom, start, stop):
+       query = """select r.chrom, r.start, r.stop, h.name, h.score1 
+                   from regions r inner join hits h on r.loc = h.loc                                                                            where r.chrom = '%s' and r.start > %d and r.start < %d""" % (chrom, start, stop)
+       tbl = pd.read_sql_query(query, conn)
+       return(tbl)
+
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* piq footprints: piqTest db, regions + hits table, index for speed, merge in R (7 sep 2016)
+
+   [status: did two separate simple queries, merged in R, 30-50x speedup]
+
+  --- data & sql files here:
+
+     cd ~/s/data/postgres-fill/piq/newSchema/
+
+  --- accompanying R notebook
+    http://whovian:9999/notebooks/piqFootprintDatabaseTiming.ipynb
+    ~/github/notebooks/paul-shannon/demos/footprints/piqFootprintDatabaseTiming.ipynb
+
+  --- before indexing loc in the hits table:
+   getHits <- function(chrom, start, stop){
+      query.p0 <- "select * from regions r inner join hits h on r.loc = h.loc "
+      query.p1 <- sprintf("where r.chrom='%s' and r.start > %d and r.stop < %d", chrom, start, stop)
+      query <- paste(query.p0, query.p1)
+      dbGetQuery(dbpiq, query)[, -1]  # remove the leading 'loc' column
+      }
+
+   getHits2 <- function(chrom, start, stop){
+      query.p0 <- "select loc, chrom, start, stop from regions"
+      query.p1 <- sprintf("where chrom='%s' and start > %d and stop < %d", chrom, start, stop)
+      query.regions <- paste(query.p0, query.p1)
+      tbl.regions <- dbGetQuery(dbpiq, query.regions)
+      if(nrow(tbl.regions) == 0)
+         return data.frame()
+      loc.set <- sprintf("('%s')", paste(tbl.regions$locs, collapse="','"))
+      query.hits <- "select * from hits where loc in %s"
+      tbl.hits <- dbGetQuery(dbpiq, query.hits)
+      browser()
+      x <- 99
+      }
+
+  print(system.time(tbl <- getHits("chr21", 15010000, 15010100)))
+  dim(tbl) #   36 16
+    user  system elapsed
+    0.005   0.000  11.009
+  
+  loc.start <- 150100000; loc.stop <- 15010100; loc.chrom = "chr21"
+  system.time(getHits2(loc.chrom, loc.start, loc.stop))
+     user  system elapsed 
+    0.010   0.001   0.369 
+
+
+   --- do the indexing
+     cat ~/s/data/postgres-fill/piq/newSchemaindexHits.sql
+       \connect piqTest;
+       create index on hits (loc);
+     
+    date; psql -f indexHits.sql; date   # 12 minutes
+       Wed Sep  7 10:58:34 PDT 2016
+       You are now connected to database "piqTest" as user "pshannon".
+       CREATE INDEX
+       Wed Sep  7 11:10:45 PDT 2016
+
+    date; psql -f indexRegions.sql; date
+      Wed Sep  7 11:50:10 PDT 2016
+      You are now connected to database "piqTest" as user "pshannon".
+      CREATE INDEX
+      Wed Sep  7 11:50:26 PDT 2016
+
+   --- after
+   
 *------------------------------------------------------------------------------------------------------------------------
 * cdn
 
@@ -126,6 +272,22 @@ bed format: chrom, start, end, name, score, strand
                index_url="//s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/genes/gencode.v18.collapsed.bed.idx", 
                display_mode="EXPANDED")])
 
+
+*------------------------------------------------------------------------------------------------------------------------
+* pandas DataFrame tips, extract column as list
+
+   tbl_regions
+                         loc  chrom     start      stop
+   0  chr21:15010014-15010020  chr21  15010014  15010020
+   1  chr21:15010064-15010076  chr21  15010064  15010076
+
+   tbl_regions.loc[:, "loc"].tolist()
+   ['chr21:15010014-15010020', 'chr21:15010064-15010076']
+
+*------------------------------------------------------------------------------------------------------------------------
+* pandas DataFrame tips, merge two tables on shared colum
+
+  tbl = pd.merge(tbl_regions, tbl_hists, on="loc")
 
 *------------------------------------------------------------------------------------------------------------------------
 * pandas DataFrame, construct on the fly
