@@ -108,10 +108,111 @@ bed format: chrom, start, end, name, score, strand
   https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.2/d3.min.js
   
 *------------------------------------------------------------------------------------------------------------------------
+* install igv widget on whovian, python 2.7.12, for use with gemini (6 sep 2016)
+
+   cd ~/github/igv.js-jupyter
+    /local/pshannon/anaconda3/envs/py27/bin/pip install -e .
+    jupyter nbextension install --prefix ~/jupyter.extensions --py igv
+    jupyter nbextension enable --py igv    # - Validating: OK
+   ---> seems to need a kernel restart
+   
+   ---  test it out in a py 2.7 notebook
+    jupyter notebook
+    from igv import IGV, Reference, Track
+    igv = IGV(locus="chr21:25877550-25880550", reference=Reference(id="hg19"), 
+            tracks=[Track(
+               name="Genes", 
+               url="//s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/genes/gencode.v18.collapsed.bed",
+               index_url="//s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/genes/gencode.v18.collapsed.bed.idx", 
+               display_mode="EXPANDED")])
+
+
 *------------------------------------------------------------------------------------------------------------------------
+* pandas DataFrame, construct on the fly
+
+  import pandas as pd
+  tbl = pd.DataFrame([["chr1", "10", "100", "fp1", 9.9], ["chr1", 90, 130, "fp2", 0.5]])
+  
 *------------------------------------------------------------------------------------------------------------------------
+* from descartes to kant in two pages (6 sep 2016)
+
+  http://reasonandmeaning.com/2015/01/27/from-descartes-to-kant-in-two-pages/
+  
 *------------------------------------------------------------------------------------------------------------------------
+* whovian anaconda3 jupyter install: where is py27? (6 sep 2016)
+
+  /local/pshannon/anaconda3/envs/py27/bin/python --version
+     Python 2.7.12 :: Continuum Analytics, Inc.
+
 *------------------------------------------------------------------------------------------------------------------------
+* whovian jupyter py27 install pandas for test with gemini and igv (6 sep 2016)
+
+   /local/pshannon/anaconda3/envs/py27/bin/pip install pandas
+   import pandas as pd
+
+   this notebook is the result:
+     ~/github/notebooks/paul-shannon/demos/gemini/gemini-intro1-with-igv.ipynb 
+
+*------------------------------------------------------------------------------------------------------------------------
+* whovian: learn gemini via notebooks (6 sep 2016)
+
+  use our standard jupyter installation: /local/pshannon/anaconda3, and its 2.7 kernel
+  in the notebook, make the gemini installation visible:
+     import sys, os
+     sys.path.append("/local/pshannon/gemini/anaconda/lib/python2.7/site-packages")
+
+  with this simple test:
+     from gemini import GeminiQuery
+     db = "../gemini/sampleData/learnSQL.db"
+     os.path.isfile(db)
+     gq = GeminiQuery(db)
+     gq.run("select name from samples")
+     for row in gq:
+       print row
+
+     import gemini.tests
+
+  http://gemini.readthedocs.io/en/latest/content/installation.html
+
+  the stock gemini install script installed anaconda py 2.7 to
+      /local/pshannon/gemini/anaconda/pkgs/gemini-0.19.1-py27_1/
+  suggesting two strategies:
+    1) sys.path.append("/local/pshannon/gemini/anaconda/lib/python2.7/site-packages")
+  
+*------------------------------------------------------------------------------------------------------------------------
+* learn gemini (6 sep 2016)
+
+  on whovian
+  cd /local/pshannon/gemini/sampleData
+
+     2563155 Jul 28 13:20 chr22.VEP.vcf
+        3072 Jul 28 13:20 learnSQL2.db
+        2048 Jul 28 13:20 learnSQL.db
+         154 Jul 28 13:20 trio.ped
+
+  --- the app
+  executable app:  /local/pshannon/bin/gemini
+      symlink to:  /local/pshannon/gemini/anaconda/bin/gemini
+
+      cat /local/pshannon/gemini/anaconda/bin/gemini 
+      #!/local/pshannon/gemini/anaconda/bin/python
+      import gemini.scripts
+      import gemini.gemini_main
+      from gemini.gemini_constants import *
+      gemini.gemini_main.main()
+
+   --- limited to python 2.7.x and hg19
+     filed issue: https://github.com/arq5x/gemini/issues/781
+        http://gemini.readthedocs.io/en/latest/content/installation.html
+        specifies that gemini requires python 2.7.x.
+
+   --- the query command
+   gemini query -q "select name from samples" learnSQL.db
+     John
+     Bob
+     Mary
+     Sue
+  
 *------------------------------------------------------------------------------------------------------------------------
 * cc consignment store sofa bed (4 sep 2016)
 
