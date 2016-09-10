@@ -97,6 +97,158 @@ bed format: chrom, start, end, name, score, strand
 * top
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+* nb for ChIP-seq with fimo, piq, hint, centered on TF CTCF in the tss of the APP gene on chr21
+
+   http://whovian:9999/notebooks/piqAndHINTandChIPseq-compared-chr21-tf_CTCF.ipynb
+   and
+   ~/s/data/postgres-fill/cusanovich-tfs/go.R
+   ~/s/data/postgres-fill/cusanovich-tfs/byMoti.R
+
+   CTCF -> MA0139.1
+
+  --- goal: compare each method's ability to detect a binding site for CTCF in the tss
+     4 tracks:  chipseq, fimo w/in chipseq regions, hint and piq on MA0139
+    
+   
+
+*------------------------------------------------------------------------------------------------------------------------
+* microservices on whovian (9 sep 2016)   dna, fimo
+
+  --- start fimoService (dna from ucsc DAS server always running)
+    nohup python -i ~/github/fimoService/server/runServer.py 5558 \
+         /local/Cory/meme_4.10.2/src/fimo /local/Cory/trn/working/GRCh38/JASPAR_CORE_plus_seth.meme&
+
+  --- test fimoService in R and python
+     R CMD INSTALL ~/github/fimoService/client-R/FimoClient
+     R -f ~/github/fimoService/client-R/FimoClient/inst/unitTests/test_FimoClient.R 
+     (cd ~/github/fimoService/client-python; make)
+
+  --- test getDnaService in R and python
+     R -f ~/github/getDNAService/client-R/getDNAClient/inst/unitTests/test_getDNAClient.R 
+     python  ~/github/getDNAService/client-python/testGetDNAClient.py
+     
+*------------------------------------------------------------------------------------------------------------------------
+* amazon sphere project, nytimes (11 aug 2016)
+
+   Ron Gagliardo, Amazon’s horticulturist, at the company’s one-acre
+  greenhouse near Seattle. Mr. Gagliardo is in charge of plants for
+  Amazon’s new glass nature complex at its headquarters in downtown
+  Seattle.
+
+*------------------------------------------------------------------------------------------------------------------------
+* 
+*------------------------------------------------------------------------------------------------------------------------
+* lcl (lymphoblast cell line from Cusanovich et al, 2015) tfs & their motifs
+
+  cd ~/s/data/postgres-fill/cusanovich-tfs/
+  
+  http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004226
+
+  59 TFs used, listed as column titles in
+  http://journals.plos.org/plosgenetics/article/asset?unique&id=info:doi/10.1371/journal.pgen.1004226.s012
+
+  18 or 19 of the lcl tfs have no associated motifs in seth's file
+  whovian: ~/s/data/postgres-fill/motifsgenes/motifGenes.tsv
+   see go.R for how I learned this
+   
+  therefore:
+     curl -O http://jaspar.genereg.net/html/DOWNLOAD/JASPAR_CORE/pfm/nonredundant/pfm_vertebrates.txt
+     grep ">" pfm_vertebrates.txt > jasparMap.tsv
+     emacs edit to 2-column tsv file
+     tbl.jaspar <- read.table("jasparMap.tsv", sep="\t", header=FALSE, as.is=TRUE)
+     colnames(tbl.jaspar) <- c("motif", "gene")
+     length(intersect(tfs, tbl.jaspar$gene)) # 22, alas
+
+     on
+
+ARNTL2
+BATF
+BCL3
+CEBPG
+CEBPZ
+CLOCK
+CREBBP
+DIP2B
+E2F1
+E2F4
+E2F6
+EP300
+ESRRA
+EZH2
+FOXA3
+GTF2B
+HCST
+HOXB7
+IKZF3
+IRF3
+IRF4
+IRF5
+IRF7
+IRF8
+IRF9
+JUND
+KLF13
+LCORL
+NFE2L1
+NFKB2
+NFX1
+NFYC
+NR1D2
+NR2F6
+NR3C1
+PAX5
+POU2F1
+POU2F2
+RAD21
+RDBP
+RELA
+RELB
+RXRA
+SKIL
+SP1
+SP3
+SREBF2
+STAT2
+STAT6
+TAF1
+TCF12
+TFDP1
+TFDP2
+TFE3
+USF1
+WHSC1
+YY1
+ZBTB38
+ZHX2
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* lisa neuman describes isb password policy (9 sep 2016)
+
+  Email - never expires
+  VPN/Windows/FRS/ISB-Internal = expires every 120 days (this is the password you changed)
+  Linux = never (currently at least)
+  Laptop = never
+
+*------------------------------------------------------------------------------------------------------------------------
+* seth's geneName-motifName map (8 sep 2016)
+
+  cp /local/sament/tfbs/human_brain/motif_to_tf_mappings_with_tfclass_include_multiple.csv ~/s/data/postgres-fill
+  
+*------------------------------------------------------------------------------------------------------------------------
+* lymphoblast chipseq ChIP-seq, add to chr21 notebook (8 sep 2016)
+
+  whovian
+  cd ~/s/data/postgres-fill/lymphoblast-chipseq
+
+  files are here: /proj/price1/sament/lymphoblast_trn/known_tfbs/hg38
+  head /proj/price1/sament/lymphoblast_trn/known_tfbs/hg38/ZZZ
+*------------------------------------------------------------------------------------------------------------------------
 * postgres piq test database, programmatic merge - much faster than my sql merge (7 sep 2016)
 
   both about 50 times faster than inner join
