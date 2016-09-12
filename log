@@ -98,7 +98,46 @@ bed format: chrom, start, end, name, score, strand
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+* making sense of cusanovich ChIP-seq data with fimo (12 sep 2016)
+
+  chrom <- "chr13"
+  loc.start <- 41019204
+  loc.end <-   41019357
+  size <- 1 + loc.end - loc.start  # 154 bases
+  query <- sprintf("select * from regions where chrom='%s' and start >= %d and endpos <= %d", chrom, loc.start, loc.end) 
+  locs <- dbGetQuery(db, query)$loc
+    # locs[1]: "chr13:41019204-41019354"
+  loc.set <- sprintf("('%s')", paste(locs[1], collapse="','"))  
+  tbl.hits.query <- sprintf("select * from hits where loc in %s", loc.set)
+     # 36 151-bp "peaks" exactly aligned
+  tbl.hits <- dbGetQuery(db, tbl.hits.query)
+
+   --- fimo from freshly loaded database
+   dbGetQuery(db, "select * from fimo_hg38 where chrom='13' and start >= 41019205 and endpos <= 41019357") # 27 hits
 *------------------------------------------------------------------------------------------------------------------------
+* build new footprints db, postgres on whovian, using chr13 (for seth's ELF1 study) as guinea pig (12 sep 2016)
+
+  cd ~/github/BDDS/trenadb
+
+  createdb -U pshannon trena   # already exists, and empty (no tables)
+
+  fill to these tables: regions + hits; fimo; genesmotifs
+
+  --- fimo first: it is needed by other fillers
+    cd /github/BDDS/trenadb/fimo
+    create.sql, fill.sql, index.sql
+    fill.sql:
+       \connect trena;
+       \copy fimo_hg38 from '/local/Cory/for_Paul/fimo_out/newGRCh38.fimo.txt' delimiter E'\t' CSV header NULL as 'NULL';
+
+     45M lines, takes < 20 minutes to fill on whovian 
+
+  --- fill cusanovich chipseq into regions & hits.  use old fimo db while fimo_hg38 fills
+     cd ~/github/BDDS/trenadb/cusanovichChIPseq
+
+   cd ~/s/data/postgres-fill/schema2/cusanovichChIPseq
+   cp ~/s/data/postgres-fill/lymphoblast-chipseq/* .  
+
 *------------------------------------------------------------------------------------------------------------------------
 * footprint database, regions & hits ideas (10 sep 2016)
 
@@ -140,7 +179,7 @@ bed format: chrom, start, end, name, score, strand
       
 
       getHits <- function(db, chrom, start, stop){
-         query.p0 <- "select loc, chrom, start, stop from regions"
+         query.p0 <- "select loc, chrom, start, 'end' from regions"
          query.p1 <- sprintf("where chrom='%s' and start > %d and stop < %d", chrom, start, stop)
          query.regions <- paste(query.p0, query.p1)
          browser()
@@ -314,6 +353,22 @@ ZHX2
 
   files are here: /proj/price1/sament/lymphoblast_trn/known_tfbs/hg38
   head /proj/price1/sament/lymphoblast_trn/known_tfbs/hg38/ZZZ
+
+  --- cory's email on these data and seth's code
+
+    Here is Seth's code that does the comparisons with the ChIPseq data:
+       /proj/price1/sament/lymphoblast_trn/ELF/1merge_footprints_motifs_chip.sh
+
+    ELF1 is on chr13
+  
+    That bash script calls the R script by the same name. The
+    objective would be to run that script for each of the ChIPseq
+    datasets (found here:
+    /proj/price1/sament/lymphoblast_trn/known_tfbs/hg38).
+
+    Seth already does a simple mixed linear model with Wellington, HINT and PIQ. We would want to see how that works on
+    all the samples and see if there are any obvious ways to improve upon it.
+  
 *------------------------------------------------------------------------------------------------------------------------
 * postgres piq test database, programmatic merge - much faster than my sql merge (7 sep 2016)
 
