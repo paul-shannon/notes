@@ -95,9 +95,157 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 bed format: chrom, start, end, name, score, strand
 
 * top
+#------------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------
+* annotate lymphoblast chipseq hits for actual matching motif, using fimo (13 sep 2016)
+
+  cd ~/github/BDDS/trenadb/featureMatrix/
+  extract.R
+
+  ---- some relevant code
+print(dim(tbl.apoe))
+print(dim(tbl.fimo))
+gr.fimo <- with(tbl.fimo, GRanges(seqnames=chrom, IRanges(start=start, end=endpos)))
+gr.cs   <- with(tbl.apoe, GRanges(seqnames=chrom, IRanges(start=start, end=endpos)))
+tbl.overlaps <- as.data.frame(findOverlaps(gr.fimo, gr.cs, type="any"))
+tbl.combined <- cbind(tbl.apoe[tbl.overlaps$subjectHits,], 
+                      tbl.fimo[tbl.overlaps$queryHits,])[, c("loc", "name", "motifname")]
+dim(tbl.combined)
+
+f <- function(gene){
+  dbGetQuery(db.trena, sprintf("select motif from tfmotifs where gene = '%s'", gene))[,1]
+  }
+
+# find all known motifs for the genes bound to the apoe region as predicted by chipseq
+x <- sapply(unique(tbl.combined$name), f)
+
+sharedMotif <- function(gene, motif){
+    motifs.for.this.gene <- dbGetQuery(db.trena, sprintf("select motif from tfmotifs where gene='%s'", gene))$motif
+    printf("gene: %s   has motifs: %s  includes? %s", gene, paste(motifs.for.this.gene, collapse=","), motif)
+    return(motif %in% motifs.for.this.gene)
+    }
+
+tbl.combined$bindingSite <- sapply(1:nrow(tbl.combined),
+                                   function(i) sharedMotif(tbl.combined$name[i], tbl.combined$motif[i]))
+
+subset(tbl.combined, bindingSite==TRUE)
+                         loc  name motifname bindingSite
+2    chr19:44904803-44904953 RUNX3  MA0002.2        TRUE
+3.4  chr19:44906503-44906653  PBX3  MA0070.1        TRUE
+1.6  chr19:44904803-44904953  CTCF  MA0139.1        TRUE
+1.7  chr19:44904803-44904953  CTCF  MA0139.1        TRUE
+3.17 chr19:44906503-44906653  PBX3  MA0498.2        TRUE
+2.12 chr19:44904803-44904953 RUNX3  MA0511.2        TRUE
+2.18 chr19:44904803-44904953 RUNX3  MA0684.1        TRUE
+
+  
 *------------------------------------------------------------------------------------------------------------------------
+* start whole genome fill of hint (13 sep 2016)
+
+   cd ~/github/BDDS/trenadb/HINT
+   cp -p  ~/s/data/postgres-fill/hint/combineWithFimo/*.sql .
+   cp -p  ~/s/data/postgres-fill/hint/combineWithFimo/*.R .
+
+   createdb -U pshannon hint
+    R -f fill.R &  # about 4pm Tuesday 13 sep    
 *------------------------------------------------------------------------------------------------------------------------
+*  SPR Trees: Chris Rippey, OOC Arboriculturist (206) 386-1688 mailto:christopher.rippey@seattle.gov
 *------------------------------------------------------------------------------------------------------------------------
+* R code to filter tfs reported by chipseq to bind in a region, using fimo-reported motifs in that region (13 sep 2016)
+
+  [also, see above description of  ~/github/BDDS/trenadb/featureMatrix]
+  two essentially idential forms:
+     ~/github/notebooks/paul-shannon/trena/chipseq-motifTFmap-fimoDatabase-demo.ipynb 
+     cd ~/github/BDDS/trenadb/cusanovichChIPseq/test.R
+
+    library(RPostgreSQL)
+    chrom <- "chr13"
+    loc.start <- 41019200
+    loc.end   <- 41019360
+    
+    loc.string <- sprintf("%s:d-d", chrom, loc.start, loc.end)
+    
+    db.cs <- dbConnect(PostgreSQL(), user="trena", password="trena", dbname="chipseq", host="whovian")
+    dbGetQuery(db.cs, "select * from hits limit 3")
+    
+    query.regions <- sprintf("select * from regions where chrom='%s' and start > %d and endpos < %d",
+                             chrom, loc.start, loc.end)
+    system.time(tbl.regions <- dbGetQuery(db.cs, query.regions))  # 0.064 seconds
+    dim(tbl.regions)
+
+    query.hits <- sprintf("select * from hits where loc='%s'", tbl[1, "loc"])
+    system.time(tbl.hits <- dbGetQuery(db.cs, query.hits))     # 0.35 seconds
+    dim(tbl.hits)
+
+    tbl.out <- merge(tbl.regions, tbl.hits, on="loc")
+    preferred.column.order <- c("chrom", "start", "endpos", "name", "strand", "score1",
+                                "type", "length", "sample_id", "method", "provenance",
+                                "score2", "score3", "score4", "score5", "score6")
+    tbl.out <- tbl.out[, preferred.column.order]
+    head(tbl.out[, 1:10])
+
+       # now find the motif's mapped by fimo in this region
+    db.trena <- dbConnect(PostgreSQL(), user="trena", password="trena", dbname="trena", host="whovian")
+     # take a look
+    dbGetQuery(db.trena, "select * from fimo_hg38 limit 3")
+    query.fimo <- sprintf("select * from fimo_hg38 where chrom='%s' and start >= %d and endpos <= %d",
+                          "13", loc.start, loc.end)
+   system.time(tbl.fimo <- dbGetQuery(db.trena, query.fimo))  # 5.17 seconds; index needed?
+
+     # what genes (tfs) have been mapped into the chr13:41019200-4109360 by cusanovich ChIPseq?
+     # which have motifs?
+   genes.tfs <- sort(unique(tbl.out$name))                                             # 36
+   genes.allMapped <- dbGetQuery(db.trena, "select distinct gene from tfMotifs")[,1]   # 847
+   genes.tfs.withMotifs <- intersect(genes.tfs, genes.allMapped)                       # 27/36
+
+     # what motifs are associated with each of these allegedly bound tfs?
+   motifs.csGenes <- lapply(genes.tfs.withMotifs, function(gene)
+             dbGetQuery(db, sprintf("select motif from tfmotifs where gene = '%s'", gene))[,1])
+   names(motifs.csGenes) <- genes.tfs.withMotifs
+
+     # filter this list, keeping only motifs actually mapped by fimo in the target region
+  motifs.fimo <- sort(unique(tbl.fimo$motifname))
+  for(tf in names(motifs.csGenes)){
+     found.by.fimo <- intersect(motifs.csGenes[[tf]], motifs.fimo)
+     printf("%8s: %s", tf, paste(found.by.fimo, collapse=","))
+     }
+
+[1]     ATF2: MA0490.1,MA0491.1
+[1]     BATF: MA0462.1
+[1]  BHLHE40: 
+[1]    CEBPB: 
+[1]    EP300: 
+[1]    FOXM1: 
+[1]     IRF4: MA0050.2,MA0652.1
+[1]     JUND: MA0491.1,MA0490.1
+[1]      MAX: 
+[1]      MAZ: 
+[1]    MEF2A: 
+[1]    MEF2C: 
+[1]     MTA3: 
+[1]     MXI1: 
+[1]   NFATC1: 
+[1]     NFIC: 
+[1]    NFKB1: 
+[1]     PAX5: 
+[1]   POU2F2: 
+[1]    RUNX3: 
+[1]      SP1: 
+[1]     SPI1: MA0080.4
+[1]    STAT3: MA0517.1
+[1]     TAF1: 
+[1]      TBP: 
+[1]     TCF3: 
+[1]      YY1: MA0095.2
+> 
+
+
+
+
+#------------------------------------------------------------------------------------------------------------------------
 * making sense of cusanovich ChIP-seq data with fimo (12 sep 2016)
 
   chrom <- "chr13"
@@ -114,6 +262,7 @@ bed format: chrom, start, end, name, score, strand
 
    --- fimo from freshly loaded database
    dbGetQuery(db, "select * from fimo_hg38 where chrom='13' and start >= 41019205 and endpos <= 41019357") # 27 hits
+
 *------------------------------------------------------------------------------------------------------------------------
 * build new footprints db, postgres on whovian, using chr13 (for seth's ELF1 study) as guinea pig (12 sep 2016)
 
