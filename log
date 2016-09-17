@@ -100,6 +100,32 @@ bed format: chrom, start, end, name, score, strand
 #------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------
+# possible hint/fimo fill bug (16 sep 2016)
+
+#------------------------------------------------------------------------------------------------------------------------
+* fill piq (16 sep 2016) for chr19 only to start, for apoe feature table (16 sep 2016)
+
+  cd ~/github/BDDS/trenadb/piq/
+
+  cp ~/s/data/postgres-fill/piq/newSchema/fill.R .
+  cp ~/s/data/postgres-fill/piq/newSchema/*.sql .
+  cp ~/s/data/postgres-fill/piq/newSchema/all_motifs.meme .
+
+  --- chr19 only started at 10am
+  
+#------------------------------------------------------------------------------------------------------------------------
+# apoe regulated by
+
+  pparg 
+  lxr1
+
+  from:   Apolipoprotein E and Alzheimer disease: risk, mechanisms and therapy
+           Chia-Chen Liu, Takahisa Kanekiyo, Huaxi Xu & Guojun
+   http://www.nature.com/nrneurol/journal/v9/n2/abs/nrneurol.2012.263.html
+   nature, february 2013
+
+#------------------------------------------------------------------------------------------------------------------------
 * annotate lymphoblast chipseq hits for actual matching motif, using fimo (13 sep 2016)
 
   cd ~/github/BDDS/trenadb/featureMatrix/
@@ -150,7 +176,8 @@ subset(tbl.combined, bindingSite==TRUE)
    cp -p  ~/s/data/postgres-fill/hint/combineWithFimo/*.R .
 
    createdb -U pshannon hint
-    R -f fill.R &  # about 4pm Tuesday 13 sep    
+   R -f fill.R &  # about 4pm Tuesday 13 sep, finished about 430 14 sep.
+
 *------------------------------------------------------------------------------------------------------------------------
 *  SPR Trees: Chris Rippey, OOC Arboriculturist (206) 386-1688 mailto:christopher.rippey@seattle.gov
 *------------------------------------------------------------------------------------------------------------------------
@@ -693,7 +720,20 @@ ZHX2
                url="//s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/genes/gencode.v18.collapsed.bed",
                index_url="//s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/genes/gencode.v18.collapsed.bed.idx", 
                display_mode="EXPANDED")])
-
+    igv  # to display the track browser
+  
+    #--------------------------------------------------
+    def createTrack(tblHits, trackName):
+      tblHits.to_csv("%s.bed" % trackName, sep="\t", header=False, index=False)
+      print("wrote %s.bed" % trackName)
+      newTrack = Track(name=trackName,
+                       format="bed",
+                       indexed=False,
+                       url="http://whovian:9999/files/%s.bed" % trackName,
+                      display_mode='COLLAPSED')
+      return(newTrack)
+                                                                                
+    igv.load_track(myTrack)
 
 *------------------------------------------------------------------------------------------------------------------------
 * pandas DataFrame tips, extract column as list
