@@ -608,7 +608,43 @@ ZHX2
      tbl.iloc[0:5, 1:14]
      tbl.loc[0:4, "chrom":"score1"]     
 
-     
+    import pandas as pd
+    tbl = pd.DataFrame([["chr1", 10,  100,  "fp1", 9.9],
+                        ["chr1", 90,  130,  "fp2", 0.5],
+                        ["chr1", 45,  80,   "fp3", 0.9],
+                        ["chr1", 112, 140,  "fp4", 32],
+                       ])
+    tbl.columns = ['chrom', 'start', 'end', 'name', 'score']
+    tbl.iloc[:, [4,3,4]]
+         4    3    4
+    0  9.9  fp1  9.9
+    1  0.5  fp2  0.5
+    
+    tbl.columns = ['chrom', 'start', 'end', 'name', 'score']
+    tbl
+      chrom start  end name  score
+    0  chr1    10  100  fp1    9.9
+    1  chr1    90  130  fp2    0.5
+    tbl.loc[:, ['chrom', 'name', 'score']]
+      chrom name  score
+    0  chr1  fp1    9.9
+    1  chr1  fp2    0.5
+
+  --- pandas tips, get scalar values, get single rows or columns as heterogeneous lists
+    tbl.iat[0,0] # 'chr1'
+    tbl.iloc[0,0] # 'chr1'
+    type(tbl.iloc[0,0]) <class 'str'>
+
+    tbl.iloc[0,:].tolist() # ['chr1', 10, 100, 'fp1', 9.9000000000000004]
+    tbl.iloc[:,0].tolist() # ['chr1', 'chr1']
+
+  --- try to emulate R's paste function on three lists, to create a loc string from chrom:start-end
+  
+
+  --- pandas tips, remove a column
+
+    tbl.drop(tbl.columns[0], axis=1, inplace=True)  # duplicate "loc" columns.  drop the first
+
 *------------------------------------------------------------------------------------------------------------------------
 * jupyter tips, port
 
