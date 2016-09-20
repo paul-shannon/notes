@@ -97,11 +97,96 @@ bed format: chrom, start, end, name, score, strand
 * top
 #------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------
+* aggregate data.frame
+
+  data.mtcars
+  aggregate(mtcars, by=list(cylinderCount=mtcars$cyl), FUN=mean, na.rm=TRUE)
+     cylinderCount      mpg cyl     disp        hp     drat       wt     qsec        vs        am     gear     carb
+   1             4 26.66364   4 105.1364  82.63636 4.070909 2.285727 19.13727 0.9090909 0.7272727 4.090909 1.545455
+   2             6 19.74286   6 183.3143 122.28571 3.585714 3.117143 17.97714 0.5714286 0.4285714 3.857143 3.428571
+   3             8 15.10000   8 353.1000 209.21429 3.229286 3.999214 16.77214 0.0000000 0.1428571 3.285714 3.500000
+
+
 #------------------------------------------------------------------------------------------------------------------------
+* feature table:  add count column for each method, choose best value, when multiple samples result (20 sep 2016)
+
+  cd ~/github/BDDS/trenadb/featureTable/fimoLocVsMethodScores
+  save(tbl.cswhp, file="tbl.cswhp-2500bases.RData")
+  dim(tbl.cswhp) # [1] 559  22
+
+  this table reveals
+
+  --- multiple wellington samples at  chr19:44903772-44903790
+    extract.R now has createWellingtonTable, which counts samples, calculates median and best scores, collapses
+    on loc and motif.
+
+  --- next up: createHintTable in the same style
+  
 #------------------------------------------------------------------------------------------------------------------------
+#  piq results need motif location correction (19 sep 2016)
+
+  cd ~/github/BDDS/trenadb/featureTable/fimoLocVsMethodScores/
+  extract.R
+
+  status: motivated construction of refimo and test.refimo functions
+  
+# we want wellington, hint, chipseq and piq to all use the same fimo regions
+# in contrast to the other methods, where i do the fimo intersections, piq does its own
+# and apparently does so on an obsolete motif library.  and it may eliminate second-best hits
+# case in point:
+#   tbl.cswhp
+# 13  chr19:44904896-44904914     19  CTCF    69 13.14750 8.31e-06     <NA>       NA       NA       NA                 <NA>    NA        NA       NA     <NA>       NA          NA         NA       NA
+# 14  chr19:44904896-44904915     20  <NA>    NA       NA       NA     <NA>       NA       NA       NA                 <NA>    NA        NA       NA MA0139.1  8.12448 -0.19550100   5.687290 0.876744
+# 15  chr19:44904899-44904917     19  CTCF    69  9.70492 4.36e-05     <NA>       NA       NA       NA                 <NA>    NA        NA       NA     <NA>       NA          NA         NA       NA
+#
+# solution:
+#  getFimoHits("chr19", 44904895, 44904915)
+#   motifname chrom    start   endpos strand motifscore     pval empty            sequence
+# 1  MA0139.1    19 44904896 44904914      +    13.1475 8.31e-06       TGGCAGCCAGGGGGAGGTG
+# 2  MA0155.1    19 44904900 44904911      +    12.5816 2.35e-05              AGCCAGGGGGAG
+# 3  GTF2I.p2    19 44904904 44904912      +    13.5610 1.50e-05                 AGGGGGAGG
+# choose motif with minium pval, thus getting the best full-length character match
+#
+#  tbl.refimo <- getFimoHits("chr19", 44904896-2, 44904915+2)
+#  tbl.refimo[which(tbl.refimo$pval == min(tbl.refimo$pval)),]
+#   motifname chrom    start   endpos strand motifscore     pval empty            sequence
+# 2  MA0139.1    19 44904896 44904914      +    13.1475 8.31e-06       TGGCAGCCAGGGGGAGGTG
+# rewirte tbl with this corrected finding
+
+
 #------------------------------------------------------------------------------------------------------------------------
+* footprint machine learning status new strategy: fimoLocMethodScores (monday 19 sep 2016)
+
+  how many fimo regions on chr19?
+  how many hint, wellington, piq regions on chr19
+
+  --- learn about fimo on chr19
+     tbl.fimo19 <- dbGetQuery(db.fimo, "select * from hg38 where chr='19'") # 10,639,360
+     x <- with(tbl.fimo19, paste(start, endpos, sep=".")) 
+     length(x); # 10639360
+     length(unique(x)) # 7925777
+     x <- with(tbl.fimo19, paste(motifname, start, endpos, sep=".")) 
+     length(x)         # [1] 10,639,360
+     length(unique(x)) # [1] 10,118,357
+       # ---> just 5%.  maybe all or mostly explained by  palindromic motifs on opposite strands
+     dups <- which(duplicated(x)) 
+     x[dups[1]] # [1] "MA0003.3.60072.60082"
+     subset(tbl.fimo19, motifname=="MA0003.3" & start==60072 & endpos==60082)
+      #     motifname chr start endpos strand motifscore     pval empty    sequence
+      # 24824  MA0003.3  19 60072  60082      +    11.5636 5.79e-05       GCCCTCAGGCA
+      # 24825  MA0003.3  19 60072  60082      -    11.0909 7.81e-05       TGCCTGAGGGC
+
 #------------------------------------------------------------------------------------------------------------------------
-# possible hint/fimo fill bug (16 sep 2016)
+* footprint machine learning status: abandon fimoLocMethodMotif for fimoLocMethodScores (monday 19 sep 2016)
+
+  abandon fimoLocs rows vs many hundreds of method*motif in favor of
+   mv'd ~/github/BDDS/trenadb/featureTable/extract.R to fimoLocVsMethodMotifs
+
+  fimoLocs rows vs all scores for each method and a chipseq TF (when known)
+  if multiple fimoLocs correspond to observed chipseq TFs, then duplicate the rows.
+
+  
+
 
 #------------------------------------------------------------------------------------------------------------------------
 * fill piq (16 sep 2016) for chr19 only to start, for apoe feature table (16 sep 2016)
