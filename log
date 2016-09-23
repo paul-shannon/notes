@@ -2794,10 +2794,10 @@ whovian.mm10> head -1 mm10-gtf.tsv | tr "\t" "\n" | nl
 *------------------------------------------------------------------------------------------------------------------------
 * jupyter tips: config file customizations (23 sep 2016)
 
-c.NotebookApp.ip = '*'
-c.NotebookApp.open_browser = True
-c.NotebookApp.port = 9998
-c.NotebookApp.allow_origin = '*'     # allow any origin to access the notebook server
+  c.NotebookApp.ip = '*'
+  c.NotebookApp.open_browser = True
+  c.NotebookApp.port = 9998
+  c.NotebookApp.allow_origin = '*'     # allow any origin to access the notebook server
 
 *------------------------------------------------------------------------------------------------------------------------
 * recap:  run gemini jupyter notebook on whovian, display on laptop (28 jul 2016)
