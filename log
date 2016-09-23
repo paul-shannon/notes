@@ -97,6 +97,79 @@ bed format: chrom, start, end, name, score, strand
 * top
 #------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------
+* rory asks:
+
+   missing value for score2 h&w should be -100
+   just 1 length field (currently length.w and length.h)
+   what do zero chipseq scores indicate?
+   
+#------------------------------------------------------------------------------------------------------------------------
+* hint + wellington feature table, chr19: why so many identical locs for elf1 (for example) (22 sep 2016)
+
+   cd ~/github/BDDS/trenadb/featureTable/fimoLocVsMethodScores/
+   source("extract.R")
+
+   print(load("chr19.42m_47M.RData"))
+   tbl.elf1 <- subset(tbl, csTF=="ELF1")
+    dim(tbl.elf1) #  71063    21
+
+   tail(as.data.frame(sort(table(tbl.elf1$loc))))
+                          Var1 Freq
+   739 chr19:45423911-45423920 2548
+   740 chr19:45485424-45485433 2548
+   741 chr19:45691978-45691987 2548
+   742 chr19:45863284-45863293 2548
+   743 chr19:45995176-45995185 2548
+   744 chr19:46850859-46850868 2548
+
+   tbl.elf1.1.loc <- subset(tbl, loc=="chr19:45423911-45423920")  # 5292   21
+   dim(subset(tbl.elf1.1.loc, motif==csmotif))  #  378  21
+   tbl.elf1.1.loc.trimmed <- subset(tbl.elf1.1.loc, motif==csmotif)   # 378 21
+
+   unique(tbl.elf1.1.loc.trimmed$loc) # [1] "chr19:45423911-45423920"
+   dim(getHits(db.wellington, "chr19", 45423911, 45423920))  #   0 0
+   dim(getHits(db.wellington, "chr19", 45423910, 45423921))  #  56 17
+
+   --- reproduce in a test in extract.R, test.ensemble.v1
+
+  # test in one 12 base region, very rich in motifs
+   chrom <- "chr19"
+   target.loc <- "chr19:45423911-45423920"
+   start <- 45423910
+   end   <- 45423921
+   ft.x  <- ensemble.v1(chrom, start-100, end + 100) # be sure to get a chipseq hit
+   ft.xs <- subset(ft.x, loc==small.loc)
+   dim(subset(ft.x, loc==target.loc)) # [1] 5292   22
+   
+
+
+#------------------------------------------------------------------------------------------------------------------------
+* hint + wellington feature table, chr19,
+
+  seth studied cebpe, found hint to be better than wellington.  this is a 1-motif TF.
+  
+#------------------------------------------------------------------------------------------------------------------------
+* 5MB hint + wellington feature table for rory's first run (21 sep 2016)
+
+  on riptide
+  
+  cd ~/github/BDDS/trenadb/featureTable/fimoLocVsMethodScores/
+  extract.R::test.ensemble.v1
+
+   chrom <- "chr19"
+   start <- 42000000
+   end   <- 47000000
+   ft <- ensemble.v1(chrom, start, end)
+   save(ft, file="ft.42M.47M.hint.wellington.raw.RData")
+   tbl <- cleanFeatureTable(ft)  #   268510     21
+   save(tbl, file="chr19.42m_47M.RData")
+   tail(sort(table(tbl$loc)), n=1)  #    chr19:45863284-45863293 5488 
+
+   print(load("~/github/BDDS/trenadb/featureTable/lymphoblast/chr19.42m_47M.RData"))  #  "tbl"
+   dim(tbl) #  268510     21
+
+
+#------------------------------------------------------------------------------------------------------------------------
 * aggregate data.frame
 
   data.mtcars
@@ -2717,6 +2790,14 @@ whovian.mm10> head -1 mm10-gtf.tsv | tr "\t" "\n" | nl
      notebook for everyone to examine.
 
   
+
+*------------------------------------------------------------------------------------------------------------------------
+* jupyter tips: config file customizations (23 sep 2016)
+
+c.NotebookApp.ip = '*'
+c.NotebookApp.open_browser = True
+c.NotebookApp.port = 9998
+c.NotebookApp.allow_origin = '*'     # allow any origin to access the notebook server
 
 *------------------------------------------------------------------------------------------------------------------------
 * recap:  run gemini jupyter notebook on whovian, display on laptop (28 jul 2016)
