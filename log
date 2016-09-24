@@ -96,6 +96,58 @@ bed format: chrom, start, end, name, score, strand
 
 * top
 #------------------------------------------------------------------------------------------------------------------------
+*  different fimo values at the same spot, for the same motif, in wellington (perhaps hint) (23 sep 2016)
+
+  on whovian
+  test.createWellingtonTable()
+  browser statement in for loop, sampls are repeated:
+
+  tbl.sub[order(tbl.sub$sample_id),]
+                         loc     name length   score1   score2   score3   sample_id
+  29 chr19:44903773-44903785 MA0813.1     13 -45.5899  9.09836 9.12e-05 ENCSR000EJB
+  43 chr19:44903773-44903785 MA0813.1     13 -45.5899 11.59020 3.71e-05 ENCSR000EJB
+  44 chr19:44903773-44903785 MA0813.1     13 -39.4261  9.09836 9.12e-05 ENCSR000EJD
+  45 chr19:44903773-44903785 MA0813.1     13 -39.4261 11.59020 3.71e-05 ENCSR000EJD
+  27 chr19:44903773-44903785 MA0813.1     13 -44.0255  9.09836 9.12e-05 ENCSR000EJE
+  33 chr19:44903773-44903785 MA0813.1     13 -44.0255 11.59020 3.71e-05 ENCSR000EJE
+  48 chr19:44903773-44903785 MA0813.1     13 -51.5143 11.59020 3.71e-05 ENCSR000EJF
+  61 chr19:44903773-44903785 MA0813.1     13 -51.5143  9.09836 9.12e-05 ENCSR000EJF
+  50 chr19:44903773-44903785 MA0813.1     13 -12.9359 11.59020 3.71e-05 ENCSR000EJI
+  71 chr19:44903773-44903785 MA0813.1     13 -12.9359  9.09836 9.12e-05 ENCSR000EJI
+  38 chr19:44903773-44903785 MA0813.1     13 -36.3668 11.59020 3.71e-05 ENCSR000EJJ
+  64 chr19:44903773-44903785 MA0813.1     13 -36.3668  9.09836 9.12e-05 ENCSR000EJJ
+  53 chr19:44903773-44903785 MA0813.1     13 -24.8149 11.59020 3.71e-05 ENCSR000EJK
+  66 chr19:44903773-44903785 MA0813.1     13 -24.8149  9.09836 9.12e-05 ENCSR000EJK
+  55 chr19:44903773-44903785 MA0813.1     13 -35.5984 11.59020 3.71e-05 ENCSR000EJL
+  72 chr19:44903773-44903785 MA0813.1     13 -35.5984  9.09836 9.12e-05 ENCSR000EJL
+
+   visible directly in wellington table:
+   x <- getHits(db.wellington, "chr19", 44903773, 44903785)
+   subset(x, name=="MA0813.1")
+                       loc chrom    start   endpos               type     name length strand   sample_id     method             provenance   score1   score2   score3 score4 score5 score6
+   17 chr19:44903773-44903785 chr19 44903773 44903785 motif.in.footprint MA0813.1     13      + ENCSR000EJB WELLINGTON corys.wellington.minid -45.5899  9.09836 9.12e-05     NA     NA     NA
+   18 chr19:44903773-44903785 chr19 44903773 44903785 motif.in.footprint MA0813.1     13      - ENCSR000EJB WELLINGTON corys.wellington.minid -45.5899 11.59020 3.71e-05     NA     NA     NA
+   24 chr19:44903773-44903785 chr19 44903773 44903785 motif.in.footprint MA0813.1     13      + ENCSR000EJD WELLINGTON corys.wellington.minid -39.4261  9.09836 9.12e-05     NA     NA     NA
+   25 chr19:44903773-44903785 chr19 44903773 44903785 motif.in.footprint MA0813.1     13      - ENCSR000EJD WELLINGTON corys.wellington.minid -39.4261 11.59020 3.71e-05     NA     NA     NA
+   27 chr19:44903773-44903785 chr19 44903773 44903785 motif.in.footprint MA0813.1     13      + ENCSR000EJF WELLINGTON corys.wellington.minid -51.5143  9.09836 9.12e-05     NA     NA     NA
+   32 chr19:44903773-44903785 chr19 44903773 44903785 motif.in.footprint MA0813.1     13      + ENCSR000EJE WELLINGTON corys.wellington.minid -44.0255  9.09836 9.12e-05     NA     NA     NA
+   33 chr19:44903773-44903785 chr19 44903773 44903785 motif.in.footprint MA0813.1     13      - ENCSR000EJE WELLINGTON corys.wellington.minid -44.0255 11.59020 3.71e-05     NA     NA     NA
+   35 chr19:44903773-44903785 chr19 44903773 44903785 motif.in.footprint MA0813.1     13      + ENCSR000EJI WELLINGTON corys.wellington.minid -12.9359  9.09836 9.12e-05     NA     NA     NA
+   41 chr19:44903773-44903785 chr19 44903773 44903785 motif.in.footprint MA0813.1     13      - ENCSR000EJF WELLINGTON corys.wellington.minid -51.5143 11.59020 3.71e-05     NA     NA     NA
+   43 chr19:44903773-44903785 chr19 44903773 44903785 motif.in.footprint MA0813.1     13      + ENCSR000EJJ WELLINGTON corys.wellington.minid -36.3668  9.09836 9.12e-05     NA     NA     NA
+   49 chr19:44903773-44903785 chr19 44903773 44903785 motif.in.footprint MA0813.1     13      - ENCSR000EJI WELLINGTON corys.wellington.minid -12.9359 11.59020 3.71e-05     NA     NA     NA
+   51 chr19:44903773-44903785 chr19 44903773 44903785 motif.in.footprint MA0813.1     13      + ENCSR000EJK WELLINGTON corys.wellington.minid -24.8149  9.09836 9.12e-05     NA     NA     NA
+   52 chr19:44903773-44903785 chr19 44903773 44903785 motif.in.footprint MA0813.1     13      - ENCSR000EJK WELLINGTON corys.wellington.minid -24.8149 11.59020 3.71e-05     NA     NA     NA
+   57 chr19:44903773-44903785 chr19 44903773 44903785 motif.in.footprint MA0813.1     13      - ENCSR000EJJ WELLINGTON corys.wellington.minid -36.3668 11.59020 3.71e-05     NA     NA     NA
+   59 chr19:44903773-44903785 chr19 44903773 44903785 motif.in.footprint MA0813.1     13      + ENCSR000EJL WELLINGTON corys.wellington.minid -35.5984  9.09836 9.12e-05     NA     NA     NA
+   60 chr19:44903773-44903785 chr19 44903773 44903785 motif.in.footprint MA0813.1     13      - ENCSR000EJL WELLINGTON corys.wellington.minid -35.5984 11.59020 3.71e-05     NA     NA     NA
+
+   are these duplications also in the data from which I filled?
+
+   --- examine the wellington fill
+     cd ~/s/data/postgres-fill/wellington/
+     wellington.path <- "/local/Cory/for_Paul/wellington_results"
+   
 #------------------------------------------------------------------------------------------------------------------------
 * rory asks:
 
@@ -257,7 +309,6 @@ bed format: chrom, start, end, name, score, strand
 
   fimoLocs rows vs all scores for each method and a chipseq TF (when known)
   if multiple fimoLocs correspond to observed chipseq TFs, then duplicate the rows.
-
   
 
 
