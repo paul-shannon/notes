@@ -78,7 +78,7 @@ tail -f /var/log/httpd/rcytoscape/access_log
 (set-default-font "-adobe-courier-bold-r-normal--20-*")
 
 
-#-------------------------------------------------------------------------------------------------100
+*------------------------------------------------------------------------------------------------100
 ;; eval last sexp: ^x^e
 (set-background-color "wheat")
 (set-background-color "lemonChiffon3")
@@ -95,7 +95,127 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 bed format: chrom, start, end, name, score, strand
 
 * top
-#------------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* metazoan intercellular communication: before brains, before nervous systems, pace dennett (24 sep 2016)
+
+   put some of these into ~/Documents
+  6499814 Sep 25 14:08 animal_evolution-book.pdf
+   604249 Sep 25 14:04 molecularOriginsOfMultiCellularOrigins.pdf
+   388751 Sep 25 14:00 rtkAndAnimalOrigins.pdf
+
+
+  ---- Werner E.G Müller
+
+  The Origin of Metazoan Complexity: Porifera as Integrated Animals
+  http://icb.oxfordjournals.org/content/43/1/3.full
+
+  Ecological Facilitation May Drive Major Evolutionary Transitions
+     http://bioscience.oxfordjournals.org/content/59/5/399.full
+
+  The chemokine networks in sponges: potential roles in morphogenesis, immunity and stem cell formation
+
+   Bauplan of Urmetazoa: Basis for Genetic Complexity of Metazoa
+
+  Molecular cloning of a tyrosine kinase gene from the marine sponge
+  Geodia cydonium: a new member belonging to the receptor tyrosine
+  kinase class II family
+
+  Tyrosine kinase signaling and the emergence of multicellularity, W. Todd Miller  (got pdf)
+
+
+
+   The Genomic and Cellular Foundations of Animal Origins
+   Annual Review of Genetics
+   Vol. 47: 509-537 (Volume publication date November 2013)
+
+  The molecular origins of multicellular transitions, Antonis Rokas (got pdf) 2008
+
+
+  ---- from animal evolution book 
+     Genomic, phylogenetic, and cell biological insights into metazoan origins
+    Scott A. Nichols, Mark J. Dayel, and Nicole King.
+    chapter 3
+
+   Over 600 million years ago (Ma), the first multicellular metazoans
+   evolved from their single- celled ancestors. Although not recorded
+   in the fossil record, the earliest events in metazoan evolution
+   can be inferred by integrating ndings from phylo- genetics,
+   genomics, and cell biology. Comparisons of choano agellates
+   (microeukaryote relatives of metazoans) with sponges (the earliest
+   known metazoans) reveal genetic innovations associated with
+   metazoan origins. Among these are the evolu- tion of the gene
+   families required for cell adhesion and cell signalling, the
+   presence of which catalysed the evolution of multicellularity and
+   the functions of which have since been elaborated to regulate cell
+   differentiation, developmental patterning, morphogenesis, and the
+   functional integration of tissues. The most ancient
+   tissues—differentiated epithelia—are found in sponges and evolved
+   before the origin and diversi cation of modern phyla.
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* build latest jupyter lab (24 sep 2016)
+
+  --- my improvisation
+      git clone https://github.com/jupyter/jupyterlab.git
+      cd jupyterlab
+      npm install
+      npm run build
+      jupyter serverextension enable --py jupyterlab
+      npm test
+      jupyter lab
+
+   --- looked at src/imagewidget
+     cd ~/github/jupyterlab
+     created symlink ln -s ~/Desktop/hazelnutBranch.jpg branch.jpg
+
+   --- add geojson leaflet widget
+     http://jupyterlab-tutorial.readthedocs.io/en/latest/adding_content.html
+     npm search leaflet # lots found. npm WARN Building the local index for the first time, please be patient
+
+      --> leaflet       JavaScript library for mobile-friendly interactive maps      =mourner             2016-08-05 0.7.7       gis map
+
+     npm install --save leaflet
+
+
+    Adding Content
+       As an example: Add a leaflet viewer plugin for geoJSON files.
+       Go to npm: search for leaflet (success!).
+       Go to jupyterlab top level source directory: npm install --save leaflet. This adds the file to the dependencies in package.json.
+
+      Install the tsd node package globally, in order to fetch typings files: npm install -g tsd.
+      Try to install the typings files from the top level source directory: tsd install leaflet. (success!)
+      If there are no typings, we must create our own. An example typings file that exports functions is ansi_up.
+          An example with a class is xterm.
+      Add a reference to the new library in src/typings.d.ts.
+      Create a folder in src for the plugin.
+      Add index.ts and plugin.ts files.
+      If creating CSS, import them in src/default-themes/index.css.
+      The index.ts file should have the core logic for the plugin. In this case, it should create a widget and widget factory for rendering geojson files (see Documents).
+      The plugin.ts file should create the extension and add the content to the application. In this case registering the widget factory using the document registry.
+      Run npm run build from jupyterlab/jupyterlab
+      Run jupyter lab and verify changes.
+
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* clone build install phosphorjs (24 sep 2016)
+
+  git clone https://github.com/phosphorjs/phosphor.git
+  cd phosphor
+  npm install
+  npm run build
+  npm run build:example
+  cd example
+  python -m http.server 8001
+  Now copy the contents of the example directory on some web server and open index.html in your browser.
+  
+*-----------------------------------------------------------------------------------------------------------------------
 *  different fimo values at the same spot, for the same motif, in wellington (perhaps hint) (23 sep 2016)
 
   on whovian
@@ -148,14 +268,14 @@ bed format: chrom, start, end, name, score, strand
      cd ~/s/data/postgres-fill/wellington/
      wellington.path <- "/local/Cory/for_Paul/wellington_results"
    
-#------------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
 * rory asks:
 
    missing value for score2 h&w should be -100
    just 1 length field (currently length.w and length.h)
    what do zero chipseq scores indicate?
    
-#------------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
 * hint + wellington feature table, chr19: why so many identical locs for elf1 (for example) (22 sep 2016)
 
    cd ~/github/BDDS/trenadb/featureTable/fimoLocVsMethodScores/
@@ -195,12 +315,12 @@ bed format: chrom, start, end, name, score, strand
    
 
 
-#------------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
 * hint + wellington feature table, chr19,
 
   seth studied cebpe, found hint to be better than wellington.  this is a 1-motif TF.
   
-#------------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
 * 5MB hint + wellington feature table for rory's first run (21 sep 2016)
 
   on riptide
@@ -221,7 +341,7 @@ bed format: chrom, start, end, name, score, strand
    dim(tbl) #  268510     21
 
 
-#------------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
 * aggregate data.frame
 
   data.mtcars
@@ -232,7 +352,7 @@ bed format: chrom, start, end, name, score, strand
    3             8 15.10000   8 353.1000 209.21429 3.229286 3.999214 16.77214 0.0000000 0.1428571 3.285714 3.500000
 
 
-#------------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
 * feature table:  add count column for each method, choose best value, when multiple samples result (20 sep 2016)
 
   cd ~/github/BDDS/trenadb/featureTable/fimoLocVsMethodScores
@@ -247,7 +367,7 @@ bed format: chrom, start, end, name, score, strand
 
   --- next up: createHintTable in the same style
   
-#------------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
 #  piq results need motif location correction (19 sep 2016)
 
   cd ~/github/BDDS/trenadb/featureTable/fimoLocVsMethodScores/
@@ -279,7 +399,7 @@ bed format: chrom, start, end, name, score, strand
 # rewirte tbl with this corrected finding
 
 
-#------------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
 * footprint machine learning status new strategy: fimoLocMethodScores (monday 19 sep 2016)
 
   how many fimo regions on chr19?
@@ -301,7 +421,7 @@ bed format: chrom, start, end, name, score, strand
       # 24824  MA0003.3  19 60072  60082      +    11.5636 5.79e-05       GCCCTCAGGCA
       # 24825  MA0003.3  19 60072  60082      -    11.0909 7.81e-05       TGCCTGAGGGC
 
-#------------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
 * footprint machine learning status: abandon fimoLocMethodMotif for fimoLocMethodScores (monday 19 sep 2016)
 
   abandon fimoLocs rows vs many hundreds of method*motif in favor of
@@ -312,7 +432,7 @@ bed format: chrom, start, end, name, score, strand
   
 
 
-#------------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
 * fill piq (16 sep 2016) for chr19 only to start, for apoe feature table (16 sep 2016)
 
   cd ~/github/BDDS/trenadb/piq/
@@ -323,7 +443,7 @@ bed format: chrom, start, end, name, score, strand
 
   --- chr19 only started at 10am
   
-#------------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
 # apoe regulated by
 
   pparg 
@@ -334,7 +454,7 @@ bed format: chrom, start, end, name, score, strand
    http://www.nature.com/nrneurol/journal/v9/n2/abs/nrneurol.2012.263.html
    nature, february 2013
 
-#------------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
 * annotate lymphoblast chipseq hits for actual matching motif, using fimo (13 sep 2016)
 
   cd ~/github/BDDS/trenadb/featureMatrix/
@@ -481,7 +601,7 @@ subset(tbl.combined, bindingSite==TRUE)
 
 
 
-#------------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
 * making sense of cusanovich ChIP-seq data with fimo (12 sep 2016)
 
   chrom <- "chr13"
@@ -967,7 +1087,7 @@ ZHX2
                display_mode="EXPANDED")])
     igv  # to display the track browser
   
-    #--------------------------------------------------
+    *-------------------------------------------------
     def createTrack(tblHits, trackName):
       tblHits.to_csv("%s.bed" % trackName, sep="\t", header=False, index=False)
       print("wrote %s.bed" % trackName)
@@ -10601,7 +10721,7 @@ ssh pshannon@whovian ls -l /local/bdds/data/ADNI/test/*_list
     xmlSApply(getNodeSet(doc, "/title"), function(n) xmlValue(n))
        # list()
 
-    #------------------------------------------------------------------------------------------------------------------------
+    *-----------------------------------------------------------------------------------------------------------------------
     # now try the more complicated sbml file, much reduced, containing just 1 reaction, 4 species, and one "gene_association"
 
     file <- "small.sbml"
@@ -12780,7 +12900,7 @@ g = [{"id":"n99324","x":34087.9375,"y":5474.07},
      if(!exists("gdb"))
        gdb <- startGraph("http://localhost:7474/db/data/", username="neo4j", password="isb");
 
-     #------------------------------------------------------------------------------------------------------------------------
+     *-----------------------------------------------------------------------------------------------------------------------
      findRegulators <- function(target) {
        query <- "match(a)-[r {type: 'regulates'}]->(b {name: {name}})  return a.name, b.name, r.type, r.weight"
        result <- cypherToList(gdb, query, name=target)
@@ -14652,11 +14772,11 @@ roles.csv
             from json import *
             from urllib.request import urlopen
             from urllib.parse import quote
-            #----------------------------------------------------------------------------------------------------
+            *---------------------------------------------------------------------------------------------------
             PORT = 6001
             ws = create_connection("ws://localhost:%d" % PORT)
             wsAux = create_connection("ws://localhost:%d" % (PORT+1))
-            #----------------------------------------------------------------------------------------------------
+            *---------------------------------------------------------------------------------------------------
             # make chinook 4-field json request over websocket
             def sendWsMain(cmd, payload):
 
@@ -14665,7 +14785,7 @@ roles.csv
                result = loads(ws.recv())
                return(result["payload"])
 
-            #----------------------------------------------------------------------------------------------------
+            *---------------------------------------------------------------------------------------------------
             # make chinook 4-field json request over websocket
             def sendWsAux(cmd, payload):
 
@@ -14674,7 +14794,7 @@ roles.csv
                result = loads(wsAux.recv())
                return(result["payload"])
 
-            #----------------------------------------------------------------------------------------------------
+            *---------------------------------------------------------------------------------------------------
             # do a simple get, check a "hello" comes back
             def checkMainBasicHttpResponse():
 
@@ -14683,7 +14803,7 @@ roles.csv
                assert(response == 'hello from ChinookServer main port')
                print("http server running fine on main port %d" % PORT)
 
-            #----------------------------------------------------------------------------------------------------
+            *---------------------------------------------------------------------------------------------------
             # do a simple get, check a "hello" comes back
             def checkAuxBasicHttpResponse():
 
@@ -14692,7 +14812,7 @@ roles.csv
                assert(response == 'hello from ChinookServer auxiliary port')
                print("http server running fine on aux port %d" % (PORT + 1))
 
-            #----------------------------------------------------------------------------------------------------
+            *---------------------------------------------------------------------------------------------------
             # make chinook 4-field json request over http
             def sendHttpMain(cmd, payload):
 
@@ -14703,7 +14823,7 @@ roles.csv
                payload = result["payload"]
                return(payload)
 
-            #----------------------------------------------------------------------------------------------------
+            *---------------------------------------------------------------------------------------------------
             # make chinook 4-field json requestover http
             def sendHttpAux(cmd, payload):
 
@@ -14714,7 +14834,7 @@ roles.csv
                payload = result["payload"]
                return(payload)
 
-            #----------------------------------------------------------------------------------------------------
+            *---------------------------------------------------------------------------------------------------
 
    and makes these calls
 
@@ -15415,13 +15535,13 @@ result = loads(ws.recv())
      start python in separate shell, these contents in
          getGraph.py
 
-             #----------------------------------------------------------------------------------------------------
+             *---------------------------------------------------------------------------------------------------
              import sys
              import time
              from websocket import create_connection
              from json import *
              ws = create_connection("ws://localhost:6001")
-             #----------------------------------------------------------------------------------------------------
+             *---------------------------------------------------------------------------------------------------
              cmd = "specifyCurrentDataset"
              callback = "datasetSpecified"
              dataset = "TCGAgbm";
@@ -18444,7 +18564,7 @@ curl http://chinookdemo2.sttrcancer.org
    -------- file
       import requests
       import smtplib
-      #----------------------------------------------------------------------------------------------------
+      *---------------------------------------------------------------------------------------------------
       def mail(recipient, subject, message, sendersEmailAccount, sendersPassword):
 
           try:
@@ -18460,7 +18580,7 @@ curl http://chinookdemo2.sttrcancer.org
           except Exception,R:
               return R
 
-      #----------------------------------------------------------------------------------------------------
+      *---------------------------------------------------------------------------------------------------
       def runTests(recipient, password):
 
         urls = ["http://oncoscape.sttrcancer.org",
@@ -18480,7 +18600,7 @@ curl http://chinookdemo2.sttrcancer.org
                mail(recipient,
                     title, message, recipient, password)
 
-      #----------------------------------------------------------------------------------------------------
+      *---------------------------------------------------------------------------------------------------
       f = open("/Users/pshannon/.gmail-identity")
       text = f.read()
       [user, password, junk] = text.split("\n")
@@ -31110,7 +31230,7 @@ presents a slider allowing for select/hide by edge weight
 [5] "gene.names"    "influence.nw"  "knockIn"       "knockIn.names"
 [9] "ratios"        "redExp"        "reg.infs"      "tau"
 
-#-----------------------------------------------------------------
+*----------------------------------------------------------------
 #
 # why 486 nodes?  which one belongs to which row?
 > length (colnames (influence.nw))  -> 114
@@ -31149,7 +31269,7 @@ VNG1548c   VNG6287h   VNG0194h   VNG2579g   VNG0320h
 
 interpret: these 5 genes control cluster 1 synthesis, which
 from clusterStack [[1]] contains  4 genes: "VNG6413h" "VNG2096g" "VNG6372h" "VNG6412h"
-#-----------------------------------------------------------------
+*----------------------------------------------------------------
 # cv.err: rich says: "CV error for each node" or "error for each bicluster"
 # why 486 nodes?  which one belongs to which row?
 
@@ -31158,11 +31278,11 @@ from clusterStack [[1]] contains  4 genes: "VNG6413h" "VNG2096g" "VNG6372h" "VNG
 Min.   1st Qu.    Median      Mean   3rd Qu.      Max.
 0.0004739 0.0071150 0.0105100 0.0122300 0.0156800 0.0575800
 
-#-----------------------------------------------------------------
+*----------------------------------------------------------------
 # ratios: log 10 ratios in 130 conditions for 2415 genes
 #
 
-#-----------------------------------------------------------------
+*----------------------------------------------------------------
 # ratios: log 10 ratios in 130 conditions for 2415 genes
 #
 
@@ -40351,35 +40471,35 @@ method: "none"      "median"  "loess" "printtiploess"
 plotPrintTipLoess (MA)
 
 
-#----------------------------------------
+*---------------------------------------
 # QC plotting: look at the red channel
-#----------------------------------------
+*---------------------------------------
 
 summary (RG$R [,1])    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
 26.0    31.0    40.0   248.7   105.0 59900.0
 for (i in 1:39) imageplot (RG$R[,i], RG$printer,low='white', high='red', zlim=c(26, 105))
 
-#----------------------------------------
+*---------------------------------------
 # QC plotting: look at the ratios
-#----------------------------------------
+*---------------------------------------
 for (i in 1:39) imageplot (MA$M[,i], RG$printer,zlim=c(-3,3))
 
 plotDensities (RG)
 plotDensities (MA)
 plotPrintTipLoess (MA)
 
-#------------------------------------------
+*-----------------------------------------
 # QC plotting: one MA plot for every slide
-#------------------------------------------
+*-----------------------------------------
 par (mfrow = c (5,8))
 for (i in 1:39) plotMA (MA, i)
 
-#--------------------------------------------------------------------------------
+*-------------------------------------------------------------------------------
 # QC plotting: 5 image plots per slide
 # from a function in ~/s/data/sbri/jing/anemia-two-color/R/go4.R
 # plot red background & red signal; green background & green signal. use min &
 # 3rd quartile to scale the intensity.   finally, plot the ratios
-#--------------------------------------------------------------------------------
+*-------------------------------------------------------------------------------
 plotSlide = function (slideNumber) {
 par (mfrow = c (3,2))
 imageplot (RG$Rb [,slideNumber],
