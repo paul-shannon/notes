@@ -100,6 +100,74 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* trenadb feature table cleanup continued (28 sep 2016)
+
+  cd ~/github/BDDS/trenadb/featureTable/fimoLocVsMethodScores
+  extract.R
+
+  just added these two tests:
+       test.ensemble_hint_wellington_empty_chipseq()
+       test.ensemble_hint_wellington_chipseq()
+
+  in which all w & h hits match, just one loc per test.
+  now add 2 locs per test, one with only h, one with only w
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* run trena on trem2 for cory, ampAD trip (28 sep 2016)
+
+  cd ~/github/TReNA/inst/demos/trem2/
+  using ~/s/data/priceLab/AD/ampADMayo.64253genes.278samples.RData  # 3,1864,131 Apr 22 12:07 
+
+  ~/github/TReNA/inst/demos/trem2/go.R
+  notebook:   /users/pshannon/github/notebooks/paul-shannon/trena/trena-TREM2-ad.ipynb
+  http://whovian:9999/notebooks/trena/trena-TREM2-ad.ipynb
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* trenadb feature table cleanup (28 sep 2016)
+
+  cd ~/github/BDDS/trenadb/featureTable/fimoLocVsMethodScores
+  extract.R
+
+      # todo, next up (in test.ensemble)
+      # make sure this no-TF table cleans up
+      # devise a second TF-included table, make sure it cleans up
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trenadb feature table cleanup (27 sep 2016)
+
+  cd ~/github/BDDS/trenadb/featureTable/fimoLocVsMethodScores
+  extract.R
+  
+   ft <- cleanFeatureTable(tbl)
+      #  chr19:45423537-45423550 & MA0512.2 should have only one fimo score/pval pair, and appear as just one row
+   ft.sub <-subset(ft, loc=="chr19:45423537-45423550" & motif=="MA0512.2")
+      # 4 rows, wellington can be flattened to just one motif score and pval (3.64634; 5.64e-05)
+      #         hint has sensible score1, but 4 values each for score2, 3 for score3.  just the last score3 (pval) matches wellington
+      # next up: see why all this variety in hint fimo (?) score 2 and score 3
+
+   try to use this case in a test-args createHintTable, test.createHintTable
+                       loc  samplecount.h score1.h.median score1.h.best score2.h.median score2.h.best score3.h.median score3.h.best csmotif csTF csscore    motif motiflength
+55 chr19:45423537-45423550              2            56.5            84         8.95455       8.95455        6.06e-05      6.06e-05      NA   NA       0 MA0512.2          14
+56 chr19:45423537-45423550              2            56.5            84         2.17021       2.17021        6.09e-05      6.09e-05      NA   NA       0 MA0512.2          14
+57 chr19:45423537-45423550              2            56.5            84         2.83636       2.83636        3.90e-05      3.90e-05      NA   NA       0 MA0512.2          14
+58 chr19:45423537-45423550              2            56.5            84         3.64634       3.64634        5.64e-05      5.64e-05      NA   NA       0 MA0512.2          14
+
+> tbl.h   # looks like I am not matching, for hint, on loc and motif:
+                      loc               motif.h samplecount.h length.h score1.h.median score1.h.best score2.h.median score2.h.best score3.h.median score3.h.best
+2 chr19:45423539-45423550 LEF1_TCF7_TCF7L1,2.p2             2       12            56.5            84        12.20970      12.20970        4.19e-05      4.19e-05
+3 chr19:45423537-45423550              MA0512.2             2       14            56.5            84         3.64634       3.64634        5.64e-05      5.64e-05
+5 chr19:45423537-45423550              MA0677.1             2       14            56.5            84         8.95455       8.95455        6.06e-05      6.06e-05
+7 chr19:45423537-45423550              MA0855.1             2       14            56.5            84         2.83636       2.83636        3.90e-05      3.90e-05
+9 chr19:45423537-45423550              MA0856.1             2       14            56.5            84         2.17021       2.17021        6.09e-05      6.09e-05
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
 * metazoan intercellular communication: before brains, before nervous systems, pace dennett (24 sep 2016)
 
    put some of these into ~/Documents
@@ -108,7 +176,7 @@ bed format: chrom, start, end, name, score, strand
    388751 Sep 25 14:00 rtkAndAnimalOrigins.pdf
 
 
-  ---- Werner E.G Müller
+  ---- Werner E.G Muller
 
   The Origin of Metazoan Complexity: Porifera as Integrated Animals
   http://icb.oxfordjournals.org/content/43/1/3.full
@@ -159,6 +227,8 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 * build latest jupyter lab (24 sep 2016)
 
+  
+
   --- my improvisation
       git clone https://github.com/jupyter/jupyterlab.git
       cd jupyterlab
@@ -171,6 +241,8 @@ bed format: chrom, start, end, name, score, strand
    --- looked at src/imagewidget
      cd ~/github/jupyterlab
      created symlink ln -s ~/Desktop/hazelnutBranch.jpg branch.jpg
+
+   
 
    --- add geojson leaflet widget
      http://jupyterlab-tutorial.readthedocs.io/en/latest/adding_content.html
@@ -8363,6 +8435,13 @@ jupyter-notebook
    an urban-proximate natural area
 
   Ashley D'Antonio a,n, Christopher Monz a, Nell Larson b, Amy Rohman a
+
+*----------------------------------------------------------------------------------------------------
+* a variety of trena-usable matrices from ampADMayo.64253genes.278samples.RData (28 sep 2016)
+
+  added to ~/github/Private_Cory_Data/inst/extdata
+
+  print(load("~/github/Private_Cory_Data/inst/extdata/prepped.tcx.matrices.RData"))
 
 *----------------------------------------------------------------------------------------------------
 * create variety of trena-usable matrices from ampADMayo.64253genes.278samples.RData (26 apr 2016)
