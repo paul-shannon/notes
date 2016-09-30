@@ -103,6 +103,23 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* trenadb feature table improvements, todo (29 sep 2016)
+
+    extract.R:ensemble function has these arguments
+         chrom, start, end, test.motifs=NA, test.locs=NA)
+    consider putting them in, all the way down:
+        1) createWellingtonTable
+        2) createHintTable
+        3) getHits  (called by 1 and 2)
+
+     1 & 2 now have and use collapseOnStrand=FALSE argument but in each case it is the following duplicate which
+     is deleted, which may lead to random results.
+
+    utils.R:  make these two consistent:
+    
+         createHintTable <- function(chrom, start, end, motif=NA, sample=NA, loc=NA, collapseOnStrand=FALSE)
+   createWellingtonTable <- function(chrom, start, end, motif=NA, sampleID=NA, collapseOnStrand=FALSE)
+        
 *-----------------------------------------------------------------------------------------------------------------------
 * trenadb feature table cleanup continued (28 sep 2016)
 
