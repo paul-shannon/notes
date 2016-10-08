@@ -100,6 +100,338 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* fcm, functionalConnectionMaps, first try, with igap AD gwas snps (7 oct 2016)
+
+  neo4j version 3.0.1 lacks the neo4j, so got the tarball,
+  cat ~/bin/neo4j   # ~/Downloads/neo4j-community-3.0.1/bin/neo4j-shell $*
+  oddly, needs cql files to be in  /Users/paul/dbs/neo4j-v0/import/
+  cd ~/s/data/priceLab/functionalConnectionMaps/ad-igap-demo
+
+    
+  cp nodes.tsv /Users/paul/dbs/neo4j-v0/import/
+  cp edges.tsv /Users/paul/dbs/neo4j-v0/import/
+
+  --- nodes.tsv
+       id	type	source
+     MA0696.1	motif	footprinting
+     MA0697.1	motif	footprinting
+     MA0736.1	motif	footprinting
+     MA0751.1	motif	footprinting
+
+   --- edges.tsv
+  				   a	b	type	distance	source
+     chr1:101323692-101323692	MA0696.1	snpInMotif	0	footprinting
+     chr1:101323692-101323692	MA0697.1	snpInMotif	0	footprinting
+
+   --- fillNodes.cql
+     create constraint on (entity:Entity) assert entity.id is unique;
+     LOAD CSV WITH HEADERS FROM
+       "file:///nodes.tsv"
+        AS line FIELDTERMINATOR '\t'
+        create (:Entity {id: line.id, type: line.type, source: line.source});
+
+   --- fillEdges.cql
+     USING PERIODIC COMMIT
+     LOAD CSV WITH HEADERS FROM
+       "file:///edges.tsv"
+        AS line FIELDTERMINATOR '\t'
+        MATCH (a:Entity {id: line.a}), (b:Entity {id: line.b})
+        CREATE (a)-[:Interaction {type: line.type, distance: line.distance, source: line.source}]->(b);
+
+   --- success
+    R -f stats.R #   6365 nodes,  17702 edges
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cyjs in jupyter notebooks, a second try (6 oct 2016)
+
+  --- simple javascriptMagic in simple notebooks
+    ~/s/examples/jupyter/javascriptMagic/
+       simpleD3circle
+       xyplotter
+       cyjs
+
+  --- in preparation, create a standalone html file
+    loads latest cytoscape.js from python http server at localhost:8099
+      cd ~/s/examples/jupyter/javascriptMagic/cyjs/
+      python -m http.server 8099
+
+   ~/s/examples/jupyter/javascriptMagic/cyjs/small.html
+   file:///Users/paul/s/examples/jupyter/javascriptMagic/cyjs/small.html
+
+  --- now in a notebook with javascript magic building upon "simpleD3circle"
+    cd  ~/s/examples/jupyter/javascriptMagic
+    jupyter notebook --port 12000
+    ~/s/examples/jupyter/javascriptMagic/cyjsSimpleDemoWithMagic.ipynb
+
+   --- with this text:
+
+%%javascript
+
+require.config({
+   paths: {cytoscape: 'http://localhost:8099/cytoscape'}
+   })
+
+%%javascript
+
+require(['cytoscape'], function(cytoscape){
+    $("#cyDiv").remove();
+    element.append("<div id='cyDiv'></div>")
+    $("#cyDiv").width("800px");
+    $("#cyDiv").height("600px");
+    
+    cy = cytoscape({
+      container: document.getElementById('cyDiv'),
+      elements: {
+         nodes: [
+           {data: {id: 'a', name: 'Node A', type: 'big' }},
+           {data: {id: 'b', name: 'Node B', type: 'little'}},
+           ],
+        edges: [
+           {data: {source: 'a', target: 'b'}},
+           {data: {source: 'b', target: 'a'}}
+           ]
+        },
+  
+     style: [
+        {selector: 'node',
+           style: {
+              'text-valign': 'center',
+              'text-halign': 'center',
+              'border-color': 'red',
+              'background-color': 'white',
+              'border-width': 1,
+              'label': 'data(name)',
+              'height': 100,  // defaults
+              'width': 100
+              }},
+        {selector: "node[type='big']",
+          style: {
+             'height': 150,
+             'width': 150,
+             'shape': 'roundrectangle'
+             }},
+        {selector: "node[type='little']",
+          style: {
+             'height': 50,
+             'width': 80
+             }},
+        {selector: 'edge',
+           style: {
+             'width': '1px',
+             'line-color': 'blue',
+             'target-arrow-shape': 'triangle',
+             'target-arrow-color': 'black',
+             'curve-style': 'bezier'
+             }}
+         ],
+              
+     ready: function(){
+        console.log("small cyjs network ready");
+        } // ready
+       }); // cytoscape
+
+});
+*-----------------------------------------------------------------------------------------------------------------------
+* cyjs in jupyter notebooks, a first try (22 jul 2016) (revisited to improve the historical record: 6 oct 2016)
+
+  cd ~/s/examples/jupyter/cyjs/firstTry
+  jupyter notebook --port 12000
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* rcyjs: updated to version 1.5.9, adding browserless R CMD check (6 oct 2016)
+
+  now keeping the package in ~/s/RCyjs
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* jupyter notebooks javascript magic - some demos with d3 (6 oct 2016)
+
+   cd ~/s/examples/jupyter/javascriptMagic
+   juipyter 
+* cyjs in a jupyter notebook (5 oct 2016)
+
+     git clone https://github.com/cytoscape/jupyter-cytoscape.git
+     git clone https://github.com/cytoscape/cytoscape.js.git
+     git clone https://github.com/cytoscape/cytoscape.js-rpc.git
+
+*-----------------------------------------------------------------------------------------------------------------------
+* venn diagram in R, the VennDiagram package (5 oct 2016)
+
+  library(VennDiagram)
+  w.locs <- subset(tbl, samplecount.w > 0)$loc
+  h.locs <- subset(tbl, samplecount.h > 0)$loc
+  cs.locs <- subset(tbl, csscore > 0)$loc
+  length(cs.locs); length(h.locs); length(w.locs)
+  130711; 984449; 414590
+  draw.triple.venn(length(w.locs), length(h.locs), length(cs.locs),
+                   length(intersect(w.locs, h.locs)),
+                   length(intersect(w.locs, cs.locs)),
+                   length(intersect(h.locs, cs.locs)),
+                   length(intersect(w.locs, intersect(h.locs, cs.locs))),
+                   category=c("Wellington", "HINT", "ChIPseq"),
+                   col=c("red", "green", "blue"))
+
+  venn.diagram(list(Wellington=w.locs, HINT=h.locs, ChIPseq=cs.locs), fill=c("red", "green", "blue"), filename="venn.tiff")
+*-----------------------------------------------------------------------------------------------------------------------
+* neo4j tips
+
+  R -f ~/s/data/priceLab/functionalConnectionMaps/ad-igap-demo/stats.R
+
+  --- delete all  (might need to run this several times)
+  bash> neo4j
+  neo4j-sh (?)
+
+MATCH (n)
+OPTIONAL MATCH (n)-[r]-()
+WITH n,r LIMIT 50000
+DELETE n,r
+RETURN count(n) as deletedNodesCount;
+
+check for 0 nodes, 0 edges with
+  R -f ~/s/data/priceLab/functionalConnectionMaps/ad-igap-demo/stats.R
+
+  
+  --- get node & edge counts
+    library(RNeo4j)
+    gdb <- startGraph("http://localhost:7474/db/data/", username="neo4j", password="isb");
+    node.count <- getNodes(gdb, "match(n) return count(n)")[[1]]
+    edge.count <- getRels(gdb, "match(n)-[r]->(t) return count(r)")[[1]]
+    printf("%5d nodes, %6d edges", node.count, edge.count)
+  
+  --- bash fill molecules (nodes) from tsv file: ~/s/work/priceLab/neo4j/genemania/neo4jReady/fill-molecules.cql
+    cd ~/s/work/priceLab/neo4j/genemania/neo4jReady/
+    create constraint on (molecule:Molecule) assert molecule.id is unique;
+    LOAD CSV WITH HEADERS FROM
+       "file:///Users/paul/s/work/priceLab/neo4j/genemania/neo4jReady/molecules.tsv"
+        AS line FIELDTERMINATOR '\t'
+        create (:Molecule {id: line.ensg, name: line.symbol, type: 'molecule', subtype: 'gene'});
+     head ~/s/work/priceLab/neo4j/genemania/neo4jReady/molecules.tsv 
+        ensg	symbol
+        ENSG00000000003	TSPAN6
+        ENSG00000000005	TNMD
+        ENSG00000000419	DPM1
+        ENSG00000000457	SCYL3
+        ENSG00000000460	C1orf112
+        ENSG00000000938	FGR
+        ENSG00000000971	CFH
+        ENSG00000001036	FUCA2
+        ENSG00000001084	GCL
+  
+  --- bash fill interactions from tsv file ~/s/work/priceLab/neo4j/genemania/neo4jReady/fill-interactions-1455562395.89307.sql
+    cd ~/s/work/priceLab/neo4j/genemania/neo4jReady/
+    create constraint on (interaction:Interaction) assert interaction.id is unique;
+    USING PERIODIC COMMIT
+    LOAD CSV WITH HEADERS FROM
+       "file:///Users/paul/s/work/priceLab/neo4j/genemania/neo4jReady/Physical_interactions.Chen-Ge-2013.txt"
+       AS line FIELDTERMINATOR '\t'
+       MATCH (a:Molecule {name: line.Gene_A}), (b:Molecule {name: line.Gene_B})
+       CREATE (a)-[:Interaction {type: line.Network_Group_Name, pmid: line.Pubmed_ID, source: line.Source, weight: line.Weight}]->(b);
+    book.neo4jReady> head Physical_interactions.Chen-Ge-2013.txt 
+    Gene_A	Gene_B	Weight	Network_Group_Name	Network_Name	Source	Pubmed_ID	sym_A	sym_B
+    ENSG00000004455	ENSG00000151929	0.052	Physical interactions	Chen-Ge-2013	IREF	23824909	AK2	BAG3
+    ENSG00000004776	ENSG00000151929	0.052	Physical interactions	Chen-Ge-2013	IREF	23824909	HSPB6	BAG3
+    ENSG00000005022	ENSG00000151929	0.052	Physical interactions	Chen-Ge-2013	IREF	23824909	SLC25A5	BAG3
+    ENSG00000006534	ENSG00000151929	0.052	Physical interactions	Chen-Ge-2013	IREF	23824909	ALDH3B1	BAG3
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* igv.js:  disabling double-click to zoom (5 oct 2016)
+
+   cd ~/github/igv.js-jupyter
+   git pull orgin
+   pip install -e .
+   jupyter nbextension install --prefix ~/jupyter.extensions --py igv
+   jupyter nbextension enable --py igv    # - Validating: OK
+
+   --- test it out, with the supplied notebook
+
+     ~/github/igv.js-jupyter/examples/DoubleClick.ipynb
+
+   --- test it out with my own
+     cd ~/github/notebooks/paul-shannon/demos/igv
+     jupyter notebook
+     igvDisplaySimplePandaBedTable.ipynb
+     
+
+*-----------------------------------------------------------------------------------------------------------------------
+* jupyter lab demos (5 oct 2016)
+
+  cd ~/s/work/priceLab/jupyterLabDemos/cory
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* create feature table for all of chr19 for rory (4 oct 2016)
+
+  whovian, cd ~/github/BDDS/trenadb/src/
+  nohup R -f createFeatureTable.R &
+  started at 318pm
+
+*-----------------------------------------------------------------------------------------------------------------------
+* create-snpTFGeneGraphEdges: an exploration for "extended compound heterozygosity" (cory & gustavo) (4 oct 2016)
+
+   cd ~/s/data/priceLab/AD/
+   R script:  ~/s/data/priceLab/AD/create-snpTfGeneGraphEdges.R
+   R script for neo4j: ~/s/data/priceLab/AD/fill-neo4j.R (see further below)
+
+   library(RPostgreSQL)
+   library(GenomicRanges)
+   if(!exists("db.gtf"))
+      db.gtf <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="gtf", host="whovian")
+   
+   tbl.genes <- dbGetQuery(db.gtf, "select chr, start, endpos, strand,  gene_name from hg38human where moleculetype='gene'")
+   tbl.genesPlus  <- subset(tbl.genes, strand=="+")  # [1] 9986    5
+   tbl.genesMinus <- subset(tbl.genes, strand=="-") # [1] 9811    5
+   gr.genesPlus <- with(tbl.genesPlus,  GRanges(seqnames=chr, IRanges(start=start, end=start), strand=strand))
+   gr.genesPlus$gene <- tbl.genesPlus$gene_name
+   
+   gr.genesMinus <- with(tbl.genesMinus,  GRanges(seqnames=chr, IRanges(start=start, end=start), strand=strand))
+   gr.genesMinus$gene <- tbl.genesMinus$gene_name
+   gr.genes <- c(gr.genesPlus, gr.genesMinus)
+   
+   print(load("tbl.gwasADsnpsInFp.05pval.igap2013.RData")) # tbl.gwasADsnpsInFp
+   
+   gr.snp <- with(tbl.gwasADsnpsInFp, GRanges(seqnames=chr, IRanges(start=snp, end=snp)))
+   gr.snp$tfs <- tbl.gwasADsnpsInFp$tfsMatched
+   gr.snp$motif <- tbl.gwasADsnpsInFp$name
+   tbl.distances <- as.data.frame(distanceToNearest(gr.snp, gr.genes))
+   tbl.genes <- as.data.frame(gr.genes)
+   dim(tbl.distances) # 28404     3
+   tbl.near <- subset(tbl.distances, distance < 5000) # 4501
+   gr.snp[tbl.near[1, "queryHits"]]
+   gr.genes[tbl.near[1, "subjectHits"]]
+   tbl.gwasADsnpsInFp[111, ]
+   tbl.genes[1095,]
+   tbl.gwasADsnpsInFp[1095, ]
+   tbl.genes[111,]
+   tbl <- cbind(as.data.frame(gr.snp[tbl.near[, "queryHits"]]), as.data.frame(gr.genes[tbl.near[, "subjectHits"]]$gene))
+   tbl$distance <- tbl.near$distance
+   colnames(tbl) <- c("chrom", "start", "end", "width", "strand", "tfs", "motif", "nearby.gene", "distance")
+   save(tbl, file="snpsInFootprintsWith5kbOfGene.RData")
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* minimal information about protein-coding genes: chrom, start, end, strand, gene symbol (4 oct 2016)
+
+   library(RPostgreSQL)
+   library(GenomicRanges)
+   if(!exists("db.gtf"))
+     db.gtf <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="gtf", host="whovian")
+
+
+   query <- "select chr, start, endpos, strand,  gene_name from hg38human where moleculetype='gene' and gene_biotype='protein_coding'")
+   tbl.genes <- dbGetQuery(db.gtf, query) #  19797     5
+
+*-----------------------------------------------------------------------------------------------------------------------
+* neo4j, a fresh start (sort of) (4 oct 2016)
+
+  see below, from january: "installed, db in ~/dbs/neo4j
+       user neo4j, pw=isb
+       northwind example:
+         cd ~/s/examples/neo4j
+       pip install py2neo
+   in PATH: /Applications/Neo4j\ Community\ Edition.app/Contents/Resources/app/bin
+    start server from the launcher  (version 2.3.1)
+    neo4j-shell -version
+ 
+  --- fresh download of community neo4j, version 3.0.6
+
+
 *-----------------------------------------------------------------------------------------------------------------------
 * install samtools on riptide macos (3 oct 2016)
 
@@ -1183,6 +1515,7 @@ ZHX2
   https://cdnjs.cloudflare.com/ajax/libs/three.js/r79/three.js
   https://cdnjs.cloudflare.com/ajax/libs/three.js/r80/three.js
   https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.2/d3.min.js
+  http://code.jquery.com/jquery-2.2.4.min.js
   
 *------------------------------------------------------------------------------------------------------------------------
 * install igv widget on whovian, python 2.7.12, for use with gemini (6 sep 2016)
@@ -13808,7 +14141,7 @@ val=vals, stringsAsFactors=FALSE)
 *----------------------------------------------------------------------------------------------------
 * neo4j tips: fill from makefile
 
-   cat ~/s/work/priceLab/neo4jgenemania/neo4jReady/makefile
+   cat ~/s/work/priceLab/neo4j/genemania/neo4jReady/makefile
 
      njshell = /Applications/Neo4j\ Community\ Edition.app/Contents/Resources/app/bin/neo4j-shell
      clear:
@@ -13895,6 +14228,7 @@ val=vals, stringsAsFactors=FALSE)
   modest RUnit file:
      ~/s/work/alisonPaquette/mergeMicroarrays/Processing-Microarray-Data-master/processAndMerge.R
 
+*----------------------------------------------------------------------------------------------------
 *----------------------------------------------------------------------------------------------------
 * neo4j (25 jan 2016)
 
