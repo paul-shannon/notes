@@ -100,7 +100,143 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
-* fcm, functionalConnectionMaps, first try, with igap AD gwas snps (7 oct 2016)
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* new liz blue snps, look for footprints in cory's wellington brain footprints (8 oct 2016)
+
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* response to melody kraff's social determinants of health spreadsheets and powerpoint slides (8 oct 2016)
+
+  --- CORE data science overview slides
+
+  CHNA - "community health needs assessment"
+  CORE - "clinical outcomes research & education" ddresses social determinants and is contracted for
+          data analytics by Medicaid / Medicare.
+  ACH  - "accountable community of health"
+  SDH  - "social determinants of health"
+
+  The opening CORE slide is titled "multi-sector approach to data":
+     1) health services and systems (organization and delivery of care)
+     2) beyond the walls of health care (non-health care systems & perspectives)
+        social services, housing, education, criminal justice system, community health worker
+        public health data, self report (survey), and then this group
+            - PLACE/NEIGHBORHOOD DATA
+            - CENSUS DATA
+            - BUILT ENVIRONMENT
+            - TRANSPORTATION
+            - CRIME & SAFETY
+
+   --- CORE overview for Melody
+
+     slide 1,  3 lines of work: research, program evaluation, data science (are these are separate?)
+               3 areas of focus:
+                  state & local health policy
+                  health care delivery
+                  population health & social determinants
+                     housing
+                     environments
+                     adverse life events
+                     population health needs assessment
+
+    slide 2, a model ("connections") which shapes all of their work
+        institutional: health policy, payment & finance
+        clinical: screenings & treatment
+        social: social structure, culture
+                biographies, life events
+                built environment
+                physical environment
+
+   slide 4: three things that might help providence right now
+     a) community data systems
+     b) population health surveys
+     c) sdh research (how housing, food, built and social environments interact
+        with (institutional and clinical aspects of) health care to shape
+        the "triple aim"  (which is ?)
+
+
+   --- worth noting
+     pages 8 and 9 of
+         http://www.swedish.org/~/media/images/swedish/s/swedish%20first%20hill%20and%20cherry%20hill%20chna%20pdf.pdf
+      list, as factors associated with higher concentration of chronic disease and lower access to health care
+
+      health measures:
+        obesity
+        uninsured
+        smoking
+        (not mentioned: childhood asthma hospitalizations, life expectancy)
+
+      demographics:
+        people of color
+        low income
+        low educational attainment
+         (not mentioned: environmental factors (toxic sites, highway: see chia app)
+        
+*-----------------------------------------------------------------------------------------------------------------------
+* add cory's wellington brain (wholeBrain?) footprints to a new database on whovian (8 cot 2016)
+
+  --- creating new database, "wholeBrain-wellington"
+    sh-wwb
+    cd ~/github/BDDS/trenadb/wellington/wholeBrain/
+    createdb -U pshannon wholeBrain-wellington
+    adapted fill.R, and the .sql files
+    ran first on chr19, 45 minutes, databaseSummary():
+       1,514,672 hits in 387,362 regions
+    
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* state of the postgres database (8 oct 2016)
+
+   ---- all lymphoblast
+
+    chipseq:
+       regions:  "regions_pkey" PRIMARY KEY, btree (loc)
+                 "regions_index" btree (loc, start, endpos)
+       hits:     "hits_index" btree (loc)
+
+    gtf: hg38human
+    hint:
+       regions: regions_pkey on loc, regions_index on (loc, start, endpos)
+       hits: "hits_index" btree (loc)
+
+    wellington:
+       regions: Indexes:     "regions_pkey" PRIMARY KEY, btree (loc)
+       hits:   no indexes yet
+       
+    piq:
+      regions: "regions_pkey" PRIMARY KEY, btree (loc)
+      hits: no indexes yet
+
+    trena:  fimo_hg38, tfmotifs
+
+   --- other, older, earlier one-table schema
+
+    chipseqTest
+    enhancers.hg38
+    fimo
+    footprints
+    fptest
+    gtf-hsapiens-hg38
+    hg38
+    hint-test
+    hintTest2
+    lymphoblast
+    mm10
+    piq
+    piqTest
+    postgres
+    pshannon
+    template0
+    template1
+    trena
+    wellington-test
+    wellington2
+    wholeBrain: footprints, motifsgenes
+
+*-----------------------------------------------------------------------------------------------------------------------
+* gustavo's fcm, functionalConnectionMaps, first try, with igap AD gwas snps (7 oct 2016)
 
   neo4j version 3.0.1 lacks the neo4j, so got the tarball,
   cat ~/bin/neo4j   # ~/Downloads/neo4j-community-3.0.1/bin/neo4j-shell $*
@@ -2238,6 +2374,29 @@ Seward Park's old growth "Magnificent Forest"
 
   --- remedy 2, better conda remove --force readline
     https://github.com/ContinuumIO/anaconda-issues/issues/152
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* psql tips: show indexes
+
+  psql hint
+  \d regions
+             Table "public.regions"
+     Column |       Type        | Modifiers
+    --------+-------------------+-----------
+     loc    | character varying | not null
+     chrom  | character varying | 
+     start  | integer           | 
+     endpos | integer           | 
+    Indexes:
+        "regions_pkey" PRIMARY KEY, btree (loc)
+        "regions_index" btree (loc, start, endpos)
+  \d regions
+    ...
+    Indexes:
+        "hits_index" btree (loc)
+
+
 
 
 *------------------------------------------------------------------------------------------------------------------------
