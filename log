@@ -185,10 +185,13 @@ bed format: chrom, start, end, name, score, strand
     ran first on chr19, 45 minutes, databaseSummary():
        1,514,672 hits in 387,362 regions
     
+
    
 *-----------------------------------------------------------------------------------------------------------------------
 * state of the postgres database (8 oct 2016)
 
+   psql> \list
+   
    ---- all lymphoblast
 
     chipseq:
