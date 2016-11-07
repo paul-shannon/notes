@@ -19,8 +19,8 @@ returns a list of 3 lists: "mapped"    "failures"  "multiples"
 mapped:   a list of all the input geneSymbols, with either geneID, NA, or multiple geneIDs
 failures: that
 
-  devel: svn co https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/<pkgname>
-release: svn co https://hedgehog.fhcrc.org/bioconductor/branches/RELEASE_3_2/madman/Rpacks/<pkgname>
+  devel: svn co https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/<pkgname>nn
+release: svn co https://hedgehog.fhcrc.org/bioconductor/branches/RELEASE_3_4/madman/Rpacks/<pkgname>
 
 
 onco:
@@ -96,24 +96,1159 @@ bed format: chrom, start, end, name, score, strand
 
 * top
 *-----------------------------------------------------------------------------------------------------------------------
+* some notebooks of interest
+
+   --- circleViewer, simpleD3circle, a learning project
+     cd ~/s/examples/jupyter/javascriptMagic
+     create shell jup-10001; jupyter notebook --port 10001
+     creates shell sh-circleViewer (for RCS checkins, etc)
+     code, maininted with rcs cd ~/s/examples/jupyter/javascriptMagic/simpleD3circle/
+     also in github: https://github.com/paul-shannon/notebooks/blob/master/study/CircleView.ipynb
+
+  --- cleaned up demo & tutorial
+      ~/github/jupyter-widget-demos/d3circles/minimal/notebook/simple.ipynb
+
+  --- lab meeting (4 nov 2016) demo
+     ~/s/examples/jupyter/javascriptMagic/cyjs/igap-snp4GenesetEnrichmentDemo.ipynb
+     added "on select" and "on unselect" event handlers (7 nov 2016)
+
+  --- vrk2/pou3f2 bipolar snp
+     http://whovian:10005/notebooks/shared/VRK2-Pou3f2.ipynb   and ~/github/notebooks/shared/VRK2-Pou3f2.ipynb 
+     
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
-*-----------------------------------------------------------------------------------------------------------------------
-*-----------------------------------------------------------------------------------------------------------------------
-*-----------------------------------------------------------------------------------------------------------------------
-* new liz blue snps, look for footprints in cory's wellington brain footprints (8 oct 2016)
+* fill mouse fimo, file from cory, for jocelyn (7 nov 2016)
+
+  cory says files are here:
+
+    whovian:/local/Cory/for_Paul/fimo_out/mouse/
+  
+* genome-wide fimo files from Cory (8 aug 2016)
+
+   cd ~/s/data/postgres-fill/fimo
+   
+   dir /local/Cory/for_Paul/fimo_out/*.fimo.txt
+     28672130668 Aug  6 20:02 /local/Cory/for_Paul/fimo_out/GRCh38.fimo.txt
+     26516524484 Aug  6 20:11 /local/Cory/for_Paul/fimo_out/GRm38.fimo.txt
+
+  /local/Cory/for_Paul/fimo_out/GRCh38.fimo.txt
+  
+   head -10 /local/Cory/for_Paul/fimo_out/GRCh38.fimo.txt
+   #pattern name	sequence name	start	stop	strand	score	p-value	matched sequence
+   MA0002.2	10	12880	12890	+	11.4483	6.04e-05		GCTTGTGGCCT
+   MA0002.2	10	18991	19001	-	12.4655	2.73e-05		TTCTGTGGTTC
+   MA0002.2	10	19478	19488	-	13.3448	1.17e-05		TTCTGTGGTTG
+
+   --- the two-tab problem: don't want to sed two 30G files!
+     see if we can fill from 
+     head -10 /local/Cory/for_Paul/fimo_out/GRCh38.fimo.txt > tiny.txt
+
+   createdb -U pshannon fimo
+   psql fimo -f create.sql 
+     DROP TABLE
+     CREATE TABLE
+    psql fimo -f fill.sql   # tiny.txt
+      COPY 9
+
+  --- next problem: the big file is actually 12 files combined, thus 12 header lines,
+     and this bug:
+
+      whovian.fimo> psql -f fill.sql 
+        You are now connected to database "fimo" as user "pshannon".
+        psql:fill.sql:2: ERROR:  invalid input syntax for integer: "start"
+        CONTEXT:  COPY hg38, line 20583881, column start: "start"
+
+     remedy: cory will grep -v start on the file, give me a new one.
+
+  --- timing (no indices yet)
+
+    system.time(dbGetQuery(db, "select * from hg38 where chr='10' and start < 19000"))
+      user  system elapsed 
+      0.008   0.001  55.610 
+
+  --- built 3 indices
+   index.sql:
+     \connect fimo;
+     create index on hg38 (chr);
+     create index on hg38 (start);
+     create index on hg38 (endpos);
+    
+   system.time(dbGetQuery(db, "select * from hg38 where chr='10' and start < 19000"))
+     user  system elapsed 
+    0.013   0.000  17.456 
+
 
 *-----------------------------------------------------------------------------------------------------------------------
+* install clustergrammer jupyter widget (7 nov 2016)
+
+
+  --- lots of trouble, all the steps below failed
+ git clone https://github.com/maayanlab/clustergrammer-widget.git
+ cd clustergrammer-widget
+ pip install -e .
+ jupyter nbextension install --py --symlink --user ceustergrammer-widget
+
+ File "/Users/paul/anaconda/bin/jupyter-nbextension", line 6, in <module>
+   sys.exit(notebook.nbextensions.main())
+ File "/Users/paul/anaconda/lib/python3.5/site-packages/jupyter_core/application.py", line 267, in launch_instance
+   return super(JupyterApp, cls).launch_instance(argv=argv, **kwargs)
+ File "/Users/paul/anaconda/lib/python3.5/site-packages/traitlets/config/application.py", line 596, in launch_instance
+   app.start()
+ File "/Users/paul/anaconda/lib/python3.5/site-packages/notebook/nbextensions.py", line 961, in start
+   super(NBExtensionApp, self).start()
+ File "/Users/paul/anaconda/lib/python3.5/site-packages/jupyter_core/application.py", line 256, in start
+   self.subapp.start()
+ File "/Users/paul/anaconda/lib/python3.5/site-packages/notebook/nbextensions.py", line 739, in start
+   self.install_extensions()
+ File "/Users/paul/anaconda/lib/python3.5/site-packages/notebook/nbextensions.py", line 718, in install_extensions
+   **kwargs
+ File "/Users/paul/anaconda/lib/python3.5/site-packages/notebook/nbextensions.py", line 225, in install_nbextension_python
+   m, nbexts = _get_nbextension_metadata(module)
+ File "/Users/paul/anaconda/lib/python3.5/site-packages/notebook/nbextensions.py", line 1123, in _get_nbextension_metadata
+   m = import_item(module)
+ File "/Users/paul/anaconda/lib/python3.5/site-packages/traitlets/utils/importstring.py", line 41, in import_item
+   return __import__(parts[0])
+ImportError: No module named 'clustergrammer-widget'
+
+
+   --- a fresh start: first the basic package, not the notebook widget
+      sudo npm install -g clustergrammer
+      pip install clustergrammer
+         /Users/paul/anaconda/lib/python3.5/site-packages/clustergrammer/
+   --- try it out
+
+     "The easiest way to visualize a matrix of your own data is to
+      follow the example Python workflow that demonstrates how to use
+      the Python library clustergrammer.py."
+
+      cd ~/s/examples/clustergrammer
+      mkdir json
+
+      python
+      
+        from clustergrammer import Network
+        net = Network()
+        net.load_file('/Users/paul/github/clustergrammer/txt/rc_two_cats.txt')
+        net.make_clust(dist_type='cos',views=['N_row_sum', 'N_row_var'])
+        net.write_json_to_file('viz', 'json/mult_view.json')
+
+
+
+   cd ~/github/clustergrammer-widget/
+   pip install -e .
+
+   pip install clustergrammer  # prerequisite
+   pip install -e .
+   jupyter nbextension enable --py --sys-prefix clustergrammer_widget
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* python postgres jupyter problem on riptide (7 nov 2016)
+
+     # but works ok on whovian, so not pursuing this right now
+
+   riptide> python   # macos 10.11.6, El Capitan
+
+   Python 3.5.2 |Anaconda custom (x86_64)| (default, Jul  2 2016, 17:52:12) 
+   [GCC 4.2.1 Compatible Apple LLVM 4.2 (clang-425.0.28)] on darwin
+    >>> import pandas as pd, psycopg2 as psql
+     ImportError: dlopen(/Users/paul/anaconda/lib/python3.5/site-packages/psycopg2/_psycopg.cpython-35m-darwin.so, 2): Library not loaded: libssl.1.0.0.dylib
+     Referenced from: /Users/paul/anaconda/lib/python3.5/site-packages/psycopg2/_psycopg.cpython-35m-darwin.so
+     Reason: image not found
+
+   
+
+*-----------------------------------------------------------------------------------------------------------------------
+* dani's vrk2/pou3f2 notebook (7 nov 2016)
+
+  I was thinking that another interesting micro-study we could try out
+  with this new tool is related to the Bipolar work around a SNP in
+  the promotor region of the VRK2 gene, where the transcription factor
+  Pou3f2 binds. You might remember Jocelynn discussing this in her
+  committee meeting talk, and we both also presented this a while back
+  to the Hood lab.
+
+  The SNP lies in the binding site of Pou3f2. I believe we saw a
+  reduction of VRK2 expression while the SNP present. I attached a
+  screenshot of this result--look at the first two groups to see the
+  reduction.
+
+  Anyway--I would be happy to do a trial run through that part of the
+  notebook if you think its a good case study. I was thinking about
+  how interesting it would be if we could see maybe additional TF
+  motifs created from the SNP--maybe creating competition for Pou3f2
+  to bind. That might be hopeful wishing, but it could be neat to
+  check.
+
+
+  --- query motifsgenes table from python
+    import pandas as pd, psycopg2 as psql
+    # R version db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="hg38", host="whovian")
+    # this fails:  conn = psql.connect("dbname=hg38 user=trena")
+    # and this works
+   db = psql.connect("dbname=hg38 user=pshannon")
+   pd.read_sql_query("select * from motifsgenes limit 3", db)
+         motif      tf
+   0  MA0002.2   RUNX1
+   1  MA0003.3  TFAP2A
+   2  MA0004.1    ARNT
+  
+   --- the snp loses all pou-family tfs, picks up pax3,4,6,7
+   
+   http://whovian:10005/notebooks/shared/VRK2-Pou3f2.ipynb   and ~/github/notebooks/shared/VRK2-Pou3f2.ipynb 
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* seward park restoration
+
+  --- plants for november 2016
+
+
+                                    blakeley cliffs/lost lake trail
+
+
+Corylus cornuta, beaked hazelnut                  4/36
+Mahonia nervosa, dwarf Oregon grape               0/60
+Oemleria cerasiformis, indian plum                5/25
+Pseudotsuga menziesii, Douglas fir                0/40
+Rubus parviflorus, thimbleberry                   5/35
+Rubus spectabilis, salmonberry                    5/35
+Rubus ursinus, trailing blackberry                5/40
+
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* movie candidates
+
+  slum dog millionaire
+  tom hanks east hudson airplane crash
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* sequence tips, fasta tips  (for rory and jocelyn) (3 nov 2016)
+
+source(“http://bioconductor.org/biocLite.R”)
+biocLite("BSgenome.Hsapiens.UCSC.hg38")
+library(BSgenome.Hsapiens.UCSC.hg38)
+hg38 = BSgenome.Hsapiens.UCSC.hg38
+
+as.character(getSeq(hg38, "chr5", 1295228, 1295250))
+
+# you can also gang up your requests
+x <- getSeq(hg38, rep("chr5", 3), rep(1295228,3), rep(1295250, 3))
+
+# and write them all out in fasta format
+writeXStringSet(x, filepath="foo.fa")
+
+*-----------------------------------------------------------------------------------------------------------------------
+* python regex for chromloc strings, chromosomal locations (3 nov 2016)
+
+snp = 'chr16:55508991-55508991'
+regex = re.compile('(chr.*):(\d+)-(\d+)')
+m = regex.match(snp)
+assert(len(m.groups()) == 3)
+(chrom, start, end) = m.groups()
+start = int(start)
+end = int(end)
+print("%s  %d  %d" % (chrom, start, end))   
+
+def parseChromLoc(s):
+  regex = re.compile('(chr.*):(\d+)-(\d+)')
+  m = regex.match(snp)
+  assert(len(m.groups()) == 3)
+  (chrom, start, end) = m.groups()
+  start = int(start)
+  end = int(end)
+  return((chrom, start, end))
+
+
+(chrom, start, end) = parseChromLoc("chr19:32-64000")
+  
+
+*-----------------------------------------------------------------------------------------------------------------------
+* add microservices to jupyter notebook (3 nov 2016)
+
+  for background, see below:  microservices on whovian (9 sep 2016)   dna, fimo
+
+  --- from notebook
+   import sys
+   sys.path.append("/Users/paul/github/fimoService/client-python")
+   from FimoClient import *
+   sys.path.append("/Users/paul/github/getDNAService/client-python")
+   from GetDNAClient import *  
+fimo = FimoClient("whovian", 5558)
+assert(fimo.getHost() == 'whovian:5558')
+dnaService = GetDNAClient("hg19")
+assert(dnaService.getSequence("chr1", 1, 5) == 'NNNNN')
+sequences = {"tert_wt1": "CCCGGAGGGGG", "tert_wt2": "CCCGGGAGGGG", "tert_mut": "CCCCTTCCGGG"}
+fimo.request(sequences)
+
+ 	#pattern name 	matched sequence 	p-value 	q-value 	score 	sequence name 	start 	stop 	strand
+0 	MA0076.2 	CCCCTTCCGGG 	0.000022 	0.000133 	13.1818 	tert_mut 	1 	11 	+
+1 	ELK1,4_GABP{A,B1}.p3 	CCCGGAAGGG 	0.000045 	0.000539 	11.7000 	tert_mut 	2 	11 	-
+2 	ETV6_full_2 	CCCGGAAGGG 	0.000093 	0.001120 	10.7245 	tert_mut 	2 	11 	-
+3 	MA0645.1 	CCCGGAAGGG 	0.000095 	0.001150 	10.7308 	tert_mut 	2 	11 	-
+
+*-----------------------------------------------------------------------------------------------------------------------
+* putting cyjs into jupyter notebook as a js widget, with javascript magic (15 oct 2016)  
+
+  --- need http webserver, cytoscape.js
+     now: cd ~/http
+     python -m http.server 8099
+     this supports
+       require.config({paths: {cytoscape: 'http://localhost:8099/js/cytoscape-2.7.10'}})
+
+  --- need jupyter server
+    cd ~/s/examples/jupyter/javascriptMagic/
+    jupyter notebook --port 10001
+
+  --- simple demo notebook
+    http://localhost:10001/notebooks/cyjs/cyjsSimpleDemoWithMagic.ipynb
+    cd ~/s/examples/jupyter/javascriptMagic/cyjs
+    cyjsSimpleDemoWithMagic.ipynb   # tracked in RCS, working on (2 nov 2016)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ChIPseq figures for jocelyn (2 nov 2016)
+
+   --- jocelyn's email (1 nov 2016)
+
+    cc'ing Dani here as well.  Attached are two papers that have some
+    beautiful ChIPseq figures.  I'd love to generate a few similar
+    figs for our Htt ChIPseq dataset.
+
+    Malik - Fig 1A, 1D, 2D, 4A, 4D
+     Prescott - Fig 1A, 1E, 2C, 2D, 4F
+
+    Currently we are using IGV to generate similar figures to what you
+    see in Malik 2D.  We convert our bed files to big wigs and view
+    them there.  What I really love about the Prescott paper is the
+    flow of the way the data is laid out - it makes it really easy to
+    follow.  I'm not sure exactly how they create the smaller 'zoom'ed
+    overlay of chipseq data such as in Prescott 1E but I think that is
+    really nice.
+
+
+   --- more info from a followup email
+
+
+    In Prescott 2C they show heat maps with ChIPseq reads centered
+    over a type of genomic feature.*
+
+    For our purposes, we would want to generate heat maps comparing
+    raw ChIPseq counts for all known motifs of EGR1 and TFAP2A across
+    the mouse genome (mm9).  These are common figures in ChIPseq
+    papers and help visually convey differences in groups of samples
+    (in our case, wildtype vs mutant) for the enrichment of specific
+    kinds of sites in the peaks from those samples.  Usually the peaks
+    get sorted by enrichment value, with highest at the top and lowest
+    at the bottom.
+
+    It looks like deeptools is an attractive candidate for generating
+    these: https://www.biostars.org/p/180314/ - they have a new color
+    option that could help us with the different motifs such as shown
+    in Prescott.  But I have no experience using any of these tools!
+
+    Data requirement: INPUT: BigWig files of ChIP-seq marks, and feature dataset in BED format. 
+    BigWigs located here: /proj/price1/jpearl/ChIPseq/EPR5526/individualsamplefiles/*.bw
+    feature dataset I'm guessing is the list of motif locations 
+
+    If this interests you, cool!  But if not I'm sure we can work on it in a week when our time frees up.
+
+    Best,
+     Jocelynn
+
+    *[showing: (C) Heatmap of raw ChIP-seq and ATAC-seq counts across
+     species-biased and invariant CNCC enhancers for two human and two
+     chimp genetic backgrounds.  Each row represents a 2 kb window (1
+     kb each direction) centered around the middle of human-biased (n
+     = 598, q < 0.0001), chimp-biased (n = 691, q < 0.0001), or
+     invariant (n = 584 representative subset, q > 0.95) enhancers for
+     H3K27ac (green), p300 (red), TFAP2A (yellow), K4me1 (blue), and
+     ATAC-seq (gray). All reads were aligned to hg19.]
+
+*-----------------------------------------------------------------------------------------------------------------------
+* new run of createFeatureTable on whovian, chr19 lymphoblast, wellington, hint, piq, chipSeq (2 nov 2016)
+
+  whovian
+  cd ~/s/work/priceLab/cory/lymphoblastFeatureTable/chr19-31oct2016/
+  use runLocal.R
+  encountered mysterious empty chipseq regions around 24M.  modified (with new tests)
+  ~/github/BDDS/trenadb/src/createFeatureTable.R - though more exploration of the empty
+  contributing table matter is definitely needed.
+
+   grabbed first version of the RData combiner:
+   cp ~/s/work/priceLab cory/lymphoblastFeatureTable/combine.R ~/s/work/priceLab/cory/lymphoblastFeatureTable/chr19-31oct2016/
+
+   files <- sort(list.files(".", pattern="ftClean.*"))                                                                                                                                                                                                     
+   length(files) #  [1] 119
+   added start and end columns, producing 1,382,248 rows x 21 columns 
+
+   tbl.hit.all: 9655
+   tbl.cs.only: 13603
+   tbl.w.only: 129657
+   tbl.h.only: 644425
+   tbl.p.only: 256429
+   tbl.wh.only: 182241
+   tbl.wc.only: 5579
+   tbl.hc.only: 33184
+   tbl.wp.only: 5945
+   tbl.cp.only: 1297
+   tbl.hp.only: 3333
+   tbl.hpw.only: 9655
+
+  f <- "~/s/work/priceLab/cory/lymphoblastFeatureTable/chr19-31oct2016/featureTableLymphoblast-chr19-entire.RData"
+  save(tbl, file=f)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* neo4j, igap, gustavo's fcm, demo for price lab meeting (29 oct 2016)
+
+  cd ~/s/data/priceLab/functionalConnectionMaps/ad-igap-demo
+
+  --- scheme
+   1) 203 snp chromLocs (from neo4j; originally from
+         load("snpsInFootprintsWith5kbOfGene.RData")  # 5110 x 9
+   2) the gdb has relations
+       (snpLoc)-[near]-(gene)-[inGeneSet]-(geneset)    # where geneset size is reported as score
+       genesetsForSnp(snp.loc, maxScore=50)
+                                         id score
+       1                 KANG_GLIS3_TARGETS    37
+       6              GRADE_COLON_CANCER_DN    33
+       14               GOLUB_ALL_VS_AML_UP    24
+       18 MANTOVANI_VIRAL_GPCR_SIGNALING_DN    49
+       26                   PID_IL3_PATHWAY    27
+       27               KEGG_PROTEIN_EXPORT    24
+   3) doing this at scale, in test.getAllSnpLocsGenesets
+      x <- getAllSnpLocs()
+      tbl.list <- getAllSnpLocsGenesets(x, maxScore=100)
+      all.genesets <- unlist(lapply(tbl.list, function(df) df$id))
+      tbl.dist <- subset(data.frame(table(all.genesets)), Freq > 3)
+   
+                                    all.genesets Freq
+   352                    LEE_AGING_NEOCORTEX_UP    4
+   586 REACTOME_GLYCEROPHOSPHOLIPID_BIOSYNTHESIS    4
+   
+       
+
+*-----------------------------------------------------------------------------------------------------------------------
+* neo4j for igap snps and msigdb, and gustavo's fcm (29 oct 2016)
+
+  --- start database
+    neo4j is /Users/paul/apps/neo4j/neo4j-community-3.0.6/bin/neo4j
+    neo4j start
+       Starting Neo4j.
+       Started neo4j (pid 9320). By default, it is available at http://localhost:7474/
+       There may be a short delay until the server is ready.
+       See /Users/paul/apps/neo4j/neo4j-community-3.0.6/logs/neo4j.log for current status.
+
+    browse to localhost:7474  user: neo4j  password isb
+    gdb <- startGraph("http://localhost:7474/db/data/", username="neo4j", password="isb");
+    
+  --- fill neo4j database:
+    cd ~/s/data/public/human/msigdb-oct2016; make
+    cd ~/s/data/priceLab/functionalConnectionMaps/ad-igap-demo; make rebuild
+  
+  --- R script for exploration
+   cd ~/s/data/priceLab/functionalConnectionMaps/ad-igap-demo/
+   explore.R
+
+*-----------------------------------------------------------------------------------------------------------------------
+* backbone learning, with python flask and rethinkdb: my own installation in ~/s/examples (31 oct 2016)
+
+  sh-learnBackbone
+  cd ~/s/examples/js/backbone/todoAppWithPythonFlaskRethinkdbServer
+
+    # take working example from ~/github/rethinkdb-example-flask-backbone-todo, copy it to ~/s/examples/....
+        newTodo.py
+        templates/
+           todo.html   # has flask micro markup
+        static/
+           todos.js
+           assets/
+              destroy.png
+              todos.css
+              vendor/
+                backbone-min.js
+                jquery.js
+                json2.js
+                underscore.js
+
+   ---- make sure no other version of todo.py is running:
+*-----------------------------------------------------------------------------------------------------------------------
+* python flask and rethinkdb: a demo of backbone's Todos app (28 oct 2016)
+
+  git clone git://github.com/rethinkdb/rethinkdb-example-flask-backbone-todo.git
+  pip install Flask
+  pip install rethinkdb
+
+  also macos installed RethinkDB v2.3.5 from dmg
+
+  rethinkdb &
+
+  ---- now to the app
+     python todo.py --setup   # added print() for python 3
+     python todo.py
+        * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+        * Restarting with stat
+        * Debugger is active!
+        * Debugger pin code: 736-156-344
+
+   browse to localhost:5000 see (somewhat stripped down) Todos app
+
+   writes to rethinkdb at http://localhost:28015,
+   human interface at http://localhost:8080
+
+   --- go to the Data Explorer tab
+
+    r.dbList();   #      rethinkdb, test, todoapp    # use shift-return to execute
+    r.db("todoapp").tableList();   # "todos"
+
+  --- query current contents:
+     r.db("todoapp").table("todos");
+
+*-----------------------------------------------------------------------------------------------------------------------
+* python flask and backbone (28 oct 2016)
+
+  http://simplectic.com/blog/2014/flask-todomvc-part1/
+  cd ~/s/work
+  mkdir flask-todomvc
+  cp -R ~/github/todomvc/examples/backbone flask-todomvc/
+  python -m http.server
+  browse to http://localhost:8000/backbone/
+
+
+  --- now install Flask
+    pip install Flask --upgrade
+
+    python server.py
+    browse to localhost:8000 # see "hello world"
+    browse to http://localhost:8000/backbone/#/   see (all javascript?) backbone todo list
+
+  mkdir static
+  mkdir templates
+  mv backbone/js static
+  mv backbone/index.html templates/
+  mv backbone backbone-hidden
+  python server.py, browse to 8000, libraries (jquery et al not found)
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* python virtual environment (28 oct 2016)
+
+  status:  abandoned, python virturalenv setuptools pip wheel failed with error code -11
+
+  pip install virtualenv  
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* backbone tips, javascript tips: bind bindAll, call, apply
+
+  http://blog.bigbinary.com/2011/08/18/understanding-bind-and-bindall-in-backbone.html
+
+  function Developer(skill) {
+     this.skill = skill;
+     this.says = function(){
+        alert(this.skill + ' rocks!');
+        }
+     }
+
+   var john = new Developer('R');
+   var func = john.says;
+   func(); // undefined rocks!  
+   func.apply(john) // R rocks
+
+   var john = new Developer('Ruby');
+   var func = _.bind(john.says, john);
+   func(); // Ruby rocks!
+
+   var john = new Developer('python');
+   _.bindAll(john, 'says');
+   var func = john.says;
+   func(); // python rocks!
+
+   The first big difference is that we do not have to worry about the
+   returned value of bindAll . In case of bind we must use the
+   returned function. In bindAll we do not have to worry about the
+   returned value but it comes with a price. bindAll actually mutates
+   the function. What does that mean.
+
+   The john object has an attribute called 'says' which returns a
+   function. bindAll changes the attribute 'says' so that when
+   it returns a function, that function is already bound to john.
+
+
+
+  --- from http://stackoverflow.com/questions/15455009/javascript-call-apply-vs-bind
+
+    Use .bind() when you want that function to later be called with a
+    certain context, useful in events. Use .call() or .apply() when you
+    want to invoke the funciton immediately, and modify the context.
+
+    Call/apply call the function immediately, whereas bind returns a
+    function that when later executed will have the correct context set
+    for calling the original function. This way you can maintain
+    context in async callbacks, and events.
+
+  --- javascript models tips, this
+
+   https://rainsoft.io/gentle-explanation-of-this-in-javascript/
+   
+    In JavaScript, this is the current execution context of a
+    function. Because the language has 4 function invocation types:
+
+      function invocation: alert('Hello World!')
+      method invocation: console.log('Hello World!')
+      constructor invocation: new RegExp('\\d')
+      indirect invocation: alert.call(undefined, 'Hello World!')
+
+   and each one defines its own context, this behaves slight different than developer expects.
+   Moreover strict mode also affects the execution context. 
+
+  'this' is the object that owns the method in a method invocation
+   When invoking a method on an object, 'this' becomes the object itself.
+
+   Creating a bound function (using .bind(), see 6.) fixes the
+   context, making it the object that owns the method.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* marianne elliott, wsu puyallup plant pathology visit (27 oct 2016)
+
+  cd ~/s/work/fatnose/marianneElliott/
+
+    Attached are a brief description of the native plant project and
+    preliminary results and the APHIS protocol for soil sampling.
+ 
+    I have included our protocol for baiting from potted plants (NP
+    methods). When you send me the list of plants you are getting,
+    then we will come up with a sampling plan like we discussed. We
+    will send you the bait leaves to use. We have a planting of
+    rhododendrons for that purpose.
+ 
+    The conference is Dec 6-8 and I have attached the info about it,
+    in case you or someone from your group is able to go.
+
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* dead simple backbonejs tutorial (28 oct 2016)
+
+  https://github.com/arturadib/hello-backbonejs.git
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* python tips **
+
+  in Python, ** is a notation that means that any extra keyword
+  arguments passed to the function should be put in a dictionary
+  called attrs where the keys are the parameter names and the values
+  are their corresponding values.
+ 
+*-----------------------------------------------------------------------------------------------------------------------
+* assess footprints (26 oct 2016)
+
+  cd ~/github/BDDS/footprints/assess
+
+  --- load existing files
+    ~/github/BDDS/footprints/functionalTests/data/ENCSR000DBY.19.chr.bam    # 48M
+    zoom to APOE, then chr19:44,859,094-44,956,080
+    
+
+*-----------------------------------------------------------------------------------------------------------------------
+* update sword fern die-off maps, from nelson and from tristan & kramer (26 oct 2016)
+
+   cd ~/s/work/fatnose/swordFerns/
+   two new directories:
+    ~/s/work/fatnose/swordFerns/before.15jun2016/
+    ~/s/work/fatnose/swordFerns/october.2016/fromNelson
+
+    (17 oct 2016) updates from kramer & tristan:
+       https://docs.google.com/spreadsheets/d/1WldC-Np3hJRwLzVop9EpgssBSpMZZJssLNc64qqu0X4
+
+     ~/s/work/fatnose/swordFerns/october.2016/fromKramer/sewardParkFernDataSheet1.tsv
+
+    my corrections to the loaded kmz files (loaded into google maps)
+       ~/s/work/fatnose/swordFerns/october.2016/fromNelson/myRevisionOf10-16.map.key
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* getDnaSequence for jocelyn (25 oct 2016)
+
+  cd   ~/s/examples/bioc/bsgenome.hg38/
+  go.R:
+
+  library(BSgenome.Hsapiens.UCSC.hg38)
+  hg38 = BSgenome.Hsapiens.UCSC.hg38
+  as.character(getSeq(hg38, "chr5", 1295228, 1295250))
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trena demo: find trem2 regulators (25 oct 2016)
+
+   https://github.com/PriceLab/TReNA/tree/master/inst/demos/trem2
+   ~/github/TReNA/inst/demos/trem2/go.R
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* cleveland, ann stukenberg (aka Elizabeth Morris)
+
+  http://snap.berkeley.edu/snapsource/snap.html
+  EdgeEdX: pshannon@systemsbiology.org
+  alex: unit 1 lab 3 or 4 is where she is working.
+*-----------------------------------------------------------------------------------------------------------------------
+* cy3 + cyjs + RCyjsfor layout
+
+    save sif file from R
+    import to Cy3
+    export as cyjs json to new file
+    
+    rcy <- display(g=graphNEL())
+      # make sure "network = {" is the firest line in the json graph file
+    send(rcy, list(cmd="httpAddGraph", callback="handleResponse", status="request", payload="newFile.cyjs"))
+      # must control c after graph appears: normal browserResponseReady loop not made available here
+
+*-----------------------------------------------------------------------------------------------------------------------
+* rcyjs: load json file exported from cytoscape (24 oct 2016)
+
+   import sif   # a regulates b, tab delimited
+   library(RCyjs)
+   rcy <- display(g=graphNEL())
+     # make sure "network = {" is the firest line in the json graph file
+   send(rcy, list(cmd="httpAddGraph", callback="handleResponse", status="request", payload="models.cyjs"))
+      # must control c after graph appears: normal browserResponseReady loop not made available here
+
+*-----------------------------------------------------------------------------------------------------------------------
+* lymphoblast chr19:42-47M feature table, piq added to wellington and hint and chipseq (24 oct 2016)
+
+  whovian, cd ~/s/work/priceLab/cory/lymphoblastFeatureTable
+  
+for easy access:  whovian:/tmp/featureTableLymphoblast42.47M.RData   (file is 2.5M in size)
+  
+
+dim(tbl) # 121607     19                                                                                                                                                                                                                                     
+
+tbl.hit.all: 850
+tbl.cs.only: 1283
+tbl.w.only: 10972
+tbl.h.only: 55273
+tbl.p.only: 21962
+tbl.wh.only: 16947
+tbl.wc.only: 451
+tbl.hc.only: 3400
+tbl.wp.only: 466
+tbl.cp.only: 105
+tbl.hp.only: 294
+tbl.hpw.only: 916
+tbl.cwh.only: 6654
+ > 
+   --- compare to previous run, without piq (1 oct 2016)
+
+The latest feature table, for lymphoblast chr19:42000000-47000000 is in the PriceLab/BDDS github repo
+
+<yourGithubRoot>/BDDS/trenadb/featureTable/lymphoblast/ftClean.Fri.Sep.30.2016-18:02:21.RData
+
+print(load("ftClean.Fri.Sep.30.2016-18:02:21.RData")) # ft.clean,  96825 rows, 11 columns
+
+The first two rows, transposed into columns for legibility:
+
+R> as.data.frame(t(ft.clean[1:2,]))
+                                       1                       2
+loc              chr19:42000006-42000014 chr19:42000007-42000019
+motif                           MA0738.1                MA0872.1
+samplecount.w                          0                       0
+score.w                              -99                     -99
+samplecount.h                          1                       1
+score.h                               16                      16
+csTF                                <NA>                    <NA>
+csscore                                0                       0
+motifscore                       11.1636                 10.1967
+motifpval                       6.51e-05                7.15e-05
+totalsamplecount                      18                      18
+
+The rows break out like this:
+
+  cwh:        7172       locations with chipseq, wellington and hint hits
+  cs.only:    1315
+  w.only:    10775
+  h.only:    56424
+  wh.only:   17241
+  wc.only:     441
+  hc.only:    3457
+  sum:       96825
+*-----------------------------------------------------------------------------------------------------------------------
+* resuscitate yfiles layout service, using yfiles 2.7 from 2010 (24 oct 2016)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* jupyter widgets intSlider: study, extract from nbextension form into a single web page (24 oct 2016)
+
+  ~/github/ipywidgets/jupyter-js-widgets/src/widget_int.ts   # 762 lines
+  ~/github/ipywidgets/ipywidgets/widgets/widget_int.py       # 269 lines
+
+
+   too many configuration options about which I am ignorant: cannot compile ts into js
+   abandoning this project, but hoping that this code can answer some of
+   the questions which arise with
+
+      ~/s/examples/jupyter/javascriptMagic/simpleD3circle
+   
+
+*-----------------------------------------------------------------------------------------------------------------------
+* nohup tips
+
+  
+  nohup R -f createFeatureTable.R  >ft.run.22oct2016 2>&1  &
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* getDNAService, retrieve multiple sequences, needed by jocelyn (21 oct 2016)
+
+   http://genome.ucsc.edu/cgi-bin/das/hg19/dna?segment=chr5:1295260,1295262;segment=chr5:1295260,1295270
+   chunk up multiple requests into some optimal size (10 segments per request?)
+
+   ~/github/getDNA/client-R/getDNAClient/inst/unitTests/
+
+*-----------------------------------------------------------------------------------------------------------------------
+* try to make a persistent svg in the simple CircleView learning jupyter-js-widgets notebook (19 oct 2016)
+
+  cd ~/s/examples/jupyter/javascriptMagic/simpleD3circle/
+
+  --- made this change:
+      _radius_changed: function() {
+         console.log("CircleView:_radius_changed called")
+         var newRadius= this.model.get('radius');
+         //var canvas = this.createCanvasDrawCircle(newRadius);
+         window.canvas =  this.createCanvasDrawCircle(newRadius);
+
+   in console, found this for window.canvas:
+
+    [Array[1]0: svg#svgassignedSlot: null
+    attributes: NamedNodeMapbaseURI: "http://localhost:10001/notebooks/simpleD3circle/current-1.9.ipynb"
+    childElementCount: 1
+    childNodes: NodeList[1]
+    children: HTMLCollection[1]
+    classList: DOMTokenList[0]
+    className: SVGAnimatedString
+    clientHeight: 300
+    clientLeft: 0
+    clientTop: 0
+    clientWidth: 600
+    currentScale: 1
+    currentTranslate: SVGPoint
+    currentView: SVGViewSpec
+    farthestViewportElement: null
+    firstChild: circle
+    firstElementChild: circle
+    height: SVGAnimatedLength
+    id: "svg"
+    innerHTML: "<circle r="80" cx="300" cy="150" style="stroke: gray; fill: white;"></circle>"
+    ....
+
+
+   
+  
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ipywidgets, jason grout: custom widget composed of parent/child widgets (19 oct 2016)
+
+   see https://github.com/ipython/ipywidgets/issues/700
+*-----------------------------------------------------------------------------------------------------------------------
+* rcs client for macos (18 oct 2016)
+
+  got dmg from http://rudix.org/packages/rcs.html
+   806 Apr  9  2016 /usr/local/bin/ci
+*-----------------------------------------------------------------------------------------------------------------------
+* R tips: a compendium of visually rich, cleanly-coded graphs
+
+  http://shinyapps.org/apps/RGraphCompendium/index.php
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* learning jupyter-js-widgets (ipywidgets) - a simple d3 experiment (18 oct 2016)
+
+   working in ~/s/examples/jupyter/javascriptMagic/simpleD3circle
+   start jupyter notebook --port 10001  --log-level=0
+
+   when ready to checkin:
+      ci -l current.ipynb
+      cp current.ipynb /Users/paul/github//notebooks-pshannon/study/CircleView.ipynb
+      cd ~/github//notebooks-pshannon/study/
+  in hopes of getting guidance from https://github.com/ipython/ipywidgets, jason grout
+  at issue https://github.com/ipython/ipywidgets/issues/838#issuecomment-254367449
+  checked in here:
+
+    https://github.com/paul-shannon/notebooks/tree/master/study
+      CircleView.ipynb
+     
+*-----------------------------------------------------------------------------------------------------------------------
+* putting cyjs into jupyter notebook, with javascript magic (15 oct 2016)  no js-widget yet, for that see above
+
+  --- need http webserver, cytoscape.js
+     now: cd ~/http
+     python -m http.server 8099
+     this supports
+       require.config({paths: {cytoscape: 'http://localhost:8099/js/cytoscape-2.7.10'}})
+
+  --- need jupyter server
+    cd ~/s/examples/jupyter/javascriptMagic/
+    jupyter notebook --port 10001
+
+  --- simple demo notebook
+    http://localhost:10001/notebooks/cyjs/cyjsSimpleDemoWithMagic.ipynb
+    cd ~/s/examples/jupyter/javascriptMagic/cyjs
+    cyjsSimpleDemoWithMagic.ipynb   # tracked in RCS, working on (2 nov 2016)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* learning jupyter-js-widgets (ipywidgets) - a simple d3 experiment (15 oct 2016)
+
+
+  --- need jupyter 
+    cd ~/s/examples/jupyter/javascriptMagic
+    jupyter notebook --port 10001
+    d3circle-in-ipywidget.ipynb
+
+    navigate to simpleD3circle
+
+  --- a bastardized working version (d3 made avaialable through a require hack.
+      canvas created only out of a post rendering callback
+
+%%javascript
+require.config({paths: {d3: '//cdnjs.cloudflare.com/ajax/libs/d3/3.4.8/d3.min'}});
+import ipywidgets as widgets
+from traitlets import Int, Unicode, validate
+class CircleWidget(widgets.DOMWidget):
+    _view_name = Unicode('CircleView').tag(sync=True)
+    _view_module = Unicode('circle').tag(sync=True)
+    value = Unicode('Hello Circle!').tag(sync=True)
+    count = Int(0).tag(sync=True)
+%%javascript
+require.undef('circle');
+
+define('circle', ["jupyter-js-widgets"], function(widgets) {
+    
+    var CircleView = widgets.DOMWidgetView.extend({
+
+        createCanvasDrawCircle: function(){
+           var svg = window.d3.select("#circleDiv").append("svg").attr("width", 600).attr("height", 300);
+           svg.append("circle")
+              .style("stroke", "gray")
+              .style("fill", "white")
+              .attr("r", 100)
+              .attr("cx", 300)
+              .attr("cy", 150)
+              .on("mouseover", function(){d3.select(this).style("fill", "aliceblue");})
+              .on("mouseout", function(){d3.select(this).style("fill", "white");});
+           console.log("render, appended circle")
+            return(svg)
+           },
+
+        createView: function(){
+           console.log("hola, CircleView ctor")
+           require(["d3"], function(d3){
+              console.log(d3.version);
+              window.d3 = d3;
+              });
+            var div = $("<div style='border:1px solid red; height: 300px; width: 600px'>").html("my own private div");
+            div.append("<div id='circleDiv'>circle div 5</div>");
+              //div.append("<div id='foo'> div foo</div>");
+            //div.append("<div id='bar'> div bar</div>");
+            //div.append("<div id='gam' style='border:1px solid black; height: 200px;'> div gam</div>");
+            return(div);
+            },
+         render: function() { 
+            this.$el.append(this.createView());
+              // no circle, no canvas when called from here
+            //var svg2 = this.createCanvasDrawCircle();
+            this._count_changed();
+            this.listenTo(this.model, 'change:count', this._count_changed, this);
+           },
+        _count_changed: function() {
+           var newCount = this.model.get('count');
+           var canvas = this.createCanvasDrawCircle();
+           this.$el.append("<h3>" + newCount + "</h3>");
+           this.$el.append("<h3>" + window.d3.version + "</h3>");
+           }
+      });
+    return {
+        CircleView : CircleView
+    };
+});
+
+cw = CircleWidget(height=300, width=500)
+cw
+
+cw.count = 10  // only here does the circle get drawn
+
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* vineet's 98 compound, gene model  network (15 oct 2016)
+
+  cd ~/s/work/priceLab/vineet/screen/
+
+  --- from email
+    Each line represent a gene interaction model which reads as follows:
+       G = TF1, TF2,TF3 ...
+      G1 = Gene 1
+     TF1 = Transcription Factor 1
+     TF2 = Transcription Factor 2
+
+   Objective is to figure out how many network modules do we get out
+   of these equations. Also how do we visualize the modules for 98
+   compounds.
+
+  --- first look
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* jupyter notebook ipywidgets detailed examples (15 oct 2016)
+
+  listed here: https://github.com/ipython/ipywidgets
+    https://github.com/bloomberg/bqplot
+    https://github.com/jovyan/pythreejs
+    https://github.com/ellisonbg/ipyleaflet
+
+  --- bqplot: good example for cyjs?  too many interconnected widgets
+   cd  ~/github/bqplot/
+
+  --- ipyleaflet: not yet transparent to me...
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* Selfhood and Identity in Confucianism, Taoism,   Buddhism, and Hinduism: Contrasts With the West
+   DAVID Y. F. HO
+
+  saved with approximately that name in ~/Documents
+  among things seen on a quick scan: decentering, sovereignty
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* IPython in-depth Tutorial, first presented at PyCon 2012, updated as recently as 2016 (15 oct 2016)
+  https://github.com/ipython/ipython-in-depth
+  very useful, it seems, for laying out how to build a widget
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* ipywidgets, prep for cyjs, using cookie cutter with hello world demo (14 oct 2016)
+
+  cd ~/github
+  git clone https://github.com/jupyter/widget-cookiecutter.git
+  pip install cookiecutter
+  cookiecutter https://github.com/jupyter/widget-cookiecutter.git
+  cd jupyter-hello
+
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* add \donttest to all RCytoscape man pages (14 oct 2016)
+
+  cd   /Users/paul/s/examples/python/regex/rcytoscapeManPages
+
+*-----------------------------------------------------------------------------------------------------------------------
+* neo4j for igap snps and msigdb (13 oct 2016)
+
+  --- fill neo4j database:
+    cd ~/s/data/public/human/msigdb-oct2016; make
+    cd ~/s/data/priceLab/functionalConnectionMaps/ad-igap-demo; make rebuild
+  
+  --- R script for exploration
+   cd ~/s/data/priceLab/functionalConnectionMaps/ad-igap-demo/
+   explore.R
+
+  test out with n4j (neo-4j-sh)>
+
+    match(a)-[r]-(b) where a.id="SRP9" and b.score < 50 return(b);
+
+    | Node[53119]{score:1,id:"chr1:225777805-225777805",type:"loc"}        |
+    | Node[75636]{type:"curatedGeneSet",id:"GOLUB_ALL_VS_AML_UP",score:24} |
+    | Node[76190]{type:"curatedGeneSet",id:"KEGG_PROTEIN_EXPORT",score:24} |
+    | Node[77284]{type:"curatedGeneSet",id:"PID_IL3_PATHWAY",score:27}     |
+
+
+
+  --- now choose some distant snps, look for a path between them
+      match(a) where a.type="loc" return(a) limit 5;
+         +---------------------------------------------------------------+
+         | Node[53111]{score:1,id:"chr1:108746614-108746614",type:"loc"} |
+         | Node[53112]{score:1,id:"chr1:11909729-11909729",type:"loc"}   |
+         | Node[53113]{score:1,id:"chr1:160400615-160400615",type:"loc"} |
+         | Node[53114]{score:1,id:"chr1:182615194-182615194",type:"loc"} |
+         | Node[53115]{score:1,id:"chr1:201719605-201719605",type:"loc"} |
+         +---------------------------------------------------------------+
+
+  --- shortest path example
+    MATCH (f:Airport {code: "LTN"}), (t:Airport {code: "WAW"}), p = shortestPath((f)-[]-(t)) RETURN p
+    match (a:Entity {id: "chr1:108746614-108746614"}), (b:Entity {id: "chr1:201719605-201719605"}), p=shortestPath((a)-[]-(b)) return p;
+
+    MATCH p=shortestPath((keanu:Person)-[:KNOWS*]-(kevin:Person) ) WHERE keanu.name="Keanu Reeves" and kevin.name = "Kevin Bacon" RETURN length(p)   
+ 
+*-----------------------------------------------------------------------------------------------------------------------
+* postgres tips, psql tips (10 oct 2016)
+
+  on riptide, after whovian instance went south
+  psql is /Library/PostgreSQL/9.3/bin/psql
+  /Library/PostgreSQL/9.3/bin/createdb, dropdb, dropuser, etc
+
+  ~/.pgpass
+  localhost:5432:*:pshannon:pshannon
+  localhost:5432:*:trena:trena
+
+*-----------------------------------------------------------------------------------------------------------------------
+* alison paquettes rma/oligo problem (8 oct 2016)
+
+  riptide, cd ~/s/work/priceLab/alison/affyAndRMA
+  https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE75010
+
+   Preeclampsia (PE) is a complex, heterogeneous disorder of
+   pregnancy, demonstrating considerable variability in observed maternal
+   symptoms and fetal outcomes. We hypothesized that this heterogeneity
+   is due to the existence of multiple molecular forms of PE. To address
+   our hypothesis, we created a large (N=330) human placental microarray
+   data set consisting of seven previously published studies (GSE30186,
+   GSE10588, GSE24129, GSE25906, GSE43942, GSE4707, and GSE44711) and 157
+   highly annotated samples from a BioBank (below).  Applying
+   unsupervised clustering to this combined data set revealed multiple
+   distinct molecular groups of placentas, including three clinically
+   relevant potential origins of PE based on gene expression and
+  correlating patient records.
+
+  Platforms (1):  GPL6244 [HuGene-1_0-st] Affymetrix Human Gene 1.0 ST Array [transcript (gene) version]
+
+library(oligo)
+filenames <- list.celfiles(listGzipped=TRUE)
+affyGeneFS<- read.celfiles(filenames)
+dim(affyGeneFS)  # Features  Samples 
+                 #  1102500      157 
+head(rownames(affyGeneFS))
+genePS <- rma(affyGeneFS, target = "probeset")
+fivenum(exprs(genePS)[1:10, 1:10])
+  # [1]  3.223160  4.599119  5.381530  7.482819 11.235501
+
+sessionInfo()
+# R version 3.3.1 (2016-06-21)
+# Platform: x86_64-apple-darwin13.4.0 (64-bit)
+# Running under: OS X 10.11.6 (El Capitan)
+# 
+# locale:
+# [1] C
+# 
+# attached base packages:
+# [1] stats4    parallel  stats     graphics  grDevices utils     datasets  methods   base     
+# 
+# other attached packages:
+#  [1] pd.hugene.1.0.st.v1_3.14.1 RSQLite_1.0.0              DBI_0.5-1                  oligo_1.37.2               Biostrings_2.41.4         
+#  [6] XVector_0.13.7             IRanges_2.7.17             S4Vectors_0.11.18          Biobase_2.33.4             oligoClasses_1.35.1       
+# [11] BiocGenerics_0.19.2        BiocInstaller_1.23.9      
+# 
+# loaded via a namespace (and not attached):
+#  [1] affxparser_1.45.1           splines_3.3.1               GenomicRanges_1.25.94       zlibbioc_1.19.0            
+#  [5] bit_1.1-12                  lattice_0.20-34             foreach_1.4.3               GenomeInfoDb_1.9.13        
+#  [9] tools_3.3.1                 SummarizedExperiment_1.3.82 grid_3.3.1                  ff_2.2-13                  
+# [13] iterators_1.0.8             preprocessCore_1.35.0       affyio_1.43.0               Matrix_1.2-7.1             
+# [17] codetools_0.2-15            compiler_3.3.1             
+   
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* new liz blue snps, look for footprints in cory's wellington brain footprints (10 oct 2016)
+
+  on riptide:
+
+  cd ~/s/work/priceLab/lizBlue/chr1.snps
+  
 *-----------------------------------------------------------------------------------------------------------------------
 * response to melody kraff's social determinants of health spreadsheets and powerpoint slides (8 oct 2016)
 
   --- CORE data science overview slides
 
   CHNA - "community health needs assessment"
-  CORE - "clinical outcomes research & education" ddresses social determinants and is contracted for
+  CORE - "clinical outcomes research & education" addresses social determinants and is contracted for
           data analytics by Medicaid / Medicare.
   ACH  - "accountable community of health"
   SDH  - "social determinants of health"
@@ -188,6 +1323,56 @@ bed format: chrom, start, end, name, score, strand
 
    
 *-----------------------------------------------------------------------------------------------------------------------
+* state of the postgres database, index creation timings (14 oct 2016)
+
+  wellington, with only 
+
+  db.hint, regions: 60,521,694   hits 1,576,550,964
+
+*-----------------------------------------------------------------------------------------------------------------------
+* psql: index piq database on whovian (14 oct 2016)
+
+  cd ~/github/BDDS/trenadb/piq/
+  psql piq
+  \di (only the regions table is indexed on its pkey
+
+   | public | regions_pkey | index | pshannon | regions
+
+  this was, I think, a poor choice on my part, because it is only the hits table
+  which is accessed by the loc field: regions is queried by chrom, start, endpos
+
+  --- edited this file, indexRegions.sql
+  \connect piq;
+  create index regionsPos_index on regions (chrom, start, endpos);
+  which I hope will be used as an index 
+
+  (14 october 12:00) whovian.piq> nohup psql -f indexRegions.sql&
+                    finished at (14 oct 12:25): 25 minutes
+  (14 october 12:20) whovian.piq> nohup psql -f indexHits.sql > indexHits-nohup.out &
+                    finished at (16 oct 0200): 14 hours
+
+   whovian.piq> psql piq  # psql (9.4.7)
+   piq=> \di
+                       List of relations
+      Schema |       Name       | Type  |  Owner   |  Table
+     --------+------------------+-------+----------+---------
+      public | hits_index       | index | pshannon | hits
+      public | regions_pkey     | index | pshannon | regions
+      public | regionspos_index | index | pshannon | regions
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* psql tips: list indexes
+
+  by example, on whovian:
+     psql piq
+     \di
+
+ piq=> \di
+   | Schema |     Name     | Type  |  Owner   |  Table
+   |--------+--------------+-------+----------+---------
+   | public | regions_pkey | index | pshannon | regions
+
+*-----------------------------------------------------------------------------------------------------------------------
 * state of the postgres database (8 oct 2016)
 
    psql> \list
@@ -237,6 +1422,145 @@ bed format: chrom, start, end, name, score, strand
     wellington-test
     wellington2
     wholeBrain: footprints, motifsgenes
+
+*-----------------------------------------------------------------------------------------------------------------------
+* gustavo's fcm exploration, iGap snps and msigdb, polished up (12 oct 2016)
+
+  cd ~/s/data/priceLab/functionalConnectionMaps/ad-igap-demo
+  makefile loads nodes and edges, igap and msigdb, populates neo4j
+
+  --- start looking for interesting relationships
+    source("createNetworkFromIgapSnps.R")
+    runTests()
+    tbl <- readSnpsInFootprints()
+    head(subset(tbl, distance < 10))
+    cherry-picked this entry:
+       chrom     start       end width strand   tfs     motif  nearby.gene distance                      loc
+        chr1 225777805 225777805     1      *  CTCF  MA0139.1         SRP9        7 chr1:225777805-225777805
+
+    --- find the snp of interest
+       match(n) where n.id="chr1:225777805-225777805" return(n);
+         Node[26474]{id:"chr1:225777805-225777805",type:"loc"}
+
+    --- find all of its immediate neighbors
+      match(a)-[r]-(b) where a.id="chr1:225777805-225777805" return(b);
+         Node[26294]{id:"MA0095.2",type:"motif"}
+         Node[26288]{id:"MA0014.2",type:"motif"}
+         Node[26293]{id:"MA0139.1",type:"motif"}
+
+    --- find all matches of second neighbors which have type="gene"
+       match(a)-[r]-(b)-[r2]-(c) where a.id="chr1:225777805-225777805" and c.type="gene" return(c);
+       18 rows, 41766 ms
+      +---------------------------------------------+
+      | Node[26672]{id:"RP11-317P15.4",type:"gene"} |
+      | Node[26677]{id:"SRP9",type:"gene"}          |
+      | Node[26677]{id:"SRP9",type:"gene"}          |
+      | Node[26677]{id:"SRP9",type:"gene"}          |
+      | Node[26704]{id:"MIR564",type:"gene"}        |
+      | Node[26719]{id:"OTULIN",type:"gene"}        |
+      | Node[26735]{id:"PSORS1C2",type:"gene"}      |
+      | Node[26774]{id:"RP11-732A19.8",type:"gene"} |
+      | Node[26782]{id:"AACS",type:"gene"}          |
+      | Node[26785]{id:"RP3-416H24.4",type:"gene"}  |
+      | Node[26791]{id:"MARK3",type:"gene"}         |
+      | Node[26792]{id:"IGHV3-72",type:"gene"}      |
+      | Node[26815]{id:"ANKRD13B",type:"gene"}      |
+      | Node[26816]{id:"MIR423",type:"gene"}        |
+      | Node[26819]{id:"RP11-707O23.1",type:"gene"} |
+      | Node[26820]{id:"MAPT",type:"gene"}          |
+      | Node[26833]{id:"CLUL1",type:"gene"}         |
+      | Node[26845]{id:"ZNF17",type:"gene"}         |
+      +---------------------------------------------+
+
+neo4j-sh (?)$     
+    wanted: shortest path from this loc to any other loc
+        
+*-----------------------------------------------------------------------------------------------------------------------
+* gustavo's fcm, add msigdb (11 oct 2016)
+
+   cd ~/s/data/priceLab/functionalConnectionMaps/ad-igap-demo/  
+   got msigdb-edges.tsv, msigdb-nodes.tsv  from
+      ~/s/data/public/human/msigdb-oct2016
+   checkNodes.R finds all nodes identified in
+      create-snpTfGeneGraphEdges.R and msigdb, creates allNodes.tsv
+      
+   cp allNodes.tsv /Users/paul/Documents/Neo4j/default.graphdb/import/
+   cp *edges* /Users/paul/Documents/Neo4j/default.graphdb/import/
+   neo4j36 -file fillNodes.cql 
+   neo4j36 -file fillEdges.cql 
+   neo4j36 -file fillEdges.cql 
+
+   match ()-[r]-() return count(r)  #810k
+   match (n)return count(n)         # 31k
+
+*-----------------------------------------------------------------------------------------------------------------------
+* msigdb, curated gene sets (11 oct 2016)
+
+  cd ~/s/data/public/human/msigdb-oct2016
+  "all curated gene sets, gene symbols" from http://software.broadinstitute.org/gsea/downloads.jsp
+  http://software.broadinstitute.org/gsea/msigdb/download_file.jsp?filePath=/resources/msigdb/5.2/c2.all.v5.2.symbols.gmt
+
+  4729 lines
+
+  concludes thus:
+   dim(tbl.edges) # [1] 387776      5
+   tbl.genes <- data.frame(id=all.genes, type="gene", source="msigdb-2016-oct")
+   tbl.processes <- data.frame(id=tbl[,1], type="curatedGeneSet", source="msigdb-2016-oct")
+   tbl.nodes <- rbind(tbl.genes, tbl.processes)
+   printf("about to write %d rows to nodes.tsv", nrow(tbl.nodes))
+       [1] about to write 30712 rows to nodes.tsv
+   write.table(tbl.nodes, file="nodes.tsv", row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t")
+    printf("about to write %d rows to edges.tsv", nrow(tbl.edges))
+      [1] about to write 387776 rows to edges.tsv
+  write.table(tbl.edges, file="edges.tsv", row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t")
+
+   tbl.edges[sample(1:nrow(tbl.edges), 10),]
+           a                                    b             type score          source
+   62    GPI      KEGG_GLYCOLYSIS_GLUCONEOGENESIS inCuratedGeneSet     0 msigdb-2016-oct
+   74   SDHD         KEGG_CITRATE_CYCLE_TCA_CYCLE inCuratedGeneSet     0 msigdb-2016-oct
+   178 TSTA3 KEGG_FRUCTOSE_AND_MANNOSE_METABOLISM inCuratedGeneSet     0 msigdb-2016-oct
+   150   MPI KEGG_FRUCTOSE_AND_MANNOSE_METABOLISM inCuratedGeneSet     0 msigdb-2016-oct
+   242 ACADM           KEGG_FATTY_ACID_METABOLISM inCuratedGeneSet     0 msigdb-2016-oct
+   38   PFKM      KEGG_GLYCOLYSIS_GLUCONEOGENESIS inCuratedGeneSet     0 msigdb-2016-oct
+   154  PFKM KEGG_FRUCTOSE_AND_MANNOSE_METABOLISM inCuratedGeneSet     0 msigdb-2016-oct
+   279  SQLE            KEGG_STEROID_BIOSYNTHESIS inCuratedGeneSet     0 msigdb-2016-oct
+   170 MTMR2 KEGG_FRUCTOSE_AND_MANNOSE_METABOLISM inCuratedGeneSet     0 msigdb-2016-oct
+   31   PCK2      KEGG_GLYCOLYSIS_GLUCONEOGENESIS inCuratedGeneSet     0 msigdb-2016-oct
+
+
+   wc -l *.tsv
+     387777 ~/s/data/public/human/msigdb-oct2016/edges.tsv
+      30713 ~/s/data/public/human/msigdb-oct2016/nodes.tsv
+
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* review gustavo's fcm, functionalConnectionMaps, first try continued, with igap AD gwas snps (11 oct 2016)
+
+  cd ~/s/data/priceLab/functionalConnectionMaps/ad-igap-demo
+  R -f stats.R #  [1]  6365 nodes,  17702 edges
+  head nodes.tsv 
+      id	type	source
+      MA0696.1	motif	footprinting
+      MA0697.1	motif	footprinting
+      MA0736.1	motif	footprinting
+  tbl.nodes <- read.table("nodes.tsv", header=TRUE, sep="\t")
+  as.data.frame(table(tbl.nodes$type))
+    #  Var1 Freq
+    #  gene 2553
+    #   loc 3348
+    # motif  464
+
+   tbl.edges <- read.table("edges.tsv", header=TRUE, sep="\t")
+   head(tbl.edges)
+                              a        b       type distance       source
+     1 chr1:101323692-101323692 MA0696.1 snpInMotif        0 footprinting
+     2 chr1:101323692-101323692 MA0697.1 snpInMotif        0 footprinting
+     3 chr1:101323692-101323692 MA0736.1 snpInMotif        0 footprinting
+  as.data.frame(table(tbl.edges$type))
+                            Var1 Freq
+     1 candidateProximalPromoter 8851
+     2                snpInMotif 8851
+
 
 *-----------------------------------------------------------------------------------------------------------------------
 * gustavo's fcm, functionalConnectionMaps, first try, with igap AD gwas snps (7 oct 2016)
@@ -411,9 +1735,49 @@ require(['cytoscape'], function(cytoscape){
 
   venn.diagram(list(Wellington=w.locs, HINT=h.locs, ChIPseq=cs.locs), fill=c("red", "green", "blue"), filename="venn.tiff")
 *-----------------------------------------------------------------------------------------------------------------------
+* neo4j fresh install 3.0.6 (12 oct 2016)
+
+  download unix tarball from
+     https://neo4j.com/download/community-edition/
+     
+  cd ~/apps/neo4j
+  tar xvf ~/Downloads/neo4j-community-3.0.6-unix.tar.gz
+  edit ~/apps/neo4j/neo4j-community-3.0.6/conf/neo4j.conf, disabling one line, enabling another:
+
+     #dbms.directories.import=import
+     dbms.security.allow_csv_import_from_file_urls=true
+
+  add to ~/.bashrc
+   PATH=$PATH:$HOME/apps/neo4j/neo4j-community-3.0.6/bin
+   alias n4j="/Users/paul/Downloads/neo4j-community-3.0.6/bin/neo4j-shell"
+
+  start the database server:
+     ~/apps/neo4j/neo4j-community-3.0.6/bin/neo4j start
+     Started neo4j (pid 51118). By default, it is available at
+     http://localhost:7474/
+     default username/password is neo4j/neo4j.  prompts to replace password: isb
+
+   in .bashrc:
+      alias n4j="/Users/paul/Downloads/neo4j-community-3.0.6/bin/neo4j-shell"
+      
+*-----------------------------------------------------------------------------------------------------------------------
 * neo4j tips
 
+  cypher delete all neo4j nodes and edges:
+
+        MATCH (n) DETACH DELETE n;
+
+   see ~/s/data/priceLab/functionalConnectionMaps/ad-igap-demo/deleteDB.cql 
+   
+
+  cypher get node and edge counts, must be executed separately
+
+     match (n) return count (n)
+     match ()-[r]-() return count(r)
+
   R -f ~/s/data/priceLab/functionalConnectionMaps/ad-igap-demo/stats.R
+
+  --- load csv, file-url confusion
 
   --- delete all  (might need to run this several times)
   bash> neo4j
@@ -1507,7 +2871,7 @@ ZHX2
       return(tbl[["chrom", "start", "stop", "desc", scoreColumnNameToUse, "strand"]])
       
 *------------------------------------------------------------------------------------------------------------------------
-* pandas tips, psycopg2 tips:
+* pandas tips, psycopg2 tips, python database tips
 
   ---- what tables are in the database?
   import pandas as pd, psycopg2 as psql
@@ -4377,7 +5741,9 @@ sometimes inequitable, and sometimes improvable circumstances in which we live.
    cy.style(style2)
 
 *------------------------------------------------------------------------------------------------------------------------
-* create readable json from RCy graph (20 jul 2016)
+* create readable json from RCy graph (20 jul 2016)   
+
+this can then be used in cyjs jupyter widget
 
 library(RCyjs)
 library(RUnit)
@@ -4388,8 +5754,11 @@ s <- getJSON(rcy)
 s2 <- gsub("\\\"", "'",  s)
 s3 <- gsub("},", "},\n", s2)
 s4 <- gsub("'", "\"", s3)
-write(s4, file="s4.json")
-s5 <- fromJSON("s4.json")
+s5 <- paste("network = ", s4, sep="")
+write(s5, file="s5.json")  
+
+# test it out
+s6 <- fromJSON("s5.json")
 checkTrue(is.list(s5))
 checkTrue(length(s5) >= 12)
 
@@ -8829,6 +10198,17 @@ vizmap =  [
    --- next up: combine into an rcyjs network, a neo4j graph database
 
 *------------------------------------------------------------------------------------------------------------------------
+* neo4j tips: clear the database
+  in R:
+
+  ~/s/data/priceLab/functionalConnectionMaps/ad-igap-demo/clear.R
+library(RNeo4j)
+gdb <- startGraph("http://localhost:7474/db/data/", username="neo4j", password="isb");
+node.count <- getNodes(gdb, "match(n) return count(n)")[[1]]
+edge.count <- getRels(gdb, "match(n)-[r]->(t) return count(r)")[[1]]
+printf("%5d nodes, %6d edges", node.count, edge.count)
+clear(gdb)
+  
 *------------------------------------------------------------------------------------------------------------------------
 * biomformat, read ag_r1-25.biom in R, phyloseq (29 apr 2016)
 
@@ -12855,7 +14235,7 @@ g = [{"id":"n99324","x":34087.9375,"y":5474.07},
    --- i asked
     from the tutorial:
 
-      MATCH p=shortestPath( (keanu:Person)-[:KNOWS*]-(kevin:Person) ) WHERE keanu.name="Keanu Reeves" and kevin.name = "Kevin Bacon" RETURN length(p)
+      MATCH p=shortestPath((keanu:Person)-[:KNOWS*]-(kevin:Person)) WHERE keanu.name="Keanu Reeves" and kevin.name = "Kevin Bacon" RETURN length(p)
 
     Imagine each Person node has an age property and an occupation. Every KNOWS
     edge has a "length of acquaintance" property.
@@ -13709,6 +15089,12 @@ ls(search()[3])
 
    -- next: create a dataframe of  source, target, relationship, weight of all the interactions in the shortest path
 
+
+*----------------------------------------------------------------------------------------------------
+* neo4j tips: list all nodes and edges
+
+
+*----------------------------------------------------------------------------------------------------
 
 *----------------------------------------------------------------------------------------------------
 * rneo4j tips (8 feb): getSingleNode, getNodes
@@ -37817,6 +39203,7 @@ names (iris.pca)  #  "sdev"     "loadings" "center"   "scale"    "n.obs"    "sco
 *-------------------------------------------------------------------------------
 * heatmap tips, heatmap.2 tips
 
+   library (gplots)
 --- exploratory script
 ~/s/examples/R/heatmap/heatmap.2/fromManPage/go.R
 
