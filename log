@@ -118,67 +118,106 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* new/old notebook for cory: trem2 (7 nov 2016)
+
+
 *-----------------------------------------------------------------------------------------------------------------------
+* findOverlaps GenomicRanges example for rory (7 nov 2016)
+
+   ~/s/examples/bioc/GenomicRanges/go.R
+   
+library(GenomicRanges)
+source("~/github/BDDS/trenadb/src/utils.R”)
+# get tbl  from somewhere
+f <- "~/s/work/priceLab/cory/lymphoblastFeatureTable/chr19-31oct2016/featureTableLymphoblast-chr19-entire.RData"
+load(f) # tbl
+x <- locStringToBedTable(head(tbl$loc, n=100))
+gr1 <- GRanges(seqnames=x$chrom, IRanges(start=x$start, end=x$end))
+gr2 <- GRanges(seqnames=x$chrom, IRanges(start=x$start-50, end=x$end+50))
+head(as.data.frame(findOverlaps(gr1, gr2, type=‘any')))
+# 
+#  queryHits subjectHits
+# 1         1           3
+# 2         1           4
+# 3         1           5
+# 4         1           1
+# 5         1           2
+# 6         2           3
+
 *-----------------------------------------------------------------------------------------------------------------------
 * fill mouse fimo, file from cory, for jocelyn (7 nov 2016)
 
-  cory says files are here:
+  cory says files are here.  these, though, are mm10, and jocelyn needs mm9.
 
     whovian:/local/Cory/for_Paul/fimo_out/mouse/
+    dir /local/Cory/for_Paul/fimo_out/mouse/*.fimo.txt   eg
+       1911014244 Nov  6 08:01 1.fimo.txt
+
+   create new table in trena, which now has:
+      bash> psql trena
+      psql> \dt
+                  List of relations
+        Schema |   Name    | Type  |  Owner   
+       --------+-----------+-------+----------
+        public | fimo_hg38 | table | pshannon
+        public | hits      | table | pshannon
+        public | regions   | table | pshannon
+        public | tfmotifs  | table | pshannon
+
   
-* genome-wide fimo files from Cory (8 aug 2016)
-
-   cd ~/s/data/postgres-fill/fimo
-   
-   dir /local/Cory/for_Paul/fimo_out/*.fimo.txt
-     28672130668 Aug  6 20:02 /local/Cory/for_Paul/fimo_out/GRCh38.fimo.txt
-     26516524484 Aug  6 20:11 /local/Cory/for_Paul/fimo_out/GRm38.fimo.txt
-
-  /local/Cory/for_Paul/fimo_out/GRCh38.fimo.txt
-  
-   head -10 /local/Cory/for_Paul/fimo_out/GRCh38.fimo.txt
-   #pattern name	sequence name	start	stop	strand	score	p-value	matched sequence
-   MA0002.2	10	12880	12890	+	11.4483	6.04e-05		GCTTGTGGCCT
-   MA0002.2	10	18991	19001	-	12.4655	2.73e-05		TTCTGTGGTTC
-   MA0002.2	10	19478	19488	-	13.3448	1.17e-05		TTCTGTGGTTG
-
-   --- the two-tab problem: don't want to sed two 30G files!
-     see if we can fill from 
-     head -10 /local/Cory/for_Paul/fimo_out/GRCh38.fimo.txt > tiny.txt
-
-   createdb -U pshannon fimo
-   psql fimo -f create.sql 
-     DROP TABLE
-     CREATE TABLE
-    psql fimo -f fill.sql   # tiny.txt
-      COPY 9
-
-  --- next problem: the big file is actually 12 files combined, thus 12 header lines,
-     and this bug:
-
-      whovian.fimo> psql -f fill.sql 
-        You are now connected to database "fimo" as user "pshannon".
-        psql:fill.sql:2: ERROR:  invalid input syntax for integer: "start"
-        CONTEXT:  COPY hg38, line 20583881, column start: "start"
-
-     remedy: cory will grep -v start on the file, give me a new one.
-
-  --- timing (no indices yet)
-
-    system.time(dbGetQuery(db, "select * from hg38 where chr='10' and start < 19000"))
-      user  system elapsed 
-      0.008   0.001  55.610 
-
-  --- built 3 indices
-   index.sql:
-     \connect fimo;
-     create index on hg38 (chr);
-     create index on hg38 (start);
-     create index on hg38 (endpos);
-    
-   system.time(dbGetQuery(db, "select * from hg38 where chr='10' and start < 19000"))
-     user  system elapsed 
-    0.013   0.000  17.456 
+     * genome-wide fimo files from Cory (8 aug 2016)
+     
+        cd ~/s/data/postgres-fill/fimo
+        
+        dir /local/Cory/for_Paul/fimo_out/*.fimo.txt
+          28672130668 Aug  6 20:02 /local/Cory/for_Paul/fimo_out/GRCh38.fimo.txt
+          26516524484 Aug  6 20:11 /local/Cory/for_Paul/fimo_out/GRm38.fimo.txt
+     
+       /local/Cory/for_Paul/fimo_out/GRCh38.fimo.txt
+       
+        head -10 /local/Cory/for_Paul/fimo_out/GRCh38.fimo.txt
+        #pattern name	sequence name	start	stop	strand	score	p-value	matched sequence
+        MA0002.2	10	12880	12890	+	11.4483	6.04e-05		GCTTGTGGCCT
+        MA0002.2	10	18991	19001	-	12.4655	2.73e-05		TTCTGTGGTTC
+        MA0002.2	10	19478	19488	-	13.3448	1.17e-05		TTCTGTGGTTG
+     
+        --- the two-tab problem: don't want to sed two 30G files!
+          see if we can fill from 
+          head -10 /local/Cory/for_Paul/fimo_out/GRCh38.fimo.txt > tiny.txt
+     
+        createdb -U pshannon fimo
+        psql fimo -f create.sql 
+          DROP TABLE
+          CREATE TABLE
+         psql fimo -f fill.sql   # tiny.txt
+           COPY 9
+     
+       --- next problem: the big file is actually 12 files combined, thus 12 header lines,
+          and this bug:
+     
+           whovian.fimo> psql -f fill.sql 
+             You are now connected to database "fimo" as user "pshannon".
+             psql:fill.sql:2: ERROR:  invalid input syntax for integer: "start"
+             CONTEXT:  COPY hg38, line 20583881, column start: "start"
+     
+          remedy: cory will grep -v start on the file, give me a new one.
+     
+       --- timing (no indices yet)
+     
+         system.time(dbGetQuery(db, "select * from hg38 where chr='10' and start < 19000"))
+           user  system elapsed 
+           0.008   0.001  55.610 
+     
+       --- built 3 indices
+        index.sql:
+          \connect fimo;
+          create index on hg38 (chr);
+          create index on hg38 (start);
+          create index on hg38 (endpos);
+         
+        system.time(dbGetQuery(db, "select * from hg38 where chr='10' and start < 19000"))
+          user  system elapsed 
+         0.013   0.000  17.456 
 
 
 *-----------------------------------------------------------------------------------------------------------------------
