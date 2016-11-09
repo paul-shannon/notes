@@ -118,8 +118,153 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* grok the nbextension cookiecutter (9 nov 2016)
+
+  cd ~/s/examples/jupyter/hello-cookieCutter
+  type cookiecutter   # cookiecutter is /Users/paul/anaconda/bin/cookiecutter
+  cookiecutter https://github.com/jupyter/widget-cookiecutter.git
+     You've cloned /Users/paul/.cookiecutters/widget-cookiecutter before. Is it okay to delete and re-clone it? [yes]: yes
+     Cloning into 'widget-cookiecutter'...
+     remote: Counting objects: 98, done.        
+     remote: Total 98 (delta 0), reused 0 (delta 0), pack-reused 98        
+     Unpacking objects: 100% (98/98), done.
+     Checking connectivity... done.
+     author_name []: Paul Shannon
+     author_email []: pshannon@systemsbiology.org
+     github_project_name [jupyter-widget-example]: 
+     github_organization_name [jupyter]: 
+     python_package_name [ipywidgetexample]: 
+     npm_package_name [jupyter-widget-example]: 
+     project_short_description [A Custom Jupyter Widget Library]: 
+
+   pip install -e .
+   jupyter nbextension install --py --user ipywidgetexample   # where ipywidgetexample is the python directory (module name?)
+        To initialize this nbextension in the browser every time the notebook (or other app) loads:
+   jupyter nbextension enable ipywidgetexample --user --py
+        Enabling notebook extension jupyter-widget-example/extension...
+          - Validating: OK
+
+    jupyter notebook --log-level=0 --port=16666
+    in notebook, this works
+        import ipwidgetexample
+    but nothing else does;
+
+   **** next: grok python module structure
+ 
+
+  --- from ipyleaflet
+     $ jupyter nbextension install --py --symlink --sys-prefix ipyleaflet
+     $ jupyter nbextension enable --py --sys-prefix ipyleaflet
+
+   Note for developers: the --symlink argument on Linux or OS X allows
+   one to modify the JavaScript code in-place. This feature is not
+   available with Windows.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* the d3 CircleWidget demo, packaging with cookiecutter (8 nov 2016)
+
+
+
+  cd ~/github/jupyter-widget-demos/d3circles/minimal
+  cookiecutter https://github.com/jupyter/widget-cookiecutter.git
+
+    --- new try
+        pip install -e .
+        jupyter nbextension install --py --user CircleWidget
+        jupyter nbextension enable CircleWidget --user --py
+          # in new notebook:
+        from CircleWidget import *
+        CircleWidget
+           <module 'CircleWidget' from
+             '/Users/paul/github/jupyter-widget-demos/d3circles/minimal/jupyter-d3-circle-widget/CircleWidget/__init__.py'>
+
+    Paul Shannon
+    pshannon@systemsbiology.org
+    jupyter-d3-circle-widget
+    CircleWidget
+    jupyter-d3-circle-widget
+    Small and Simple Jupyter Widget Demo Using d3
+
+   ---  emulate what works for igv.
+       "igv" below seems to be the python module name
+        def _jupyter_server_extension_paths():
+          return [{ "module": "igv"}]
+        def _jupyter_nbextension_paths():
+
+
+   --- build and install?
+      pip install -e .
+      jupyter nbextension install --prefix ~/jupyter.extensions --py CircleWidget
+      jupyter nbextension enable --py CircleWidget    # - Validating: OK
+          Enabling notebook extension jupyter-d3-circle-widget/extension...
+            - Validating: problems found:
+               - require?  X jupyter-d3-circle-widget/extension
+
+           "clustergrammer_widget": "nbextensions/clustergrammer_widget/index",
+           "jupyter-d3-circle-widget": "nbextensions/jupyter-d3-circle-widget/index",
+           "jupyter-leaflet": "nbextensions/jupyter-leaflet/index",
+
+   --- where is jupyter-leaflet mentioned in ~/github/ipyleaflet?  no filename
+   find ~/github/ipyleaflet/ -name "*.js" -print -exec grep "jupyter-leaflet" {} ';'
+    /Users/paul/github/ipyleaflet//js/src/embed.js
+    // Export everything from jupyter-leaflet and the npm package version number.
+       module.exports = require('./jupyter-leaflet.js');
+    /Users/paul/github/ipyleaflet//js/src/extension.js
+                "jupyter-leaflet": "nbextensions/jupyter-leaflet/index",
+   /Users/paul/github/ipyleaflet//js/src/index.js
+      __webpack_public_path__ = document.querySelector('body').getAttribute('data-base-url') + 'nbextensions/jupyter-leaflet/';
+     // Export everything from jupyter-leaflet and the npm package version number.
+    module.exports = require('./jupyter-leaflet.js');
+    /Users/paul/github/ipyleaflet//js/src/jupyter-leaflet.js
+        _view_module : 'jupyter-leaflet',
+        _model_module : 'jupyter-leaflet',
+        _view_module : 'jupyter-leaflet',
+        _model_module : 'jupyter-leaflet',
+        _model_module : "jupyter-leaflet",
+        _view_module : "jupyter-leaflet",
+    /Users/paul/github/ipyleaflet//js/webpack.config.js
+       {// jupyter-leaflet bundle for the notebook
+       {// embeddable jupyter-leaflet bundle
+              publicPath: 'https://unpkg.com/jupyter-leaflet@' + version + '/dist/'
+
+   --- where is   "clustergrammer_widget": "nbextensions/clustergrammer_widget/index",
+       mentioned in ~/github/c
+    find ~/github/clustergrammer-widget -name "*.js" -print -exec grep "clustergrammer_widget" {} ';'
+
+      /Users/paul/github/clustergrammer-widget/clustergrammer_widget/static/extension.js
+	                "clustergrammer_widget": "nbextensions/clustergrammer_widget/index",
+      /Users/paul/github/clustergrammer-widget/clustergrammer_widget/static/index.js
+	__webpack_require__.p = document.querySelector('body').getAttribute('data-base-url') + 'nbextensions/clustergrammer_widget/';
+	    _view_module : 'clustergrammer_widget',
+	    _model_module : 'clustergrammer_widget',
+		"name": "clustergrammer_widget",
+		"description": "clustergrammer_widget",
+			"url": "https://github.com/maayanlab/clustergrammer_widget.git"
+       /Users/paul/github/clustergrammer-widget/js/dist/index.js
+           /******/ 	__webpack_require__.p = "https://npmcdn.com/clustergrammer_widget@0.0.1/dist/";
+	    _view_module : 'clustergrammer_widget',
+	    _model_module : 'clustergrammer_widget',
+		"name": "clustergrammer_widget",
+		"description": "clustergrammer_widget",
+			"url": "https://github.com/maayanlab/clustergrammer_widget.git"
+
+
+
+
+
+
+   --- test it out, with the supplied notebook
+
+     ~/github/igv.js-jupyter/examples/DoubleClick.ipynb
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
 * new/old notebook for cory: trem2 (7 nov 2016)
 
+    ~/github/TReNA/inst/demos/trem2/go.R   # 85 lines
 
 *-----------------------------------------------------------------------------------------------------------------------
 * findOverlaps GenomicRanges example for rory (7 nov 2016)
@@ -224,11 +369,45 @@ head(as.data.frame(findOverlaps(gr1, gr2, type=‘any')))
 * install clustergrammer jupyter widget (7 nov 2016)
 
 
+    cd ~/github/clustergrammer-widget/
+    git pull origin
+      # install the python package, symlink from install dir so javascript can be modified live, just for current user
+      # symlink:  cat /Users/paul/anaconda//lib/python3.5/site-packages/clustergrammer-widget.egg-link
+      #     /Users/paul/github/clustergrammer-widget
+    jupyter nbextension install --py --symlink --user clustergrammer_widget
+      # python package, Use sys.prefix as the prefix for installing nbextensions (for environments, packaging)
+    jupyter nbextension enable --py --sys-prefix widgetsnbextension
+
+
+    sys.prefix
+
+       A string giving the site-specific directory prefix where the
+       platform independent Python files are installed; by default,
+       this is the string '/usr/local'. This can be set at build time
+       with the --prefix argument to the configure script. The main
+       collection of Python library modules is installed in the
+       directory prefix/lib/pythonX.Y while the platform independent
+       header files (all except pyconfig.h) are stored in
+       prefix/include/pythonX.Y, where X.Y is the version number of
+       Python, for example 2.7.
+
+    python
+    import sys
+    sys.prefix  # '/Users/paul/anaconda'
+
+     ls -lat ~/anaconda/lib/python3.5/site-packages/widgetsnbextension
+     
+         136 Jul 24 16:24 __pycache__
+         136 Jul 24 16:24 static
+         937 Jul 24 16:24 __init__.py
+          72 Jul 24 16:24 _version.py
+
+
   --- lots of trouble, all the steps below failed
  git clone https://github.com/maayanlab/clustergrammer-widget.git
  cd clustergrammer-widget
  pip install -e .
- jupyter nbextension install --py --symlink --user ceustergrammer-widget
+ jupyter nbextension install --py --symlink --user clustergrammer-widget
 
  File "/Users/paul/anaconda/bin/jupyter-nbextension", line 6, in <module>
    sys.exit(notebook.nbextensions.main())
@@ -283,6 +462,16 @@ ImportError: No module named 'clustergrammer-widget'
    pip install -e .
    jupyter nbextension enable --py --sys-prefix clustergrammer_widget
 
+
+*-----------------------------------------------------------------------------------------------------------------------
+* binder: Turn a GitHub repo into a collection of interactive notebooks (9 nov 2016)
+
+   Have a repository full of Jupyter notebooks? With Binder, you can
+   add a badge that opens those notebooks in an executable
+   environment, making your code immediately reproducible by anyone,
+   anywhere.
+
+   http://mybinder.org/
 
 *-----------------------------------------------------------------------------------------------------------------------
 * python postgres jupyter problem on riptide (7 nov 2016)
@@ -1163,6 +1352,7 @@ cw.count = 10  // only here does the circle get drawn
   cookiecutter https://github.com/jupyter/widget-cookiecutter.git
   cd jupyter-hello
 
+  --- 8 nov 2016: revisit, in preparation for using this for the d3 circle demo
   
 *-----------------------------------------------------------------------------------------------------------------------
 * add \donttest to all RCytoscape man pages (14 oct 2016)
@@ -2923,6 +3113,7 @@ ZHX2
                  pd.read_sql_query("select count(*) from hits", dbpiq))
     tbl_counts.index = ["regions", "hits"]
 
+  --- pandas tips
 
   --- pandas tips, subset dataframe by range of row and column indices, by row and column names
      tbl.iloc[0:5, 1:14]
@@ -11533,7 +11724,22 @@ getPromoterRegion <- function(geneSymbol, size=10000) {
 
 
 *----------------------------------------------------------------------------------------------------
+* igv.js jupyter tips: hg39 ctor
+
+pdfrom igv import IGV, Reference, Track
+import pandas as pd
+
+igv = IGV(locus=snpLocus, reference=Reference(id="hg38"), 
+          tracks=[Track(
+                 name="Genes", 
+                 url="//s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/genes/gencode.v24.annotation.sorted.gtf.gz",
+                 indexURL="//s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/genes/gencode.v24.annotation.sorted.gtf.gz.tbi",
+                 display_mode="EXPANDED")])
+igv
+
 * igv.js tips, igv tips: display local bed file (29 mar 2016)
+
+   ---- 
 
    cd ~/s/examples/igv/igv-web/snpFootBed
    [also see http://igv.org/web/demo/ga4gh-demo.html]
