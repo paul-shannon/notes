@@ -262,6 +262,34 @@ bed format: chrom, start, end, name, score, strand
 
 
 *-----------------------------------------------------------------------------------------------------------------------
+* cory ampAD talk: 80 genes in R/python notebooks, for trena models (9 nov 2016)
+
+   on riptide, cd ~/github/notebooks
+
+     15375 Nov  8 07:16 ./shared/trem2/trena-stage1-R.ipynb
+     14091 Nov  7 17:13 ./shared/trem2/trena-stage2-python.ipynb
+     17559 Nov  7 10:25 ./shared/VRK2-Pou3f2.ipynb    # for jocelyn and dani
+
+*------------------------------------------------------------------------------------------------------------------------
+* early notebooks for cory (sep/oct 2016)
+
+  whovian
+  dir ~/github/notebooks/paul-shannon/trena/*.ipynb
+
+     19175 Sep 13 15:57 chipseq-motifTFmap-fimoDatabase-demo.ipynb
+     24914 Sep 21 11:09 findTranscriptFactorsAnnotatedToOneMotifOnly-Copy1.ipynb
+     23545 Sep 21 11:06 findTranscriptFactorsAnnotatedToOneMotifOnly.ipynb
+     25368 Oct  3 09:53 firstFeatureTable.ipynb
+     46297 Sep 23 11:08 forCory.ipynb
+      8575 Oct  7 12:55 Testing out the liftover function-Copy1.ipynb
+     14850 Oct  7 14:25 Testing out the liftover function.ipynb
+     10356 Oct  7 13:18 Testing out the liftover function-John Debug.ipynb
+    239877 Oct  7 11:49 trena-TREM2-ad-Cory.ipynb
+    137638 Oct 10 07:35 trena-TREM2-ad.ipynb
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
 * new/old notebook for cory: trem2 (7 nov 2016)
 
     ~/github/TReNA/inst/demos/trem2/go.R   # 85 lines
