@@ -119,7 +119,7 @@ bed format: chrom, start, end, name, score, strand
 * fill mm9 fimo for jocelyn (10 nov 2016)
 
   --- from (12 sep 2016, see below): fimo first: it is needed by other fillers
-    cd /github/BDDS/trenadb/fimo
+    cd ~/github/BDDS/trenadb/fimo/mm9
     create.sql, fill.sql, index.sql
     fill.sql:
        \connect trena;
@@ -151,6 +151,44 @@ bed format: chrom, start, end, name, score, strand
       1532250955 Nov 10 09:43 X.fimo.txt
         24276570 Nov 10 09:43 Y.fimo.txt
 
+
+   --- validate, examine, timing tests
+     psql trena
+     \dt         # fimo_mm9 among others
+     select count(*) from fimo_mm9;    #  400,785,924
+     select * from fimo_mm9 limit 3;
+      motifname | chrom |  start  | endpos  | strand | motifscore |   pval   | empty |  sequence   
+     -----------+-------+---------+---------+--------+------------+----------+-------+-------------
+      MA0002.2  | 1     | 3002343 | 3002353 | -      |    12.0862 | 3.83e-05 |       | CACTGTGGTCT
+      MA0002.2  | 1     | 3004382 | 3004392 | +      |    12.6724 | 2.19e-05 |       | CTCTGTGGTTC
+      MA0002.2  | 1     | 3006403 | 3006413 | +      |    10.9655 | 8.63e-05 |       | GTCTCTGGTTT
+
+   --- jocelyn's initial requests
+
+    Paul - here is a list of 5 favorites for he first 'feature maps' we would like to pull:
+       all motif instances of TFAP2A
+       all motif instances of TFAP2C
+       all motif instances of EGR1
+       all motif instances of SMAD3
+       all motif instances of KLF16
+       CTCF motif instances would also be very nice!   
+
+    ---- quickLook.R before indexing
+      library(RPostgreSQL)
+      library(RUnit)
+      db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="trena", host="whovian")
+      system.time(tbl <- dbGetQuery(db, "select * from fimo_mm9 where motifname='MA0014.2'"))
+      #   user  system elapsed 
+      #  2.422   0.138  81.740 
+      dim(tbl)  # [1] 489250      9
+
+   --- index
+   whovian.mm9> date; psql -f index.sql; date
+      Fri Nov 11 12:06:14 PST 2016
+      You are now connected to database "trena" as user "pshannon".
+
+
+    
 *-----------------------------------------------------------------------------------------------------------------------
 * jupyter notebooks, plotly, 3d interactive plots (10 nov 2016)
 
