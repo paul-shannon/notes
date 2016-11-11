@@ -113,12 +113,499 @@ bed format: chrom, start, end, name, score, strand
      added "on select" and "on unselect" event handlers (7 nov 2016)
 
   --- vrk2/pou3f2 bipolar snp
-     http://whovian:10005/notebooks/shared/VRK2-Pou3f2.ipynb   and ~/github/notebooks/shared/VRK2-Pou3f2.ipynb 
+
      
 *-----------------------------------------------------------------------------------------------------------------------
+* fill mm9 fimo for jocelyn (10 nov 2016)
+
+  --- from (12 sep 2016, see below): fimo first: it is needed by other fillers
+    cd /github/BDDS/trenadb/fimo
+    create.sql, fill.sql, index.sql
+    fill.sql:
+       \connect trena;
+       \copy fimo_hg38 from '/local/Cory/for_Paul/fimo_out/newGRCh38.fimo.txt' delimiter E'\t' CSV header NULL as 'NULL';
+
+     45M lines, takes < 20 minutes to fill on whovian 
+
+   whovian: /local/Cory/for_Paul/fimo_out/mouse/GRCm37
+      1299452958 Nov 10 09:41 10.fimo.txt
+      1252944130 Nov 10 09:41 11.fimo.txt
+      1181876908 Nov 10 09:41 12.fimo.txt
+      1167381583 Nov 10 09:41 13.fimo.txt
+      1211073318 Nov 10 09:41 14.fimo.txt
+      1017363669 Nov 10 09:41 15.fimo.txt
+       950075794 Nov 10 09:42 16.fimo.txt
+       941213191 Nov 10 09:42 17.fimo.txt
+       875372209 Nov 10 09:42 18.fimo.txt
+       594806863 Nov 10 09:42 19.fimo.txt
+      1907157570 Nov 10 09:41 1.fimo.txt
+      1802487549 Nov 10 09:42 2.fimo.txt
+      1536181727 Nov 10 09:42 3.fimo.txt
+      1535193467 Nov 10 09:42 4.fimo.txt
+      1522074329 Nov 10 09:42 5.fimo.txt
+      1450777665 Nov 10 09:43 6.fimo.txt
+      1427168753 Nov 10 09:43 7.fimo.txt
+      1265332973 Nov 10 09:43 8.fimo.txt
+      1215575766 Nov 10 09:43 9.fimo.txt
+          150608 Nov 10 09:43 MT.fimo.txt
+      1532250955 Nov 10 09:43 X.fimo.txt
+        24276570 Nov 10 09:43 Y.fimo.txt
+
 *-----------------------------------------------------------------------------------------------------------------------
+* jupyter notebooks, plotly, 3d interactive plots (10 nov 2016)
+
+  http://nbviewer.jupyter.org/github/richardagalvez/Exo_list/blob/master/3dplot_plotly.ipynb
+  
 *-----------------------------------------------------------------------------------------------------------------------
+* jupyter widgets howto: build and install logic (11 nov 2016)
+
+  cd ~/s/examples/jupyter/hello-cookieCutter/jupyterHello
+  default target in makefile:
+    (cd js; webpack --config webpack.config.js)
+     pip install -e .
+    jupyter nbextension install --py hello
+    jupyter nbextension enable --py --sys-prefix hello
+    jupyter notebook basicDemo.ipynb 
+
+  --- trace build process
+    add some recognizable text to hello/example.py, js/src/example.js
+    touch timestamp
+    (cd js; webpack --config webpack.config.js)  # 3 bundles specified, writtent to hello/static/
+                                                 # nb standard: extension.js, embedder.js
+                                                 # index.js is small, this crucial line: module.exports = require('./example.js');
+    find . -newer timestamp
+       ./hello/static/extension.js   # from js/src/extensions.js
+       ./hello/static/index.js       # assembled by webpack, lots of require-ish module loading code, and example.js
+       ./hello/static/index.js.map   # all on one line, larger by 10k, created before index.js (surprisingly)
+       ./js/dist/index.js            # intermediate ubuild directory?
+       ./js/dist/index.js.map
+
+    touch timestamp
+    pip install -e .     # -e, editable, "install the package in develop mode, meaning it will just link back to where the sources are"
+       Installing collected packages: hello
+         Found existing installation: hello 0.1.0.dev0
+           Uninstalling hello-0.1.0.dev0:
+             Successfully uninstalled hello-0.1.0.dev0
+         Running setup.py develop for hello
+       Successfully installed hello
+
+    find . -newer timestamp
+      ./hello.egg-info/dependency_links.txt
+      ./hello.egg-info/PKG-INFO
+      ./hello.egg-info/requires.txt
+      ./hello.egg-info/SOURCES.txt
+      ./hello.egg-info/top_level.txt
+
+    find /Users/paul/anaconda -newer timestamp
+       /Users/paul/anaconda/lib/python3.5/site-packages
+       /Users/paul/anaconda/lib/python3.5/site-packages/easy-install.pth
+       /Users/paul/anaconda/lib/python3.5/site-packages/hello.egg-link
+       cat /Users/paul/anaconda/lib/python3.5/site-packages/hello.egg-link
+          /Users/paul/s/examples/jupyter/hello-cookieCutter/jupyterHello
+
+    touch timestamp
+    jupyter nbextension install --py hello
+       Installing /Users/paul/s/examples/jupyter/hello-cookieCutter/jupyterHello/hello/static -> helloNPM
+       Copying: hello/static/extension.js -> /usr/local/share/jupyter/nbextensions/helloNPM/extension.js
+       Copying: hello/static/index.js -> /usr/local/share/jupyter/nbextensions/helloNPM/index.js
+       Copying: hello/static/index.js.map -> /usr/local/share/jupyter/nbextensions/helloNPM/index.js.map
+
+
+
 *-----------------------------------------------------------------------------------------------------------------------
+* jupyter widgets howto: webpack
+
+   http://webpack.github.io/docs/installation.html
+   
+  
+   sudo npm install webpack -g
+   now type -a webpack: webpack is /usr/local/bin/webpack
+   cd ~/s/examples/jupyter/hello-cookieCutter/jupyterHello/js/
+   webpack --config webpack.config.js
+
+    {// Bundle for the notebook containing the custom widget views and models
+     //
+     // This bundle contains the implementation for the custom widget views and
+     // custom widget.
+     // It must be an amd module
+     //
+        entry: './src/index.js',
+        output: {
+            filename: 'index.js',
+            path: '../hello/static',
+            libraryTarget: 'amd'
+        },
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* jupyter widgets howto: step 1, change HelloWorld cookiecutter to a new Model/View name (10 nov 2016)
+
+  example.py is where the main hello world python code lives.
+  remove "@widgets.register('hello.Hello')" line from circles/examples.py
+  remove circles/static/directory  # this apparently gets regenerated.
+
+  --- circles/example.py:
+     class Circles(widgets.DOMWidget):
+       """"""
+       _view_name = Unicode('CircleView').tag(sync=True)
+       _model_name = Unicode('CircleModel').tag(sync=True)
+       _view_module = Unicode('circles-pkg').tag(sync=True)
+       _model_module = Unicode('circles-pkg').tag(sync=True)
+       value = Unicode('Circle World!').tag(sync=True)
+
+  --- js/src/example.js
+    var CircleModel = widgets.DOMWidgetModel.extend({
+       defaults: _.extend({}, widgets.DOMWidgetModel.prototype.defaults, {
+        _model_name : 'CircleModel',
+        _view_name : 'CircleView',
+        _model_module : 'circles-pkg',
+        _view_module : 'circles-pkg',
+        value : 'Circle World'
+    })
+});
+
+
+// Custom View. Renders the widget model.
+var CircleView = widgets.DOMWidgetView.extend({
+    render: function() {
+        this.value_changed();
+        this.model.on('change:value', this.value_changed, this);
+    },
+
+    value_changed: function() {
+        this.el.textContent = this.model.get('value');
+    }
+});
+
+
+module.exports = {
+    CircleModel : CircleModel,
+    CircleView : CircleView
+};
+
+   ---- change filenames
+      circles/example.py -> Circles.py
+      js/src/example.js  -> Circles.js
+      circles/__init__.py: from .Circles import *
+
+*-----------------------------------------------------------------------------------------------------------------------
+* CircleWidget still fails (see message below): now try to evolve Hello into Circles (10 nov 2016)
+
+  cd ~/s/examples/jupyter/hello-cookieCutter/
+  cookiecutter https://github.com/jupyter/widget-cookiecutter.git
+
+    author_name []: Paul Shannon
+    author_email []: pshannon@systemsbiology.org
+    github_project_name [jupyter-widget-example]: jupyter-d3-circles-widget
+    github_organization_name [jupyter]: 
+    python_package_name [ipywidgetexample]: circles
+    npm_package_name [jupyter-widget-example]: circles-pkg
+    project_short_description [A Custom Jupyter Widget Library]: 
+
+   cd ~/s/examples/jupyter/hello-cookieCutter/jupyter-d3-circles-widget
+   cat makefile
+     default:
+	pip install -e .
+	jupyter nbextension install --py circles
+	jupyter nbextension enable --py --sys-prefix circles
+	jupyter notebook circles.ipynb 
+
+   
+
+  cookiecutter https://github.com/jupyter/widget-cookiecutter.git
+    author_name []: Paul Shannon
+    author_email []: pshannon@systemsbiology.org
+    github_project_name [jupyter-widget-example]: helloBecomesCircles
+    github_organization_name [jupyter]: 
+    python_package_name [ipywidgetexample]: helloCircles
+    npm_package_name [jupyter-widget-example]: helloCircles-pkg
+    project_short_description [A Custom Jupyter Widget Library]: 
+
+   cd ~/s/examples/jupyter/hello-cookieCutter/helloBecomesCircles
+   now in makefile:
+      pip install -e .
+      jupyter nbextension install --py helloCircles 
+      jupyter nbextension enable --py --sys-prefix helloCircles
+      jupyter notebook helloCircles.ipynb 
+
+   now add d3 to package.json:
+     "dependencies": {"jupyter-js-widgets": "^1.1.1", "d3": "^3.5.8", "underscore": "^1.8.3"}
+
+   
+
+*-----------------------------------------------------------------------------------------------------------------------
+* CircleWidget: added d3 to package.json, got further, but still failed (10 nov 2016)
+
+   [status: see above.  hoping to evolve hello -> circle]
+   
+   pip install -e .
+   jupyter nbextension install --py circles 
+   jupyter nbextension enable --py --sys-prefix circles
+   jupyter notebook
+
+    cw
+
+    Widget Javascript not detected.  It may not be installed
+    properly. Did you enable the widgetsnbextension? If not, then run
+    "jupyter nbextension enable --py --sys-prefix widgetsnbextension"
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* build a cookiecutter nbextension for CircleWidget (9 nov 2016)
+
+  cd ~/github/jupyter-widget-demos/d3circles/minimal
+  cookiecutter https://github.com/jupyter/widget-cookiecutter.git
+     author_name []: Paul Shannon
+     author_email []: pshannon@systemsbiology.org
+     github_project_name [jupyter-widget-example]: circleWidget
+     github_organization_name [jupyter]: 
+     python_package_name [ipywidgetexample]: circles
+     npm_package_name [jupyter-widget-example]: circle_npm
+     project_short_description [A Custom Jupyter Widget Library]: demonstrate simple d3 widget
+
+   --- replace circles/example.py with my CircleWidget class
+   --- replace js/src/example.js with my CircleModel and CircleView code
+
+   --- try building
+      cd ~/github/jupyter-widget-demos/d3circles/minimal/circleWidget
+      pip install -e .
+          Running setup.py develop for circles;  Successfully installed circles
+      jupyter nbextension install --py circles
+         Installing /Users/paul/github/jupyter-widget-demos/d3circles/minimal/circleWidget/circles/static -> circle_npm
+         Up to date: /usr/local/share/jupyter/nbextensions/circle_npm/extension.js
+         Up to date: /usr/local/share/jupyter/nbextensions/circle_npm/index.js
+         Up to date: /usr/local/share/jupyter/nbextensions/circle_npm/index.js.map
+         - Validating: OK
+      jupyter nbextension enable circles --py
+        - Validating: OK
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* HelloWorld, grok try2 continued, the nbextension cookiecutter (9 nov 2016): try to install, then run.  success
+
+   cd ~/s/examples/jupyter/hello-cookieCutter
+   cookiecutter https://github.com/jupyter/widget-cookiecutter.git
+   cd ~/s/examples/jupyter/hello-cookieCutter/jupyterHello
+   touch timestamp
+   pip install -e .
+   find . -newer timestamp  | egrep -v node_modules
+      ./hello
+      ./hello/static
+      ./hello/static/extension.js
+      ./hello/static/index.js
+      ./hello/static/index.js.map
+      ./hello.egg-info
+      ./hello.egg-info/dependency_links.txt
+      ./hello.egg-info/not-zip-safe
+      ./hello.egg-info/PKG-INFO
+      ./hello.egg-info/requires.txt
+      ./hello.egg-info/SOURCES.txt
+      ./hello.egg-info/top_level.txt
+      ./js
+      ./js/dist
+      ./js/dist/index.js
+      ./js/dist/index.js.map
+   
+   touch timestamp
+   jupyter nbextension install --py hello    
+       Installing /Users/paul/s/examples/jupyter/hello-cookieCutter/jupyterHello/hello/static -> helloNPM
+       Making directory: /usr/local/share/jupyter/nbextensions/helloNPM/
+       Copying: /Users/paul/s/examples/jupyter/hello-cookieCutter/jupyterHello/hello/static/extension.js -> /usr/local/share/jupyter/nbextensions/helloNPM/extension.js
+       Copying: /Users/paul/s/examples/jupyter/hello-cookieCutter/jupyterHello/hello/static/index.js -> /usr/local/share/jupyter/nbextensions/helloNPM/index.js
+       Copying: /Users/paul/s/examples/jupyter/hello-cookieCutter/jupyterHello/hello/static/index.js.map -> /usr/local/share/jupyter/nbextensions/helloNPM/index.js.map
+
+       dir /usr/local/share/jupyter/nbextensions/
+          170 Nov  9 16:49 helloNPM/
+          136 Jul 29 12:59 igv/
+          442 Nov  9 16:14 jupyter-leaflet/
+
+   find . -newer timestamp
+      ./hello/__pycache__
+      ./hello/__pycache__/__init__.cpython-35.pyc
+      ./hello/__pycache__/_version.cpython-35.pyc
+      ./hello/__pycache__/example.cpython-35.pyc
+
+   jupyter nbextension enable --py --sys-prefix hello
+      Enabling notebook extension helloNPM/extension...   Validating: OK
+
+
+   --- try it out:
+     jupyter notebook --port=30003 --debug
+     from hello import HelloWorld
+     HelloWorld()  # works!
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* grok (try 2) the nbextension cookiecutter (9 nov 2016): structure and commentary upon it
+
+  cd ~/s/examples/jupyter/hello-cookieCutter
+  cookiecutter https://github.com/jupyter/widget-cookiecutter.git
+    author_name []: pshannon
+     author_email []: pshannon@systemsbiology.org
+     github_project_name [jupyter-widget-example]: jupyterHello
+     github_organization_name [jupyter]: 
+     python_package_name [ipywidgetexample]: hello
+     npm_package_name [jupyter-widget-example]: helloNPM
+     project_short_description [A Custom Jupyter Widget Library]: 
+
+   creates directory "jupyterHello"
+      jupyterHello/MANIFEST.in       # a template, how to generate MANIFEST, used by "python setup.py sdist" (source distribution)
+      jupyterHello/hello/            # the python package (aka, module)
+                   hello/__init__.py #
+
+    --- __init__.py notes
+      ~/github/ipyleaflet/ipyleaflet/__init__.py is minimal, helpful
+      from ._version import version_info, __version__  # import two symbols from ./version.py
+      from .leaflet import *                           # from ./leaflet.py (in this directory) import all symbols
+      def _jupyter_nbextension_paths():
+        return [{
+          'section': 'notebook',
+          'src': 'static',
+          'dest': 'jupyter-leaflet',
+          'require': 'jupyter-leaflet/extension'
+          }]
+
+
+      
+*-----------------------------------------------------------------------------------------------------------------------
+* nbextension tips
+
+   jupyter nbextension list         # reports config dirs (why two?) 
+   jupyter serverextension list     # currently just jupyterlab, 
+   jupyter bundlerextension list    # not a command
+
+
+   --- where to specify javascript libraries?
+
+    ~/github/clustergrammer-widget/js/package.json, dependencies: clustergrammer, d3, jupyter-js-widgets, underscore
+    ~/s/examples/jupyter/hello-cookieCutter/jupyterHello/js/package.json: "jupyter-js-widgets": "^1.1.1", "underscore": "^1.8.3" 
+
+   --- nbextension lists config.dir, which contain notebook.json, of which this is a sample:
+     cat ~/.jupyter/nbconfig/notebook.json
+        {
+        "load_extensions": {
+           "igv/igv-jupyter": true,
+           "jupyter-threejs/extension": true,
+           "jupyter-widget-example/extension": true,
+           "bqplot/extension": true,
+           "jupyter-d3-circle-widget/extension": true
+           }}
+
+
+   --- javascript
+     js/ is at same level as the python module directory (eg, ~/github/ipyleaflet/ipyleaflet)
+      js/package.json
+      js/webpack.config.js
+      ms/README.md
+      js/src
+     cat package.json
+        {
+          "name": "jupyter-leaflet",
+          "version": "0.2.1",
+          "description": "jupyter - leaflet bridge",
+          "author": "Brian Granger",
+          "license": "MIT",
+          "main": "src/index.js",
+          "repository": {
+            "type": "git",
+            "url": "https://github.com/ellisonbg/ipyleaflet.git"
+          },
+          "scripts": {
+            "prepublish": "webpack",
+            "test": "echo \"Error: no test specified\" && exit 1"
+          },
+          "devDependencies": {
+            "css-loader": "^0.23.1",
+            "file-loader": "^0.8.5",
+            "json-loader": "^0.5.4",
+            "rimraf": "^2.4.1",
+            "style-loader": "^0.13.1",
+            "webpack": "^1.12.14"
+          },
+          "dependencies": {
+            "jquery": "^2.1.4",
+            "jupyter-js-widgets": "^1.0.0",
+            "leaflet": "^0.7.7",
+            "leaflet-draw": "^0.3.0",
+            "underscore": "^1.8.3"
+          }
+        }
+
+    head  ipyleaflet/js/webpack.config.js
+       var version = require('./package.json').version;
+       var leaflet_marker_selector = /leaflet\/dist\/images\/marker-.*\.png/;
+       var loaders = [
+          { test: /\.json$/, loader: 'json-loader' },
+          { test: /\.css$/, loader: 'style-loader!css-loader' },
+           // Generic file loader, Should be used for anything but leaflet's
+           // marker-icon.png, marker-icon-2x.png or marker-shadow.png
+          { test: /\.(jpg|png|gif|svg)$/, loader: 'file', exclude: leaflet_marker_selector },
+         ...
+         
+    --- ipyleaflet/js/src
+        12 embed.js
+        16 extension.js
+        15 index.js
+       813 jupyter-leaflet.js
+
+    --- ipyleaflet/js/src/embed.js 
+     require('leaflet/dist/leaflet.css');
+     require('leaflet-draw/dist/leaflet.draw.css');
+          // Forcibly load the marker icon images to be in the bundle.
+     require('leaflet/dist/images/marker-shadow.png');
+     require('leaflet/dist/images/marker-icon.png');
+     require('leaflet/dist/images/marker-icon-2x.png');
+        // Export everything from jupyter-leaflet and the npm package version number.
+     module.exports = require('./jupyter-leaflet.js');
+     module.exports['version'] = require('../package.json').version;
+
+
+
+   --- ~/github/clustergrammer-widget/js/src/embed.js 
+     // Entry point for the npmcdn bundle containing custom model definitions.
+     // It differs from the notebook bundle in that it does not need to define a
+     // dynamic baseURL for the static assets and may load some css that would
+     // already be loaded by the notebook otherwise.
+     // Export widget models and views, and the npm package version number.
+        module.exports = require('./example.js');    # where all the clustergrammer code actuallylives
+        module.exports['version'] = require('../package.json').version;
+
+*-----------------------------------------------------------------------------------------------------------------------
+* grok nbextension install process (9 nov 2016): the unadorned (or minimally adorned) basic notebook extension 
+
+    cd ~/s/examples/jupyter/hello-cookieCutter/jupyterHello
+
+*-----------------------------------------------------------------------------------------------------------------------
+* grok nbextension install process (9 nov 2016)
+
+  cd ~/github/ipyleaflet
+  git pull origin
+  pip install -e .
+    creates: /Users/paul/anaconda/lib/python3.5/site-packages/ipyleaflet.egg-link
+             -> /Users/paul/github/ipyleaflet
+
+   jupyter nbextension install --py ipyleaflet
+      ~/github/ipyleaflet/js/node_modules/leaflet/
+      ~/github/ipyleaflet/js/node_modules/leaflet-draw/
+
+      this also (part of jupyterlab?)
+         dir ~/github/ipyleaflet/js/node_modules/@jupyterlab/nbwidgets/node_modules/jupyterlab/lib/leafletwidget/
+      
+   jupyter nbextension enable --py --sys-prefix ipyleaflet
+   cd ~/github/ipyleaflet/examples
+   jupyter notebook --port 30003 --debug
+   choose examples/GeoJSON.ipynb
+   import ipyleaflet
+    from ipyleaflet import (
+       Map,
+       Marker,
+       TileLayer, ImageOverlay,
+       Polyline, Polygon, Rectangle, Circle, CircleMarker,
+       GeoJSON,
+       DrawControl
+       )
+
+   all cells work!
+
 *-----------------------------------------------------------------------------------------------------------------------
 * grok the nbextension cookiecutter (9 nov 2016)
 
