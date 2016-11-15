@@ -98,6 +98,13 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 * some notebooks of interest
 
+   --- circle, jupyter tutorial
+     as extension:
+        cd ~/s/examples/jupyter/hello-cookieCutter/jupyter-d3-circles-widget; make
+     as self-contained with javascript magic:
+       cd ~/github/jupyter-js-widget-demo-d3circles/selfContainedNotebook; make
+       
+
    --- circleViewer, simpleD3circle, a learning project
      cd ~/s/examples/jupyter/javascriptMagic
      create shell jup-10001; jupyter notebook --port 10001
@@ -115,6 +122,40 @@ bed format: chrom, start, end, name, score, strand
   --- vrk2/pou3f2 bipolar snp
 
      
+*-----------------------------------------------------------------------------------------------------------------------
+* cyjs tips: png
+
+  var png64 = cy.png()
+  $('#png-eg').attr('src', png64)   // this part not yet successful
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cory's module 109 (14 nov 2016)
+
+   cd ~/s/work/priceLab/cory/module-109/
+
+   from Chris Gaiteri, Rush university medical center
+   390 genes
+
+   We'll be very interested in your results with TReNA on the
+   module109 genes, since it's a rather novel system and Phil's lab
+   has been doing experiments on these genes for the past six months.
+   It's wonderful to be able to benefit from your extensive pipeline,
+   and I certainly understand that the results aren't final, but it
+   will help our groups to get a rough idea of what is possible with
+   your method.  I included all genes in the module, as I didn't want
+   to limit the definition of what constituted a TF.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* my checks to stuart
+   31 jul 2016: 1040
+   22 mar 2016: 1500
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* jocelyn mm9 intersect fimo + chipseq (14 nov 2016)
+
+  cd ~/s/work/priceLab/jocelyn/chipseq/fimoIntersect/
+  
+
 *-----------------------------------------------------------------------------------------------------------------------
 * fill mm9 fimo for jocelyn (10 nov 2016)
 
@@ -182,12 +223,24 @@ bed format: chrom, start, end, name, score, strand
       #  2.422   0.138  81.740 
       dim(tbl)  # [1] 489250      9
 
-   --- index
+   --- index: about 5 hours
    whovian.mm9> date; psql -f index.sql; date
-      Fri Nov 11 12:06:14 PST 2016
-      You are now connected to database "trena" as user "pshannon".
+                Fri Nov 11 12:06:14 PST 2016
+                You are now connected to database "trena" as user "pshannon".
+                CREATE INDEX
+                CREATE INDEX
+                CREATE INDEX
+                CREATE INDEX
+                Fri Nov 11 16:47:21 PST 2016
 
-
+   system.time(tbl <- dbGetQuery(db, "select * from fimo_mm9 where motifname='MA0014.2'"))                                                                                                                                                                   
+       user  system elapsed
+      2.422   0.138  81.740
+   dim(tbl)   [1] 489250      9
+   # after indexing
+   system.time(tbl <- dbGetQuery(db, "select * from fimo_mm9 where motifname='MA0014.2'"))
+      user  system elapsed
+     1.503   0.034   3.132
     
 *-----------------------------------------------------------------------------------------------------------------------
 * jupyter notebooks, plotly, 3d interactive plots (10 nov 2016)
@@ -196,6 +249,23 @@ bed format: chrom, start, end, name, score, strand
   
 *-----------------------------------------------------------------------------------------------------------------------
 * jupyter widgets howto: build and install logic (11 nov 2016)
+
+  where to put and mention external javascript libraries?
+
+  --- d3 mentioned at top of js source file Circles.js
+    var widgets = require('jupyter-js-widgets');
+    var _ = require('underscore');
+    var d3 = require('d3');
+  --- d3 mentioned in js/package.json
+  --- d3 code in js/node_modules/d3/*
+  --- is webpack'ed into circles/static/index.js, maybe via recursive descent of require
+     webpack.config.js exports three bundles (three modules) including one containing
+     the custom widget views, an amd module.  the entry is src/index.js, with this
+     primary and important line:
+        module.exports = require('./Circles.js');
+     and, as noted above, Circles.js requires d3 (along with underscore and jupyter-js-widgets)
+
+   
 
   cd ~/s/examples/jupyter/hello-cookieCutter/jupyterHello
   default target in makefile:
