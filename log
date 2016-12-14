@@ -19,7 +19,7 @@ returns a list of 3 lists: "mapped"    "failures"  "multiples"
 mapped:   a list of all the input geneSymbols, with either geneID, NA, or multiple geneIDs
 failures: that
 
-  devel: svn co https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/<pkgname>nn
+  devel: svn co https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/<pkgname>
 release: svn co https://hedgehog.fhcrc.org/bioconductor/branches/RELEASE_3_4/madman/Rpacks/<pkgname>
 
 
@@ -94,9 +94,1261 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 
 bed format: chrom, start, end, name, score, strand
 
-* top
+* top-
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* possums and raccoons temporal niche: seattle parks field committee meeting (14 dec 2016)
+
+  I am just back from the Seattle Parks Field Committee meeting, at
+  which Destiny Mimms presented a study, “Temporal Niche Partitioning
+  Between Urban Possums & Raccoons”, which was conducted under the
+  supervision of Mark Jordan of Seattle University:
+
+     https://www.seattleu.edu/scieng/biology/faculty-and-staff/mark-jordan-phd.html
+
+  The work, though interesting, does not seem so relevant to the sword
+  fern die-off.  Her camera traps and scent-based hair-collection
+  traps caught no evidence of mountain beavers.
+
+  Very brief summary: 2074 trap-nights throughout south and west
+  seattle greenspaces.  275 distinct raccoon events, 295 possum
+  events.  Both were equally nocturnal, same median camera capture
+  time (about midnight), but raccoon capture time distributions were
+  tilted towards the pre-midnight hours.  In recent rural studies of
+  the same two species, no temporal niche separation was seen.
+
+  One passing comment: Mark Jordan’s work includes (if I got this
+  right) some population genetics studies which suggest that there is
+  one possum population, but that raccoons are divided into two, one
+  on each side of I5.
+
+  I imagine that Mark Jordan might have other data relevant to small
+  mammals at Seward, but the structure of today’s meeting did not
+  allow me to ask.
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* add probe-level heatmap to cory's skin gene model visualization (13 dec 2016)
+
+  cd ~/github/BDDS/trenadb/src/coryPGskin/
+
+  --- first, build (retrieve?) probe level matrix
+    pushd  ~/s/work/priceLab/cory/pgSkin/red
+
+*-----------------------------------------------------------------------------------------------------------------------
+* nbextension tips:  delete an extension (13 dec 2016)
+
+  --- two possible installations
+    jupyter nbextension list
+    Known nbextensions:
+      config dir: /Users/paul/.jupyter/nbconfig
+        notebook section
+      config dir: /Users/paul/anaconda/etc/jupyter/nbconfig
+        notebook section
+          cyjs/extension  enabled 
+            - Validating: OK
+
+
+    grep -C1 cyjs ~/anaconda/etc/jupyter/nbconfig/notebook.json 
+       "jupyter-js-widgets/extension": true,
+       "cyjs/extension": true,
+       "jupyter-leaflet/extension": true,
+
+   jupyter nbextension uninstall  cyjs
+     Removing: /usr/local/share/jupyter/nbextensions/cyjs
+       # does not update notebook.json: do that via manual editing
+     
+
+
+
+    
+*-----------------------------------------------------------------------------------------------------------------------
+* jupyter widget tips, ipywidgets tips: cell size, widget size (13 dec 2016)
+
+  cd ~/s/examples/jupyter/resizeDiv/
+  jupyter notebook resize.ipynb 
+
+*-----------------------------------------------------------------------------------------------------------------------
+* jupyter widget tips, ipywidgets tips: basic template (12 dec 2016)
+
+  cd ~/s/examples/jupyter/basicAllInNotebookTemplate
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* priyanka's first notebook (12 dec 2016)
+
+   cd ~/s/work/priceLab/priyanka/metabolicNetworks/firstNotebook/
+
+   --- email (9 dec 2016)
+
+     Please find attached tab delimited text files containing the
+     information in the format that you specified. I have currently
+     considered only few reactions involved in glycolysis.  The flux file
+     has flux values for the edge type.
+
+   I have 2 queries:
+
+      1) In some cases due to filtering step we might not capture a
+      particular reaction. In such cases should we put a "0" value or
+      a minimum value for the flux. In the file attached, I have
+      currently given a minimum value for the reaction. But wanted to
+      know what you think will be best to represent the missing
+      values.
+
+      2) For the connections of gene ---> reaction, should I give the
+      expression value of the gene or the flux value of a reaction. In
+      the attached file I have currently given the flux value.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* Particulate Matter Exposure and Preterm Birth: Estimates of U.S. Attributable Burden and Economic Costs
+
+  saved as ~/Documents/airQuality/pm25andPreTermBirth.pdf,   march 2016
+  also Seattle Comprehensive Plan Update Draft EIS May 4, 2015, 3.2, Air Quality and Greenhouse Gas Emissions
+  
+     665110 Dec 12 12:45 pm25andPreTermBirth.pdf
+    4301330 Dec 12 12:58 seattleAirQuality-EIS.pdf
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* for a sign in the nest bare ground spots
+
+
+   --- version 1
+the old growth forest floor is alive.
+
+these trees depend upon it:  plants, fungi, insects, bacteria
+and small mammals which live in and among fallen logs and branches
+in all stages of decay.
+
+we admire your devotion to the forest
+but the form your devotion takes has here created a dead zone:
+please refrain from revisiting this spot.
+permit this old growth forest floor to return to life
+
+  --- version 2
+ The forest floor is alive.
+
+ These trees depend upon the plants and fungi, insects and bacteria
+ and small mammals which live among fallen logs and branches
+ on undisturbed ground.
+
+ We admire your devotion to the forest.
+ But the form your devotion takes has here created a dead zone.
+ Please refrain from revisiting this spot.  Please do not gather wood.
+ Allow this old growth forest floor to return to life.  
+
+  --- version 3
+ The forest floor is alive.
+
+ The trees are connected and fed by earthen networks of fungi, moss
+ and plants, of small mammals, microbes and insects, of leaf litter,
+ logs and branches in all states of decay.
+
+ We admire your devotion to the forest.
+ But the form your devotion takes has here created a dead zone.
+ Please refrain from revisiting this spot.  Please do not gather wood.
+ Help this old growth forest floor to return to life.  
+
+  --- version 4
+ The forest floor is alive.
+
+ The trees are linked by earthen networks of fungi, moss,
+ flowering plants, microbes, insects and small mammals. Leaf litter,
+ logs and branches, in all states of decay, nourish this network.
+
+ We admire your devotion to the forest.
+ 
+ But the form your devotion takes has created a dead zone.
+ Please refrain from revisiting this spot.  Please do not gather wood.
+ Help this old growth forest floor to return to life.  
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* the pearl harbor day bug, jupyter notebook, simple.ipynb, a pretty good self-contained python/js cyus widget (10 dec 2016)
+
+   Jason Grout @jasongrout, Dec 09 18:48
+   Sorry, I should be more specific. When working with dev versions, it helps to know the git commit hashes.
+   But often even more important in these cases is the output of jupyter nbextension list
+   @paul-shannon - often we find that there are multiple versions installed, and one version is masking another.
+   to show the git commit, you can use git log -n 1
+
+
+   cd ~/github/ipywidgets/
+
+git log -n 1
+commit 269a71f7d7ead1b6210f83bc8c71e6b27867bbd9
+Author: Sylvain Corlay <sylvain.corlay@gmail.com>
+Date:   Fri Dec 9 16:48:29 2016 +0100
+    Fix environment
+
+jupyter nbextension list
+Known nbextensions:
+  config dir: /Users/paul/.jupyter/nbconfig
+    notebook section
+      jupyter-js-widgets/extension  enabled 
+      - Validating: OK
+      igv/igv-jupyter  enabled 
+      - Validating: OK
+      bqplot/extension  enabled 
+      - Validating: OK
+      jupyter-d3-circle-widget/extension  enabled 
+      - Validating: OK
+      circle_npm/extension  enabled 
+      - Validating: OK
+      jupyter-widget-example/extension  enabled 
+      - Validating: OK
+      jupyter-threejs/extension  enabled 
+      - Validating: OK
+  config dir: /Users/paul/anaconda/etc/jupyter/nbconfig
+    notebook section
+      nbpresent/js/nbpresent.min  enabled 
+      - Validating: OK
+      circles-pkg/extension  enabled 
+      - Validating: OK
+      jupyter-leaflet/extension  enabled 
+      - Validating: OK
+      clustergrammer_widget/extension  enabled 
+      - Validating: OK
+      nb_conda/main  enabled 
+      - Validating: OK
+      jupyter-js-widgets/extension  enabled 
+      - Validating: OK
+      nb_anacondacloud/main  enabled 
+      - Validating: OK
+      cyjs/extension  enabled 
+      - Validating: OK
+    tree section
+      nb_conda/tree  enabled 
+      - Validating: OK
+
+
+   --- possible answer:  i installed an  ill-formed cyjs nbextension which conflicts with every
+       attempt to run simple.
+       jupyter nbextension list
+       jupyter nbextension --help
+       jupyter nbextension uninstall --py cyjs
+       jupyter nbextension list
+       jupyter nbextension disable --py cyjs
+       jupyter nbextension list
+
+Known nbextensions:
+  config dir: /Users/paul/.jupyter/nbconfig
+    notebook section
+      cyjs/extension disabled
+
+  config dir: /Users/paul/anaconda/etc/jupyter/nbconfig
+    notebook section
+      cyjs/extension  enabled 
+      - Validating: problems found:
+        - require?  X cyjs/extension
+
+       test: rename the simple cyjs to cyjs2
+
+  ---  find /Users/paul/anaconda/lib/python3.5 | grep -i cyjs
+     /Users/paul/anaconda/lib/python3.5/site-packages/cyjs.egg-link
+      46 Dec  9 09:21 /Users/paul/anaconda/lib/python3.5/site-packages/cyjs.egg-link
+  cat /Users/paul/.jupyter/nbconfig/notebook.json 
+     {
+       "load_extensions": {
+         "jupyter-threejs/extension": true,
+         "igv/igv-jupyter": true,
+         "cyjs/extension": false,
+         "jupyter-js-widgets/extension": true,
+         "jupyter-widget-example/extension": true,
+         "circle_npm/extension": true,
+         "jupyter-d3-circle-widget/extension": true,
+         "bqplot/extension": true
+       }
+     }
+
+   cat /Users/paul/anaconda/etc/jupyter/nbconfig/notebook.json 
+     {
+       "load_extensions": {
+         "nb_anacondacloud/main": true,
+         "jupyter-leaflet/extension": true,
+         "nbpresent/js/nbpresent.min": true,
+         "cyjs/extension": true,
+         "circles-pkg/extension": true,
+         "nb_conda/main": true,
+         "jupyter-js-widgets/extension": true,
+         "clustergrammer_widget/extension": true
+       }
+     }
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* a working cyjs-jupyter self-contained notebook (10 dec 2016)
+  could not find
+*-----------------------------------------------------------------------------------------------------------------------
+* "error_stack" jupyter widget bug, in cyjs: create reproducible version for ipywidget guys, jason (9 dec 2016)
+
+  --- problem occurs in simple:
+    cd ~/github/cyjs-jupyter/self-contained-notebooks/simple/
+    jupyter notebook simple.ipynb
+
+  --- but more useful to jason will be in minimal version
+     cd ~/github/cyjs-jupyter/self-contained-notebooks/pythonAdded/
+     jupyter notebook errorStackBug.ipynb
+
+  --- running simple in chrome gives more errors: related to latest 5.0.0 notebook?
+     pip list | egrep 'notebook|widgets'
+       ipywidgets (6.0.0b5, /Users/paul/github/ipywidgets)
+       jupyterlab-widgets (0.6.3, /Users/paul/github/ipywidgets/jupyterlab_widgets)
+       notebook (5.0.0.dev0, /Users/paul/github/notebook)
+       widgetsnbextension (2.0.0b7, /Users/paul/github/ipywidgets/widgetsnbextension)
+
+   cd ~/github/ipywidgets
+   bash dev-install.sh  
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cookiecutter project for cyjs as nbextension (8 dec 2016)
+
+  cd ~/github/cyjs-jupyter
+  pip install cookiecutter   # all requirements already satisfied
+  cookiecutter https://github.com/jupyter/widget-cookiecutter.git
+    author_name []: Paul Shannon
+    author_email []: paul.thurmond.shannon@gmail.com
+    github_project_name [jupyter-widget-example]: cyjs-jupyter
+    github_organization_name [jupyter]: 
+    python_package_name [ipywidgetexample]: cyjs
+    npm_package_name [jupyter-widget-example]: cyjs
+    project_short_description [A Custom Jupyter Widget Library]: cytoscape.js in a Jupyter widget
+
+  cd ~/github/cyjs-jupyter/cyjs-jupyter
+
+   MANIFEST.in:  already (and only) specifies "recursive-include cyjs/static *.*"
+   in cyjs/  (the python source directory) copied in code, dividing simple.ipynb into 
+        igraphHelpers.py
+        cyjs.py:    added this, "@widgets.register('cyjs.cyjs')", may not be needed. does not solve jupyter lab problem
+      __init__.py:   from .cyjs import *
+
+   skipping RELEASE.md for now (for releasing via PyPI)
+   setup.cfg: no changes needed
+   setup.py:  no changes needed, "cyjs" well-represented.  note
+       install_requires:[ 'ipywidgets>=5.1.5',]   # maybe need a later version for jupyter lab
+  
+   compare https://github.com/ipython/ipywidgets/blob/master/jupyter-js-widgets/package.json
+   with ~/github/cyjs-jupyter/cyjs-jupyter/js/package.json, especially, these two fields.  at top
+     {"name": "jupyter-js-widgets",
+      "version": "2.0.12",    
+
+  "dependencies": {
+    "@jupyterlab/services": "^0.34.2",
+    "jupyter-widgets-schema": "^0.1.1",
+    "@types/backbone": "^1.3.33",
+    "@types/semver": "^5.3.30",
+    "ajv": "^4.9.0",
+    "backbone": "1.2.0",
+    "d3-format": "^0.5.1",
+    "font-awesome": "^4.5.0",
+    "jquery": "^3.1.1",
+    "jquery-ui": "^1.12.1",
+    "lolex": "^1.4.0",
+    "phosphor": "^0.7.0",
+    "scriptjs": "^2.5.8",
+    "semver": "^5.1.0",
+    "underscore": "^1.8.3"}
+
+
+    
+*-----------------------------------------------------------------------------------------------------------------------
+* python url exists (7 dec 2016)
+
+   import requests
+   r = requests.get('http://localhost:8099/js/cytoscape-2.7.10.js')
+   assert(r.status_code == 200)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cory proctor & gamble skin footprints, col1a1 (6 dec 2016)
+
+  cd ~/github/BDDS/trenadb/src/coryPGskin/
+  col1a1.R
+
+  expression data, osiris:/proj/pngisb/rk/red  -- copied to
+  ~/s/work/priceLab/cory/pgSkin/red/
+
+   file: assembleMatrix.R
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* hamid's celgene network (5 dec 2016)
+
+  cd ~/s/work/hamid/celgene01
+  
+*-----------------------------------------------------------------------------------------------------------------------
+
+* igraph layout problem with directed graph (5 dec 2016)
+
+posted to https://github.com/igraph/python-igraph/issues/106
+
+from igraph import *
+tbl = [['R1', 'a'],
+       ['R1',  'b'],
+       ['R1',  'c']]
+#       ['g1',  'R1'],
+#       ['R2',  'a']]
+#       ['R2',  'd'],
+#       ['R2',  'e'],
+#       ['g2',  'R2'],
+#       ['g3',  'R2'],
+#       ['R3',  'c'],
+#       ['R3',  'f'],
+#       ['R3',  'h'],
+#       ['R3',  'i'],
+#       ['g4',  'R3'],
+#       ['g5',  'R3'],
+#       ['R4',  'x'],
+#       ['R4',  'y'],
+#       ['R4',  'z'],
+#       ['R4',  'w'],
+#       ['g6',  'R4'],
+#       ['R5',  'z'],
+#       ['R5',  'z1']]
+
+vertices = list(set([x for row in tbl for x in row]))
+gDirected = Graph(directed=True)
+
+gDirected.add_vertices(vertices)
+gDirected.add_edges(tbl)
+ftd = gDirected.layout("reingold_tilford")
+print("--- reingold_tilford layout of a directed graph")
+for i in range(len(ftd)):   # just the y coordinaes, to display the problem
+    print("%f, %f" % (ftd[i][0], ftd[i][1]))
+
+gUndirected = Graph(directed=False)
+gUndirected.add_vertices(vertices)
+gUndirected.add_edges(tbl)
+ftu = gUndirected.layout("reingold_tilford")
+print("--- reingold_tilford layout of the same graph, this time undirected")
+for i in range(len(ftu)): # again, just the y
+    print("%f, %f" % (ftu[i][0], ftu[i][1]))
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* sdot, annualpermits, signs, audubon
+
+  from carol, at
+   Annualpermits@seattle.gov  | Public Space Management | Seattle Department of Transportation |
+                                 Street Use Division| 206-684-5267 (Tel) 
+
+  This is in response to your recent voicemail.  I consulted with my supervisor who suggested you address the SDOT letter to:
+ 
+  Audra Brecher, Team Lead
+  Public Space Management, Street Use Division
+  Seattle, Department of Transportation
+   P.O. Box 34996
+   Seattle, WA 98124-4996
+ 
+   Ms. Brecher can also be emailed at audra.brecher@seattle.gov.
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* phytophthora sampling from 2016 1-gallon pots (3 dec 2016)
+
+ 
+   1) just one sample per species? 4 plants per species and one sample
+   per plant, with good representation of nurseries. I have attached
+   the file with the sample numbers. Fill this out and email it back
+   to me when you get the info. The nurseries can be identified by
+   number if you don’t have names. The names will be kept confidential
+   in any publications or reports.
+ 
+   2) water the sample plants (in their pots) the evening before
+   sampling
+ 
+   3) each sample plant is represented by one bag of leachate,
+   captured from below when I pour 300ml into the potted plant at the
+   base of the plant (the center of the pot). Correct. The easiest way
+   is to put the pot inside the bag and allow the water to flow
+   through the drainage holes into the bag.
+ 
+   4) I label each bag for species, nursery, and collection time.  I
+   place a Rhododendron macrophylla leaf in each bag.  The bags may
+   need to be doubled to protect against leakage. Yes. The leaf should
+   be cut in half and both halves put in the bag.
+ 
+   5) I drive the bags to WSU Puyallup next Wednesday morning,
+   arriving about 10 am. I will be out of the office on weds at the
+   native plant conference but maybe Katie will be here. The samples
+   should go in the SOD lab. I will be back on Friday if weds doesn’t
+   work. Or you can mail the samples to me.
+ 
+  COCO	Corylus cornuta, beaked hazelnut 
+  MANE	Mahonia nervosa, dwarf Oregon grape               
+  OECE	Oemleria cerasiformis, indian plum                
+  PSME	Pseudotsuga menziesii, Douglas fir                
+  RUPA	Rubus parviflorus, thimbleberry                   
+  RUSP	Rubus spectabilis, salmonberry                    
+  RUUR	Rubus ursinus, trailing blackberry                
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* clustergrammer, create simple demo (3 dec 2016)
+
+  cd ~/github/clustergrammer-widget/
+  make
+  tbl <- data.frame(cond1=100 * runif(10, -1, 1), cond2=100 * runif(10, -1, 1), cond3=100 * runif(10, -1, 1), cond4=100 * runif(10, -1, 1))
+  tbl$cond5 <- jitter(tbl$cond3, amount=30)
+  rownames(tbl) <- LETTERS[1:10]
+  write.table(tbl, file="tiny.tsv", quote=FALSE, sep="\t")
+
+  mtx <- matrix(runif(2500, -10, 10), nrow=50, ncol=50)
+  colnames(mtx) <- sprintf("cond%02d", 1:50)
+  rownames(mtx) <- sprintf("gene%02d", 1:50)
+  tbl <- as.data.frame(mtx)
+  tbl$cond05 <- jitter(tbl$cond03, amount=30)
+  tbl$cond11 <- jitter(tbl$cond03, amount=20)
+  tbl$cond16 <- jitter(tbl$cond03, amount=10)
+  tbl$cond22 <- jitter(tbl$cond03, amount=2)
+  write.table(tbl, file="tbl50x50.tsv", quote=FALSE, sep="\t")
+
+  mtx <- matrix
+  
+*------------------------------------------------------------------------------------------------------------------------
+* circles won't run in latest jupyter lab (2 dec 2016)
+
+   --- my question at gitter
+     my extension (https://github.com/paul-shannon/jupyter-widget-demo-nbextension) runs fine in classic notebook,
+     but fails in the latest jupyter lab, with this error message:
+       [IPKernelApp] WARNING | Widget Javascript not detected. It may not be installed or enabled properly.
+     Any suggestions on how I can track this down?
+
+   --- to which jason grout replies
+     what version of the notebook, of ipywidgets, and jupyterlab_widgets do you have installed?
+     likely one is out of date with another, so the widgets aren't loading in jupyterlab
+
+     jupyter --version            # 4.1.0
+     jupyter notebook --version   # 4.2.3
+     cat ~/github/ipywidgets/ipywidgets/_version.py   # version_info = (6, 0, 0, 'beta4')
+
+   --- updated jupyter_core
+      git clone https://github.com/jupyter/jupyter_core.git
+      pip install -e .
+      jupyter --version           # 4.3.0.dev
+      
+   --- updated ipywidgets
+      cd ~/github/ipywidgets
+      git pull origin
+      cat ipywidgets/_version.py
+         version_info = (6, 0, 0, 'beta5')
+         __frontend_version__ = '^2.0.9'
+
+   --- updated jupyterlab
+      cd ~/github/jupyterlab/
+      git pull origin
+      cat jupyterlab/_version.py   # __version__ = "0.11.1"
+      npm install
+      pip install -e .
+      npm test       # some failures reported at end
+
+   --- does it work with circles?
+
+*------------------------------------------------------------------------------------------------------------------------
+* python tips: unique elements of a 2d array
+
+   vertices = set([x for row in tbl for x in row])
+   
+*------------------------------------------------------------------------------------------------------------------------
+python tips: learn versions of all loaded  modules:
+
+     import sys 
+     for name, module in sorted(sys.modules.items()): 
+        if hasattr(module, '__version__'): 
+           print(name, module.__version__)
+
+   --- in circles (cd ~/github/jupyter-widget-demo-nbextension; make | jupyter notebook circles.ipynb)
+       circles                                       lab
+     IPython 4.1.2                                Python 4.1.2                                                  
+     IPython.core.release 4.1.2                   IPython.core.release 4.1.2                                    
+     _ctypes 1.1.0                                _ctypes 1.1.0                                                 
+     _curses b'2.2'                               _curses b'2.2'                                                
+     argparse 1.1                                 argparse 1.1                                                  
+     circles 0.1.2.dev                            ctypes 1.1.0                                                  
+     circles._version 0.1.2.dev                   ctypes.macholib 1.0                                           
+     ctypes 1.1.0                                 decorator 4.0.9                                               
+     ctypes.macholib 1.0                          distutils 3.5.2                                               
+     decorator 4.0.9                              ipykernel 4.5.1                                               
+     distutils 3.5.2                              ipykernel._version 4.5.1                                      
+     ipykernel 4.5.1                              ipython_genutils 0.1.0                                        
+     ipykernel._version 4.5.1                     ipython_genutils._version 0.1.0                               
+     ipython_genutils 0.1.0                       ipywidgets 6.0.0.beta4                                        
+     ipython_genutils._version 0.1.0              ipywidgets._version 6.0.0.beta4                               
+     ipywidgets 6.0.0.beta4                       json 2.0.9                                                    
+     ipywidgets._version 6.0.0.beta4              jupyter_client 4.2.2                                          
+     json 2.0.9                                   jupyter_client._version 4.2.2                                 
+     jupyter_client 4.2.2                         jupyter_core 4.1.0                                            
+     jupyter_client._version 4.2.2                jupyter_core.version 4.1.0                                    
+     jupyter_core 4.1.0                           logging 0.5.1.2                                               
+     jupyter_core.version 4.1.0                   optparse 1.5.3                                                
+     logging 0.5.1.2                              parser 0.5                                                    
+     optparse 1.5.3                               path 0.0.0                                                    
+     parser 0.5                                   pexpect 4.0.1                                                 
+     path 0.0.0                                   pickleshare 0.5                                               
+     pexpect 4.0.1                                pkg_resources._vendor.packaging.__about__ 16.5                
+     pickleshare 0.5                              pkg_resources._vendor.six 1.10.0                              
+     pkg_resources._vendor.packaging.__about__ 16.pkg_resources.extern.packaging 16.5                           5
+     pkg_resources._vendor.six 1.10.0             pkg_resources.extern.pyparsing 2.0.6                          
+     pkg_resources.extern.packaging 16.5          pkg_resources.extern.six 1.10.0                               
+     pkg_resources.extern.pyparsing 2.0.6         platform 1.0.7                                                
+     pkg_resources.extern.six 1.10.0              ptyprocess 0.5                                                
+     platform 1.0.7                               re 2.2.1                                                      
+     ptyprocess 0.5                               six 1.10.0                                                    
+     re 2.2.1                                     traitlets 4.3.1                                               
+     six 1.10.0                                   traitlets._version 4.3.1                                      
+     traitlets 4.3.1                              zlib 1.0                                                      
+     traitlets._version 4.3.1                     zmq 15.2.0                                                    
+     zlib 1.0                                     zmq.sugar 15.2.0                                              
+     zmq 15.2.0                                   zmq.sugar.version 15.2.0                                      
+     zmq.sugar 15.2.0
+     zmq.sugar.version 15.2.0
+     
+
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* install jupyter lab development version (2 dec 2016)
+
+   conda install -c javascript nodejs     # nodejs: 4.4.0-0 javascript
+   conda install notebook                 # notebook: 4.2.1-py35_0 --> 4.2.3-py35_0
+   conda install nb_conda_kernels         #      _nb_ext_conf:     0.3.0-py35_0
+                                          #    nb_anacondacloud: 1.2.0-py35_0
+                                          #    nb_conda:         2.0.0-py35_0
+                                          #    nb_conda_kernels: 2.0.0-py35_0
+                                          #    nbpresent:        3.0.2-py35_0
+   cd ~/github
+   git clone https://github.com/jupyterlab/jupyterlab.git
+   cd jupyterlab
+   npm install
+   pip install -e . # will take a long time to build everything
+   jupyter serverextension enable --py jupyterlab
+   npm test
+      these tests failed:
+       console/content
+         ConsoleContent
+           ✖ "before each" hook for "should create a new console content widget"
+           ✖ "after each" hook for "should create a new console content widget"
+       console/foreign
+         ForeignHandler
+           #enabled
+             ✖ "before each" hook for "should default to `true`"
+             ✖ "after each" hook for "should default to `true`"
+           #kernel
+             ✖ should be resettable
+           #onIOPubMessage()
+             ✖ "before each" hook for "should be called when messages come through"
+             ✖ "after each" hook for "should be called when messages come through"
+       console/history
+         ✖ "before each" hook for "should create a new console history object"
+         ✖ "after all" hook
+
+    --- run examples
+         jupyter --version  # 4.1.0
+         jupyter lab --version  # 0.11.1
+   
+
+*------------------------------------------------------------------------------------------------------------------------
+* test circles nbextension widget with latest jupyter and ipywidgets (30 nov 2016)
+
+  cd ~/github/jupyter-widget-demo-nbextension
+  cd circles.egg-info
+  PKG-INFO has this line:
+    Version: 0.1.1.dev    # my new value, today
+  ~/github/jupyter-widget-demo-nbextension/circles/_version.py has this line
+      version_info = (0, 1, 1, 'dev')
+      __version__ = '.'.join(map(str, version_info))
+
+  experimented with this line in the makefile:
+  #	npm install
+	pip install -e .
+
+  --- po
+
+  --- could not force a new installation, saw that old circle-pkg still used:
+    jupyter nbextension install --py circles
+    Installing /Users/paul/s/examples/jupyter/hello-cookieCutter/jupyter-d3-circles-widget/circles/static -> circles-pkg
+
+  --- possible explanation, from the ipython/ipywidgets gitter board (5 dec 2016)
+
+    @ssunkara1 I'm not sure about Windows and your specific situation,
+    but using the --sys-prefix flag when installing/uninstalling packages
+    using pip (which is what most of the Jupyter docs suggest doing) will
+    use the sys.prefix path (which for me is
+    /Users/grant/anaconda/etc/jupyter) while omitting it will use the user
+    path (which for me is /Users/grant/.jupyter). I recommend using one or
+    the other exclusively to avoid these types of issues. I also recommend
+    uninstalling your jupyter installation extensions from whichever path
+    you decide not to use.  _
+
+  --- looking for remedy
+     chmod 0 /Users/paul/s/examples/jupyter/hello-cookieCutter/jupyter-d3-circles-widget/circles/static/
+   did not help
+     mv ~/s/examples/jupyter/hello-cookieCutter ~/s/examples/jupyter/hello-cookieCutter-hidden
+     
+   jupyter nbextension install --py circles
+   Installing /Users/paul/github/jupyter-widget-demo-nbextension/circles/static -> circles-pkg
+   Out of date: /usr/local/share/jupyter/nbextensions/circles-pkg/extension.js
+   Copying: /Users/paul/github/jupyter-widget-demo-nbextension/circles/static/extension.js -> /usr/local/share/jupyter/nbextensions/circles-pkg/extension.js
+   Out of date: /usr/local/share/jupyter/nbextensions/circles-pkg/index.js
+   Copying: /Users/paul/github/jupyter-widget-demo-nbextension/circles/static/index.js -> /usr/local/share/jupyter/nbextensions/circles-pkg/index.js
+   Out of date: /usr/local/share/jupyter/nbextensions/circles-pkg/index.js.map
+   Copying: /Users/paul/github/jupyter-widget-demo-nbextension/circles/static/index.js.map -> /usr/local/share/jupyter/nbextensions/circles-pkg/index.js.map
+   - Validating: OK
+
+   --- disposition: now fixed
+     never did track down why ~/s/examples/jupyter/hello-cookieCutter/jupyter-d3-circles-widget/circles/static was used
+     must be that this information was cached in the python library directory structures.    
+ 
+*-----------------------------------------------------------------------------------------------------------------------
+* update all jupyter after latest pull of ~/github/ipywidgets (30 nov 2016)
+
+  --- update notebook   (8 dec 2016, 4.2.3; took steps below: 5.0.0.dev
+    cd ~/github/notebook/
+    git pull origin
+    pip install -e . --user
+    
+  ---- update anaconda
+     conda --version  # 4.1.11
+     conda update anaconda
+     https://www.continuum.io/downloads   # chose the python 3.5 installer  this fails with suggestion to do "conda update ..."
+     conda --version 4.2.13
+
+  ---- try to update jupyter with conda
+  conda update jupyter
+  jupyter --version   # 4.1.0
+
+   --- jupyter 4.2?
+
+   ---- resolution
+   pip list | egrep 'notebook|widgets'
+     ipywidgets (6.0.0b4, /Users/paul/github/ipywidgets)
+     jupyterlab-widgets (0.6.1, /Users/paul/github/ipywidgets/jupyterlab_widgets)
+     notebook (4.2.1)
+     widgetsnbextension (2.0.0b4, /Users/paul/github/ipywidgets/widgetsnbextension)
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* igraph tips
+
+   --- get id (index) for nodes by name
+    g.vs.find("R5").index   # 4
+    [g.vs.find(x).index for x in g.vs['name']]
+    
+   --- great dict map for resolving names to ids
+     names = g.vs['name']
+     ids = [g.vs.find(name).index for name in g.vs['name']]
+     nodeMap = dict(zip(names, ids))
+     nodeMap["R3"] # 2
+
+   --- create graph from tab delimited sif file, and type.noa, assign random numerical edge attribute
+      from igraph import *
+      import random
+      networkFile = "toynetwork.tsv"
+      nodeAttributesFile = "type.noa"
+      lines = open("toynetwork.tsv").readlines()
+      tbl_rel = []
+      for line in lines:
+         tokens = line.rstrip("\n").split("\t")
+         tokens = [x.strip() for x in tokens]
+         if(len(tokens) == 3):
+            tbl_rel.append(tokens)
+      lines = open("type.noa").readlines()
+      nodeTypes={}
+      for line in lines:
+         (node, type) = line.rstrip("\n").split("\t")
+         nodeTypes[node.strip()] = type.strip()
+      g = Graph()
+      nodeNames = [x for x in iter(nodeTypes)]
+      nodeTypeValues = [x for x in nodeTypes.values()]
+      g.add_vertices(nodeNames)
+      g.vs['type'] = nodeTypeValues
+      for row in tbl_rel:
+        g.add_edge(row[0], row[2])
+      g.es['edgeType'] = [x[1] for x in tbl_rel]
+      g.es()['flux'] = random.sample(range(0, 1000), len(g.es()))
+      from_igraph(g)
+   
+
+   --- create from tab-delimited edge file
+   from igraph import *
+   import itertools
+   lines = open("test.tsv").readlines()
+   ab = []
+   for line in lines:
+      ab.append(line.split("\t"))
+   g = Graph()
+   nodes = set(list(itertools.chain(*ab)))
+   g.add_vertices(nodes)
+   len(g.vs)  # 9
+   len(g.es)  # 0
+
+   --- better yet
+    g2 = Graph.TupleList(ab)
+    summary(g2, full=True)   # header line and list of edges
+      IGRAPH UN-- 9 7 -- 
+      + attr: name (v)
+      + edges (vertex names):
+      M_10fthf6glu_m--R_FPGS9m
+      , R_FPGS9m
+      --M_glu_DASH_DASH_DASH_L_m, R_FPGS9m--M_10fthf7glu_m
+      , R_FPGS9m--M_pi_m
+      , M_pi_m
+      --R_PPCOACm, M_pi_m
+      --R_SUCOAS1m, M_pi_m
+      --R_SUCOASm
+
+   --- learn vertex names
+   for v in g.vs:
+      print(v['name'])
+
+   --- get them all at once
+      g.vs['name'] #  ['A1', 'B1', 'B2']
+
+   --- assign node attributes
+      g.vs['type'] = ["tf", "target", "target"]
+
+   --- what attributes are defined?
+     g.vs.attribute_names()  # ['name', 'type']
+     g.es.attribute_names()  # []
+     g.vs['name']            # ['A1', 'B1', 'B2']
+     g.vs['type']            # ['tf', 'target', 'target']
+
+   --- get indices of node (vertex) names which match a pattern
+   b_indices = [i for i, j in enumerate(g.vs['name']) if re.search("^B", j)]
+   a_indices = [i for i, j in enumerate(g.vs['name']) if re.search("^A", j)]
+   g.vs()[b_indices]['type'] = 'Btype'
+   g.vs()[a_indices]['type'] = 'Atype'
+   g.vs()['type']   # ['Atype', 'Btype', 'Btype']
+   g.vs()['id'] = g.vs()['name']
+
+
+  --- igraph assign nodes (assign vertices) from the keys of a dict
+    nodeNames = [x for x in iter(nodeTypes)]
+    nodeTypes = [x for x in nodeTypes.values()]
+    g = Graph()
+    g.add_vertices(nodeNames)
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* python igraph tips (29 nov 2016)
+
+  http://igraph.org/python/ suggests:
+
+     Instead of letting pip compile the C core for you, you can
+     install Homebrew and the homebrew/science/igraph formula. This
+     will ensure that the C core is found by pip so running pip
+     install python-igraph will compile the Python interface only and
+     link it to the C core.
+
+   /usr/local/bin/brew   # version 0.9.9 2016-07-02
+   brew install homebrew/science/igraph
+      Warning: homebrew/science/igraph-0.7.1_3 already installed
+
+    brew install cairo --use-clang  
+    brew install py2cairo
+
+
+   
+*------------------------------------------------------------------------------------------------------------------------
+* priyanka's initial demo, drives cyjs jupyter widget development "simple", a first self-contained cyjs notebook (5 dec 2016)
+
+   cd ~/github/cyjs-jupyter/self-contained-notebooks/simple/
+   data:
+      22 line toynetwork.tsv
+      26 line type.noa
+
+    head toynetwork.tsv
+      R1	consumes	a
+      R1	consumes	b
+      R1	produces	c
+      g1	catalyzes	R1
+      R2	consumes	a
+      R2	consumes	d
+      R2	produces	e
+      g2	catalyzes	R2
+      g3	catalyzes	R2
+      R3	consumes	c
+
+    head type.noa
+      R1	reaction
+      R2	reaction
+      R3	reaction
+      R4	reaction
+      R5	reaction
+      a	metabolite
+      b	metabolite
+      c	metabolite
+      
+
+    ---- build a toy & fake flux table
+    reactions <- subset(read.table("type.noa", sep="\t", as.is=TRUE), V2=="reaction")$V1   # [1] "R1" "R2" "R3" "R4" "R5"
+    conds <- paste("cond", 1:3, sep="")
+    count <- length(reactions) * length(conds)
+    set.seed(17)
+    mtx <- matrix(data=as.integer(1000 * runif(count)), nrow=length(reactions),
+                  dimnames=list(reactions, conds))
+    tbl.flux <- as.data.frame(matrix(data=as.integer(1000 * runif(count)),
+                              nrow=length(reactions), dimnames=list(reactions, conds)))
+      
+    write.table(tbl.flux, file="flux.tsv", sep="\t", row
+*------------------------------------------------------------------------------------------------------------------------
+* igraph to json
+
+  https://gist.github.com/jboynyc/11dcd73b84f8da02490e6654d5c07700
+  https://rpubs.com/keiono/cyrest2
+  https://github.com/idekerlab/py2cytoscape/blob/develop/py2cytoscape/util/util_igraph.py
+  ~/github/py2cytoscape/
+
+   --- ~/s/work/priceLab/priyanka/metabolicNetworks/try0/try0.ipynb
+from igraph import *
+import json
+exec(open("/Users/paul/github/py2cytoscape/py2cytoscape/util/util_igraph.py").read())
+g = Graph.Read_Ncol("test.tsv")
+g.json = from_igraph(g)
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* priyanka, a metabolic network (29 nov 2016)
+
+   cd ~/s/work/priceLab/priyanka/metabolicNetworks/try0/
+   a 4494 line metabolic network.  but see jupyter notebook
+
+   --- from email
+     Please find attached the file containing metabolic network. I have
+     removed the edges with very high connectivity since they consisted
+     of nodes such as h2o, atp, nad etc.
+
+     I have the data related to reaction fluxes which needs to be
+     mapped. I will take your advice whether to represent that as node
+     weight or edge weight in the network.
+
+     We can discuss this in more details to get meaningful results from
+     this analysis :)
+
+   --- 4494 lines, appears to be
+      grep R_FPGS9m Network_for_metabolic_model_removing_highnodes.txt 
+         M_10fthf6glu_m	R_FPGS9m
+         M_glu_DASH_DASH_DASH_L_m	R_FPGS9m
+         R_FPGS9m	M_10fthf7glu_m
+         R_FPGS9m	M_pi_m
+
+
+   ---- create a 7 line, 8 node graph
+     grep R_FPGS9m Network_for_metabolic_model_removing_highnodes.txt  > test.tsv
+     grep M_pi_m Network_for_metabolic_model_removing_highnodes.txt | tail -3 >> test.tsv
+     from igraph import *
+     g = Graph.Read_Ncol("test.tsv")
+
+   --- ~/s/work/priceLab/priyanka/metabolicNetworks/try0/try0.ipynb
+     from igraph import *
+     import json
+     exec(open("/Users/paul/github/py2cytoscape/py2cytoscape/util/util_igraph.py").read())
+     g = Graph.Read_Ncol("test.tsv")
+     g.json = from_igraph(g)
+
+   --- now use this json in the under-development, all-in-notebook cyjs-jupyter
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* ipython_thread.py: does work in a thread, updates a progressbar.  runs in ipython.  study this! (28 nov 2016)
+
+   https://gist.github.com/maartenbreddels/3378e8257bf0ee18cfcbdacce6e6a77e
+   cd ~/s/examples/ipython/threads
+   must be in a notebook: 
+   jupyter notebook maartenbreddels.ipynb
+
+*------------------------------------------------------------------------------------------------------------------------
+* convert notebook to, eg, html (28 nov 2016)
+
+  cd ~/github/cyjs-jupyter/self-contained-notebooks/simple/
+  
+  jupyter nbconvert --to html --execute --ExecutePreprocessor.timeout=60 --output out_file simple.ipynb
+   [NbConvertApp] Converting notebook simple.ipynb to html
+   [NbConvertApp] Executing notebook with kernel: python3
+   [NbConvertApp] Writing 258638 bytes to out_file.html
+  book.simple> open out_file.html
+
+   ---- error
+    cy = cyjsWidget()
+    cy
+
+    Widget Javascript not detected.  It may not be installed
+    properly. Did you enable the widgetsnbextension? If not, then run
+    "jupyter nbextension enable --py --sys-prefix widgetsnbextension"
+
+   
+*------------------------------------------------------------------------------------------------------------------------
+* jason grout: new versions ipywidgets, widgetsnbextension, and jupyterlab_widgets (29 nov 2016)
+
+  tried again after jason suggested
+
+      Can you delete your node_modules directory and run npm install
+      again? The logs we want to see are in the install phase, not the
+      build phase.
+
+    cd ~/github/ipywidgets/jupyter-js-widgets
+    rm -rf node_modules
+    cd ..
+    git pull origin # to get the lodash downgrade mentioned at
+        https://gitter.im/ipython/ipywidgets
+     bash dev-install.sh
+         Installed /Users/paul/github/ipywidgets
+         Successfully installed ipykernel-4.5.1 ipywidgets traitlets-4.3.1
+      and
+      Installing /Users/paul/github/ipywidgets/widgetsnbextension/widgetsnbextension/static -> jupyter-js-widgets
+     - Validating: OK
+       jupyter nbextension enable widgetsnbextension --py
+       Enabling notebook extension jupyter-js-widgets/extension...
+      - Validating: OK
+       0.8.0
+       jupyter lab is installed
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* jason grout: new versions ipywidgets, widgetsnbextension, and jupyterlab_widgets (28 nov 2016)
+
+  at jason's (implied) suggestion, i upgraded node from 4.4.7 to 6.9.1, which comes with npm version 3.10.8
+
+  cd ~/github/ipywidgets/
+  bash dev-install.sh --sys-prefix
+
+  --- fails with missing underscore 
+   > jupyter-js-widgets@2.0.7 build:src /Users/paul/github/ipywidgets/jupyter-js-widgets
+   > tsc --project src
+
+src/manager-base.ts(4,20): error TS2307: Cannot find module 'underscore'.
+
+
+  jupyter notebook --version  # 4.2.1
+  cd ~/github/jupyterlab; git pull origin
+*-----------------------------------------------------------------------------------------------------------------------
+* jason grount: new versions ipywidgets, widgetsnbextension, and jupyterlab_widgets (28 nov 2016)
+
+  jupyter notebook --version  # 4.2.1
+  cd ~/github/jupyterlab; git pull origin
+  cd ~/github/ipywidgets; git pull origin   # included widgetsnbextension/
+
+   grep version ~/github/ipywidgets/jupyter-js-widgets/package.json   #   "version": "2.0.7",
+   grep version ~/github/ipywidgets/widgetsnbextension/package.json   #   "version": "2.0.7",
+   grep version ~/github/jupyterlab/package.json                      #   "version": "0.10.0",
+
+  --- installing new version of ipywidgets via github (the "developer install")
+    need npm version 3.x or later   # npm -v -> 2.15.8
+    therefore:
+       sudo  npm install -g npm    # 4.0.2
+   cd ~/github/ipywidgets
+   bash dev-install.sh --sys-prefix
+     failed in jupyter-js-widgets; npm install, npm dedupe, hanging with this message
+      ⸨░░░░░░░░░░⠂⠂⠂⠂⠂⠂⠂⠂⸩ ⠦ loadAllDepsIntoIdealTree: sill loadAllDepsIntoIdealTree  C-c C-c
+
+  ---  therefore falling back to non-developer install:
+     pip install ipywidgets   # reports that all requirements are already satisfied, but they are OLD!
+        ipywidgets in /Users/paul/anaconda/lib/python3.5/site-packages
+        traitlets>=4.2.1 in /Users/paul/anaconda/lib/python3.5/site-packages (from ipywidgets)
+        ipython>=4.0.0 in /Users/paul/anaconda/lib/python3.5/site-packages (from ipywidgets)
+        widgetsnbextension>=1.2.6 in /Users/paul/anaconda/lib/python3.5/site-packages (from ipywidgets)
+        ipykernel>=4.2.2 in /Users/paul/anaconda/lib/python3.5/site-packages (from ipywidgets)
+        notebook>=4.2.0 in /Users/paul/anaconda/lib/python3.5/site-packages (from widgetsnbextension>=1.2.6->ipywidgets)
+     jupyter nbextension enable --py widgetsnbextension     
+
+   
+  
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* expression matrices for cory's AD talk (27 nov 2016)
+
+  --- email (15 nov 2016)
+    The new datasets are on whovian: /local/Cory/Alzheimers/repo_counts
+    There are 3 separate data sets that are uniformly processed:
+      mayo_CBE_counts_matrix_normalized.txt
+      mayo_TCX_counts_matrix_normalized.txt
+      rosmap_counts_matrix_normalized.txt
+
+  --- consider using ~/s/work/priceLab/cory/module-109/digestExpressionMatrices.R
+     236591678 Nov 21 18:58 /Volumes/local/Cory/Alzheimers/repo_counts/mayoCBE_quant_matrix_normalized.txt  # no
+     268194591 Nov 15 12:27 /Volumes/local/Cory/Alzheimers/repo_counts/mayo_TCX_counts_matrix_normalized.txt
+     589655335 Nov 15 12:55 /Volumes/local/Cory/Alzheimers/repo_counts/rosmap_counts_matrix_normalized.txt
+
+     
+*-----------------------------------------------------------------------------------------------------------------------
+* single gene and meta network rcyjs for cory, nov 2016 AD talk (27 nov 2016)
+
+  cd  ~/github/BDDS/trenadb/src/coryADpresentationNov2016/
+  sources ~/github/BDDS/trenadb/src/renderGeneModel.R
+      2743 Nov 23 15:38 metaNetwork.R
+       463 Nov 27 11:55 singleGeneModelDemo.R
+      2732 Nov 27 11:27 metaNetwork-top-10-tfs-hits-39-genes.R
+
+  --- style files
+    2161 Nov 27 11:53 style-purityControlsNodeSize.js
+    2753 Nov 23 15:38 style-reducedGraph-footprintCountsIgnored.js
+    2745 Nov 23 15:38 style-reducedGraph.js
+    2175 Nov 23 15:38 style.js
+
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* code for cory and his washington AD talk (23 nov 2016)
+  cd ~/github/RCyjs; git pull origin; R CMD install .
+  cd ~/github/BDDS/trenadb/src; git pull origin
+  cd ~/github/BDDS/trenadb/src/coryADpresentationNov2016
+  start R
+ source(“metaNetwork.R”)
+
+  The only adjustment you need is that the script reads your data from
+  a path you will probably need to change.  I mount whovian /local via
+  vpn and smb (using my macbook’s Finder):
+
+   table.names <- load("/Volumes/local/Cory/for_Paul/all_targets.RData”)
+
+   (this takes advantage of the load command, which reads in all of
+   the serialized in your all_targets.RData file, and returns the
+   variable names).
+
+   fix that path, and it should all just work.  
+
+   Make sure that this is true for you:  packageVersion("RCyjs”) >= ‘1.7.5'
+
+*-----------------------------------------------------------------------------------------------------------------------
+* rcyjs tips:  align selected nodes horizontall or vertically, hAlign, vAlign (22 nov 2016)
+
+  see also: ~/github/BDDS/trenadb/src/renderGeneModel.R
+
+   hAlign <- function(rcy) {
+     selected.node.ids <- getSelectedNodes(rcy)$id
+     if(length(selected.node.ids) == 0){
+         printf("no nodes selected, nothing to hAlign")
+         return()
+         }
+     tbl.pos <- getPosition(rcy, selected.node.ids)
+     tbl.pos$y <- mean(tbl.pos$y)
+     setPosition(rcy, tbl.pos)
+     } # hAlign
+   
+   vAlign <- function(rcy){
+     selected.node.ids <- getSelectedNodes(rcy)$id
+     if(length(selected.node.ids) == 0){
+        printf("no nodes selected, nothing to vAlign")
+        return();
+        }
+     tbl.pos <- getPosition(rcy, selected.node.ids)
+     tbl.pos$x <- mean(tbl.pos$x)
+     setPosition(rcy, tbl.pos)
+     } # vAlign
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* meta-network for cory's AD nov2016 talk (22 nov 2016)
+
+  cd ~/s/work/priceLab/cory/ADtalk-nov2016/
+  file: metaNetwork.R
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* update jupyter widgets
+
+   cd ~/github/ipywidgets/
+   git pull origin
+   bash dev-install.sh --sys-prefix
+
+*-----------------------------------------------------------------------------------------------------------------------
+* renderGeneModel, revisited (21 nov 2016)
+
+  also see below renderGeneModel (18 nov 2016)
+
+  --- archived and subsequently maintained as
+    ~/github/BDDS/trenadb/src/renderGeneModel.R
+
+  --- working area
+    cd ~/s/work/priceLab/cory/module-109/anyGene.R
+
+  --- cory reports bug: just one gene drawn in one footprint, even if the gene likely binds in multiple footprints
+
+    I have a couple points on the visualization to ask about. I've
+    built a model of TREM2 with several different shoulder lengths. If
+    the shoulder is 5,000 (or even 2,000), then ELF4 has some nice
+    beta and purity scores at position 1413. If I build TREM2 with a
+    10,000 shoulder, ELF4 has great scores but is now at position
+    7879.
+
+    This is interesting biology. The more motifs a given TF has in
+    close proximity to the TSS, the greater the likelihood it's
+    active. Would there be a way to visualize the the multiple
+    positions of a TF potentially binds to? Another interesting test
+    case might be TYROBP which has great scores for SPI1 at -1063. I'm
+    guessing the SPI1 motif is found multiple time in that
+    promoter. It might be an edge case of when there are too many
+    motifs (based on my knowledge of SPI1 frequency).
+
+    
+*-----------------------------------------------------------------------------------------------------------------------
+* python threading: does it work in a jupyter notebook (20 nov 2016)
+
+  cd ~/s/examples/python/threads
+  
+  2 console experiments: 
+     demo.py
+     ThreadSubclass.py
+     exec(open("ThreadSubclass.py").read())
+
+  jupyter notebook: threadExperiments.ipynb
+
+  --- now turn to cyjs demo
+  
+
+*-----------------------------------------------------------------------------------------------------------------------
+ A World Made by Men: Cognition and Society, 400-1200 by Charles M. Radding
+  Review by: John J. Contreni,    Speculum, Vol. 63, No. 3 (Jul., 1988), pp. 709-714 
+*-----------------------------------------------------------------------------------------------------------------------
+* pemco, auto insurance for leo (18 nov 2016)
+
+  1‑800‑467‑3626
+  leo's wa driver license: SHANNLD023L2, Expires 06-22-2021
+  I never got any accident summary but my agent is David Wenzler at Met Life 425-614-1112
+
+*-----------------------------------------------------------------------------------------------------------------------
+* renderGeneModel (18 nov 2016)
+
+  --- developed originally as
+    ~/s/work/priceLab/cory/module-109/anyGene.R
+
+  --- archived and subsequently maintained as
+    ~/github/BDDS/trenadb/src/renderGeneModel.R
+    uses RCyjs, style.js, transformed (cleaned up) expression matrices, starting with
+       rosmap_rnaseq_fpkm_geneSymbols_24593x638.RData
+    using ~/github/BDDS/trenadb/src/digestExpressionMatrices.R
+    from
+   dir /Volumes/local/Cory/Alzheimers/repo_counts/*normalized.txt
+      267M  Nov 15 12:29 /Volumes/local/Cory/Alzheimers/repo_counts/mayo_CBE_counts_matrix_normalized.txt
+      268M  Nov 15 12:27 /Volumes/local/Cory/Alzheimers/repo_counts/mayo_TCX_counts_matrix_normalized.txt
+      589M  Nov 15 12:55 /Volumes/local/Cory/Alzheimers/repo_counts/rosmap_counts_matrix_normalized.txt
+
+       
 *-----------------------------------------------------------------------------------------------------------------------
 * some notebooks of interest
+
+   --- d3 circle jupyter widget tutorials and demos, offered publicly (11 nov 2016)
+
+     Two repos, both present a simple jupyter widget: a d3 canvas on
+     which circles are drawn in response to python function calls, or
+     by directly clicking on the d3 canvas.
+
+     The first demo (possibly useful as a tutorial also) is simple,
+     with all code self-contained in one notebook:
+
+        https://github.com/paul-shannon/jupyter-widget-demo-all-in-notebook
+
+     The second demo - to my mind, pretty complex - should be useful
+     if you want to learn how to make installable notebook widget
+     extensions and have little prior understanding of the mechanisms
+     involved:
+
+       https://github.com/paul-shannon/jupyter-widget-demo-nbextension
 
    --- circle, jupyter tutorial
      as extension:
@@ -123,15 +1375,124 @@ bed format: chrom, start, end, name, score, strand
 
      
 *-----------------------------------------------------------------------------------------------------------------------
-* cyjs tips: png
+* evolve jupyter cyjs demo to proper jupyter widget (16 nov 2016)
+
+  sh-cyjupdev
+  
+  cd ~/github/cyjs-jupyter    # the repo for self-contained and the eventual nbextension
+  
+  cd ~/github/cyjs-jupyter/self-contained-notebooks/simple;
+  jupyter notebook simple.ipynb 
+
+  --- prerequisite: an http server providing cytoscape.js
+     cd ~/http
+     python -m http.server 8099
+     this supports: require.config({paths: {cytoscape: 'http://localhost:8099/js/cytoscape-2.7.10'}})
+
+  --- start from igap demo
+      ~/s/examples/jupyter/javascriptMagic/cyjs/igap-snp4GenesetEnrichmentDemo.ipynb
+      cd  ~/s/examples/jupyter/javascriptMagic
+      jupyter notebook cyjs/igap-snp4GenesetEnrichmentDemo.ipynb
+*-----------------------------------------------------------------------------------------------------------------------
+* vineet's 263 compounds, gene/TF model network, create png slides
+
+  cd ~/s/work/priceLab/vineet/screen/
+  source("go.R")
+  
+
+*-----------------------------------------------------------------------------------------------------------------------
+* tss for all genes
+
+  library(RPostgreSQL)
+  db.gtf <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="gtf", host="whovian”)
+  query <- "select * from hg38human where moleculetype='gene' and gene_biotype='protein_coding'"
+  tbl <- dbGetQuery(db.gtf, query)[, c("chr", "gene_name", "start", "strand”)]
+
+*-----------------------------------------------------------------------------------------------------------------------
+* rcyjs tips
+
+  current working copy: ~/s/RCyjs  (16 nov 2016)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* rcyjs tips: some style (vizmap) files to build upon
+
+   ~/s/work/priceLab/mattRichards/style.js
+   ~/s/examples/jupyter/javascriptMagic/cyjs/style.js
+   ~/s/examples/jupyter/javascriptMagic/cyjs/igap4snpGenesetEnrichment-style.js
+
+*-----------------------------------------------------------------------------------------------------------------------
+* rcyjs tips, cyjs tips: png
 
   var png64 = cy.png()
   $('#png-eg').attr('src', png64)   // this part not yet successful
 
+  --- added getPNG to RCyjs, then improvised these commands to successfully write it out as a valid png
+    library(base64enc) 
+    png <- getPNG(x$rcy)
+    png.parsed <- fromJSON(png)
+    substr(png.parsed, 1, 30) # [1] "data:image/png;base64,iVBORw0K"
+    nchar(png.parsed)  # [1] 768714
+    png.parsed.headless <- substr(png.parsed, 23, nchar(png.parsed))  # chop off the uri header
+    png.parsed.binary <- base64decode(png.parsed.headless)
+    conn <- file("x.png", "wb")
+    writeBin(png.parsed.binary, conn)
+    close(conn)
+
+
+   --- as a function (from ~/s/work/priceLab/vineet/screen/go.R)
+   
+      writePNG <- function(rcy, filename) {
+         png <- getPNG(rcy)
+         png.parsed <- fromJSON(png)
+         #substr(png.parsed, 1, 30) # [1] "data:image/png;base64,iVBORw0K"
+         #nchar(png.parsed)  # [1] 768714
+         png.parsed.headless <- substr(png.parsed, 23, nchar(png.parsed))  # chop off the uri header
+         png.parsed.binary <- base64decode(png.parsed.headless)
+         conn <- file(filename, "wb")
+         writeBin(png.parsed.binary, conn)
+         close(conn)
+         } # writePNG
+   
 *-----------------------------------------------------------------------------------------------------------------------
-* cory's module 109 (14 nov 2016)
+* new AD expression data from cory, via sage (15 nov 2016)
+
+    dir /Volumes/local/Cory/Alzheimers/repo_counts/*normalized.txt
+      267M  Nov 15 12:29 /Volumes/local/Cory/Alzheimers/repo_counts/mayo_CBE_counts_matrix_normalized.txt
+      268M  Nov 15 12:27 /Volumes/local/Cory/Alzheimers/repo_counts/mayo_TCX_counts_matrix_normalized.txt
+      589M  Nov 15 12:55 /Volumes/local/Cory/Alzheimers/repo_counts/rosmap_counts_matrix_normalized.txt
+
+
+    the rosmap normalized, with gene symbol rownames, as a matrix:
+    dim(tbl) # 24593   638
+    mtx <- as.matrix(tbl)
+    mtx[1:5, 1:5]
+    #         s01_120405 s02_120405 s03_120405 s04_120405 s05_120405
+    # TSPAN6     4.321084   2.550606   2.626589   3.685091   3.442105
+    # TNMD       0.076254   0.067835   0.056486   0.057805   0.034769
+    # DPM1       3.380612   6.227278   4.462377   6.734323   4.207018
+    # SCYL3      2.897668   4.884139   5.224935   4.899003   3.720255
+    # C1orf112   0.432108   0.624084   0.536615   0.881532   0.451994
+    range(mtx) # [1]      0.0 239943.8 
+    ~/s/work/priceLab/cory/module-109/rosmap_rnaseq_fpkm_geneSymbols_24593x638.RData
+*-----------------------------------------------------------------------------------------------------------------------
+* cory's module 109 (14 nov 2016) for AMPAD, ROSMAP talk, late November
 
    cd ~/s/work/priceLab/cory/module-109/
+
+   --- script emulating trem2 notebook
+      ~/github/notebooks/shared//trem2/anyGene.R
+      mv /Users/paul/github/notebooks/shared//trem2/anyGene.R ~/s/work/priceLab/cory/module-109/
+      mv'ing this to module-109
+      mount via the finder:
+         wc -l /Volumes/local/Cory/Alzheimers/ROSMAP/ROSMAP_RNAseq_FPKM_gene.tsv    # 55890
+
+
+   --- expression data
+   /local/Cory/Alzheimers/ROSMAP/ROSMAP_RNAseq_FPKM_gene.tsv
+     The id_key and clinical data file in the same directory are what are used to identify which files
+     are AD and which are control.
+
+   --- gene list
 
    from Chris Gaiteri, Rush university medical center
    390 genes
@@ -144,6 +1505,38 @@ bed format: chrom, start, end, name, score, strand
    will help our groups to get a rough idea of what is possible with
    your method.  I included all genes in the module, as I didn't want
    to limit the definition of what constituted a TF.
+
+
+  --- prep work on expression data
+    cd ~/s/work/priceLab/cory/module-109/
+
+    f <- "module109genes.csv"
+    genes <- scan(f, sep="\n", what=character(0))
+    f <- "/Volumes/local/Cory/Alzheimers/ROSMAP/ROSMAP_RNAseq_FPKM_gene.tsv"
+    tbl <- read.table(f, sep="\t", nrows=-1, header=TRUE, as.is=TRUE)    # 642 columns
+    colnames(tbl) <- sub("^X", "s", colnames(tbl))
+    ensembl.geneIDs <- sub("\\..*$", "", tbl$gene_id)
+    tbl.map <- select(org.Hs.eg.db, keys=ensembl.geneIDs, keytype="ENSEMBL", columns=c("ENSEMBL", "SYMBOL"))
+    if(length(dups) > 0)
+       tbl.map <- tbl.map[-dups,]
+    tbl <- cbind(tbl.map, tbl)
+    
+    unmapped <- which(is.na(tbl$SYMBOL))
+    length(unmapped)    # 31848
+    if(length(unmapped) > 0)
+      tbl <- tbl[-unmapped,]  
+    dim(tbl) # 24041  644
+    save(tbl, file="rosmap_rnaseq_fpkm_geneSymbols.RData")
+    
+    setdiff(genes, tbl$SYMBOL) # 39
+    #  "AC135178.1"    "AL133458.1"    "BAHCC1"        "C10orf114"     "C22orf32"      "C6orf3"       
+    #  "C9orf114"      "CTB-171A8.1"   "CTC-205M6.2"   "CTC-428G20.3"  "CTD-2380F24.1" "FAM48A"       
+    #  "FAM59A"        "FAM59B"        "GPER"          "hsa-mir-6723"  "KIAA1009"      "KRT8P12"      
+    #  "LINC00263"     "MLLT6"         "MT-ND5"        "NARG2"         "RAB7L1"        "RP11-226L15.5"
+    #  "RP11-349A22.5" "RP11-45M22.1"  "RP11-552D4.1"  "RP11-632K20.7" "RP11-644F5.11" "RP11-742N3.1" 
+    #  "RP4-773N10.4"  "SETD8"         "SMEK1"         "STRA13"        "SYNRG"         "WAPAL"        
+    #  "ZEB1-AS1"      "ZFP106"        "ZNF271"       
+
 
 *-----------------------------------------------------------------------------------------------------------------------
 * my checks to stuart
@@ -271,7 +1664,7 @@ bed format: chrom, start, end, name, score, strand
   default target in makefile:
     (cd js; webpack --config webpack.config.js)
      pip install -e .
-    jupyter nbextension install --py hello
+    jupyter nbextension install --py hellow
     jupyter nbextension enable --py --sys-prefix hello
     jupyter notebook basicDemo.ipynb 
 
@@ -1254,10 +2647,9 @@ fimo.request(sequences)
     cd ~/s/examples/jupyter/javascriptMagic/
     jupyter notebook --port 10001
 
-  --- simple demo notebook
-    http://localhost:10001/notebooks/cyjs/cyjsSimpleDemoWithMagic.ipynb
-    cd ~/s/examples/jupyter/javascriptMagic/cyjs
-    cyjsSimpleDemoWithMagic.ipynb   # tracked in RCS, working on (2 nov 2016)
+  --- simple demo notebook: this has magic only, no jupyter widgets, no python
+    cd ~/s/examples/jupyter/javascriptMagic/cyjs/
+    jupyter notebook cyjsSimpleDemoWithMagic.ipynb 
 
 *-----------------------------------------------------------------------------------------------------------------------
 * ChIPseq figures for jocelyn (2 nov 2016)
@@ -1925,6 +3317,8 @@ cw.count = 10  // only here does the circle get drawn
   
 *-----------------------------------------------------------------------------------------------------------------------
 * vineet's 98 compound, gene model  network (15 oct 2016)
+*-----------------------------------------------------------------------------------------------------------------------
+* vineet's 98 compound, gene model  network (15 oct 2016)
 
   cd ~/s/work/priceLab/vineet/screen/
 
@@ -2567,6 +3961,11 @@ require(['cytoscape'], function(cytoscape){
      git clone https://github.com/cytoscape/jupyter-cytoscape.git
      git clone https://github.com/cytoscape/cytoscape.js.git
      git clone https://github.com/cytoscape/cytoscape.js-rpc.git
+
+*-----------------------------------------------------------------------------------------------------------------------
+* venn diagram in R: venneuler (17 nov 2016), produces proportional diagrams
+ 
+  maintained by simon urbanek, on cran
 
 *-----------------------------------------------------------------------------------------------------------------------
 * venn diagram in R, the VennDiagram package (5 oct 2016)
@@ -3722,6 +5121,29 @@ ZHX2
       tbl['desc']  = tbl.name + "|" + tbl.sample_id  + "|" + tbl[scoreColumnNameToUse].astype(str)
       return(tbl[["chrom", "start", "stop", "desc", scoreColumnNameToUse, "strand"]])
       
+*------------------------------------------------------------------------------------------------------------------------
+* pandas tips: dataframes
+
+   --- create tbl in R
+    tbl.flux <- as.data.frame(matrix(data=as.integer(1000 * runif(count)), nrow=length(reactions), dimnames=list(reactions, conds)))
+   tbl.flux
+        cond1 cond2 cond3
+     R1   477   246   752
+     R2    44   734   633
+     R3   799   703   247
+     R4   368   736   551
+     R5   563   801   234
+     write.table(tbl.flux, file="flux.tsv", sep="\t", row.names=TRUE, col.names=TRUE, quote=FALSE)
+
+   --- read and get data in python
+    from pandas import *
+    tbl_flux = DataFrame.from_csv('flux.tsv', sep='\t', header=0)
+    tbl_flux
+    reactionNames = tbl_flux.index.tolist()
+    conditionNames = tbl_flux.columns.tolist()
+    vec = tbl_flux[conditionNames[0]].tolist()
+      [477, 44, 799, 368, 563]
+    
 *------------------------------------------------------------------------------------------------------------------------
 * pandas tips, psycopg2 tips, python database tips
 
@@ -9092,6 +10514,11 @@ cy.$('#n').qtip({
    make install
    /local/tools/R/R330/bin/R
 
+
+*------------------------------------------------------------------------------------------------------------------------
+* cysjs tips: control node color via mapData: do NOT quote color names!
+
+    "background-color":"mapData(flux, 0, 1000, white, red)",
 
 *------------------------------------------------------------------------------------------------------------------------
 * cyjs bug: node[>flux] is invalid selector
@@ -14871,6 +16298,11 @@ Any advice?   Thanks - and thanks for this very promising software!
    5 55753 catalyzes R03316
    6  1743 catalyzes R02570
 
+
+*------------------------------------------------------------------------------------------------------------------------
+* github tips:  fork and generate a pull request, a pr
+
+   https://gist.github.com/Chaser324/ce0505fbed06b947d962
 
 *------------------------------------------------------------------------------------------------------------------------
 * github tips: create repo from existing project (31 may 2016)
@@ -40070,6 +41502,11 @@ names (iris.pca)  #  "sdev"     "loadings" "center"   "scale"    "n.obs"    "sco
 * end eda tips
 *-------------------------------------------------------------------------------
 * heatmap tips, heatmap.2 tips
+
+   library(gplots)
+     # good for expression data, many samples
+   heatmap.2(mtx.probes[probeRows,], trace='none', col=rev(heat.colors(10)), margins=c(15,15), cexCol=0.1, cexRow=1)
+ 
 
    library (gplots)
 --- exploratory script
