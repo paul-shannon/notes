@@ -104,6 +104,51 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* getting nbextension cyjs working on whovian (14 dec 2016)
+
+   --- this may be all that is needed:
+   
+   conda update anaconda
+      jupyter --version # 4.2.0
+      jupyter notebook --version # 4.2.3   
+
+
+   git clone https://github.com/ipython/ipywidgets.git
+   cd ipywidgets/
+   pip install -e .
+
+   git clone https://github.com/jupyter/jupyter_core.git
+   cd jupyter_core/
+   pip install -e .
+
+  git clone
+  pip install -e .
+  npm install webpack
+  ln -s /users/pshannon/github/cyjs-jupyter/cyjs-jupyter/node_modules/webpack/bin/webpack.js ~/bin/webpack
+
+  pip install setuptools
+  pip install python-igraph
+
+  git clone https://github.com/paul-shannon/cyjs-jupyter.git
+  cd cyjs-jupyter/
+  git pull origin
+  make
+
+  git clone https://github.com/jupyter/notebook.git
+  cd notebook
+  pip install -e .
+  
+  --- still no go:
+    Widgets are not available.  Please install widgetsnbextension or ipywidgets 4.0
+
+
+   --- current state (419p, 14 dec 2016)
+    jupyter --version           # 4.1.0       # 4.3.0.dev on riptide
+    jupyter notebook --version  # 4.2.1       # 5.0.0.dev on riptide
+    cat  ~/github/ipywidgets/ipywidgets/_version.py   
+      version_info = (6, 0, 0, 'beta5')
+      __frontend_version__ = '^2.0.9'   
+
 *-----------------------------------------------------------------------------------------------------------------------
 * possums and raccoons temporal niche: seattle parks field committee meeting (14 dec 2016)
 
@@ -1715,6 +1760,12 @@ src/manager-base.ts(4,20): error TS2307: Cannot find module 'underscore'.
 
 *-----------------------------------------------------------------------------------------------------------------------
 * jupyter widgets howto: webpack
+
+   --- on whovian
+    cd ~/github/cyjs-jupyter/cyjs-jupyter/
+    npm install webpack
+    ln -s /users/pshannon/github/cyjs-jupyter/cyjs-jupyter/node_modules/webpack/bin/webpack.js ~/bin/webpack
+    
 
    http://webpack.github.io/docs/installation.html
    
