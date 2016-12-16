@@ -99,10 +99,111 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* pypi tips (python package index)
+
+  To use a package from this index either "pip install package" (get pip) or download, unpack and "python setup.py install" it.
+
+  --- pip
+  pip list | grep jupyterlab
+     jupyterlab (0.11.2, /Users/paul/anaconda/lib/python3.5/site-packages)
+     jupyterlab-widgets (0.6.3, /Users/paul/github/ipywidgets/jupyterlab_widgets)
+  pip install 'jupyterlab>=0.11.3'
+   pip list | grep jupyterlab
+    jupyterlab (0.11.3, /Users/paul/anaconda/lib/python3.5/site-packages)
+    jupyterlab-widgets (0.6.3, /Users/paul/github/ipywidgets/jupyterlab_widgets)
+
+
 *-----------------------------------------------------------------------------------------------------------------------
+* jupyterlab: install 0.11.3
+
+   https://pypi.python.org/pypi/jupyterlab
+   pip install 'jupyterlab>=0.11.3'   # pip list | grep jupyterlab
+
 *-----------------------------------------------------------------------------------------------------------------------
+* sylvain corlay's instructions: grokked and executed
+
+   1) jupyterlab 0.11.3 (from 12/14):  pip install 'jupyterlab>=0.11.3'
+   2) The current state of master in ipywidgets
+       git clone https://github.com/ipython/ipywidgets.git
+       cd jupyter-js-widgets
+       grep version package.json  #   "version": "2.0.17",
+       npm install   # added 697 packages in jupyter-js-widgets/node_modules
+       cd ../~widgetsnbextension
+       npm install
+       npm run update
+       pip install -e .
+   3) cd ../ipywidgets
+      pip install -e .
+   4) cd jupyterlab_widgets/
+      npm install
+      npm run update
+      pip install -e .
+   5) jupyter labextension install --py --sys-prefix --symlink jupyterlab_widgets
+      jupyter labextension enable jupyterlab_widgets --py --sys-prefix
+
+
+    maybe see: /Users/paul/.jupyter/labconfig/jupyterlab_config.json   # Dec  2 17:49 
+
 *-----------------------------------------------------------------------------------------------------------------------
+* sylvain corlay's guide to installing ipyleaflet for jupyter lab (16 dec 2016)
+
+
+   So getting ipyleaflet to work in jupyterlab is quite cumbersome for
+   now, since it requires installing ipywidgets from source and
+   ipyleaflet from source Besides, the jupyterlab team is iterating quite
+   rapidly and makes rapid releases with non-backward compatible version
+   numbers (0.x.y) before the first 1.0.  Currently getting ipyleaflet in
+   jupyterlab requires
+
+jupyterlab 0.11.3.
+The current state of master in ipywidgets
+In jupyter-js=widgets, run npm install
+In widgetsnbextension , run npm install then npm run update then pip install -e .
+In ipywidgets run pip install -e .
+In jupyterlab_widgets run npm install then npm run update then pip install -e .
+jupyter labextension install --py --sys-prefix --symlink jupyterlab_widgets
+jupyter nbextension enable --py --sys-prefix jupyterlab_widgets
+  --> jupyter labextension enable jupyterlab_widgets --py --sys-prefix
+Install ipyleaflet from source
+in js: npm install
+at the root of the repo: pip install -e .
+jupyter labextension install --py --sys-prefix --symlink ipyleaflet
+jupyter nbextension enable --py --sys-prefix jupyterlab_widgets
+yay!
+
+
+
 *-----------------------------------------------------------------------------------------------------------------------
+* jupyterlab tips
+
+   --- install latest
+     conda install -c conda-forge jupyterlab  # jupyterlab-0.11.2
+     
+*-----------------------------------------------------------------------------------------------------------------------
+* priyanka's first cyjs notebook (15 dec 2016)
+
+  --- developed here, on laptop riptide
+    cd ~/s/work/priceLab/priyanka/metabolicNetworks/firstNotebook/
+    nb1.ipynb
+    uses
+      network structure: glycolysis.tsv
+      nodes and their types: nodes.tsv
+      edge attributes: edgeFlux.tsv
+      node attributes: Genes_glycolysis_file_values.tsv
+      style: style.js
+
+  --- deployed here, private in priceLab github repo, on riptide and whovian
+
+    cd ~/github/notebooks/shared/priyanka/glycolysis/
+      nb1.ipynb
+      style.js
+      Genes_glycolysis_file_values.tsv
+      nodes.tsv
+      glycolysis.tsv
+      edgeFlux.tsv
+
+  http://whovian:10005/notebooks/shared/priyanka/glycolysis/nb1.ipynb
+
 *-----------------------------------------------------------------------------------------------------------------------
 * getting nbextension cyjs working on whovian (14 dec 2016)
 
