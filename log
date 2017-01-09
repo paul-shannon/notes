@@ -99,6 +99,811 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* SummaryFileDataRetrievalTool from census.gov
+
+   We need to download the census age data in each census block group
+   in Puget Sound
+   (http://www.census.gov/programs-surveys/acs/data/tools/summary-file-retrieval-tool.html).
+
+   cd ~/apps/censusTools
+   /Users/paul/apps/censusTools/SummaryFileDataRetrievalTool.zip,  10481412 Jan  9 06:33 
+
+  tutorial video: http://www.census.gov/library/video/acs_block_group.html
+
+*-----------------------------------------------------------------------------------------------------------------------
+* asthma data and ideas from erik saganic (9 jan 2017)
+
+   cd ~/s/work/cleveland/asthmaDetails/
+   cat CATtable.txt | tr '\r' '\n' > catTable.tsv
+   tbl <- read.table("catTable.tsv", header=TRUE, as.is=TRUE, sep="\t")
+   dim(tbl) #  2638   35
+   colnames(tbl)
+   
+    [1] "GEOID"                                              
+    [2] "INTPTLAT"                                           
+    [3] "INTPTLON"                                           
+    [4] "county"                                             
+    [5] "Population"                                         
+    [6] "Percent.less.than.18.yo"                            
+    [7] "Rank.of.less.than.18.yo"                            
+    [8] "Percent.greater.than.64.yo"                         
+    [9] "Rank.of.greater.than.64.yo"                         
+   [10] "Percent.no.high.school.diploma"                     
+   [11] "Rank.no.high.school.diploma"                        
+   [12] "Percent.single.female.head.of.household"            
+   [13] "Rank.female.head.of.household"                      
+   [14] "Percent.minority"                                   
+   [15] "Minority.rank"                                      
+   [16] "Median.income"                                      
+   [17] "Income.rank"                                        
+   [18] "Percent.English.not..well."                         
+   [19] "Language.rank"                                      
+   [20] "Percent.use.wood.as.primary.source.of.heat"         
+   [21] "Wood.rank"                                          
+   [22] "Count.of.registered.sources.in.block.group.boundary"
+   [23] "Rank.count.of.registered.air.pollution.sources"     
+   [24] "Distance.to.major.sources..unitless."               
+   [25] "Rank.distance.to.major.sources"                     
+   [26] "Distance.to.traffic.volume..unitless."              
+   [27] "Rank.distance.to.traffic.volume"                    
+   [28] "Cardiac.Hospitalization.Risk.per.million.per.year"  
+   [29] "Rank.Cardiac"                                       
+   [30] "COPD.Risk.per.million.per.year"                     
+   [31] "Rank.COPD"                                          
+   [32] "Asthma.Risk.per.million.per.year"                   
+   [33] "Rank.Asthma"                                        
+   [34] "Sum.of.ranks"                                       
+   [35] "Population.weighted.sum.of.ranks"                   
+
+
+   We need to download the census age data in each census block group
+   in Puget Sound
+   (http://www.census.gov/programs-surveys/acs/data/tools/summary-file-retrieval-tool.html).
+ 
+   I believe the age is reported in these bins:
+ 
+      .Under 5 years
+      .5 to 9 years
+      .10 to 14 years
+      .15 to 19 years
+      .20 to 24 years
+      .25 to 29 years
+      .30 to 34 years
+      .35 to 39 years
+      .40 to 44 years
+      .45 to 49 years
+      .50 to 54 years
+      .55 to 59 years
+      .60 to 64 years
+      .65 to 69 years
+      .70 to 74 years
+      .75 to 79 years
+      .80 to 84 years
+      .85 years and over
+ 
+    The asthma rate data for our region is in the attachment as the
+    column labelled “Asthma Risk per million per year” for each census
+    block group.
+ 
+    Since the health data is from 2001-2010, we may need to pull older
+    census data to make it “apples-to-crab apples” (almost the same).
+    However, the file I attached is with the 2010+ census block group
+    shapes (they change).  Therefore, we may stick to newer data to
+    avoid the step of geographically marrying them.  I could do it
+    still but it is a lot of hoops and I’m not sure the age
+    distributions are that different from then to now.  But if I feel
+    energized enough to make sure it is as best as it can be, I’ll go
+    ahead and do this extra step.
+ 
+    Then, we’ll adjust for the national asthma prevalence by age
+    group: https://www.cdc.gov/asthma/most_recent_data.htm
+ 
+    We’ll have to aggregate the data to match these bins for age
+    adjustment:
+ 
+      0-4 years
+      5-14 years
+      15-19 years
+      20-24 years
+      25-34 years
+      35-64 years
+      65+ years
+ 
+   In the end, high youth populations may end up with lower age
+   adjusted rates.  We’ll see if it makes much difference, but it’ll
+   be nice to see if it starts to show even stronger correlations.
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+*  stop & restart docker container
+
+   docker ps
+     CONTAINER ID        IMAGE                     COMMAND                  CREATED             
+     304d57938a0e        kozo2/jupyter-cytoscape   "/usr/bin/tini -- jup"   5 hours ago         
+
+     STATUS              PORTS                    NAMES            
+     Up 5 hours          0.0.0.0:8888->8888/tcp   clever_goldwasser
+
+   docker stop clever_goldwasser
+   docker rm clever_goldwasser
+
+   docker run -d -p 8888:8888 kozo2/jupyter-cytoscape
+     8f23ee29a6f82f4c3219b3ad7a3ee001d33e038629e4d216b7f7db91d4f5fb0b
+
+   docker ps  # shows NAE is sick_euclid
+   docker exec -it sick_euclid jupyter notebook list
+   Currently running servers:
+     http://0.0.0.0:8888/?token=5d2c9faf04d9134b726437c414532f8c026164addbd5e5f4 :: /workdir
+   browser to the url preceeding ' :: /workdir'
+   shows up using python 2
+   uncertain about meaning of /workdir
+   
+
+*-----------------------------------------------------------------------------------------------------------------------
+* mike smoot chimes in on jupyter-cytoscape docker (9 jan 2016)
+
+   Paul, docker is looking for the name of the container, not the
+   host, which is "clever_goldwasser" in your case. The command should
+   be: docker exec -it clever_goldwasser jupyter notebook list
+
+   the whole process (sans build)
+
+     docker pull kozo2/jupyter-cytoscape
+     docker run -d -p 8888:8888 kozo2/jupyter-cytoscape
+     docker ps
+       CONTAINER ID        IMAGE                     COMMAND                  
+       304d57938a0e        kozo2/jupyter-cytoscape   "/usr/bin/tini -- jup"   
+
+       CREATED             STATUS              PORTS                    NAMES            
+       15 seconds ago      Up 14 seconds       0.0.0.0:8888->8888/tcp   clever_goldwasser
+
+     then
+        docker exec -it clever_goldwasser jupyter notebook list
+
+     jupyter notebook list
+     currently running servers:
+       http://localhost:9998/?token=f3200464825cbe97e2c7b6b0972afab5ea60bc7b5b70d176
+        
+*-----------------------------------------------------------------------------------------------------------------------
+* kozo's updated advice
+
+   @paul-shannon If you have any trouble running the above commands, please try the following instead.
+   
+   docker pull kozo2/jupyter-cytoscape
+     Using default tag: latest
+     latest: Pulling from kozo2/jupyter-cytoscape
+     Digest: sha256:534b39c1d83ae7afb65f57aafdfe44cc463d968750d223dcf6ea8f88f265c7a2
+     Status: Downloaded newer image for kozo2/jupyter-cytoscape:latest
+
+   --- see this via  docker images
+     REPOSITORY                TAG                 IMAGE ID            CREATED             SIZE
+     kozo2/jupyter-cytoscape   latest              f00908207708        35 minutes ago      867.5 MB
+
+   
+
+   docker run -d -p 8888:8888 kozo2/jupyter-cytoscape
+      304d57938a0e5c4e66ef0da6f8b13a22fb9c7f36a0952303a54f6e9c9656a478
+
+   docker ps
+      CONTAINER ID        IMAGE                     COMMAND                  CREATED             STATUS              PORTS                    NAMES
+      304d57938a0e        kozo2/jupyter-cytoscape   "/usr/bin/tini -- jup"   15 seconds ago      Up 14 seconds       0.0.0.0:8888->8888/tcp   clever_goldwasser
+
+    hostname # riptide.local
+
+     docker exec -it THE_NAME_OF_YOUR_CONTAINER jupyter notebook list
+     docker exec -it riptide.local jupyter notebook list
+
+*-----------------------------------------------------------------------------------------------------------------------
+* jupyter-cytoscape docker file updated (9 jul 2016)
+
+  from kozo nishida, email and github issue:
+
+     I have no idea about your npm error but I found a missing Debian
+     package in my Dockerfile (and updated it in b8c46f6).  Could you try
+     the following commands?
+
+    git clone -b patch-1 https://github.com/kozo2/jupyter-cytoscape
+   docker build -t jupytercy jupyter-cytoscape/
+   docker run -d -p 8888:8888 jupytercy
+   a47db3898fbf42350749805551436733f3998044928782363751347e1ddc3b4c
+   docker ps
+   CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                    NAMES
+   a47db3898fbf        jupytercy           "/usr/bin/tini -- jup"   2 seconds ago       Up 1 seconds        0.0.0.0:8888->8888/tcp   big_montalcini
+   docker exec -it big_montalcini jupyter notebook list
+   Currently running servers:
+   http://0.0.0.0:8888/?token=5243b38a5bf9f711bd489f67bcaa05b420f420f329183bec :: /workdir
+   Please note that
+   
+   big_montalcini will be different name in your env.
+   You need the token 5243b38a5bf9f711bd489f67bcaa05b420f420f329183bec to login Jupyter Notebook. Please refer to https://jupyter-notebook.readthedocs.io/en/latest/security.html
+
+*-----------------------------------------------------------------------------------------------------------------------
+* initial jupyter-cytoscape docker fails
+
+
+   @kozo2 Thanks very much for this! Presenting a notebook as a docker container is very sensible. I am pretty new to docker, having only run a few simple tutorial examples previously. Here's the error trace I get when I run docker build .. Any suggestions?
+   
+   npm ERR! Linux 4.4.39-moby
+   npm ERR! argv "/usr/bin/nodejs" "/usr/bin/npm" "update"
+   npm ERR! node v4.2.6
+   npm ERR! npm  v3.5.2
+   npm ERR! path /workdir/js/node_modules/@types/jquery
+   npm ERR! code EXDEV
+   npm ERR! errno -18
+   npm ERR! syscall rename
+   
+   npm ERR! EXDEV: cross-device link not permitted, rename '/workdir/js/node_modules/@types/jquery' -> '/workdir/js/node_modules/@types/.jquery.DELETE'
+   npm ERR! 
+   npm ERR! If you need help, you may report this error at:
+   npm ERR!     <https://github.com/npm/npm/issues>
+   
+   npm ERR! Please include the following file with any support request:
+   npm ERR!     /workdir/js/npm-debug.log
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* examine docker file pull request from kozo (9 jan 2017)
+
+  cd ~/github/jupyter-cytoscape/
+
+  Step 1: From your project repository, check out a new branch and test the changes.
+    git checkout -b kozo2-patch-1 master
+    git pull https://github.com/kozo2/jupyter-cytoscape.git patch-1
+
+  Step 2: Merge the changes and update on GitHub.
+   git checkout master
+   git merge --no-ff kozo2-patch-1
+   git push origin master
+
+
+  git checkout -b kozo2-patch-1 master
+  git pull https://github.com/kozo2/jupyter-cytoscape.git patch-1
+
+*-----------------------------------------------------------------------------------------------------------------------
+* forest time-lapse movies
+
+  ~/Movies/exported/LostLake03.mp4: 3 frames only, posted to fb
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* leo's warren wilson money budget (6 jan 2016)
+
+   see ~/s/notes/money
+   "* planning for leo's college expenses"
+   updated today
+
+*-----------------------------------------------------------------------------------------------------------------------
+* capitol hill fedex/kinkos (5 jan 2016)
+
+  usa5146@fedex.com
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* clean air, climate change, local seattle references
+
+  http://frontandcentered.org/2952-2  (22 oct 2015) clean air rule letter to ecology by communities of climate justice
+  http://frontandcentered.org/   climate justice video
+
+  cd ~/s/data/cleanAir
+  CommunityAirTool12-14-2012.kmz  4117040 Jan  4 09:29 
+  open CommunityAirTool12-14-2012.kmz
+
+  --- andrea rogers harris, rebecca soldanya (new state rep). climate justice.
+    got green. jill mangalaman?  director 
+    welc: lawyer for the kids, our children's trust
+    public trust doctrine (chicago case)
+    mary christa wood: nature's law, u of o, attorney
+    
+
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* michael yadrick's seed sowing instructions (3 jan 2016)
+
+  I encourage you to wait until March 1 to lay down the seed.
+
+1. Mix seed with soil.  Mix the seed with a generous amount of damp
+soil or sand that will bond the seed together and provide some
+initial soil contact for germination.
+
+2. Pick a site, and rough up small areas with a rake. Scatter the seeds
+over no more than 5,000 square feet.  Not too much raking! Too much
+disturbance may also provide a place for weeds to germinate too.
+
+3. Distribute across the site. GSP provided approximately 1 pound of
+seed. The key is to distribute it evenly. Walk across the site,
+scattering seed mixed with soil/sand evenly across the area. You can
+spread it amongst other plants. Lightly cover any seed that remains
+uncovered.
+
+4. Wait and Monitor Remember where you scattered the seed. Some of the
+species may take longer than you think to establish. A combination of
+moisture and temperature will jumpstart germination; some species may
+not appear until Spring.  Inform GSP staff of your progress. Send
+photos if you can.
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* three.js: a requirejs shim (5 jan 2016)
+
+  http://stackoverflow.com/questions/30358323/require-js-not-loading-three-js
+     requirejs.config({
+         baseUrl: "src",
+         paths: {
+             "main": "../main",
+             "test": "../test",
+             "three": "../three/three",
+             "sizzle": "/src/sizzle/dist/sizzle"
+         },
+         shim: {
+             three: {
+                 exports: 'THREE'
+             }
+         }
+     });
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* requirejs learning continued +=2 (5 jan 2016): shims
+
+  a shim allows us to treat a non-AMD library as if it were actually AMD
+  
+  good, deep explanations at
+     http://aaronhardy.com/javascript/javascript-architecture-requirejs-dependency-management/
+
+  --- got this require.config from igv's douglass turner:
+     require.config({
+         'shim' : {
+             'bootstrap' : {
+                 'deps' :['jquery']
+             },
+             'igv' : {
+                 'deps' :['jquery', 'jquery-ui', 'bootstrap']
+             }
+         },
+         'paths': {
+             'jquery'    :   'http://code.jquery.com/jquery-1.12.4.min',
+             'jquery-ui' :   'http://code.jquery.com/ui/1.12.1/jquery-ui.min',
+             'bootstrap' :   'http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min',
+             'igv'       :   'http://igv.org/web/release/1.0.6/igv-1.0.6'
+         }
+     });
+     
+     require(['jquery', 'igv'], function ($, igv) {
+     ....
+
+*-----------------------------------------------------------------------------------------------------------------------
+* learning requirejs continued++ (3 jan 2016)
+
+  optimizer concatenates and minifies, guy from bahrain, useful.
+  
+   part 1:  https://www.youtube.com/watch?v=m6VNhqKDM4E
+   part 2:  https://www.youtube.com/watch?v=_n4-zAhaHSM
+
+
+   --- very simple
+
+     https://www.youtube.com/watch?v=VGlDR1QiV3A#t=2.538684
+     cd ~/s/examples/js/requirejs/Tutorial-RequireJS-TheBasics
+
+   ---- install require
+     sudo npm install -g requirejs
+     type -a r.js   # r.js is /usr/local/bin/r.js
+
+  --- now optimize this very simple project
+     r.js -o name=main out=main-built.js baseUrl=. optimize=none  # no minification
+
+
+  --- optimize (concatenate) main.css
+    cat main.css:
+        @import url("bootstrap.css");
+    r.js -o cssIn=main.css out=main-built.css  
+       56339  bootstrap.css
+       54597  main-built.css
+          31  main.css
+
+
+   --- make sure this is truly self-contained
+
+    
+*-----------------------------------------------------------------------------------------------------------------------
+* learning requirejs continued (2 jan 2016)
+
+   suggested by the requirejs website, a small singlepage app.
+   cd ~/s/examples/js/requirejs
+
+    git clone https://github.com/volojs/create-template.git
+    cd create-template
+    node tools/r.js -o tools/build.js 
+
+*-----------------------------------------------------------------------------------------------------------------------
+* needing clustergrammer and igv to be requirejs-compliant: learn requirejs basics (2 jan 2016)
+
+  cd ~/s/examples/js/requirejs/simple
+     index.html
+        <script data-main="js/main" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.2/require.min.js"></script>
+     js
+     js/main.js
+        require.config({
+           paths: {
+             'jQuery': 'vendor/jquery-1.12.4.min',
+             'underscore': 'vendor/underscore-1.8.3-min'
+             },
+            shim: {
+              'jQuery': {
+                  exports: '$'
+                  },
+              'underscore': {
+                  exports: '_'
+                 }}});
+        require(['module1', 'subdir/module2', 'jQuery'], function (module1ref, module2ref, $) {
+           var module1 = new module1ref(), module2 = new module2ref();
+           console.log(module1.getName() === module2.getModule1Name()); // true
+           console.log('jQuery version:', $.fn.jquery); // 1.9.0
+           });
+
+     js/module1.js
+     js/subdir
+     js/subdir/module2.js
+     js/vendor
+     js/vendor/jquery-1.12.4.min.js
+     js/vendor/underscore-1.8.3-min.js
+     lib
+     lib/modules
+     
+
+  
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* jupyter tips, python tips, ipywidgets tips: ensure localhost devel js library actually available
+
+# ensure the library is available
+# ensure libraries are available
+import requests
+assert(requests.get('http://localhost:8099/js/cytoscape-2.7.10.js').status_code == 200)
+assert(requests.get('https://igv.org/web/beta/igv-beta.min.js').status_code == 200)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* clustergrammer js library, try2: webpack the ipywidgets version to produce ~/http/js/clustergrammer.js (2 jan 2016)
+
+  cd ~/github/clustergrammer-widget/js
+  npm install
+  webpack
+  cp dist/index.js ~/http/js/clustergrammer.js
+
+  cd ~/s/examples/js/clustergrammer
+  abandonded for now
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* clustergrammer js library, explorations in preparation for an ipyhb cyjs/clustergrammer tabbed notebook widget
+
+  https://github.com/MaayanLab/clustergrammer#clustergrammer-javascript-library
+
+   cd ~/github/clustergrammer
+   create shell, http-9001
+   python -m http.server 9001
+
+   cd  ~/s/examples/js/clustergrammer
+   cp ~/github/clustergrammer/index.html
+   modify all appropriate script and css links to be http://localhost:9001
+
+   modify ~/github/clustergrammer/js/load_clustergram.js so that it reads
+
+      function make_clust(inst_network){
+        d3.json('http://localhost:9001/json/'+inst_network, function(network_data){
+
+   even then, needs (in chrome) cors toggle on
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* boots shoes merrell moab size 10
+
+   rei: (29 dec 2016):  $140
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* figure out bootstrap navbar dropdown menu for pojs cellphone simulator (27 dec 2016)
+  
+  ~/s/examples/js/bootstrap/menu/index3.html
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* pojs cellphone simulator (26 dec 2016)
+
+  cd ~/github/cellphoneJS/pojs
+  try this out next: ~/s/examples/js/jquery/pulldownMenuEasyAsPie/
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* minimal cyjs, created from console: 1 node, 1 self-looped edge
+
+   $("#someDiv").append("<div id='cyDiv' style='border:1px solid red; height:200px;'>cyDiv coming soon</div>");
+   $("#cyDiv").cytoscape({elements:{nodes:[{data:{id:'a'}}], edges:[{data:{source:'a', target:'a'}}]}})
+
+*-----------------------------------------------------------------------------------------------------------------------
+* minimal cyjs in html, minimal cytoscape
+     <!DOCTYPE html>
+     <html>
+     <head>
+        <meta charset="UTF-8">
+        <title>cyjse </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+        <script src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>
+        <script src="network.json"></script>
+        <script src="vizmap.json"></script>
+     <style>
+     #cyDiv {
+       margin: auto;
+       width: 500px;
+       height: 500px;
+       border: 1px solid #444;
+       border-radius:5px;
+       display: block;
+       }
+     </style>
+     <script>
+     //----------------------------------------------------------------------------------------------------
+     $(document).ready(function() {
+        console.log("document ready");
+        cyDiv = $("#cyDiv");
+        cyDiv.cytoscape({
+        elements: {
+           nodes: [
+             {data: {id: 'a', name: 'Node A', type: 'big' }},
+             {data: {id: 'b', name: 'Node B', type: 'little'}},
+             ],
+          edges: [
+            {data: {source: 'a', target: 'b'}},
+            {data: {source: 'b', target: 'a'}}
+            ]
+          },
+       ready: function(){
+          cyjs = this;
+          console.log("small cyjs network ready, with " + cyjs.nodes().length + " nodes.");
+          } // ready
+        }) // cytoscape()
+     }); // document ready
+     //----------------------------------------------------------------------------------------------------
+     </script>
+     </head>
+     <body>
+     <div id="cyDiv"></div>
+     </body>
+     </html>
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* webpack tips
+
+  --- create a new project: use cellphoneJS as example
+     git clone https://github.com/paul-shannon/cellphoneJS.git
+     cd ~/github/cellphoneJS
+     create .gitignore:
+          dist/
+          build/
+          node_modules/
+          .DS_Store
+     npm init -y    # creates minimal package.json
+     npm i webpack --save-dev    # make sure that ./node_modules/.bin is prepended to PATH
+     npm i html-webpack-plugin --save-dev
+     npm i cytoscape  --save
+     npm i jQuery --save
+     npm i jQuery-ui --save
+     
+  ---- build and view
+     make   # --> npm run build  && open build/index.html
+     webpack --display-modules   # shoes hidden modules only alluded to be webpack implicit 'pack' command
+
+*-----------------------------------------------------------------------------------------------------------------------
+* merrell shoes/boots
+
+  my currently about to degrade pair appear to be merrell chameleons, waterproof
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* webpack tips
+
+  cd ~/s/examples/js/bootstrap/cellphoneWithWebpack
+  npm install --save-dev style-loader
+  npm install --save-dev css-loader
+
+  cat entry.js
+    require("!style!css!./style.css");
+    document.write(require("./content.js"));
+
+  cat style.css
+    body{background: yellow;}
+   webpack ./entry.js bundle.js
+   open index.html
+
+  --- now simpliyfy the style require line to
+     require("./style.css");
+   and build:
+      webpack ./entry.js bundle.js --module-bind 'css=style!css'
+
+   --- now use a config file
+     module.exports = {
+         entry: "./entry.js",
+         output: {
+            path: __dirname,
+            filename: "bundle.js"
+            },
+         module: {
+           loaders: [
+               { test: /\.css$/, loader: "style!css" }
+               ]
+          }
+       };
+
+   --- serious tutorial
+      https://webpack.js.org/get-started/
+
+*-----------------------------------------------------------------------------------------------------------------------
+* bootstrap intro and examples (23 dec 2016)
+
+  http://tutorialzine.com/2015/10/learn-the-bootstrap-grid-in-15-minutes/
+  got zip, installed to
+  cd ~/s/examples/js/bootstrap/learnGrid/
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ractive tutorial
+
+  https://www.toptal.com/javascript/ractive-js-web-apps-made-easy
+  ~/github/toptal-blog-ractive
+  open index.html
+  seems to use bootstrap for appearance.
+  
+  big database, but small and simple code.  study this!
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* phosphor, first look (22 dec 2016)
+
+  cd ~/github/phosphor
+  git pull origin
+  npm install 
+*-----------------------------------------------------------------------------------------------------------------------
+* uw air monitoring, joel kaufman's lab
+
+  http://deohs.washington.edu/faculty/kaufman_joel
+  http://deohs.washington.edu/mesaair/home
+
+  alison has grad student contact in that lab who reports "only 3 monitoring stations in Seattle"
+  from which she concludes that road proximity measures would be a better surrogate than these sparse reports
+
+*-----------------------------------------------------------------------------------------------------------------------
+* asking visitors to help, sam ham, the forest floor is alive signs, seward park (22 dec 2016)
+
+  ~/Documents/askingVisitorsToHelpSamHam.pdf
+  ~/Documents/theForestFloorIsAlive-kioskPoster.pages
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* image nodes requested by richard silva (20 dec 2016)
+
+  cd ~/s/examples/cyjs/imageNodes/
+  downloaded max's gist
+
+  this assignment from the console worked, making the cat node into grains of wheat
+    cy.nodes()[0].style({"background-image":"https://farm3.staticflickr.com/2660/3715569167_7e978e8319_b.jpg"})
+
+   "background-fit": "cover"  probably needed as well
+   
+
+*-----------------------------------------------------------------------------------------------------------------------
+* javascript tips mousewheel event
+
+  see ~/s/examples/js/mouseWheel/index.html
+  
+window.addEventListener('mousewheel', mouseWheelEvent);     // For Chrome
+window.addEventListener('DOMMouseScroll', mouseWheelEvent); // For Firefox
+function mouseWheelEvent(e) {
+   console.log(" --- mouseWheelEvent");
+   var delta = e.wheelDelta ? e.wheelDelta : -e.detail;
+   if(delta > 0)
+     console.log("positive");
+   else
+     console.log("negative");
+   }
+
+*-----------------------------------------------------------------------------------------------------------------------
+* three.js, webgl: loading binary model data directly the gpu (19 dec 2016)
+
+  http://n-e-r-v-o-u-s.com/blog/?p=2738
+  http://www.informit.com/articles/article.aspx?p=1613551&seqNum=4
+  https://www.html5rocks.com/en/tutorials/webgl/million_letters/
+*-----------------------------------------------------------------------------------------------------------------------
+* asking visitors to help: Research to Guide Strategic Communication for Protected Area Management
+
+  https://scholar.google.com/scholar?q=asking+visitors+to+help&btnG=&hl=en&as_sdt=0%2C48
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* three.js demos
+
+   https://stemkoski.github.io/
+   ~/s/examples/js/three/minimal/sphere/index.html   # no controls, just mouse events
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* three.js: get reacquainted with 3d scatter points, use mds multi-dimensional scaling (18 dec 2016)
+
+  inspired by: http://datacratic.com/site/blog/visualizing-high-dimensional-data-browser-svd-t-sne-and-threejs
+  also see: http://potree.org/demo/potree_1.3/showcase/eclepens.html
+
+  cd ~/s/examples/js/three/scatterPlot/jsfiddleDemo/
+  ~/s/examples/js/three/scatterPlot/jsfiddleDemo/index.html reads data.js
+
+  --- get some gene expression data from tcga
+     ~/s/examples/R/pca/forCory
+     some criteria had been used (long forgotten) for these 38 row (genes) mtx.other, mtx.8
+     cbind and transposed to create 544 patient, 31 gene matrix
+        mtx <- t(cbind(mtx.8, mtx.other))
+        mtx.mds <- cmdscale(d,eig=FALSE,k=3)
+        dim(mtx.mds)  # [1] 544   3
+        21 of these 544 rows are from the somehow-separated mtx.8
+        all(colnames(mtx.8) %in% rownames(mtx.mds))
+        all(colnames(mtx.other) %in% rownames(mtx.mds))
+
+  --- task: display these in three.js, then in pythree.js
+     tbl <- as.data.frame(mtx.mds)
+     colnames(tbl) <- c("x", "y", "z")
+     write.table(tbl, file="mds3.tsv", sep="\t", quote=FALSE)
+     library(jsonlite)
+     toJSON(head(tbl))
+        [{"x":-10.0702,"y":2.9884,"z":2.5338,"_row":"TCGA-12-5295"},{"x":-6.4289,"y":6.7034,"z":-1.4899,"_row":"TCGA-06-5414"},
+         {"x":-5.2761,"y":1.2942,"z":2.2008,"_row":"TCGA-26-5132"},{"x":-8.2969,"y":2.5362,"z":1.855,"_row":"TCGA-06-5415"},
+         {"x":-6.6708,"y":-0.7047,"z":-1.6303,"_row":"TCGA-12-1597"},{"x":-8.7031,"y":-1.0863,"z":1.0107,"_row":"TCGA-19-2624"}] 
+
+    should be able to use this w/o much difficulty in
+       ~/s/examples/js/three/scatterPlot/jsfiddleDemo/index.html, drawScattterPlot, where 
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* genomic data from max robinson (18 dec 2016)
+
+   Each line describes a minor allele of a biallelic single
+   nucleotide variant occurring in a particular person's genome,
+   written out in tab-separated value format from an R data.frame (and
+   then edited). "an" is the number of times the allele occurs, 1 or
+   2. "af" stands for allele frequency but this column is misnamed, it
+   should be called "scale". The frequency of the minor allele in the
+   1000 Genomes cohort is scale/2 (the minor allele cannot have a
+   frequency over 0.5; if it did, it would be the major allele, and
+   the other allele would be the minor one). (Please read on; the
+   important note at the end makes the rest relevant.) For display,
+   you can either use the allele frequency as a percentage (af =
+   50*scale %), OR the estimated age of the allele: g =
+   -4*Ne*ln(f)*f/(1-f) where f = scale/2, the allele frequency as a
+   fraction. "Ne" is the effective population size, which for humans
+   is estimated at Ne = 5000 (and that value is debated). The age as I
+   have described it is in _generations_ (g); to convert to years,
+   multiply by the number of years per generation. For humans,
+   years/generation is also debated; the estimates range from 20 to
+   25. I usually use 20. Finally, for human history the right
+   timescale is "thousands of years (into the past)", "kya". Putting
+   all of this together, kya = g * 20/1000 =
+   -80*(5000/1000)*(f/(1-f))*ln(f) = -200 * scale * ln(scale/2) /
+   (1-scale/2) IMPORTANT PART: the data is much more interesting on an
+   allele age scale (g or kya) than on an allele frequency scale,
+   because on a frequency scale the majority of the data is bunched at
+   the low frequency end, and on an allele age scale it is more
+   conveniently spread.
+
+  cd ~/s/work/priceLab/maxRobinson/allelicVariationViz/
+  print(load("one-chr6.ecp.RData")) # tbl
+  dim(tbl) #   173172     20
+
+   tbl[1:4, 1:15]
+      chr    pos an       af     EC1     EC2     EC3     EC4    EC5     EC6    EC7     EC8     EC9    EC10    EC11
+    1   6 147596  1 0.981230  0.0244 -0.4071 -0.0710 -0.1304 0.0220  0.0004 0.0018  0.0005 -0.0057  0.0126 -0.0631
+    2   6 148039  1 0.788738 -0.1367 -0.2192 -0.1038 -0.2270 0.0745  0.0032 0.0049  0.0015 -0.0154 -0.0145 -0.0750
+    3   6 149691  1 0.202077  0.2345 -0.4900  0.0303 -0.6268 0.0979 -0.0013 0.0109 -0.0033  0.0037 -0.0434 -0.0540
+    4   6 149901  1 0.214856  0.2226 -0.4981  0.0325 -0.6123 0.1218 -0.0015 0.0088 -0.0051  0.0015 -0.0458 -0.0539
+    
+
+*-----------------------------------------------------------------------------------------------------------------------
 * pypi tips (python package index)
 
   To use a package from this index either "pip install package" (get pip) or download, unpack and "python setup.py install" it.
@@ -224,7 +1029,7 @@ yay!
 
   git clone
   pip install -e .
-  npm install webpack
+  npm install webpack    # maybe better: sudo npm install -g webpack
   ln -s /users/pshannon/github/cyjs-jupyter/cyjs-jupyter/node_modules/webpack/bin/webpack.js ~/bin/webpack
 
   pip install setuptools
@@ -326,7 +1131,11 @@ yay!
 *-----------------------------------------------------------------------------------------------------------------------
 * jupyter widget tips, ipywidgets tips: basic template (12 dec 2016)
 
-  cd ~/s/examples/jupyter/basicAllInNotebookTemplate
+  cd ~/s/examples/jupyter/basicAllInNotebookTemplates
+
+    resize.ipynb
+    tabs.ipbynb
+    
   
 *-----------------------------------------------------------------------------------------------------------------------
 * priyanka's first notebook (12 dec 2016)
@@ -629,9 +1438,10 @@ Known nbextensions:
 * hamid's celgene network (5 dec 2016)
 
   cd ~/s/work/hamid/celgene01
+  see renderNetwork.R, layout.RData, style.js
+  sent celgene.tar to hamid (22 dec 2016)
   
 *-----------------------------------------------------------------------------------------------------------------------
-
 * igraph layout problem with directed graph (5 dec 2016)
 
 posted to https://github.com/igraph/python-igraph/issues/106
@@ -3185,6 +3995,16 @@ fimo.request(sequences)
   EdgeEdX: pshannon@systemsbiology.org
   alex: unit 1 lab 3 or 4 is where she is working.
 *-----------------------------------------------------------------------------------------------------------------------
+* rcyjs: load json file exported from cytoscape (24 oct 2016)
+
+   import sif   # a regulates b, tab delimited
+   library(RCyjs)
+   rcy <- RCyjs(10000:10100, graph=graphNEL())
+     # make sure "network = {" is the firest line in the json graph file
+   send(rcy, list(cmd="httpAddGraph", callback="handleResponse", status="request", payload="models.cyjs"))
+      # must control c after graph appears: normal browserResponseReady loop not made available here
+
+*-----------------------------------------------------------------------------------------------------------------------
 * cy3 + cyjs + RCyjsfor layout
 
     save sif file from R
@@ -3194,16 +4014,6 @@ fimo.request(sequences)
     rcy <- display(g=graphNEL())
       # make sure "network = {" is the firest line in the json graph file
     send(rcy, list(cmd="httpAddGraph", callback="handleResponse", status="request", payload="newFile.cyjs"))
-      # must control c after graph appears: normal browserResponseReady loop not made available here
-
-*-----------------------------------------------------------------------------------------------------------------------
-* rcyjs: load json file exported from cytoscape (24 oct 2016)
-
-   import sif   # a regulates b, tab delimited
-   library(RCyjs)
-   rcy <- display(g=graphNEL())
-     # make sure "network = {" is the firest line in the json graph file
-   send(rcy, list(cmd="httpAddGraph", callback="handleResponse", status="request", payload="models.cyjs"))
       # must control c after graph appears: normal browserResponseReady loop not made available here
 
 *-----------------------------------------------------------------------------------------------------------------------
@@ -5442,8 +6252,10 @@ ZHX2
 *------------------------------------------------------------------------------------------------------------------------
 * cdn
 
+  https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.2/require.min.js
   https://cdnjs.cloudflare.com/ajax/libs/three.js/r79/three.js
   https://cdnjs.cloudflare.com/ajax/libs/three.js/r80/three.js
+  https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.js   (19 dec 2016)
   https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.2/d3.min.js
   http://code.jquery.com/jquery-2.2.4.min.js
   
@@ -5622,7 +6434,7 @@ ZHX2
 *------------------------------------------------------------------------------------------------------------------------
 * three.js 3js 3.js example: 3d scatter plot (2 sep 2016)
 
-  cd ~/s/examples/js/three/scatterPlot/jsfiddleDemo
+  cd ~/s/examples/js/tharee/scatterPlot/jsfiddleDemo
 
   10k points, vertices and colors pushed, nicely distributed across a rectangular solid
   my version: index.html
@@ -15687,6 +16499,20 @@ grid()
 
 
 *----------------------------------------------------------------------------------------------------
+* old cellphone java webstart app
+
+  http://baliga.systemsbiology.net/drupal/education/?q=content/cell-phone-simulation
+  http://baliga.systemsbiology.net/cytoscape/cellphone/cy.jnlp
+
+   need to open up both macos and java security seetings, from System Preferences
+   ~/github/cellphone/explorations/webStartScreenshots/
+
+      mainWindow.png
+      knockoutByCarrier.png
+      knockoutByProperty.png
+
+
+*------------------------------------------------------------------------------------------------------------------------
 * cellphone webapp (26 feb 2016)
 
   --- reproduced graph with layout using rcyjs
