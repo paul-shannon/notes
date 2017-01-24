@@ -94,7 +94,7 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 
 bed format: chrom, start, end, name, score, strand
 
-* top-
+* -top-
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
@@ -103,6 +103,581 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* pbdZMQ quick proof of concept for TReNA microservice
+
+  installed 0.2.5 package via bioclite
+  package source at ~/s/pbdZMQ/
+  simple test: send hello world back and forth between R, then to python client
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* igv.js tips
+
+   -- current coords
+    igv.browser.$searchInput.val()   # eg, "5:88,151,043-88,907,602"
+    igv.browser.on('locuschange', function (referenceFrame, label) {console.log(label)})
+*-----------------------------------------------------------------------------------------------------------------------
+* add three.js demo tab to mef2cMultiDemo (23 jan 2017)
+
+   follow successful three-only demo at ~/github/projects/examples/js/requirejs/tabs/three/
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* install latest samtools and htslib (21 jan 2016)
+
+   from http://www.htslib.org/download/
+   downloaded htslib-1.3.2
+   cd ~/source
+   bunzip2 htslib-1.3.2.tar.bz2 
+   cd htslib-1.3.2/
+   make
+   ~/source/htslib-1.3.2/tabix
+   
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igv tabs bug demo, minimal (23 jan 2017)
+
+  cd ~/github/projects/examples/js/igvTabsProblem/
+  open index.html
+
+  --- added this to the github issue
+
+Here - if you have time for it - is a minimal single html file combining igv.js with jQuery tabs.
+All of the javascript runs in the document ready function, so the page DOM is ostensibly complete.
+The final three lines are currently:
+
+    browser = igv.createBrowser(igvDiv, options);
+    //$("#tabs").tabs();       
+    //setTimeout(function() {$("#tabs").tabs()}, 1000);
+
+   In this code fragment, and in the attached index.html, two ways to call the tabs function are
+   disabled, no tabs are used, and igv renders fine.  enable the first form of the tabs() call, and
+   if the igvDiv is the front div, then igv renders fine.  If the igvDiv is the second div, then igv
+   renders incompletely, reports a failure.  If the setTimeout line is enabled, and if the igvDiv is
+   first or second (visible or hidden) then igv has the chance to render before the tabs function is
+   called, and everything works fine. From this I conclude that igv is not happy rendering to a
+   hidden div...  Because all of the javascript runs in the document ready function, and because of
+   that quirky NaN that appears in case 3, for the terminal position of the locus - and maybe
+   because of wishful thinking on my part - I think that perhaps this is aspect of igv which could
+   maybe be remedied.
+
+   ~/Desktop/stage/igvInJQueryTabs.zip
+
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* add all of dbsnp as vcf file to igv.js (22 jan 2016)
+
+  cd ~/http/hg38/variants/
+  
+  not from dbsnp, but I think it is their data:
+
+    ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/
+       All_20161122.vcf.gz 	3,450,543 KB 	11/22/16 	9:33:00 PM
+        All_20161122.vcf.gz.tbi  2419 KB 	11/22/16 	9:33:00 PM
+    
+*-----------------------------------------------------------------------------------------------------------------------
+* add all of igap level 1 snps as track to mef2c igv demo (22 jan 2016)
+
+  cd ~/s/data/priceLab/AD/
+  print(load("tbl.gwas.level_1.RData"))  # "tbl.gwas"
+dim(tbl.gwas); head(tbl.gwas)
+[1] 438609      9
+    CHR  oldPos      BP        SNP Effect_allele Non_Effect_allele    Beta     SE       P
+71 chr1  978193 1042813  rs2710873             A                 G -0.0824 0.0389 0.03412
+81 chr1  998395 1063015  rs7526076             A                 G -0.0512 0.0229 0.02543
+84 chr1 1000156 1064776 rs11584349             C                 T -0.0536 0.0224 0.01687
+85 chr1 1001177 1065797  rs4970401             G                 C -0.0530 0.0224 0.01812
+86 chr1 1002387 1067007 rs74048003             G                 A  0.0609 0.0285 0.03236
+88 chr1 1002932 1067552  rs4246502             C                 G -0.0505 0.0223 0.02352
+
+  coi <- c("CHR", "BP", "BP", "SNP", "P")
+  write.table(tbl.gwas[, coi], file="~/http/hg38/variants/igap.bed", row.names=FALSE, col.names=FALSE, quote=FALSE, sep="\t")
+*-----------------------------------------------------------------------------------------------------------------------
+* igv.js tips: create a non-indexed annotation track, hg38, to support the search box
+
+  cd ~/http/hg38/
+  createGeneSymbolBedFile.R
+    library(RPostgreSQL)
+    db.gtf <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="gtf", host="whovian")
+    query <- "select * from hg38human where moleculetype='gene' and gene_biotype='protein_coding'"
+    tbl <- dbGetQuery(db.gtf, query);     # 19797 x 30
+    coi <- c("chr", "start", "endpos", "gene_name")
+    tbl.bed <- tbl[, coi]
+    write.table(tbl.bed, file="geneSymbolSearch.bed", row.names=FALSE, col.names=FALSE, quote=FALSE, sep="\t")
+
+    this works!
+  
+        {name: 'geneSymbols_hg38',
+         url: 'http://localhost/data/hg38/geneSymbolSearch.bed',
+         indexed: false,
+         searchable: true,
+         visibilityWindow: 1000000,
+         displayMode: 'EXPANDED',
+         color: "#448844"
+         },
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igv.js tips:  create a new gtf genome annotation file and index (21 jan 2016)
+
+  cd ~/http/hg38/
+  downloaded ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_25/gencode.v25.annotation.gff3.gz
+  gunzip gencode.v25.annotation.gff3.gz
+  /Users/pshannon-isb/s/src/tabix/tabix-0.2.6/bgzip gencode.v25.annotation.gff3 
+  
+  library(Rsamtools)
+  38817086 Jan 21 16:09 gencode.v25.annotation.gtf.gz
+  gunzip gencode.v25.annotation.gtf.gz
+  from <- "gencode.v25.annotation.gtf"
+  to <- tempfile()
+  zipped <- bgzip(from, to)
+  idx <- indexTabix(zipped, format="gff")
+  tab <- TabixFile(zipped, idx) 
+
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* igv.js tips: tracks
+
+  ---- cytobandURL
+    1st column is chromosome, must be free of "chr" leading string, ~1000 lines
+    at broad, hg19:   cytobandURL: "http://igv.broadinstitute.org/genomes/seq/b37/b37_cytoband.txt"            [works]
+    riptide apache:   cytobandURL: "http://localhost/data/annotations/hg38cytobandChrRemoved.txt"  862 lines   [works]
+       1	0	2300000	p36.33	gneg
+       1	2300000	5400000	p36.32	gpos25
+       1	5400000	7200000	p36.31	gneg
+       ...
+
+  --- fastaURL  (ATCG only appear at zoom levels below 1000)
+    at broad:       fastaURL: "http://igv.broadinstitute.org/genomes/seq/1kg_v37/human_g1k_v37_decoy.fasta"
+    riptide apache: fastaURL: "http://localhost/data/genomes/human_g1k_v37_decoy.fasta"     [works] only 86 lines
+       on load, browser shows 200 for human_g1k_v327_decoy.fasta.fai
+       1	249250621	52	60	61
+       2	243199373	253404903	60	61
+       3	198022430	500657651	60	61
+       ...
+
+   --- the gene annotation bed file
+                tracks: [
+                  {name: "Genes",
+                   //url: "http://igv.broadinstitute.org/annotations/hg19/genes/gencode.v18.collapsed.bed",
+                   //index: "http://igv.broadinstitute.org/annotations/hg19/genes/gencode.v18.collapsed.bed.idx",
+                    url:   "http://localhost/data/annotations/gencode.v18.collapsed.bed",
+                    index: "http://localhost/data/annotations/gencode.v18.collapsed.bed.idx",
+                206 status "partial content" reported in chrome network view
+
+          Tabix is the first generic tool that indexes position sorted files in TAB-delimited
+          formats such as GFF, BED, PSL, SAM and SQL export, and quickly retrieves features
+          overlapping specified regions
+
+    --- jim robinson added gtf and gff3 support in apr 2016
+       {name: 'Gencode v24',
+        url: 'https://s3.amazonaws.com/igv.broadinstitute.org/data/hg38/gencode.v24.annotation.sorted.gtf.gz',
+        indexURL: 'https://s3.amazonaws.com/igv.broadinstitute.org/data/hg38/gencode.v24.annotation.sorted.gtf.gz.tbi',
+        format: 'gtf',
+        visibilityWindow: 10000000
+        }
+
+    ---  my locally hosted gtf file
+
+    --- the fasta file
+      got gzipped fasta file from
+         ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_25/GRCh38.p7.genome.fa.gz
+         ~/source/samtools-1.3.1/samtools faidx GRCh38.p7.genome.fa
+              3281353985 Jan 21 16:26 GRCh38.p7.genome.fa
+              18020 Jan 21 17:22 GRCh38.p7.genome.fa.fai
+          fastaURL: "http://localhost/data/hg38/GRCh38.p7.genome.fa"   [works]
+
+       alas, including this breaks the cytoband
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* mef2c chr5:88,717,117-88,904,257
+*-----------------------------------------------------------------------------------------------------------------------
+* apache use directory in my filesystem
+
+  as root, create symlink
+  
+   /Library/WebServer/Documents/data -> /Users/paul/http
+  
+<Directory "/Library/WebServer/Documents/data">
+   Options Indexes FollowSymLinks
+   Require all granted
+</Directory>
+ 
+
+*-----------------------------------------------------------------------------------------------------------------------
+* apache cors
+
+  --- enable mod_headers (enabled by default in /etc/apache2/httpd.conf
+     LoadModule headers_module libexec/apache2/mod_headers.so
+     
+  --- check
+      /usr/sbin/apachectl -M | grep header
+        headers_module (shared)
+
+  --- configure in .htaccess
+    ~/http/
+
+*-----------------------------------------------------------------------------------------------------------------------
+* apache index directories
+
+  need to enable mod_autoindex in /etc/apache2/httpd.conf
+  check:
+  /usr/sbin/apachectl -M | grep autoindex
+      autoindex_module (shared)
+      
+  --- according to web search:
+    <Directory /usr/local/apache2/htdocs/listme>
+      Options +Indexes
+    </Directory>
+  --- my value
+    DocumentRoot "/Library/WebServer/Documents"
+    <Directory "/Library/WebServer/Documents">
+        Options Indexes FollowSymLinks
+        ....
+    </Directory>
+    
+  in root of the directory for which you want directory listings, add .htacess
+    Options Indexes
+
+
+ 
+*-----------------------------------------------------------------------------------------------------------------------
+* next up: igv & apache (20 jan 2017)
+
+  https://github.com/igvteam/igv.js/wiki/Data-Server-Requirements
+  /usr/sbin/apachectl now seems to work.  use 127.0.0.1 to avoid locahost.com
+  directory listing, however, does not work
+  want to ensure that does work before verifying byte ranges.
+  test area is ~/github/projects/examples/js/igvBareBones
+
+  as root, edit /etc/apache2/httpd.conf
+  server root directory is /Library/WebServer/Documents
+  don't know quite how the ~/Sites/ works - figure that out!
+
+  goal: serve up index fasta and gtf files files locally
+
+*-----------------------------------------------------------------------------------------------------------------------
+* start apache on riptide, mac os
+
+   sudo /usr/sbin/apachectl start
+   browse to http://localhost
+   displays /Library/WebServer/Documents/index.html.en  <html><body><h1>It works!</h1></body></html>
+
+
+
+   cat /etc/apache2/users/paul.conf 
+   <Directory "/Users/paul/Sites/">
+ 	Options Indexes MultiViews
+	Require all granted
+   </Directory>
+
+
+
+  To use range-byte requests, which are neccessary for many IGV file formats, we need a full-featured server.  Fortunately
+  we have one on MacOS (apache).  The following steps will enable the development html to be run from url
+  http://localhost/igv-web/dev/igv-dev.html.   This procedure was verified for MacOS 1.9.5.
+
+  Verify that Apache is running by typing "localhost" in the web browser.  If you get an error start it up from
+  a terminal like this
+
+   sudo apachectl start
+  
+   The url http://localhost should now display a page.
+
+   Create a symboloic link to the project directory from the Apache home directory.  Modify the paths below as appropriate
+
+cd /Library/WebServer/Documents
+sudo ln -s /Users/jrobinso/projects/igv-web igv-web
+
+Now http://localhost/igv-web/dev/igv-dev.html should bring up the app.  Likewise http://localhost/igv-web/<test file>.html will
+run the unit tests.
+
+
+
+Part 2 -- Enabling PHP
+----------------------
+PhP is neccessary to use the gene search function, and probably more stuff in the future.  To enable it
+edit /etc/apache2/httpd.conf  as root (e.g. sudo emacs /etc/apache2/httpd.conf)  and uncomment the line
+
+#LoadModule php5_module libexec/apache2/libphp5.so
+
+i.e. remove the # symbol.  Save and restart
+
+sudo apachectl restart
+
+
+
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* igv tips: does the python http.server support byte range requests?  (20 jan 2017)  apache tips
+
+   cd ~/github/projects/examples/js/igvBareBones
+   wget --header="Range: bytes=20-40" -t 1 http://localhost:8005/Homo_sapiens.GRCh38.dna.chromosome.5.fa.gz
+   returns the whole file
+
+   wget --header="Range: bytes=20-40" -t 1 http://localhost/data/annotations/cytoBand.txt
+   --2017-01-20 18:30:22--  http://localhost/data/annotations/cytoBand.txt
+    Resolving localhost... ::1, 127.0.0.1
+   Connecting to localhost|::1|:80... connected.
+   HTTP request sent, awaiting response... 206 Partial Content
+   Giving up.
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igv tips: create chr5-only fa file and index for experimentation with tracks for the mef2c notebook
+
+  cd ~/github/projects/examples/js/igvBareBones/
+  curl -O http://ftp.ensembl.org/pub/release-77/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.chromosome.5.fa.gz
+  55M
+  gunzip Homo_sapiens.GRCh38.dna.chromosome.5.fa.gz
+  184M
+   ~/source/samtools-1.3.1/samtools faidx Homo_sapiens.GRCh38.dna.chromosome.5.fa 
+
+   cat Homo_sapiens.GRCh38.dna.chromosome.5.fa.fai
+    5	181538259	56	60	61
+   gzip Homo_sapiens.GRCh38.dna.chromosome.5.fa
+   mv Homo_sapiens.GRCh38.dna.chromosome.5.fa.fai Homo_sapiens.GRCh38.dna.chromosome.5.fa.gz.fai
+   dir Homo_sapiens.GRCh38.dna.chromosome.5.fa.*
+           21 Jan 20 17:14 Homo_sapiens.GRCh38.dna.chromosome.5.fa.gz.fai
+     54479424 Jan 20 17:09 Homo_sapiens.GRCh38.dna.chromosome.5.fa.gz
+   
+  --- sample use, with liz blue's chr22 data
+    cd   ~/s/work/priceLab/lizBlue/try1/
+    curl -O http://ftp.ensembl.org/pub/release-77/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.chromosome.22.fa.gz
+    gunzip Homo_sapiens.GRCh38.dna.chromosome.22.fa.gz
+    /Users/paul/source/samtools/samtools-1.3.1/samtools faidx Homo_sapiens.GRCh38.dna.chromosome.22.fa
+    gzip Homo_sapiens.GRCh38.dna.chromosome.22.fa
+    mv Homo_sapiens.GRCh38.dna.chromosome.22.fa.fai Homo_sapiens.GRCh38.dna.chromosome.22.fa.gz.fai
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igv tips: learn how to make a local data server (20 jan 2017)
+
+  --- tiny trial with igv desktop
+     cd ~/http
+     python -m http.server 8099
+     file -> load from url
+        http://localhost:8099//annotations/mef2c_igap_gwas_snps.bed
+
+    server log shows:
+      127.0.0.1 - - [20/Jan/2017 16:01:21] code 404, message File not found
+      127.0.0.1 - - [20/Jan/2017 16:01:21] "HEAD /annotations/mef2c_igap_gwas_snps.bed.idx.gz HTTP/1.1" 404 -
+      127.0.0.1 - - [20/Jan/2017 16:01:21] "GET /annotations/mef2c_igap_gwas_snps.bed HTTP/1.1" 200 -
+    
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igv tips: the cytoband file
+
+   used in, i.e.,
+
+           var igvOptions = {
+               palette: ["#00A0B0", "#6A4A3C", "#CC333F", "#EB6841"],
+               //locus: "7:55,085,725 - 55,276,031",
+               locus: "5:88,339,746-89,319,611",
+               reference: {id: "hg38"
+                  //fastaURL: "http://igv.broadinstitute.org/genomes/seq/1kg_v37/human_g1k_v37_decoy.fasta",
+                  //cytobandURL: "http://igv.broadinstitute.org/genomes/seq/b37/b37_cytoband.txt"
+                  },
+             tracks: [
+               {name: "Genes hg38",
+                format: "gtf",
+                //url: "http://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/genes/gencode.v24.annotation.sorted.gtf.gz",
+                //indexURL: "http://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/genes/gencode.v24.annotation.sorted.gtf.gz.tbi",
+                url: "http://igv.broadinstitute.org/annotations/hg38/genes/gencode.v24.annotation.sorted.gtf.gz",
+                indexURL: "http://igv.broadinstitute.org/annotations/hg38/genes/gencode.v24.annotation.sorted.gtf.gz.tbi",
+                displayMode: "EXPANDED"
+                 }
+                ] // tracks
+               }; // igvOptions
+             return(igvOptions)
+           }, // getIgvOptions
+
+
+   --- format described here:
+      http://software.broadinstitute.org/software/igv/cytoband
+
+      The Cytoband file format is used to specify the cytobands for an
+      imported genome. IGV uses this file to draw the chromosome
+      ideograms for the genome.
+
+      A cytoband file is a five-column tab-delimited text file. Each
+      row of the file describes the position of a cytogenetic
+      band. The columns in the file match the columns of the CytoBank
+      table in the database underlying the UCSC Genome Browser
+      (http://genome.ucsc.edu/):
+
+   --- ucsc genome browser offers one here:
+
+     http://hgdownload.cse.ucsc.edu/goldenpath/hg19/database/cytoBand.txt.gz
+     
+*-----------------------------------------------------------------------------------------------------------------------
+* igv tips, hosted genomes
+
+   https://software.broadinstitute.org/software/igv/Genomes
+
+*-----------------------------------------------------------------------------------------------------------------------
+* city light, uncancelled summit ave bill (19 jan 2017)
+
+  account number 1-141829-378850
+  2156910000
+  2156910000
+
+  spoke with helpful jeana, direct number 206.615.1172
+  they have my request to cancel, will honor that, which will be complete by feb 8
+  the history:
+
+    31 aug: -177.99
+    26 sep: -112.40
+    18 nov: - 55.08
+    17 jan: 162.23
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* the mef2c multiwidget notebook, demo & development (19 jan 2017)
+
+  cd ~/s/work/priceLab/cory/mef2cMulti/
+  cp ~/github/BDDS/trenadb/src/style.js .
+
+  --- igv needs to render into a visible tab.  douglass turner provides working demo
+    cd ~/s/work/priceLab/cory/mef2cMulti/igvDemoFromDouglassTurner
+    jupyter notebook dugla-tabs.ipynb
+
+  --- add cyjs
+    
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cory: how to intersect igap snps with footprints, build a gene model (19 jan 2017)
+
+  get the latest BDDS from github: clone if you don’t have it, git pull origin if you do
+  get and build the latest Private_Cory_Data:
+
+    cd ~/github/Private_Cory_Data
+    git pull origin
+    R CMD INSTALL .
+
+  cd ~/github/Private_Cory_Data/inst/demos/igapMef2cFootprintDemo
+
+  execute createGeneModel.R, one line at a time.  a very local gene
+  model is built and displayed, bed files are created (which I use in
+  igv.js)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+*  vrk2/pou3f2 bipolar snp fimo summary table (19 jan 2016)
+
+  updated notebook
+    ~/github/notebooks/shared/VRK2-Pou3f2.ipynb
+  added postprocessing directory
+    ~/github/notebooks/shared/vrk2-publication-prep
+    
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igv.js tips:  load a track from a python notebook
+
+  def createTrack(tblHits, trackName):
+    tblHits.to_csv("%s.bed" % trackName, sep="\t", header=False, index=False)
+    print("wrote %s.bed" % trackName)
+    newTrack = Track(name=trackName, 
+                 format="bed", 
+                 indexed=False, 
+                 url="http://whovian:9999/files/%s.bed" % trackName, 
+                 display_mode='EXPANDED')
+   return(newTrack)
+
+
+   x = createTrack(tbl_piq.subset8, "piq.subset8")
+   igv.load_track(x)
+   
+  from ~/github/notebooks/paul-shannon/demos/footprints/piqAndHINT-compared-chr21.ipynb 
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igv.js tips: load track programmitcally (18 jan 2016)
+
+  ~/github/igv.js/examples/api.html
+  igv.browser.loadTrack({
+      format: 'bed',
+      url: 'https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz',
+      indexURL: 'https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz.tbi',
+      visibilityWindow: 200000,
+      label: 'dbSNP 137'})
+
+*-----------------------------------------------------------------------------------------------------------------------
+* nih biosketch (18 jan 2016)
+
+   ~/Documents/Biosketch-P. Shannon_2017.01.17 (new format).docx
+*-----------------------------------------------------------------------------------------------------------------------
+* create gene regulatory model from footprints & and gene expression (17 jan 2017)
+
+  this is a summary of work done for cory in (nov 2016)
+  source("~/github/BDDS/trenadb/src/renderGeneModel.R") has a few things which need to be parameterized
+
+    databases for the FootprintFinder
+    asinh normalization removed, but need for it must be tested
+    assay.matrix - must be from same system as the footprints
+
+    one solution: fpf not created by the renderGeneModel script if it already exists.
+    so before sourcing it, create the fpf:
+
+      genome.db.uri    <- "postgres://whovian/hg38"                  # has gtf and motifsgenes tables
+      footprint.db.uri <- "postgres://whovian/brain_hint"            # has hits and regions tables
+      fpf <- FootprintFinder(genome.db.uri, footprint.db.uri, quiet=FALSE)
+
+  --- run a quick demo
+    create new directory, i.e., cd ~/s/work/priceLab/cory/mef2cMulti
+    cp ~/github/BDDS/trenadb/src/style.js .
+    source("~/github/BDDS/trenadb/src/renderGeneModel.R")
+    demo()
+      #    target.gene <- "TREM2"
+      #    tbl <- createModel(target.gene, promoter.shoulder=100,
+      #                       mtx.expression=mtx.rosmap,
+      #                       absolute.lasso.beta.min=0.3,
+      #                       randomForest.purity.min=6,
+      #                       absolute.expression.correlation.min=0.3)
+
+    
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cory's notebook demo, mef2cMulti, gwas snps in igv (17 jan 2017)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cory's notebook demo, mef2cMulti (17 jan 2017)
+
+  cd ~/s/work/priceLab/cory/mef2cMulti/
+  cp ~/github/BDDS/trenadb/src/style.js .
+
+  --- set the stage (may use expression matrix and footprint database other that what you need)
+
+    source("~/github/BDDS/trenadb/src/renderGeneModel.R")
+    runTests()   # in 
+    demo()       # same
+
+
+  --- createGeneModel.R
+
+    library(TReNA)
+    genome.db.uri    <- "postgres://whovian/hg38"                  # has gtf and motifsgenes tables
+    footprint.db.uri <- "postgres://whovian/brain_hint"            # has hits and regions tables
+    fpf <- FootprintFinder(genome.db.uri, footprint.db.uri, quiet=FALSE)
+    source("~/github/BDDS/trenadb/src/renderGeneModel.R")
+    target.gene <- "MEF2C"
+    stopifnot(is.matrix(mtx.rosmap))
+    assay.matrix <- asinh(mtx.rosmap)
+    
+    tbl.fp <- getFootprintsForGene(fpf, "MEF2C", size.upstream=1000, size.downstream=1000)
+    
+    tbl <- createModel(target.gene, promoter.shoulder=900,
+                       mtx.expression=assay.matrix,
+                       absolute.lasso.beta.min=0.1,
+                       randomForest.purity.min=3,
+                       absolute.expression.correlation.min=0.2)
+    
+    rcy <- renderAsNetwork(tbl, target.gene)
+    layoutByFootprintPosition(rcy)
+
+   --- learn promoter region from igap gwas (and put igap gwas into a browser version of igv)
+   
 *-----------------------------------------------------------------------------------------------------------------------
 * adult children of alcoholics (16 jan 2016)
 
@@ -117,6 +692,45 @@ bed format: chrom, start, end, name, score, strand
  
 
 *-----------------------------------------------------------------------------------------------------------------------
+* cyjs/require minimal demo (18 jan 2016)
+
+  ~/s/examples/js/requirejs/singles/cyjs/
+      index.html
+      app.js
+
+require.config({
+    'paths': {
+        'jquery'    :   'http://code.jquery.com/jquery-1.12.4.min',
+        'cytoscape' :   'http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min'
+
+         }
+   });
+
+require(['jquery', 'cytoscape'], function ($, cytoscape) {
+    var cyDiv;
+    $(function(){
+       console.log("--- entering onReady");
+       cyDiv = $("#cyDiv");
+       console.log("--- about to create window.cy");
+       window.cy = cytoscape({container: $("#cyDiv"),
+                              elements:{nodes:[{data:{id:'a'}}],
+                                        edges:[{data:{source:'a', target:'a'}}]},
+                              style: cytoscape.stylesheet()
+                                        .selector('node').style({'background-color': '#d22',
+                                                                 'label': 'data(id)',
+                                                                 'text-valign': 'center',
+                                                                 'text-halign': 'center',
+                                                                 'border-width': 1})
+                                         .selector('edge').style({'line-color': 'black',
+                                                                  'target-arrow-shape': 'triangle',
+                                                                  'target-arrow-color': 'black',
+                                                                  'curve-style': 'bezier'})
+                              }); // cytoscape()
+       }); // onready function
+    }); // require
+
+
+*------------------------------------------------------------------------------------------------------------------------
 * folk metaphysics
 
   http://takimag.com/article/deconstructing_folk_metaphysics/print#axzz4VkrqbUVL
@@ -298,6 +912,62 @@ ACSSF,2010m1,wa,000,0013,0000003,23437,13658,2887,3662,4008,2870,2206,1573,1219,
     
 
 *-----------------------------------------------------------------------------------------------------------------------
+* R access to ACS data (18 jan 2016): Median Age By Sex for all census block groups in Seattle
+
+  ~/s/work/cleveland/asthmaDetails/acs.R
+
+    library(acs)
+    data(fips.state)
+    king.county <- geo.make(state="WA", county=33)
+    subset(fips.state, STUSAB=="WA")
+      #     STATE STUSAB STATE_NAME STATENS
+      # 48    53     WA Washington 1779804
+    acs.lookup(endyear=2010, span=5, table.number="B01001")
+    tbl.age <- results(acs.lookup(endyear=2010, keyword="age", case.sensitive=FALSE))
+    dim(tbl.age)   # 1283 5
+    length(unique(tbl.age$table.name))  #  123
+      #  [10] "Median Age by Sex"
+    dim(subset(tbl.age, table.name=="Median Age by Sex")) # 3 4
+    subset(tbl.age, table.name=="Median Age by Sex")
+    #    variable.code table.number        table.name        variable.name
+    # 28    B01002_001       B01002 Median Age by Sex Median age -- Total:
+    # 29    B01002_002       B01002 Median Age by Sex   Median age -- Male
+    # 30    B01002_003       B01002 Median Age by Sex Median age -- Female
+    
+    x <- acs.fetch(geo=king.county, table.name="Median Age by Sex", endyear=2011, key="")
+    x@estimate
+    #                         B01002_001 B01002_002 B01002_003 B23013_001 B23013_002 B23013_003
+    # King County, Washington         37       36.2       37.9       39.6       39.5       39.6
+    chs.bgid <- 530330104021
+    
+    
+    x <- acs.fetch(geography=king.county, table.number="B01002", endyear=2010, key="")
+    x@estimate
+    #                         B01002_001 B01002_002 B01002_003
+    # King County, Washington       36.9         36       37.7
+    kingCoBlockGroups.geo <- geo.make(state="WA", county="King County", tract=10402, block.group="*", check=TRUE, key="")
+    tbl <- acs.fetch(geo=kingCoBlockGroups.geo, table.number="B01001", endyear=2010, key="")
+    dim(estimate(tbl)) # [1]  4 49
+    colnames(estimate(tbl))
+    #  [1] "B01001_001" "B01001_002" "B01001_003" "B01001_004" "B01001_005"
+    #  [6] "B01001_006" "B01001_007" "B01001_008" "B01001_009" "B01001_010"
+    # [11] "B01001_011" "B01001_012" "B01001_013" "B01001_014" "B01001_015"
+    # [16] "B01001_016" "B01001_017" "B01001_018" "B01001_019" "B01001_020"
+    # [21] "B01001_021" "B01001_022" "B01001_023" "B01001_024" "B01001_025"
+    # [26] "B01001_026" "B01001_027" "B01001_028" "B01001_029" "B01001_030"
+    # [31] "B01001_031" "B01001_032" "B01001_033" "B01001_034" "B01001_035"
+    # [36] "B01001_036" "B01001_037" "B01001_038" "B01001_039" "B01001_040"
+    # [41] "B01001_041" "B01001_042" "B01001_043" "B01001_044" "B01001_045"
+    # [46] "B01001_046" "B01001_047" "B01001_048" "B01001_049"
+    
+    
+    kingCoAllBlockGroups.geo <- geo.make(state="WA", county="King County", tract="*", block.group="*", check=TRUE, key="")
+    tbl <- acs.fetch(geo=kingCoAllBlockGroups.geo, table.number="B01001", endyear=2010, key="")
+    dim(estimate(tbl)) # [1]  1422 49
+    
+    
+  
+*-----------------------------------------------------------------------------------------------------------------------
 * R access to ACS block data? (16 jan 2016)
 
   http://ejanalysis.github.io/ACSdownload/
@@ -393,6 +1063,45 @@ ACSSF,2010m1,wa,000,0013,0000003,23437,13658,2887,3662,4008,2870,2206,1573,1219,
      
 
 *-----------------------------------------------------------------------------------------------------------------------
+* census block, block group, tract (18 jan 2017)
+
+  https://en.wikipedia.org/wiki/Census_block
+  
+  A census block is the smallest geographic unit used by the United
+  States Census Bureau for tabulation of 100-percent data (data
+  collected from all houses, rather than a sample of houses). The
+  number of blocks in the United States, including Puerto Rico, for
+  the 2010 Census was 11,155,486.[1]
+
+  Census blocks are grouped into block groups, which are grouped into
+  census tracts. There are on average about 39 blocks per block
+  group. Blocks typically have a four-digit number; the first number
+  indicates which block group the block is in. For example, census
+  block 3019 would be in block group 3.
+
+  Blocks are typically bounded by streets, roads or creeks. In cities,
+  a census block may correspond to a city block, but in rural areas
+  where there are fewer roads, blocks may be limited by other
+  features. The population of a census block varies greatly. As of the
+  2010 census, there were 4,871,270 blocks with a reported population
+  of zero,[2] while a block that is entirely occupied by an apartment
+  complex might have several hundred inhabitants.
+
+  Census blocks covering the entire country were introduced with the
+  1990 census. Before that, back to the 1940 census, only selected
+  areas were divided into blocks.
+
+   --- cleveland high school for example
+
+   http://www.seattle.gov/dpd/cityplanning/populationdemographics/geographicfilesmaps/2010census/default.htm
+
+    census tract map: http://www.seattle.gov/dpd/cs/groups/pan/@pan/documents/web_informational/dpdd017051.pdf
+       tract # 104.02?
+    block map index: block # 52 seems to straddle I5 at the write latitude
+    chs, at lucelle and 15th: census block 1005, voting district 331600, census tract 104.02
+    http://www.seattle.gov/dpd/cs/groups/pan/@pan/documents/web_informational/dpdd017071.zip
+    
+*------------------------------------------------------------------------------------------------------------------------
 * try to align asthma CAT data and PSRC census block group ids, 2nd try (15 jan 2017)
 
    cd ~/s/work/cleveland/asthmaDetails/shapefiles
@@ -15498,6 +16207,23 @@ igv = IGV(locus=snpLocus, reference=Reference(id="hg38"),
                  display_mode="EXPANDED")])
 igv
 
+*------------------------------------------------------------------------------------------------------------------------
+* igv.js tips, igv tips, specify genome
+
+  http://igv.broadinstitute.org/  returns an xml file which can be searched to produce values like this:
+
+   <Key>annotations/hg38/genes/gencode.v24.annotation.sorted.gtf.gz</Key>
+   <Key>annotations/hg38/genes/gencode.v24.annotation.sorted.gtf.gz.tbi</Key>
+
+     tracks: [
+         {name: "Genes",
+            url: "http://igv.broadinstitute.org/annotations/hg38/genes/gencode.v24.annotation.sorted.gtf.gz",
+            index: "http://igv.broadinstitute.org/annotations/hg38/genes/gencode.v24.annotation.sorted.gtf.gz.tbi",
+            displayMode: "EXPANDED"
+         }
+     ]
+
+*------------------------------------------------------------------------------------------------------------------------
 * igv.js tips, igv tips: display local bed file (29 mar 2016)
 
    ---- 
