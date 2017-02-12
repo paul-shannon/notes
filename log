@@ -96,6 +96,565 @@ bed format: chrom, start, end, name, score, strand
 
 * -top-
 *-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* dora prep: use igv.js with webpack (11 feb 2016)
+
+   script-loader
+
+   This loader evaluates code in the global context, just like you
+   would add the code into a script tag. In this mode every normal
+   library should work. require, module, etc. are undefined.
+
+   Note: The file is added as string to the bundle. It is not
+   minimized by webpack, so use a minimized version. There is also no
+   dev tool support for libraries added by this loader.
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* add css support to webpack (11 feb 2016)
+
+  cd ~/github/projects/examples/js/webpack/igvCyWebGL
+
+  https://webpack.github.io/docs/stylesheets.html
+  http://survivejs.com/webpack/handling-styles/loading/
+
+  npm install style-loader css-loader --save-dev
+  add this line to webpack.config.js:
+      module: {loaders: [{ test: /\.css$/, loader: "style-loader!css-loader" }]},
+  --- now entire config looks like this:
+     var webpack = require("webpack");
+     module.exports = {
+         entry: ['./src/index.js'],
+         output: {
+             path: './dist',
+             filename: 'bundle.js'
+             },
+         module: {loaders: [{ test: /\.css$/, loader: "style-loader!css-loader" }]},
+         plugins: [
+             new webpack.ProvidePlugin({
+                $: "jquery",
+                jQuery: "jquery"
+             })
+         ]
+     }
+
+    --- added simple src/style.css
+     and this line to src/app.js:
+       require("css-loader!./style.css");
+
+     this produced a webpack error:
+       ERROR in ./~/css-loader!./src/style.css
+       Module build failed: Unknown word (5:1)
+     explained here:
+       https://github.com/webpack-contrib/css-loader/issues/295
+
+     fixed by removing the preface string in the require statement
+        require("./style.css");
+      since the "css-loader!" preface is already in the config file:
+        module: {loaders: [{ test: /\.css$/, loader: "style-loader!css-loader" }]},
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* webpack tips: what does "test" mean?
+
+   test — a regular expression that tests what kind of files to run through this loader.
+   for example:
+      module: {loaders: [{test: /\.css$/, loader: "style-loader!css-loader"}]},
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* a minimal working webpack/jquery/cyjs app (10 feb 2016)
+
+  cd ~/github/projects/examples/js/webpack/igvCyWebGL/
+  make
+
+   --- used these installs
+
+  505  npm install cytoscape --save
+  534  npm install jquery --save
+  536  npm install jquery-ui --save
+  546  npm install jquery-ui --save
+  550  npm install --save-dev imports-loader
+  553  npm install ProvidePlugin --save
+  555  npm install webpack --save
+  568  history | grep npm
+
+   cat webpack.config.js
+   var webpack = require("webpack");
+    module.exports = {
+       entry: ['./src/index.js'],
+       output: {
+           path: './dist',
+           filename: 'bundle.js'
+           },
+       plugins: [
+           new webpack.ProvidePlugin({
+              $: "jquery",
+              jQuery: "jquery"
+           })
+       ]
+   }
+
+   jquery and $ not apparently available in src/app.js
+
+but somehow this works
+cytoscape = require('cytoscape');
+jquery = require('jquery');
+jqueryui = require('jquery-ui')
+
+
+//----------------------------------------------------------------------------------------------------
+getCyOptions = function()
+{
+   var value = {container: $("#cyDiv"),
+               elements: {nodes: [{data: {id:'a'}}],
+                         edges: [{data:{source:'a', target:'a'}}]},
+                         style: cytoscape.stylesheet()
+                            .selector('node').style({'background-color': '#d22',
+                                                     'label': 'data(id)',
+                                                     'text-valign': 'center',
+                                                     'text-halign': 'center',
+                                                     'border-width': 1})
+                            .selector('edge').style({'line-color': 'black',
+                                                     'target-arrow-shape': 'triangle',
+                                                     'target-arrow-color': 'black',
+                                                     'curve-style': 'bezier'})
+               };
+    return(value);
+} // getCyOptions
+//----------------------------------------------------------------------------------------------------
+addNetwork = function()
+{
+  var cyDiv = $("#cyDiv")
+  return(cytoscape(getCyOptions()))
+}
+//----------------------------------------------------------------------------------------------------
+document.addEventListener('DOMContentLoaded',function(){
+  console.log("--- document ready");
+  cy = addNetwork();
+   console.log("--- after addNetwork");
+})
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* build a non-nb dora app using webpack and commonjs - no AMD require (10 feb 2017)
+
+  status:  this is just a minimal webpack cyjs app
+
+  cd ~/github/projects/examples/js/webpack/igvCyWebGL
+  npm init -y
+  npm install cytoscape --save
+
+    --- see this in package.json
+      "dependencies": {"cytoscape": "^2.7.14"}
+    --- see this installed
+        node_modules/cytoscape/dist/cytoscape.js
+
+*-----------------------------------------------------------------------------------------------------------------------
+* webpack tips, verbose error details
+
+   ./node_modules/.bin/webpack  --display-error-details --config webpack.config.js
+
+*-----------------------------------------------------------------------------------------------------------------------
+* webpack and jquery:
+
+  cd github
+  git clone https://github.com/jzaefferer/webpack-jquery-ui.git
+  npm install      # 65M!
+  package.json: {
+    "name": "webpack-jquery-ui",
+    "version": "1.0.0",
+    "description": "How to build an app with jQuery UI and webpack",
+    "main": "index.js",
+    "scripts": {
+       "start": "webpack-dev-server --config webpack-config.js",
+       "build": "webpack --config webpack-config.js"
+       },
+    "keywords": [
+      "jquery-ui",
+      "webpack"
+       ],
+   "repository": {
+     "type": "git",
+     "url": "git://github.com/jzaefferer/webpack-jquery-ui.git"
+     },
+    "author": "Jörn Zaefferer",
+    "license": "MIT",
+    "dependencies": {
+      "jquery": "^2.1.4",
+      "jquery-ui": "1.12.x"
+      },
+    "devDependencies": {
+      "clean-webpack-plugin": "^0.1.3",
+      "css-loader": "^0.16.0",
+      "extract-text-webpack-plugin": "^0.8.2",
+      "file-loader": "^0.8.4",
+      "html-webpack-plugin": "^1.6.1",
+      "style-loader": "^0.12.3",
+      "webpack": "^1.12.2",
+      "webpack-dev-server": "^1.11.0"
+      }
+   }
+
+   ---- webpack-config.js
+     var Clean = require('clean-webpack-plugin');
+     var ExtractTextPlugin = require('extract-text-webpack-plugin');
+     var HtmlWebpackPlugin = require('html-webpack-plugin');
+     module.exports = {
+        entry: {main: './index.js'},
+        output: {path: './dist',filename: 'app.[hash].js'},
+        module: {loaders: [{test: /\.css$/,
+                            loader: ExtractTextPlugin.extract("style-loader", "css-loader")
+                           },
+                        {test: /\.(jpg|png)$/,
+                         loader: 'file'
+                        },
+                     ]
+              },
+        plugins: [
+            new Clean(['dist']),
+            new ExtractTextPlugin("app.[hash].css"),
+            new HtmlWebpackPlugin({title: 'jQuery UI Autocomplete demo, built with webpack'})
+             ]
+         };
+
+*-----------------------------------------------------------------------------------------------------------------------
+* jupyter tips, nbextension tips, jupyter nbextension install --help
+
+
+   Install Jupyter notebook extensions
+   Usage
+      jupyter nbextension install path|url [--user|--sys-prefix]
+   This copies a file or a folder into the Jupyter nbextensions directory. If a URL
+   is given, it will be downloaded. If an archive is given, it will be extracted
+   into nbextensions. If the requested files are already up to date, no action is
+   taken unless --overwrite is specified.
+
+Options
+-------
+
+Arguments that take values are actually convenience aliases to full
+Configurables, whose aliases are listed on the help line. For more information
+on full configurables, see '--help-all'.
+
+-s
+    Create symlink instead of copying files
+--python
+    Install from a Python package
+--py
+    Install from a Python package
+--overwrite
+    Force overwrite of existing files
+--debug
+    set log level to logging.DEBUG (maximize logging output)
+--symlink
+    Create symlink instead of copying files
+--sys-prefix
+    Use sys.prefix as the prefix for installing nbextensions (for environments, packaging)
+--user
+    Apply the operation only for the given user
+--system
+    Apply the operation system-wide
+--log-level=<Enum> (Application.log_level)
+    Default: 30
+    Choices: (0, 10, 20, 30, 40, 50, 'DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL')
+    Set the log level by value or name.
+--nbextensions=<Unicode> (InstallNBExtensionApp.nbextensions_dir)
+    Default: ''
+    Full path to nbextensions dir (probably use prefix or user)
+--config=<Unicode> (JupyterApp.config_file)
+    Default: ''
+    Full path of a config file.
+--prefix=<Unicode> (InstallNBExtensionApp.prefix)
+    Default: ''
+    Installation prefix
+--destination=<Unicode> (InstallNBExtensionApp.destination)
+    Default: ''
+    Destination for the copy or symlink
+
+To see all available configurables, use `--help-all`
+
+Examples
+--------
+
+    jupyter nbextension install /path/to/myextension
+
+*-----------------------------------------------------------------------------------------------------------------------
+* jupyter nbextension install tips
+
+  jupyter nbextension install --debug [--user] --py dora
+
+  --- without --user
+    Copying: /Users/paul/github/dora/dora/static/extension.js -> /usr/local/share/jupyter/nbextensions/dora/extension.js
+    Copying: /Users/paul/github/dora/dora/static/index.js -> /usr/local/share/jupyter/nbextensions/dora/index.js
+    Copying: /Users/paul/github/dora/dora/static/index.js.map -> /usr/local/share/jupyter/nbextensions/dora/index.js.map
+
+
+  --- with --user
+    Up to date: /Users/paul/Library/Jupyter/nbextensions/dora/extension.js
+    Up to date: /Users/paul/Library/Jupyter/nbextensions/dora/index.js
+    Up to date: /Users/paul/Library/Jupyter/nbextensions/dora/index.js.map
+
+
+  --- remove egg-link in standard python library directory, the module then picked up via sys.path
+    something in the install process added this to sys.pth: '/Users/paul/github/dora'
+
+  --- but dora is also a traditional python module:
+      /Users/paul/anaconda/lib/python3.5/site-packages/dora.egg-link
+     (created afresh with the makefile in ~/github/dora/)
+    apparently found by this element in sys.path: '/Users/paul/.local/lib/python3.5/site-packages',
+    with one line: /Users/paul/github/dora
+    apparently pointing implicitly to /Users/paul/github/dora/dora.egg-info/
+
+
+   a python egg (though superseded by wheel packaging): A "Python egg"
+   is a logical structure embodying the release of a specific version
+   of a Python project, comprising its code, resources, and
+   metadata. There are multiple formats that can be used to physically
+   encode a Python egg, and others can be developed. However, a key
+   principle of Python eggs is that they should be discoverable and
+   importable. That is, it should be possible for a Python application
+   to easily and efficiently find out what eggs are present on a
+   system, and to ensure that the desired eggs' contents are
+   importable.
+
+   The .egg format is well-suited to distribution and the easy
+   uninstallation or upgrades of code, since the project is
+   essentially self-contained within a single directory or file,
+   unmingled with any other projects' code or resources. It also makes
+   it possible to have multiple versions of a project simultaneously
+   installed, such that individual programs can select the versions
+   they wish to use.
+
+   --- where does python load the dora module from:  python -v -m dora
+     lots of output, including this clue
+     /Users/paul/github/dora/dora/__pycache__/example.cpython-35.pyc matches /Users/paul/github/dora/dora/example.py
+
+   --- conjecture:
+    somehow this is in my default python sys.path
+       '/Users/paul/github/dora',
+
+  --- try loading this python module, which contains the javascript, in plain old python
+    from dora import *
+    hw = HelloWorld()
+    hw.value   # 'Hello Dora!'
+
+  --- or from the command line
+    python -m dora
+    /Users/paul/anaconda/bin/python: No module named dora.__main__; 'dora' is a package and cannot be directly executed
+
+
+  --- what happens?
+    the python directory ~/github/dora/dora/static
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* the dora notebook app (9 feb 2017)
+
+  cd ~/github
+  pip install cookiecutter
+  cookiecutter https://github.com/jupyter/widget-cookiecutter.git
+
+     author_name []: Paul Shannon
+     author_email []: pshannon@systemsbiology.org
+     github_project_name [jupyter-widget-example]: dora
+     github_organization_name [jupyter]: PriceLab
+     python_package_name [ipywidgetexample]: dora
+     npm_package_name [jupyter-widget-example]: dora
+     project_short_description [A Custom Jupyter Widget Library]: Jupyter Widget for the Domain of (Gene) Regulatory Analysis
+
+  cd ~/github/dora
+  cp ../jupyter-cytoscape/makefile .
+    # minor edits
+
+  add license to js/package.json:
+
+     "name": "dora",
+     "version": "0.0.1",
+     "license": "MIT",       # <<--- here
+     "description": "Jupyter Widget for the Domain of (Gene) Regulatory Analysis",
+     "author": "Paul Shannon",
+     "main": "src/index.js",
+
+   make   # builds and installs dora python, dora js
+
+   --- what gets installed, where?
+     grep dora /Users/paul/anaconda/etc/jupyter/nbconfig/notebook.json   #  "dora/extension": true,
+     /Users/paul/anaconda/lib/python3.5/site-packages/dora.egg-link # one line only: /Users/paul/github/dora
+        # this appears to be a consequence of the makefile command
+        # jupyter nbextension install --user --py dora
+
+   --- test this currently tiny extension in a jupyter notebook
+     from dora import *
+     hw = HelloWorld()
+     hw.value    # 'Hello World!'
+     hw.value = "Hello Dora!"
+     hw.value    # 'Hello Dora!'
+
+*-----------------------------------------------------------------------------------------------------------------------
+* alison paquette, metabolic network, cy3 and rcyjs (9 feb 2017)
+
+  cd ~/s/work/priceLab/alison/metabolicNetwork/
+
+    Glycolisis&GluconeogenesisFile.xgmml
+    glyAndGlu.cyjs
+    cp ~/github/BDDS/trenadb/src/style.js .
+    started to refine style.js
+
+  library(RCyjs)
+  rcy <- RCyjs(10000:10100, graph=graphNEL())
+     # make sure "network = {" is the firest line in the json graph file
+  send(rcy, list(cmd="httpAddGraph", callback="handleResponse", status="request", payload="glyAndGlu.cyjs"))
+  httpSetStyle(rcy, "style.js")
+
+*-----------------------------------------------------------------------------------------------------------------------
+* joseph zhou (8 feb 2017)
+
+   cd ~/s/work/leukemiaDrugResistance/
+   scp pshannon@osiris:/users/gglusman/proj/hl60/HL60-VCFs.tar .
+   cd ~/s/work/josephZhou/leukemiaDrugResistance/GS000035270-ASM-T1/analyses/
+   R;
+   library(Rsamtools)
+   tbi.filename <- indexTabix("Genotype.vcf.gz", format="vcf")
+   load file into igv desktop (version 2.3.68)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* three.js picking ray (6 feb 2016)
+
+  http://stackoverflow.com/questions/29366109/three-js-three-projector-has-been-moved-to
+
+The THREE.JS raycaster documentation actually gives all the relevant
+information that is laid out in these answers as well as all the
+   missing points that may be difficult to get your head around.
+
+   var raycaster = new THREE.Raycaster();
+   var mouse = new THREE.Vector2();
+
+   function onMouseMove( event ) {
+     // calculate mouse position in normalized device coordinates
+     // (-1 to +1) for both components
+     mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+     mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+   }
+
+   function render() {
+     // update the picking ray with the camera and mouse position
+     raycaster.setFromCamera( mouse, camera );
+     // calculate objects intersecting the picking ray var intersects =
+     raycaster.intersectObjects( scene.children );
+
+     for ( var i = 0; i < intersects.length; i++ ) {
+       intersects[ i ].object.material.color.set( 0xff0000 );
+       }
+       renderer.render( scene, camera );
+      }
+
+   window.addEventListener( 'mousemove', onMouseMove, false );
+   window.requestAnimationFrame(render);`
+
+*-----------------------------------------------------------------------------------------------------------------------
+* three.js basics: different ways to create scatter plot points (6 feb 2016)
+
+       ParticleSystem and PointCloud has been renamed to Points. In
+       addition, ParticleBasicMaterial and PointCloudMaterial has been
+       renamed to PointsMaterial.
+
+
+   --- my approach in app3d/scatterplot
+     scene = new THREE.Scene();
+     camera = new THREE.PerspectiveCamera(45, 1, 1, 10000);  // view angle, apect, near & far clipping planes
+     renderer = new THREE.WebGLRenderer({antialias: true});
+     scatterPlot = new THREE.Object3D();
+     scene.add(scatterPlot);
+
+     lineGeo = new THREE.Geometry();
+     lineGeo.vertices.push(<Vector3's which define path for the bounding box, with some retracing of steps>)
+     lineMat = new THREE.LineBasicMaterial({color: 0xFFFFFF, linewidth: 1});
+     line = new THREE.Line(lineGeo, lineMat);
+     line.type = THREE.Lines;
+     scattlerPlot.add(line)
+
+     material = new THREE.PointsMaterial({vertexColors: true, size: 2.5});
+     pointGeometry = new THREE.Geometry();
+     points = new THREE.Points(pointGeometry, material);
+     scatterPlot.add(points);
+     renderer.render(scene, camera);
+
+   --- housing data: http://msbarry.github.io/threejs-tool-page/scatterplot.html
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+      renderer = new THREE.WebGLRenderer();
+      scatterPlot = new THREE.Object3D();
+      scene.add(scatterPlot);
+
+      lineGeo = new THREE.Geometry();
+      lineGeo.vertices.push(<a bunch of THREE.Vector3 points describing the connected line corners>);
+      lineMat = new THREE.LineBasicMaterial({color: 0x808080, lineWidth: 1});
+      line = new THREE.Line(lineGeo, lineMat);
+      line.type = THREE.Lines;
+      scatterPlot.add(line);
+
+      mat = new THREE.ParticleBasicMaterial({vertexColors:true, size: 1.5});
+      pointGeo = new THREE.Geometry();
+      pointGeo.vertices.push(<all the data points>)
+      points = new THREE.ParticleSystem(pointGeo, mat);
+      scatterPlot.add(points);
+
+   --- mobile phone accelerometer data  (much whittled down, 2d text code removed)
+      renderer = new THREE.WebGLRenderer({antialias: true });
+      camera = new THREE.PerspectiveCamera(45, w / h, 1, 10000);
+      scene = new THREE.Scene();
+      scatterPlot = new THREE.Object3D();
+      scene.add(scatterPlot);
+      lineGeo = new THREE.Geometry();
+      lineGeo.vertices.push(<box x,y pair-pairs defining lines to draw>)
+      var lineMat = new THREE.LineBasicMaterial({color: 0x000000, lineWidth: 1});
+      line = new THREE.Line(lineGeo, lineMat);
+      line.type = THREE.Lines;
+      scatterPlot.add(line);
+
+      mat = new THREE.ParticleBasicMaterial({vertexColors: true, size: 10});
+      pointGeo = new THREE.Geometry();
+      pointGeo.vertices.push(new THREE.Vector3(x, y, z));   // big loop
+      pointGeo.colors.push(new THREE.Color().setRGB(...))
+      points = new THREE.ParticleSystem(pointGeo, mat);
+      scatterPlot.add(points);
+      renderer.render(scene, camera);
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* three.js scatterplot examples
+
+   http://msbarry.github.io/threejs-tool-page/scatterplot.html
+   http://bl.ocks.org/phil-pedruco/9852362   # has createTextCanvas demonstration function
+
+*-----------------------------------------------------------------------------------------------------------------------
+* require three.js module, for 3d scatterplot (3 feb 2017)
+
+  cd ~/github/projects/examples/nb/mef2cMulti/three/
+  open dev3.html
+  dir js/
+     7178 Feb  5 13:05 app3d.js
+      292 Feb  5 12:39 main.js
+
+   used in notebook:
+     ~/github/projects/examples/nb/mef2cMulti/igvCyjsTabsThree.ipynb 52512 Feb  5 12:59
+
+    needs CORS, and this line in the require config (note that port will need to be corrected)
+
+              'app3d'     :   'http://localhost:9998/files/three/js/app3d'
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cosmic, R, bigQuery, sheila (2 feb 2017)
+
+  http://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/workshop/Workshop_R_tut_v2.html
+  use my_cloud_project <- "isb-cgc-cosmic"
+
+*-----------------------------------------------------------------------------------------------------------------------
 * upton sinclair salary
 
   It is difficult to get a man to understand something, when his salary depends on his not understanding it.
@@ -714,6 +1273,31 @@ sudo apachectl restart
 
 
 *-----------------------------------------------------------------------------------------------------------------------
+* douglass adams points at an igv.js tabs bug fix (8 feb 2016)
+
+
+   cd ~/s/work/priceLab/cory/mef2cMulti/igvDemoFromDouglassTurner/
+    dugla-tabs-bug-fix.ipynb   15122 Jan 24 11:22
+
+           setTimeout(function(){
+               console.log("about to call tabs()");
+               $('#tabContainer').tabs({
+                   activate: function (event, ui) {
+                       var activeTab = $('#tabContainer').tabs("option", "active");
+                       console.log('active tab is ' + activeTab);
+                       if (1 === activeTab && $("#igvDiv").is(':empty')) {
+//                            console.log('igv - create');
+                          window.browser = igv.createBrowser($("#igvDiv"), igvOptions);
+                       }
+                   }
+
+               });
+//                window.browser = igv.createBrowser($("#igvDiv"), igvOptions);
+               }, 0);
+
+
+
+
 * the mef2c multiwidget notebook, demo & development (19 jan 2017)
 
   cd ~/s/work/priceLab/cory/mef2cMulti/
@@ -2310,6 +2894,8 @@ assert(requests.get('https://igv.org/web/beta/igv-beta.min.js').status_code == 2
 *-----------------------------------------------------------------------------------------------------------------------
 * webpack tips
 
+  --- npm install --save-dev imports-loader
+
   --- create a new project: use cellphoneJS as example
      git clone https://github.com/paul-shannon/cellphoneJS.git
      cd ~/github/cellphoneJS
@@ -2687,6 +3273,11 @@ yay!
       __frontend_version__ = '^2.0.9'
 
 *-----------------------------------------------------------------------------------------------------------------------
+* sword fern literature, sword fern disease
+
+  http://ir.library.oregonstate.edu/xmlui/bitstream/handle/1957/50077/SandenoJamesL1962.pdf;sequence=1
+
+*-----------------------------------------------------------------------------------------------------------------------
 * possums and raccoons temporal niche: seattle parks field committee meeting (14 dec 2016)
 
   I am just back from the Seattle Parks Field Committee meeting, at
@@ -2995,6 +3586,12 @@ Known nbextensions:
    cd ~/github/ipywidgets
    bash dev-install.sh
 
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cookiecutter project for dora as nbextension (9 feb 2017)
+
+  cd ~/github
+  pip install cookiecutter  # all requirements already satisfied
 
 *-----------------------------------------------------------------------------------------------------------------------
 * cookiecutter project for cyjs as nbextension (8 dec 2016)
@@ -45145,7 +45742,20 @@ text (6.5, 34, 'Note concentration at dollar', cex=1.2)
 text (6.5, 32.5, 'and half-dollar amounts.', cex=1.2)
 
 
+- plot tips, legend for cory
+tbl <- data.frame(geneA=1:10, geneB=21:30, apoe=sample(c(31,32,32,44), size=10, replace=TRUE), stringsAsFactors=FALSE)
+map <- list("31"="red", "44"="yellow", "32"= "blue")
+tbl$color <- unlist(lapply(tbl$apoe, function(value) map[[as.character(value)]]))
+tbl$color <- unlist(lapply(tbl$apoe, function(value) map[[as.character(value)]]))
+with(tbl, plot(geneA, geneB, col=color))
+legend.titles <- names(map)
+colors <- as.character(map)
+legend (6.5, 25, legend.titles, pch=16, col=colors)  # makes box with 2 rows
+
+
 --- plot tips, more hist tips
+
+
 
 par (mfrow = c (1,2))   # two plots in one window
 par (mai=c (1,1,1,1))   # one inch margin all around
