@@ -103,6 +103,34 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* create demo tsv, metadata, schema for BDDS
+
+  whovian
+  cd ~/github/dora/microservices/AD-trena
+  source("server.R")
+  region <- "7:101,165,571-101,165,620"   # about 25bp up and downstream from the VGF (minus strand) tss, 2 hint brain footprints
+  target.gene <- "VGF"
+  result <- createGeneModel(target.gene, region)
+  tbl.gm <- result$tbl
+  write.table(tbl.gm, quote=FALSE, sep="\t", row.names=FALSE, file="bddsDemo/vgfModel.tsv")
+  
+   gene   gene.cor       beta IncNodePurity chrom     start    endpos distance
+    MAZ  0.3676506  1.0371150      368.3111  chr7 101165602 101165609        9
+   NRF1 -0.2951702 -0.9409768      402.5432  chr7 101165575 101165585      -18
+
+  --- metadata:
+    targetGene: VGF
+    region: chr7:101,165,571-101,165,620
+    footprintDB: postgres://whovian/brain_hint
+    genomeDB: postgres://whovian/hg38
+    expressionData: rosmap_counts_matrix_normalized_geneSymbols_25031x638.RData
+
+   --- schema
+    create table trenaGeneModel(gene varchar, gene.cor real, beta real, IncNodePurity real,
+                                start int, endpos int, distance int);
+   
+  
+  
 *-----------------------------------------------------------------------------------------------------------------------
 * sigda (28 feb 2017)
 
