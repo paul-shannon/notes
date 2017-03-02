@@ -95,8 +95,704 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 bed format: chrom, start, end, name, score, strand
 
 * -top-
+
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* sigda (28 feb 2017)
+
+  cd ~/github/sigda/pkg/sigda/
+
+*-----------------------------------------------------------------------------------------------------------------------
+* createIgapFimoTrack aka igap.gwas.SNPassay (27 feb 2017)
+
+   cd  ~/github/dora/notebooks/AD-trena/src/
+
+   just refactored, in completely, so that:
+
+   tbl.trem2 <- igap.gwas.SNPassay(gene="TREM2", upstream=2000, downstream=100, snp.shoulder=10, quiet=TRUE)
+   tbl.trem2
+    gene chrom      tss gene.strand       rsid     base igap.wt igap.mut sequence.name  matched.sequence             motif start stop strand    score  p.value  q.value      status
+   TREM2  chr6 41163186           - rs28654619 41164199       T        C          <NA>              <NA>              <NA>    NA   NA   <NA>       NA       NA       NA     noMotif
+   TREM2  chr6 41163186           -  rs6517655 41164319       G        C           mut CCCTGTGCGTAAGTTAG          MA0615.1     1   17      - 11.60530 2.06e-05 0.000411        gain
+   TREM2  chr6 41163186           -  rs2210277 41164381       T        C            wt        CTCAAAGGGC sci09.v2_Bbx_3753     5   14      +  4.14151 7.38e-05 0.003540        loss
+   TREM2  chr6 41163186           -  rs4822013 41163211       A        G            wt        CTTAATCCCC          MA0891.1     4   13      - 12.40680 4.80e-06 0.000230 lossAndGain
+   TREM2  chr6 41163186           -  rs4822013 41163211       A        G            wt         CTTAATCCC          MA0714.1     5   13      - 12.78850 7.34e-06 0.000382 lossAndGain
+   TREM2  chr6 41163186           -  rs4822013 41163211       A        G            wt        CTTAATCCCC          MA0648.1     4   13      - 12.81130 9.34e-06 0.000449 lossAndGain
+   TREM2  chr6 41163186           -  rs4822013 41163211       A        G            wt          TTAATCCC          MA0682.1     5   12      - 12.14550 1.79e-05 0.001000 lossAndGain
+   TREM2  chr6 41163186           -  rs4822013 41163211       A        G           mut       ATTGCTCAATC          MA0102.3     7   17      - 12.79590 2.87e-05 0.001160 lossAndGain
+   TREM2  chr6 41163186           -  rs4822013 41163211       A        G           mut        ATTGCTCAAT          MA0838.1     8   17      - 10.97960 4.75e-05 0.002280 lossAndGain
+   TREM2  chr6 41163186           -  rs4822013 41163211       A        G            wt       ATTGCTTAATC          MA0102.3     7   17      - 11.89800 5.27e-05 0.001160 lossAndGain
+   TREM2  chr6 41163186           -  rs4822013 41163211       A        G            wt          TTAATCCC          MA0712.1     5   12      - 11.85110 5.75e-05 0.003220 lossAndGain
+   TREM2  chr6 41163186           -  rs4822013 41163211       A        G            wt          TTAATCCC          MA0711.1     5   12      - 11.36170 6.83e-05 0.003830 lossAndGain
+   TREM2  chr6 41163186           -  rs4822013 41163211       A        G            wt       CTGGGGATTAA          MA0467.1     2   12      + 10.91380 8.66e-05 0.003810 lossAndGain
+   TREM2  chr6 41163186           -  rs4822013 41163211       A        G            wt          TTAATCCC          MA0719.1     5   12      -  9.98077 9.18e-05 0.005140 lossAndGain
+
+*-----------------------------------------------------------------------------------------------------------------------
+* Availability and uptake of inorganic nitrogen in a mixed old-growth coniferous forest
+
+  DAVID P. TURNER, PHILLIP SOLLINS, MARY LEUKING and NATHAN RUDD
+  Plant and Soil
+  Vol. 148, No. 2 (January (II) 1993), pp. 163-174
+  Published by: Springer
+  Stable URL: http://www.jstor.org/stable/42938784
+
+*-----------------------------------------------------------------------------------------------------------------------
+*  The Shaman as a Maker of Worlds: Nelson Goodman in the Amazon
+
+   https://www.jstor.org/stable/2803656?seq=1#page_scan_tab_contents
+
+*-----------------------------------------------------------------------------------------------------------------------
+* a deleuzian multiplicity  (manuel dleanda, intensive science and virtual philosophy, p 5
+  ...takes as its first defining feature these two traits of a manifold:
+     its variable number of dimensions, and
+     more importantly, the absence of a supplementary (higher) dimesnion imposing an extrinsic coordinatization,
+       and hence, an extreinsiclly defined unity.
+*-----------------------------------------------------------------------------------------------------------------------
+* jupyterlab install from the web
+
+  (24 feb 2017): 0.16.2
+  conda install -c conda-forge jupyterlab
+  start:
+    cd ~/github/dora/notebooks/AD-trena/
+    jupyter lab
+
+  pip install jupyterlab
+ jupyter serverextension enable --py jupyterlab --sys-prefix
+
+*-----------------------------------------------------------------------------------------------------------------------
+* jupyterlab build and install
+
+  cd ~/github/jupyterlab/
+  git clean -fdx   # remove all files not available from the repo
+  git pull origin
+  npm install
+  pip install -e .
+
+   Command "/Users/paul/anaconda/bin/python -c "import setuptools, tokenize;
+   __file__='/Users/paul/github/jupyterlab/setup.py';
+   f=getattr(tokenize, 'open', open)(__file__);
+   code=f.read().replace('\r\n', '\n');
+   f.close();
+   exec(compile(code, __file__, 'exec'))" develop --no-deps" failed with error code 1 in /Users/paul/github/jupyterlab/
+
+*-----------------------------------------------------------------------------------------------------------------------
+* interpreting igap gwas snps (21 feb 2017)
+
+   --- my question to minerva
+
+   CHR  oldPos      BP        SNP Effect_allele Non_Effect_allele    Beta     SE       P     igap igap- dbSNP
+  chr1  978193 1042813  rs2710873             A                 G -0.0824 0.0389 0.03412      G/A  C/T    C/T
+  chr1  998395 1063015  rs7526076             A                 G -0.0512 0.0229 0.02543      G/A  C/T    A/G
+  chr1 1000156 1064776 rs11584349             C                 T -0.0536 0.0224 0.01687      T/C  A/G    C/T
+
+    1) nicely explained by strand (C -> T: MAF  0.0881/441)
+        https://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?rs=2710873
+
+    2) wt and mutant alleles seem to be switched  (A -> G: MAF 0.1777/890)
+        https://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?rs=7526076
+
+    3) wt and mutant alleles seem to be switched  (C -> T: TMAF 0.2532/1268)
+       https://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?rs=11584349
+
+   Are not the Effect_allele in cases 2 and 3 in fact in both cases the reference base?
+
+   --- minerva's ultimate response
+
+     Please see below the EUR/CEU MAFs based on dbSNP:
+
+       rs2710873: T allele freq = 0.14810000
+       rs7526076: A allele freq = 0.24349999
+       rs11584349: C allele freq = 0.25833333
+
+     In each of the three cases, the Minor allele in the EUR/CEU population is the IGAP “Effect allele”.
+
+
+      Part of what makes it so confusing is the fact that dbSNP
+      provides the summary info that you show in the screenshot
+      below. That info is not population specific. In order to get the
+      population specific MAFs you have to go to the dbSNP page of the
+      SNP of interest, and then scroll all the way down to the section
+      called “Population Diversity”. As shown in the screenshot
+      immediately below for rs11584349:
+
+      Since generally there aren’t that many variants within any given
+      21 base pair window, I don’t think that you need to create a
+      population-specific 21bp reference sequence.
+
+      I think that the easiest way to generalize your algorithm would
+      be to continue using your "naïve" approach that assumes that all
+      positions in the human reference sequence are the
+      major/ancestral alleles, then annotate the possible impact,
+      based on FIMO, of the "effect allele" in your study of
+      interest. For example, for rs11584349, your algorithm would
+      determine the motif binding score for each of the hg38 reference
+      and alternative alleles (in this case C and T, respectively),
+      and then determine which of these is labeled in your study of
+      interest as the "effect allele", which in the case of IGAP is
+      the C allele.
+
+       That would be my "naïve" approach :).
+
+
+   --- from gustavo
+   Historically there has indeed been much confusion with respect to the representation of variants, particularly with respect to strand. dbSNP has a huge number of variants canonically represented using the strand that is the reverse of the reference. This is particularly problematic for A/T and C/G variants of course, as there's almost no way to disambiguate.
+   On top of that, some positions changed reference allele between reference versions, particularly from GRCh37 to GRCh38.
+There are also triallelic, tetraallelic and multiallelic (complex) sites.
+
+As for igap, I think it encodes relative to the effect allele. In some cases the encoding is backwards but one can tell based on the beta value.
+
+Looking at the examples listed, some observations:
+rs2710873 ref=G, alt=A - strand swap in dbSNP
+rs7526076 ref=A, alt=G - G is the major allele
+rs11584349 ref=C, alts=T,G - triallelic and T is the major allele
+rs4970401 ref=G, alt=C - C is the major allele
+rs74048003 ref=A, alt=G has positive Beta value (encoding would be consistent if one negated it)
+rs4246502 ref=C alt=G - G is the major allele
+rs4075116 ref=C alt=T - T is the major allele plus dbSNP is strand-swapped
+rs55746161 ref=C alt=A
+rs61766321 ref=G alt=A - Kaviar warns me it's seen mostly/only on Illumina, and it overlaps many indel variants
+rs61766322 same observations as for previous
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* dora tips: generate bed9 colored fimo-assayed snps, laptm5 example (20 feb 2017)
+
+  used igv.js (or something else) to learn the TSS
+  tss <- 30757828
+  start <- tss - 4200
+  end   <- tss + 1300
+  chrom <- "chr1"
+  source("~/github/projects/priceLab/AD/gwasFimo/createIgapFimoTrack.R");
+  tbl.b9 <- geneCentric.bed9.snps(chrom, start, end, "LAPTM5", manualEdit=TRUE)
+
+  --- now have APA2.region.bed
+   scp AP2A2.region.bed pshannon@whovian:/local/httpd/vhosts/pshannon/annotations/
+   display this in dora's igv.js: 11:923,951-927,102 (3152 bp)
+   modest levels of regulation seem to come from foxk1, foxp4, hmga1
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ap2a2: do the tss-proximal snp-gain motifs bring new TFs into an already weak model? (20 feb 2017)
+
+  cd ~/github/dora/notebooks/AD-trena/explorations/
+
+*-----------------------------------------------------------------------------------------------------------------------
+* dora tips: generate bed9 colored fimo-assayed snps, ap2a2 example (20 feb 2017)
+
+  used igv.js (or something else) to learn the TSS
+  11:
+
+  cd  ~/github/projects/priceLab/AD/gwasFimo
+  source("createIgapFimoTrack.R"); runTests()
+  tss <- 924738
+  tbl.b9 <- geneCentric.bed9.snps("chr11", tss-1000, tss+1000, "AP2A2", manualEdit=TRUE)
+
+  --- now have APA2.region.bed
+   scp AP2A2.region.bed pshannon@whovian:/local/httpd/vhosts/pshannon/annotations/
+   display this in dora's igv.js: 11:923,951-927,102 (3152 bp)
+   modest levels of regulation seem to come from foxk1, foxp4, hmga1
+
+  --- hypothesis the motif gain snps suggest stronger up-regulatory relationships
+    cd ~/github/dora/notebooks/AD-trena/explorations/
+    ap2a2.R
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igv.js tips, igv tips
+
+  --- create custom track from within a notebook
+   ~/github/notebooks/shared/VRK2-Pou3f2.ipynb
+
+
+   --- cell 1
+     chrom = "chr2"
+     loc = 57907323
+     shoulder = 7
+     snpLocus = "%s:%d-%d" % (chrom, loc-shoulder, loc+shoulder)
+    viewRange = "chr2:57,907,026-57,907,985"
+
+   --- cell 2
+     igv = IGV(locus=viewRange, reference=Reference(id="hg38"),
+               tracks=[Track(
+                      name="Genes",
+                      url="//s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/genes/gencode.v24.annotation.sorted.gtf.gz",
+                      indexURL="//s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/genes/gencode.v24.annotation.sorted.gtf.gz.tbi",
+                      display_mode="EXPANDED")])
+     igv
+
+   --- cell 3
+     trackTbl = pd.DataFrame([[chrom, loc-shoulder, loc+shoulder, "snp"]])
+     trackTbl.to_csv("vrk2Snp.bed", sep="\t", header=False, index=False)
+     newTrack = Track(name="rs13384219 ", format="bed", indexed=False,
+                 url="http://whovian:10005/files/shared/vrk2Snp.bed",
+                 display_mode='EXPANDED');
+
+   --- cell 4
+      igv.load_track(newTrack)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* generate new brain hint track, including all singleton reports (20 feb 2017)
+
+   cd   ~/github/projects/examples/genomics/tracks/brainHintFootprintsBedGraph/
+   in go.R, condense.footprints, made this change
+
+        tbl.repsOfInterest <- subset(tbl.reps, Freq > 0)  # had been > 1
+   source("go.R"); iterate()
+      11138167 Feb 19 23:36 chr22.bed
+       8528261 Feb 19 23:34 chr21.bed
+      14245103 Feb 19 23:33 chr20.bed
+      15845622 Feb 19 23:30 chr19.bed
+      14546182 Feb 19 23:28 chr18.bed
+      21629585 Feb 19 23:26 chr17.bed
+      19349110 Feb 19 23:22 chr16.bed
+      18786166 Feb 19 23:19 chr15.bed
+      19176746 Feb 19 23:15 chr14.bed
+      19169683 Feb 19 23:12 chr13.bed
+      28643368 Feb 19 23:09 chr12.bed
+      30469710 Feb 19 23:05 chr11.bed
+      29278953 Feb 19 23:00 chr10.bed
+      26406088 Feb 19 22:55 chr9.bed
+      28743067 Feb 19 22:50 chr8.bed
+      32680693 Feb 19 22:46 chr7.bed
+      35176916 Feb 19 22:40 chr6.bed
+      35594655 Feb 19 22:34 chr5.bed
+      34074375 Feb 19 22:29 chr4.bed
+      40189466 Feb 19 22:23 chr3.bed
+      50875550 Feb 19 22:17 chr2.bed
+      53037626 Feb 19 22:08 chr1.bed
+
+   with many promoter/fp/snps on chr2 (see just below), experiment with indexing and using just it first
+   bash> sort -k 1.4,1n -k 2,2n -k 3,3n chr2.bed > brain_hint_chr2_all.bed
+   bash> /Users/pshannon-isb/s/src/tabix/tabix-0.2.6/bgzip brain_hint_chr2_all.bed  # 9,465,405
+   library(Rsamtools)
+   tbl.filename <- indexTabix("brain_hint_chr2_all.bed.gz", format="bed")
+
+    -rw-r--r--   9465405 Feb 20 05:40 brain_hint_chr2_all.bed.gz
+    -rw-r--r--    140953 Feb 20 05:42 brain_hint_chr2_all.bed.gz.tbi
+
+   scp brain_hint_chr2_all.bed.gz* pshannon@whovian:/local/httpd/vhosts/pshannon/annotations/
+
+  --- now add chr11, for gene AP2A2, with three gained binding motifs from snps in TSS +/- 1000bp
+     sort -k 1.4,1n -k 2,2n -k 3,3n chr11.bed > brain_hint_chr11_all.bed
+     /Users/pshannon-isb/s/src/tabix/tabix-0.2.6/bgzip brain_hint_chr11_all.bed
+     tbl.filename <- indexTabix("brain_hint_chr11_all.bed.gz", format="bed")
+
+   -rw-r--r--   5616732 Feb 20 14:01 brain_hint_chr11_all.bed.gz
+   -rw-r--r--     80060 Feb 20 14:01 brain_hint_chr11_all.bed.gz.tbi
+   scp brain_hint_chr11_all.bed.gz* pshannon@whovian:/local/httpd/vhosts/pshannon/annotations/
+
+  --- now add chr1, for gene LAPTM5,
+     cd   ~/github/projects/examples/genomics/tracks/brainHintFootprintsBedGraph/
+
+     sort -k 1.4,1n -k 2,2n -k 3,3n chr1.bed > brain_hint_chr1_all.bed
+     /Users/pshannon-isb/s/src/tabix/tabix-0.2.6/bgzip brain_hint_chr1_all.bed
+     R; library(Rsamtools)
+     print(indexTabix("brain_hint_chr1_all.bed.gz", format="bed"))
+
+   -rw-r--r--   5616732 Feb 20 14:01 brain_hint_chr11_all.bed.gz
+   -rw-r--r--     80060 Feb 20 14:01 brain_hint_chr11_all.bed.gz.tbi
+   scp brain_hint_chr1_all.bed.gz* pshannon@whovian:/local/httpd/vhosts/pshannon/annotations/
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ampAD gene lists (19 feb 2017)
+
+  from 9/28/16 email "UFL/ISB/Mayo top20 target nominations
+
+  ---emory
+    emory.genes <- c("SNRNP70", "U1-A", "U1-C", "smn1", "SmB", "PLCD1", "PTRHD1", "SFRP1", "PPP1R7", "DNM3", "RTN4", "EPB41L3", "
+                     TUBB3", "PLEC", "ANXA5", "MSN", "CD44", "LMNA")
+
+    mtSinai.genes <- c("DOCK2", "GABBR2", "GABRB2", "GIGYF1", "ITGB2", "JPH3", "LAPTM5", "NCKAP1L",
+                       "OPCML", "RBM3", "SCAMP1", "SCN2A", "SELT", "SNAP25", "SNAP91", "STXBP1",
+                       "SUB1", "SYT1", "TARBP1", "YWHAG")
+
+    ufl.genes <- c("TGFBR1", "BMPR1A", "BMPR1B", "VGF", "CRH/CRHR1", "TREM2", "TYROBP", "S100A8", "S100A9", "P2RY2", "P2RX7",
+                   "P2RY12", "P2RY13", "OSMR", "TLR4", "CR1", "CSF1R", "CX3CR1", "SPI1", "TNFRSF10A/B")
+
+
+    put these into ~/github/projects/priceLab/AD/gwasFimo/prospector.R, looking for igap gwas snps in proximal promoter
+    with brain hint footprints, to forge cherry-pick demo for RIP and BDDS
+
+   --- find snps in promoters in footprints
+     cd ~/github/projects/priceLab/AD/gwasFimo
+     source("prospector.R")
+     print(table(tbl.snpsInPromotersInFootprints$gene_name))
+      BMPR1B     DOCK2    LAPTM5    P2RY13    PPP1R7     SCN2A      TLR4 TNFRSF10A
+           3         1         3         1        36        15         1         5
+
+    print(table(tbl.snpsInPromotersInFootprints$CHR))
+      chr1 chr2 chr3 chr4 chr5 chr8 chr9
+         3   51    1    3    1    5    1
+
+   these depend (maybe all of them) on footprints found in only one sample
+   now: regenerate the hint fp igv track so that these singletons are included, despite the massive size which
+        will result
+
+    unique(subset(tbl.snpsInPromotersInFootprints, gene_name=="SCN2A")[, c("SNP", "BP", "strand")])
+                SNP        BP strand
+     2827 rs6718960 165239218      +
+
+    library(FimoClient)
+    if(!exists("fimo.service"))
+       fimo.service <-  FimoClient("whovian", 5558, quiet=TRUE)
+    library(BSgenome.Hsapiens.UCSC.hg38)
+    hg38 = BSgenome.Hsapiens.UCSC.hg38
+    library(SNPlocs.Hsapiens.dbSNP144.GRCh38)
+    snps <- SNPlocs.Hsapiens.dbSNP144.GRCh38
+    rsid <- "rs6718960"
+    chrom <- "chr2"
+    loc <- 165239218
+    ambiguity.code <- snpsById(snps, rsid)$alleles_as_ambig
+    elements.string <- IUPAC_CODE_MAP[[ambiguity.code]]
+    elements <- strsplit(elements.string,'')[[1]]
+    wt <- as.character(getSeq(hg38, chrom, loc, loc))
+    mut <- setdiff(elements, wt)
+    doComparativeFimo(chrom, loc, wt, mut, 10, quiet=FALSE) # gain
+      X.pattern.name sequence.name start stop strand   score  p.value q.value matched.sequence
+            MA0040.1           mut     2   12      + 12.4388 3.88e-05 0.00171      AAATGTTTAGA
+
+    rsid <- "rs7596642"
+    chrom <- "chr2"
+    loc <- 241150035
+    ambiguity.code <- snpsById(snps, rsid)$alleles_as_ambig
+    elements.string <- IUPAC_CODE_MAP[[ambiguity.code]]
+    elements <- strsplit(elements.string,'')[[1]]
+    wt <- as.character(getSeq(hg38, chrom, loc, loc))
+    mut <- setdiff(elements, wt)
+    doComparativeFimo(chrom, loc, wt, mut, 10, quiet=FALSE) # noMotif
+
+
+    rsid <- "rs7584799"
+    chrom <- "chr2"
+    loc <-  241150158
+    ambiguity.code <- snpsById(snps, rsid)$alleles_as_ambig
+    elements.string <- IUPAC_CODE_MAP[[ambiguity.code]]
+    elements <- strsplit(elements.string,'')[[1]]
+    wt <- as.character(getSeq(hg38, chrom, loc, loc))
+    mut <- setdiff(elements, wt)
+    doComparativeFimo(chrom, loc, wt, mut, 10, quiet=FALSE) # noMotif
+
+
+
+
+    unique(subset(tbl.snpsInPromotersInFootprints, gene_name=="PPP1R7")[, c("SNP", "BP", "strand")])
+
+                SNP        BP strand
+   3279   rs7596642 241150035      +
+   3279.1 rs7584799 241150158      +
+
+
+
+
+   ---   cd ~/github/projects/examples/genomics/tracks/brainHintFootprintsBedGraph/
+
+  go.R: crucial function os condense.footprints, which counts samples for each unique footprint
+        writes chr[X].bed files
+   combine.sh combines all 22 bed files into one, including:
+
+  --- sorting bed file, at the command line, in preparation for indexing
+      sort -k 1.4,1n -k 2,2n -k 3,3n brain_hint_unsorted.bed > brain_hint.bed
+      /Users/pshannon-isb/s/src/tabix/tabix-0.2.6/bgzip brain_hint.bed
+
+     1.4: sort the first column (n=numerically?) starting at character 4, thus after the chr in chr1, chr10
+
+
+
+  --- create tabix file in R
+   library(Rsamtools)
+   tbl.filename <- indexTabix("brain_hint.bed.gz", format="bed")  #    "brain_hint.bed.gz.tbi"
+
+      18624683 Feb 15 11:19 brain_hint.bed.gz
+       1136333 Feb 15 11:19 brain_hint.bed.gz.tbi
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* dora trem2 example
+
+  cd ~/github/projects/priceLab/AD/gwasFimo
+  source("createIgapFimoTrack.R")    # uses bioc getSeq, fimo service, tbl.gwas.level_1.RData
+  grep('rs9357347', tbl$SNP) # [1] 170435
+  tbl[170432:170437,]
+             CHR   oldPos       BP        SNP Effect_allele Non_Effect_allele    Beta     SE        P    score
+    2751047 chr6 41136486 41168748 rs57108243             G                 A  0.1883 0.0616 0.002235 2.650722
+    2751049 chr6 41140984 41173246  rs9394764             C                 G -0.0525 0.0171 0.002220 2.653647
+    2751057 chr6 41148840 41181102 rs58051608             G                 C  0.1891 0.0619 0.002245 2.648784
+    2751059 chr6 41150591 41182853  rs9357347             C                 A -0.0554 0.0170 0.001096 2.960189
+    2751060 chr6 41152520 41184782  rs9471489             G                 A  0.1295 0.0420 0.002046 2.689094
+    2751061 chr6 41152747 41185009  rs9462674             A                 T  0.1293 0.0420 0.002094 2.679023
+
+
+
+  as.data.frame(t(subset(tbl, SNP=='rs9357347')))
+                      2751059
+  CHR                    chr6
+  oldPos             41150591
+  BP                 41182853
+  SNP               rs9357347
+  Effect_allele             C
+  Non_Effect_allele         A
+  Beta                -0.0554
+  SE                    0.017
+  P                  0.001096
+  score              2.960189
+
+    biocGet("SNPlocs.Hsapiens.dbSNP144.GRCh38")
+    library(SNPlocs.Hsapiens.dbSNP144.GRCh38)
+    snps <- SNPlocs.Hsapiens.dbSNP144.GRCh38
+    as.data.frame(snpsById(snps, "rs9357347"))
+     seqnames      pos strand RefSNP_id alleles_as_ambig
+   1      ch6 41182853      + rs9357347                M    # A or C
+   reference is A, must be C (?)
+   doComparativeFimo("chr6", 41182853, "A", "C", 7)  # [1] "loss"
+
+
+  --- penetrating the ambiguity codes, which seem to be used everywher in SNPlocs
+    chr6_snps <- snplocs(snps, "ch6", as.GRanges=TRUE)
+
+
+  * cory, minerva describe rs9357347 possibly affecting TREM2 regulation  (5 apr 2016)
+  what footprints do we see?  good test for new LassoSolver?
+
+  ---- email (5 apr 2016) frm minerva carrasquillo, nilufer taner also mentioned
+
+   Yes, it would be great if you could evaluate how this regulatory
+   SNP alters TF binding based on TReNA. The SNP is rs9357347, located
+   within a DNase hypersensitive site, and it is predicted to alter
+   both SP1 and PPAR binding. It is located within sequence reported
+   to be subject to enhancer-associated histone marks in the
+   hippocampus.
+
+
+  ---- find footprints
+
+    source("~/github/snpFoot/inst/misc/constrainTFs/lasso/go.R")
+    x <- getFootprints("TREM2")
+
+  ---- the snp?  rs9357347
+    biocLite("SNPlocs.Hsapiens.dbSNP144.GRCh38")
+    library("SNPlocs.Hsapiens.dbSNP144.GRCh38")
+    snps <- SNPlocs.Hsapiens.dbSNP144.GRCh38
+    s <- snpsById(snps, "rs9357347")  # a GRanges object
+    [1]      ch6 [41182853, 41182853]      + |   rs9357347                M
+
+    x <- getFootprints("TREM2")
+      [1] --- biomart coordinates for TREM2
+       entrezgene chromosome_name start_position end_position strand
+     1      54209               6       41158506     41163186     -1
+   [1] promoter region chr6:41157506-41158506
+
+   --- distance from minus strand start to snp
+     41182853 - 41163186: [1] 19667
+
+   ---- args(getFootprints): (geneSymbol, size.upstream = 1000, size.downstream = 0)
+
+   --- that snp, at chr6: 41182853
+      source("~/github/snpFoot/inst/misc/constrainTFs/lasso/go.R")
+      tbl.trem2fp <- getFootprints("TREM2", 20000, 0)
+      range(c(tbl.trem2fp$mfpStart, tbl.trem2fp$mfpEnd))  # [1] 41163197 41182990
+        # found just one motif, in the closest footprint
+      unique(subset(tbl.trem2fp, mfpStart >= (loc-65) & mfpEnd <= loc)$motif)   # [1] "MA0479.1"
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* dora directories
+
+   ms-trenaAD: ~/github/dora/microservices/AD-trena/
+   nb-trenaAD: ~/github/dora/notebooks/AD-trena/
+
+*-----------------------------------------------------------------------------------------------------------------------
+* 9-column bed file format, useful for categorized snps (16 feb 2017)
+
+  https://genome.ucsc.edu/FAQ/FAQformat#format1
+
+  sample use, on trem2
+  cd ~/github/projects/priceLab/AD/gwasFimo
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igv.js track tester (16 feb 2017)
+
+   ~/github/projects/examples/js/igvBareBones/trackTester.html
+
+*-----------------------------------------------------------------------------------------------------------------------
+* create full fimo track for all gwas snsp
+
+  cd /Users/paul/s/data/priceLab//AD/gwasFimo/
+  found that print(load("../tbl.gwas.level_1.RData")) has ref/mut pairs which, allowing for liftover, do not
+  match the hg38 reference genome nor dbsnp.  abandanoned in favor of
+
+    scp pshannon@whovian:/local/Cory/IGAP_summary_statistics/IGAP_stage_1.txt .   # 7M lines
+    tbl <- read.table("IGAP_stage_1.txt", sep="\t", header=TRUE, as.is=TRUE)  #   7,055,881       8
+    Chromosome, Position, MarkerName, Effect_allele, Non_Effect_allele, Beta, SE, Pvalue
+
+   --- huge number of large pvalues, how does it compare to milifur?
+     fivenum(tbl$Pvalue)    # [1] 0.0000 0.2299 0.4819 0.7399 1.0000
+     hist(tbl$Pvalue)
+     print(load("../tbl.gwas.level_1.RData")) # [1] "tbl.gwas"
+     colnames(tbl.gwas) #       CHR, oldPos, BP, SNP, Effect_allele, Non_Effect_allele, Beta,  SE, P
+     fivenum(tbl.gwas$P) # [1] 1.000e-150  1.005e-02  2.270e-02  3.620e-02  5.000e-02
+     -log10(fivenum(tbl.gwas$P)) #  150.000000   1.997834   1.643974   1.441291   1.301030
+     dim(subset(tbl, Pvalue <= 0.05)) # [1] 438696      8
+     dim(tbl.gwas)  # [1] 438609      9
+
+   --- does this new (and filtered table) lift over to hg38 sensibly?
+     tbl.test <- tbl[1:10, c("Chromosome", "Position", "Position", "MarkerName")]
+     write.table(tbl.test, sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE, file="hg19-sample.bed")
+
+     source("~/github/snpFoot/R/liftoverHg19BedFiles.R")
+
+*-----------------------------------------------------------------------------------------------------------------------
+* the wt/mut problem with tbl.gwas.level_1.RData
+
+  cd ~/s/data/priceLab/AD/gwasFimo
+
+  found that print(load("../tbl.gwas.level_1.RData")) has ref/mut pairs which, allowing for liftover, do not
+
+   head(tbl.gwas)
+    CHR  oldPos      BP        SNP Effect_allele Non_Effect_allele    Beta     SE       P     igap igap-  dbSNP
+   chr1  978193 1042813  rs2710873             A                 G -0.0824 0.0389 0.03412      G/A  C/T    C/T
+   chr1  998395 1063015  rs7526076             A                 G -0.0512 0.0229 0.02543      G/A  C/T    A/G
+   chr1 1000156 1064776 rs11584349             C                 T -0.0536 0.0224 0.01687      T/C  A/G    C/T
+   chr1 1001177 1065797  rs4970401             G                 C -0.0530 0.0224 0.018120     C/G  G/C    C/G
+   chr1 1002387 1067007 rs74048003             G                 A  0.0609 0.0285 0.032360     A/G  T/C    A/G
+   chr1 1002932 1067552  rs4246502             C                 G -0.0505 0.0223 0.023520     G/C  C/G    C/G
+   chr1 1003629 1068249  rs4075116             C                 T -0.0497 0.0220 0.023660     T/C  A/G    A/G
+   chr1 1004181 1068801 rs55746161             C                 A -0.0693 0.0260 0.007672     A/C  T/G    A/C
+   chr1 1004202 1068822 rs61766321             G                 A -0.0717 0.0300 0.016950     A/G  T/C    A/G
+   chr1 1004204 1068824 rs61766322             G                 A -0.0711 0.0301 0.018140     A/G  T/C    A/G
+
+
+
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* personal air quality monitor leads (15 feb 2017)
+
+   Development and evaluation of an ultrasonic personal aerosol sampler.
+      https://www.ncbi.nlm.nih.gov/pubmed/27354176?dopt=Citation
+
+   A small, lightweight multipollutant sensor system for ground-mobile and aerial emission sampling from open area sources
+         http://www.sciencedirect.com/science/article/pii/S1352231017300298
+
+   smithsonian article, with other devices mentioned:
+      http://www.smithsonianmag.com/innovation/with-wearable-devices-that-monitor-air-quality-scientists-can-crowdsource-pollution-maps-180954556/
+
+   nature, july 2016: Validate personal air-pollution sensors
+      http://www.nature.com/news/validate-personal-air-pollution-sensors-1.20195
+
+   https://www.ncbi.nlm.nih.gov/pubmed/25621420?dopt=Abstract&holding=npg
+      Variability in and agreement between modeled and personal
+      continuously measured black carbon levels using novel smartphone
+      and sensor technologies.
+
+   http://www.atmos-meas-tech.net/7/3325/2014/
+      The next generation of low-cost personal air quality sensors for quantitative exposure monitoring
+
+   http://www.strategyr.com/MarketResearch/Environmental_Sensing_and_Monitoring_Technologies_Market_Trends.asp
+
+*-----------------------------------------------------------------------------------------------------------------------
+* create bedGraph files for cory's notebook, brain hint, all chromosomes, sort, index, serve from whovian (15 feb 2017)
+
+  cd ~/github/projects/examples/genomics/tracks/brainHintFootprintsBedGraph/
+
+  go.R: crucial function os condense.footprints, which counts samples for each unique footprint
+        writes chr[X].bed files
+   combine.sh combines all 22 bed files into one, including:
+
+  --- sorting bed file, at the command line, in preparation for indexing
+      sort -k 1.4,1n -k 2,2n -k 3,3n brain_hint_unsorted.bed > brain_hint.bed
+      /Users/pshannon-isb/s/src/tabix/tabix-0.2.6/bgzip brain_hint.bed
+
+     1.4: sort the first column (n=numerically?) starting at character 4, thus after the chr in chr1, chr10
+
+
+
+  --- create tabix file in R
+   library(Rsamtools)
+   tbl.filename <- indexTabix("brain_hint.bed.gz", format="bed")  #    "brain_hint.bed.gz.tbi"
+
+      18624683 Feb 15 11:19 brain_hint.bed.gz
+       1136333 Feb 15 11:19 brain_hint.bed.gz.tbi
+
+*-----------------------------------------------------------------------------------------------------------------------
+* bedToBigBed for brain_hint_footprints, (14 feb 2017)  also bedGraphToBigWig
+
+   http://hgdownload.cse.ucsc.edu/admin/exe/macOSX.x86_64/bedToBigBed
+   copied into ~/bin, chmod 755
+
+   cd ~/github/projects/examples/genomics/tracks/bigBed/
+   bedToBigBed chr22.bed http://hgdownload.cse.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes chr22.bb
+
+       650342 Feb 14 17:09 chr22.bb
+      2047007 Feb 14 15:08 chr22.bed
+
+   bedGraphToBigWig chr22.bedGraph http://hgdownload.cse.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes chr22.bigwig
+
+*-----------------------------------------------------------------------------------------------------------------------
+* condense brain_hint footprints into unique regions, score is sample count, motifs ignored (14 feb 2017)
+
+   cd ~/github/projects/examples/genomics/tracks/brainHintFootprintsBedGraph/
+   go.R
+
+*-----------------------------------------------------------------------------------------------------------------------
+* notebook-friendly webserver, large genome info, apache cors and indexing (13 feb 2017)
+  created by russ ingram
+
+  apache 2.5
+  virtual host: pshannon.systemsbiology.net and you can upload your content to. Let me know if you need anything further or you have trouble with what I've set up.
+  actual directory:  /local/httpd/vhosts/pshannon/
+
+  some subdirectories of interest
+     Feb 10 11:53 annotations/
+     Feb 10 11:53 genomes/
+     Feb 10 12:42 hg38/
+     Feb 10 12:39 nb/
+
+
+   gwas snps in annotations;
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* create a bigbed (index, binary) file for igv.js out of all hint_brain footprints(13 feb 2017)
+
+  --- try mef2c on chr5 first
+    cd ~/github/projects/examples/genomics/tracks/bigBed
+
+    scp test.bed pshannon@whovian:/local/httpd/vhosts/pshannon/annotations/
+library(TReNA)
+genome.db.uri    <- "postgres://whovian/hg38"                  # has gtf and motifsgenes tables
+footprint.db.uri <- "postgres://whovian/brain_hint"            # has hits and regions tables
+fpf <- FootprintFinder(genome.db.uri, footprint.db.uri, quiet=FALSE)
+tbl.fp <- getFootprintsInRegion(fpf, "chr5", 88822685, 89011824)
+dim(tbl.fp)   # 4105 17
+tbl.bed <- tbl.fp[, c("chrom", "start", "endpos", "name", "score3")]
+write.table(tbl.bed, sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE, file="test.bed")
+
+  ---- added this track to igv.js config:
+                  {name: "brain hint fp",
+                   type: "annotation",
+                   format: "bed",
+                   sourceType: "file",
+                   url: "http://pshannon.systemsbiology.net/annotations/test.bed",
+                   indexed: false
+                   },
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* dora todo
+  for reverse strand genes, rightward chrom locs, and footprints returned from the trena microservice, should
+  be presented as negative locs, transcriptionally upstream.
+
 *-----------------------------------------------------------------------------------------------------------------------
 * dora prep: use igv.js with webpack (11 feb 2016)
 
@@ -1272,6 +1968,22 @@ sudo apachectl restart
     17 jan: 162.23
 
 
+  --- 13 feb 2017
+    heard nothing
+    emily picked up.
+    told that "adjustments are 3 months behind, only november adjustments are being addressed right now"
+    she corrected my inexact dates:  on 7 sep 2017, i requested service be terminated retroactive to 1 sep 20107
+
+    supervisor, roger, very helpful.
+
+  --- 16 feb 2017 (11am)
+    no word from roger, confusing statement.
+    left impassioned voice mail with roger after 10 minutes on hold.
+   230: no word back from roger
+        kelly enright: customer care director: 206-684-3111
+        left long message
+   2:40 Baggs, James L. (Jim)	206-684-3260
+        left long message
 *-----------------------------------------------------------------------------------------------------------------------
 * douglass adams points at an igv.js tabs bug fix (8 feb 2016)
 
@@ -1329,6 +2041,8 @@ sudo apachectl restart
 
 *-----------------------------------------------------------------------------------------------------------------------
 *  vrk2/pou3f2 bipolar snp fimo summary table (19 jan 2016)
+
+  http://whovian:10005/notebooks/shared/VRK2-Pou3f2.ipynb
 
   updated notebook
     ~/github/notebooks/shared/VRK2-Pou3f2.ipynb
@@ -4771,7 +5485,8 @@ src/manager-base.ts(4,20): error TS2307: Cannot find module 'underscore'.
 
 
    --- validate, examine, timing tests
-     psql trena
+     from laptop: psql -U trena --host whovian   # password trena
+     on whovian: psql trena
      \dt         # fimo_mm9 among others
      select count(*) from fimo_mm9;    #  400,785,924
      select * from fimo_mm9 limit 3;
@@ -9641,6 +10356,7 @@ Seward Park's old growth "Magnificent Forest"
 *------------------------------------------------------------------------------------------------------------------------
 * psql tips
 
+  psql -U trena --host whovian skin_hint   # password trean
   psql -U trena --host whovian   # password trena
   psql -U pshannon               # without --host, and with me linux-logged in as pshannon, no password needed
   psql -U pshannon <dbname>      # eg, mm10, hg38, footprints
@@ -16671,7 +17387,7 @@ Is there a way to do something like this?  If it were possible, we could weave h
       source("~/github/snpFoot/inst/misc/constrainTFs/lasso/go.R")
       tbl.trem2fp <- getFootprints("TREM2", 20000, 0)
       range(c(tbl.trem2fp$mfpStart, tbl.trem2fp$mfpEnd))  # [1] 41163197 41182990
-        # found just one motif, in the closest footpring
+        # found just one motif, in the closest footprint
       unique(subset(tbl.trem2fp, mfpStart >= (loc-65) & mfpEnd <= loc)$motif)   # [1] "MA0479.1"
 
 
@@ -25507,7 +26223,7 @@ pragmatics trumps syntax. Here we have a specific opposition to Biolinguistics a
    library(TxDb.Hsapiens.UCSC.hg19.knownGene)     version 3.2.2
    tbl.seqInfo <- seqlevels(seqinfo(TxDb.Hsapiens.UCSC.hg19.knownGene))
 
-   seqLengths(seqinfo(TxDb.Hsapiens.UCSC.hg19.knownGene))[paste("chr", c(1:22, "X", "Y"), sep="")]
+   seqlengths(seqinfo(TxDb.Hsapiens.UCSC.hg19.knownGene))[paste("chr", c(1:22, "X", "Y"), sep="")]
    chrom.lengths <- as.list(seqlengths(seqinfo(TxDb.Hsapiens.UCSC.hg19.knownGene))[paste("chr", c(1:22, "X", "Y"), sep="")])
           chr1      chr2      chr3      chr4      chr5      chr6      chr7      chr8      chr9     chr10
      249250621 243199373 198022430 191154276 180915260 171115067 159138663 146364022 141213431 135534747
