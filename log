@@ -100,6 +100,189 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* fix motifdb problems (23 mar 2017)
+
+  --- release
+    svn co https://hedgehog.fhcrc.org/bioconductor/branches/RELEASE_3_4/madman/Rpacks/MotifDb
+    svn rm Makefile
+    svn ci -m "deleted vignette Makefile"
+    svn ci -m "deleted vignette Makefile, bumped version" DESCRIPTION
+
+  --- devel
+
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* MotifDb/vignettes/Makefile before deletions (23 mar 2017)
+
+pdf: 
+	"$(R_HOME)/bin/R" CMD Sweave MotifDb.Rnw --pdf
+
+view: pdf
+	- kill -9 `ps aux | grep Preview | egrep -v grep | awk '{print $$2}'`
+	open MotifDb.pdf
+
+tangle:
+	"$(R_HOME)/bin/R"  CMD Stangle MotifDb.Rnw
+	"$(R_HOME)/bin/R"  --vanilla < MotifDb.R
+
+*-----------------------------------------------------------------------------------------------------------------------
+* TReNA: get regulatory tracks from ucsc using rtracklayer (23 mar 2017)
+
+  --- what tracks are available?
+mySession <- browserSession ()
+genome(mySession) <- "hg38"
+track.names <- trackNames(ucscTableQuery(mySession))  # 113 tracks
+   # chose a few tracks at random from this set, and discover how  many tables they hold
+grep("dnase", as.character(track.names), ignore.case=TRUE, v=TRUE)
+   # [1] "wgEncodeRegDnaseClustered" "wgEncodeRegDnase"  "wgEncodeRegDnaseWig"      
+grep("dnase", as.character(track.names), ignore.case=TRUE) # 35 26 37
+tableNames(ucscTableQuery(mySession, track="wgEncodeRegDnaseClustered"))
+  # [1] "wgEncodeRegDnaseClustered"        "wgEncodeRegDnaseClusteredSources"
+
+region <- GRanges("chr6", IRanges(20400587, 20403336))
+track <- "wgEncodeRegDnaseClustered"
+table <- "wgEncodeRegDnaseClustered"
+tbl <- getTable(ucscTableQuery (mySession, track=track, range=region, table=table))   # 6 x 9
+
+--- demo, TReNA proof of concept
+library(rtracklayer)
+mySession <- browserSession ()
+genome(mySession) <- "hg38"
+track.names <- trackNames(ucscTableQuery(mySession))  # 113 tracks
+grep("dnase", track.names, ignore.case=TRUE, value=TRUE)
+             DNase Clusters                    DNase HS                DNase Signal 
+"wgEncodeRegDnaseClustered"          "wgEncodeRegDnase"       "wgEncodeRegDnaseWig" 
+track.name <- "wgEncodeRegDnaseClustered"
+tableNames(ucscTableQuery(mySession, track=track.name))
+   # [1] "wgEncodeRegDnaseClustered"        "wgEncodeRegDnaseClusteredSources"
+table.name <- "wgEncodeRegDnaseClustered"
+region <- GRanges("chr5", IRanges(88688769, 89002929))
+tbl.dhs <- getTable(ucscTableQuery (mySession, track=track.name, range=region, table=table.name))  # 303 9
+head(tbl.dhs[, 1:7])
+   bin chrom chromStart chromEnd name score sourceCount
+1 1261  chr5   88688160 88688770    6   361           8
+2 1261  chr5   88688800 88688950    1    57           1
+3 1261  chr5   88689060 88689210    1   181           1
+4 1261  chr5   88689240 88689450    8   142           8
+5 1261  chr5   88689680 88689910    6   174           6
+6 1261  chr5   88690160 88690430   36   485          36
+
+
+grep("h3k2", as.character(track.names), ignore.case=TRUE) # 35 26 37
+grep("h3k2", as.character(track.names), ignore.case=TRUE, v=T) # [1] "wgEncodeRegMarkH3k27ac"
+track <- "wgEncodeRegMarkH3k27ac"
+tableNames(ucscTableQuery(mySession, track="wgEncodeRegMarkH3k27ac"))
+
+   #   "wgEncodeBroadHistoneGm12878H3k27acStdSig"
+   #   "wgEncodeBroadHistoneH1hescH3k27acStdSig"
+   #   "wgEncodeBroadHistoneHsmmH3k27acStdSig"
+   #   "wgEncodeBroadHistoneHuvecH3k27acStdSig"
+   #   "wgEncodeBroadHistoneK562H3k27acStdSig"
+   #   "wgEncodeBroadHistoneNhekH3k27acStdSig"
+   #   "wgEncodeBroadHistoneNhlfH3k27acStdSig" 
+table <- "wgEncodeBroadHistoneGm12878H3k27acStdSig"  # choose just the first cell line
+tbl.h3k27ac.1 <- getTable(ucscTableQuery (mySession, track=track, range=region, table=table))  # 303 9
+  # Error in .local(object, ...) : tabular output format not available
+query <- ucscTableQuery (mySession, track=track, range=region, table=table)
+  # Get table 'wgEncodeBroadHistoneGm12878H3k27acStdSig' from track 'wgEncodeRegMarkH3k27ac' within hg38:chr5:88688769-89002929
+  # with that failure, try the table browser directly
+  # filtered so that data value > 100, got very tractable example table of ~30 rows
+
+  
+  --- michael's vignette Example 2: DNaseI hypersensitivity regions in the K562 Cell Line
+library(rtracklayer)
+track.name <- "wgEncodeUwDgf"
+table.name <- "wgEncodeUwDgfK562Hotspots"
+e2f3.grange <- GRanges("chr6", IRanges(20400587, 20403336))
+mySession <- browserSession ()
+tbl.k562.dgf.e2f3 <- getTable(ucscTableQuery (mySession, track=track.name,range=e2f3.grange, table=table.name))
+tbl.k562.dgf.hg19 <- getTable(ucscTableQuery (mySession, track=track.name,table=table.name))
+
+*-----------------------------------------------------------------------------------------------------------------------
+* onlies youtube
+
+  https://www.youtube.com/watch?v=NKwK3xxRnMg  2010 fiddle tunes
+  https://www.youtube.com/watch?v=nk-ep3CBNqI  2009 volcanic jig
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cellphone simulator: reconstruct network using rcyjs (15 mar 2017)
+
+     cd ~/github/cellphoneJS/networkReconstruction
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cellphone simulator: simple bootstrap and nested submenus (14 mar 2017)
+
+   cd ~/github/cellphoneJS/submenu-simple/
+   open index.html
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* biofuels visualization sketch
+
+Interactive visualization tools are essential for modeling and assessing
+wild-type and engineered metabolic networks.  Most of the individual dimensions
+of metabolic data (genomic, gene expression, regulatory, reaction flux,
+proteomic) benefit from having a visualization tool tailored to that specific
+data type.  Detecting relationships among the different data types (dimensions)
+is a principal activity and goal of research, so the interactive visualizations
+must be linked by simple interactive gestures and message passing.  For example,
+the modeled or experimental consequences of a gene variant upon transcription,
+protein abundance and flux should be viewable in several interlinked views.
+
+The visualization tools, in addition to be richly interactive, must also be
+closely tied and responsive to computer scripts, in a variety of common
+languages.  By combining interactive point-and-click operation with scripting
+(in, for example, Python, R and Matlab), both novice and experienced programmers
+will gain extra expressive and exploratory power.
+
+At the current time (Spring 2017) and very like increasingly over the next
+decade, the best setting in which to accomplish these many interwoven
+visualization goals is the multi-language Jupyter Notebook (and soon, Jupyter
+Lab) environment.  Analyses and their visualizations - reproducible research -
+can be crafted and shared.
+
+Current work
+
+Design Goals: Multiple linked, interactive and high resolution
+visualizations are required to model and assess wild-type and
+engineered metabolic networks.   they
+
+*-----------------------------------------------------------------------------------------------------------------------
+* alison miRNA trena, first try (10 mar 2017)
+
+  cd ~/s/work/priceLab/alison/trenaFirstTry/
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* create whole genome skin_hint footprints bedgraph annotation for rich gelinas notebook (10 mar 2017)
+
+   cd ~/github/projects/examples/genomics/tracks/skinHintFootprintsBedGraph
+   source("go.R")
+   iterate()   # ~75 minutes
+   bash combine.sh   # creates unsorted then sorted file
+
+   library(Rsamtools)
+   bgzip("skin_hint.bed", "skin_hint.bed.gz")
+   print(indexTabix("skin_hint.bed.gz", format="bed"))
+
+      1422752 Mar 10 14:14 skin_hint.bed.gz.tbi
+     94576948 Mar 10 14:13 skin_hint.bed.gz
+    485670659 Mar 10 14:07 skin_hint.bed
+
+   scp sking_hint.bed.gz* pshannon@whovian:/local/httpd/vhosts/pshannon/annotations/
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* make sure that hg38 fasta sequence in rich's skin notebook is now right
+
+  http://whovian:10001/notebooks/skin-PnG/dora-skin.ipynb
+  chr17:50,201,616-50,201,654
+
+  library(getDNAClient)
+  dnaService = getDNAClient("hg38")
+  getSequenceByLoc(dnaService, "chr17", 50201616, 50201654)
+
 *-----------------------------------------------------------------------------------------------------------------------
 * igv fasta file, igv.js
 
@@ -126,11 +309,11 @@ bed format: chrom, start, end, name, score, strand
         shown in upper case.
 
    googled: ucsc hg38.fa.gz
-   
+
    --- make index .fai
     cd  /local/httpd/vhosts/pshannon/genomes
     gunzip hg38.fa.gz
-    
+
 
 *-----------------------------------------------------------------------------------------------------------------------
 * jupyter tips, notebook tips
@@ -143,7 +326,7 @@ bed format: chrom, start, end, name, score, strand
   for x in range(0,5):  # or range(5):
       print(x)
 
-  
+
 *-----------------------------------------------------------------------------------------------------------------------
 * credit score 828, vit intuit mit (9 mar 2017)
 *-----------------------------------------------------------------------------------------------------------------------
@@ -160,6 +343,7 @@ bed format: chrom, start, end, name, score, strand
       conda install -c r r-essentials
       jupyter --version           # 4.2.1
       jupyter notebook --version  # 4.3.1
+      conda update ipywidgets
 
 
    --- on whovian (9 mar 2019)
@@ -169,27 +353,51 @@ bed format: chrom, start, end, name, score, strand
         conda update anaconda
         jupyter --version            4.2.1
         jupyter notebook --version   4.3.1
-        
+
 
    --- jupyter lab
-       conda install -c conda-forge jupyterlab    
+       conda install -c conda-forge jupyterlab
+       conda update -c conda-forge jupyterlab
        jupyterlab: 0.17.4-py36_0 conda-forge
 
     --- ipyleaflet in lab
 
+
+    --- Widgets are not available.  Please install widgetsnbextension or ipywidgets 4.0
+       conda update ipywidgets
+          ipywidgets:         5.2.2-py36_1 --> 6.0.0-py36_0
+        widgetsnbextension: 1.2.6-py36_0 --> 2.0.0-py36_0
+
+
+       pip install ipywidgets==5.0.0
+       jupyter nbextension enable --py widgetsnbextension
+
+
+
 *-----------------------------------------------------------------------------------------------------------------------
 * jupyterlab ipyleaflet (9 mar 2017)
 
+   jupyter --version     # 4.2.1
+   jupyter lab --version # 0.17.4
+
+   cd ~/github/ipyleaflet/
+      git pull origin
+      grep version js/package.json   # "version": "0.3.0",
+
    cd ~/github/ipywidgets
-   git pull origin
-   cd ~/github/ipywidgets/jupyter-js-widgets/
-     npm install
+      git pull origin
+      grep version jupyter-js-widgets/package.json  #  "version": "2.1.4",
+      grep version jupyterlab_widgets/package.json  #  "version": "0.6.15",
+      grep version widgetsnbextension/package.json  #  "version": "2.0.18",
+
    cd ~/github/ipywidgets/jupyter-js-widgets/
      npm install
      npm run update
      pip install -e .
+
    cd ~/github/ipywidgets
      pip install -e .
+
    cd ~/github/ipywidgets/jupyterlab_widgets
      npm install
      npm run update
@@ -207,15 +415,8 @@ bed format: chrom, start, end, name, score, strand
 
     jupyter labextension enable jupyterlab_widgets --py --sys-prefix
 
-
-     
-book.ipyleaflet> jupyter nbextension enable --py --sys-prefix jupyterlab_widgets
-Traceback (most recent call last):
-
-
-
+*------------------------------------------------------------------------------------------------------------------------
 * sylvain corlay's guide to installing ipyleaflet for jupyter lab (16 dec 2016)
-
 
    So getting ipyleaflet to work in jupyterlab is quite cumbersome for
    now, since it requires installing ipywidgets from source and
@@ -520,11 +721,26 @@ net.write_json_to_file('viz','small.json')
 *-----------------------------------------------------------------------------------------------------------------------
 * Availability and uptake of inorganic nitrogen in a mixed old-growth coniferous forest
 
+  1980
+  http://andrewsforest.oregonstate.edu/pubs/pdf/pub135.pdf
+
+  an ecophysical approach to quantifying nitrogen fixation, andrews and wind river
+    https://www.jstor.org/stable/3244571?seq=1#page_scan_tab_contents
+
   DAVID P. TURNER, PHILLIP SOLLINS, MARY LEUKING and NATHAN RUDD
   Plant and Soil
   Vol. 148, No. 2 (January (II) 1993), pp. 163-174
   Published by: Springer
   Stable URL: http://www.jstor.org/stable/42938784
+
+  https://www.fs.fed.us/pnw/pubs/journals/pnw_1998_bendavid001.pdf
+  Fertilization of terrestrial vegetation by spawning Pacific salmon: the role of flooding and predator activity
+
+  Pacific Salmon in Aquatic and Terrestrial Ecosystems
+  https://pdfs.semanticscholar.org/7d33/d15752d2a70ef63bc38c26bce45299f4ba99.pdf
+
+  Linking Ecosystems, Food Webs, and Fish Production: Subsidies in Salmonid Watersheds
+  http://www.wsl.ch/info/mitarbeitende/scheideg/2016_09_Wipfli_2010.pdf
 
 *-----------------------------------------------------------------------------------------------------------------------
 *  The Shaman as a Maker of Worlds: Nelson Goodman in the Amazon
@@ -1801,10 +2017,12 @@ elsewhere in the city, the state, and our country.
 *-----------------------------------------------------------------------------------------------------------------------
 * rcy tips: get json text for loading into cy.js
 
-  gjson <- getJSON(rcy)
-  out <- file("vgfModel.json", "w")
-  writeChar(x, con=out, eos=NULL)
-  close(out)
+   gjson <- getJSON(rcy)
+   out <- file("cellphoneModel.json", "w")
+   writeChar(gjson, con=out, eos=NULL)
+   close(out)
+
+
   validate and fix here:
       https://jsonformatter.curiousconcept.com
 
@@ -3914,9 +4132,12 @@ assert(requests.get('https://igv.org/web/beta/igv-beta.min.js').status_code == 2
 
 
 *-----------------------------------------------------------------------------------------------------------------------
-* boots shoes merrell moab size 10
+* vasque breeze iii low gtx hiking shoes, boots, size 10.5, $150 (11 mar 2017)
+
+  returned boots shoes merrell moab size 10 (returned)
 
    rei: (29 dec 2016):  $140
+
 
 *-----------------------------------------------------------------------------------------------------------------------
 * cellphoneJS, work in progress (6 jan 2016)
@@ -3924,7 +4145,6 @@ assert(requests.get('https://igv.org/web/beta/igv-beta.min.js').status_code == 2
   cd ~/github/cellphoneJS/pojs
 
 *-----------------------------------------------------------------------------------------------------------------------
-
 * figure out bootstrap navbar dropdown menu for pojs cellphone simulator (27 dec 2016)
 
   ~/s/examples/js/bootstrap/menu/index3.html
@@ -4375,10 +4595,39 @@ yay!
       __frontend_version__ = '^2.0.9'
 
 *-----------------------------------------------------------------------------------------------------------------------
+* Kitsap Forest NAP (Washington State Natural Area Program and Stavis Creek Preserve)
+
+  This 572-acre forested site on the Kitsap Peninsula became a natural area preserve in 1998. Mature
+  and old growth douglas fir and western hemlock dominate this forest with rhododendron, evergreen
+  huckleberry, and sword fern in the forest understory. This is one of the few extensive unlogged
+  mature forests remaining in the central or southern Puget Trough ecoregion. The site also protects
+  portions of Stavis Creek, which supports coho and chum salmon spawning grounds, a blue heron
+  rookery, and nesting osprey.
+
+*-----------------------------------------------------------------------------------------------------------------------
 * sword fern literature, sword fern disease
 
   http://ir.library.oregonstate.edu/xmlui/bitstream/handle/1957/50077/SandenoJamesL1962.pdf;sequence=1
   ~/Downloads/SandenoJamesL1962.pdf: masters thesis, diesease of wester sword fern, 1962
+
+  https://www.fs.fed.us/pnw/pubs/gtr285/gtr2852a.pdf
+   climate change and the origin of old-growth forests
+   in the puget sound lowland.  just 6000 years? no precedent?
+
+  Because climate is driven by a complex set of boundary
+  conditions that do not change in unison, new conditions
+  constantly arise and disappear on time scales of several
+  thousand years. Over these broad time scales, tree species
+  continuously reassemble in different combinations that
+  follow the rhythm of changing climate.
+
+ 
+   --- Identifying Mature and Old Forests In Western Washington
+   http://file.dnr.wa.gov/publications/lm_hcp_west_oldgrowth_guide_full_lowres.pdf
+
+   --- the inventory, the report
+   http://file.dnr.wa.gov/publications/lm_ess_westside_oldgrowth_rpt.pdf
+   see map 4, pg 73/74
 *-----------------------------------------------------------------------------------------------------------------------
 * possums and raccoons temporal niche: seattle parks field committee meeting (14 dec 2016)
 
@@ -7287,6 +7536,97 @@ fimo.request(sequences)
 
 
 *-----------------------------------------------------------------------------------------------------------------------
+* franklin et al summary: ecological characteristics of old-growth douglas-fir forests
+
+  https://www.fs.fed.us/pnw/pubs/pnw_gtr118.pdf
+
+  The major ecological features of old- growth coniferous forests in the Douglas-fir region are
+  reviewed. Special attention is given to characteristics that distinguish old- growth forests from
+  managed and unmanaged (natural) young stands. The primary exemplary type is 350- to 750-year-old
+  Douglas-fir-western hemlock forest typical of the western slopes of the Cascade Range, but other
+  types and locales are discussed. Management techniques for maintenance of old- growth forests are
+  also considered. Major conclusions are:
+
+  1. Approximately 175 to 250 years are required to develop old-growth forests under natural
+  conditions in both Coast and Cascade Ranges. Development of old growth is faster on good sites
+  than on poor sites.
+
+  2. Few plant or animal species are solely confined to old-growth forests, although many species-
+  including several vertebrates, saprophytic plants, and epiphytic lichens-find optimum habitats in
+  such forests. Some organisms, however, may require old growth to maintain viable
+  populations. Moreover, there are substantial dif- ferences in composition and relative abundance
+  of species between young- and old-growth forests.
+
+  3. Gross productivity is maintained at high levels in most old-growth stands, but mortality
+  generally balances growth. Thus, the merchan- table board-foot volume tends to re- main constant
+  for several centuries or gradually decreases because the amount of defect increases. Total organic
+  matter keeps increasing because of accumulated masses of dead tree boles, mostly as down logs.
+
+  4. Old-growth forests are highly retentive of nutrients; large amounts are incorporated into
+  living and dead organic matter. Losses of limiting nutrients, such as nitrogen, are low.
+
+  5. Nitrogen-fixing epiphytes are abundant in old-growth trees, and bacterial nitrogen fixation
+  appears to be common in the large woody debris characteristic of old-growth forests.
+
+  6. Small- to medium-size streams in old-growth forests depend mainly on forest litter for an
+  energy base. These materials are invariably par- tially utilized before they are ex- ported
+  downstream.
+
+  7. The structure of old-growth forest is more heterogenous than that of young forests;
+  coefficients of varia- tion in tree sizes are greater, and understory patchiness is much higher
+  than in young-growth stands.
+
+
+  6. Most of the distinctive features of old-growth forests can be related to four structural
+  features: (1) large, live old-growth trees, (2) large snags, (3) large logs on land, and (4) large
+  logs in streams. The struc- tural features are related over time.
+
+  9. A large, old-growth Douglas-fir is individualistic and commonly has an irregularly arranged,
+  large, coarse branch system, and often, a long crown. It is ideal habitat for specialized
+  vertebrates, such as the red tree vole, northern spotted owl, and northern flying squirrel, as
+  well as nitrogen-fixing lichens.
+
+  10. Large snags are valuable as habitat for a variety of vertebrates and invertebrates and as a
+  future source of logs.
+
+  11. Logs on the forest floor are im- portant habitats for small mammals, including species that
+  disperse spores of mycorrhiza-forming fungi. They also are sites for substantial bacterial
+  nitrogen fixation and are essential as seedbeds for some trees and shrubs.
+
+  12. Logs are critical to maintenance of physical and biological stability in headwater
+  streams. Debris dams create stepped stream profiles that dissipate energy otherwise used for
+  transportingsedimentandlateral- cutting and downcutting of stream channels. Such dams, with their
+  associated plunge pools and beds of trapped gravels and fine sedi- ments, provide a range of
+  habitats needed to maintain a full array of stream and stream-margin organ- isms. Logs are an
+  important source of energy, and the bulk of the ntirogen supply of a stream comes from woody
+  debris.
+
+  13. Foresters wishing to maintain or create ecosystems with old-growth characteristics can tie
+  management schemes to maintenance or develop ment of the four key structural com- ponents-large
+  live, old-growth trees, large snags, and large logs on land and in streams.
+
+
+  14. Watersheds are probably best suited as management units for old- growth ecosystems. A small
+  drain- age usually has greater terrestrial habitat variability than occurs in a single stand, as
+  well as a complete stream system. The size of a man- agement unit will vary but probably should be
+  at least 300 acres (120 hectares) to reduce effects of edges and susceptibility to damaging
+  agents, such as wind, as well as to maintain viable populations of some birds and small mammals.
+
+
+  15. Buffer or leave strips along streams are also useful areas to manage as old-growth sites
+  because woody debris is provided to the stream, and the riparian zone, a par- ticularly rich and
+  critical wildlife habitat, is protected. Such buffers, along with roadside strips of old- growth
+  forest, also provide migra- tion routes for wildlife between otherwise isolated patches of mature
+  or old-growth forest.
+
+
+  16. Some ecological aspects of old- growth forests can be maintained by managing for individual
+  attributes; for example, leaving scattered old- growth trees, rotten logs, or snags on cutover
+  lands. The linked nature of these key structural components, as well as the requirements of some
+  organisms for the total environment of an old-growth stand, makes management of entire stands a
+  simpler approach to retention of such ecological features.
+
+*------------------------------------------------------------------------------------------------------------------------
 * update sword fern die-off maps, from nelson and from tristan & kramer (26 oct 2016)
 
    cd ~/s/work/fatnose/swordFerns/
@@ -9609,6 +9949,8 @@ ZHX2
 
 *------------------------------------------------------------------------------------------------------------------------
 * cdn
+
+  http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.8/d3.min.js
 
   https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.2/require.min.js
   https://cdnjs.cloudflare.com/ajax/libs/three.js/r79/three.js
@@ -12165,12 +12507,12 @@ document.head.appendChild( script );
 2) if Jupyter has been loaded, and I execute the lines in the js console, urlA results in a defined “dummy()” function, but urlB leads to “cytoscape()” producing a ReferenceError, cytoscape is not defined.
 3) with Jupyter loaded, igv.js evaluates fine.  It is quite straightforward in javascript style.  Maybe it lacks some features you have used for cytoscape.js, which clash with standard included libraries for Jupyter?
 
-That’s my best guess: that somehow even the empty jupyter notebook loads libraries which somehow clash with cytoscape.js
+That's my best guess: that somehow even the empty jupyter notebook loads libraries which somehow clash with cytoscape.js
 
 
 My jupyter version:
 
-jupyter notebook —version    # 4.2.1
+jupyter notebook --version    # 4.2.1
 
 
 *------------------------------------------------------------------------------------------------------------------------
@@ -14705,6 +15047,28 @@ cy.$('#n').qtip({
 *------------------------------------------------------------------------------------------------------------------------
 * netlogo purple_membrane model:  can we make it browser-ready? (9 jun 2016)
 
+   --- 13 mar 2017
+     language spec changed?
+     error message: (Breed declarations must have plural and singular. BREED [NODES] has only one name.)
+
+     language spec: In NetLogo 6.0, you must specify both plural and singular breed names. In prior
+     versions, declarations like breed [mice] were legal, but this support has been removed in
+     6.0. If you have models which use only plural breed names, it is recommended that you convert
+     them to specify both names before opening in 6.0 since doing so will permit the NetLogo
+     converter to work most effectively on any other code in your model which needs conversion.
+
+     fix:
+       breed [nodes nodeSingle]   # initially [nodes node] but   let selectables turtles with [ breed = nodes ]
+       breed [edges edge]
+       breed [edge-heads edge-head]
+       breed [edge-bodies edge-body]
+
+    --- seems to work
+      committed to github
+
+
+
+   http://www.netlogoweb.org/launch#https://raw.githubusercontent.com/baliga-lab/purple_membrane/master/purple_membrane_browserVersion.nlogo
    cd ~/github/purple_membrane
 
    ---- this version works in the 5.3.1 desktop app: fromWebsite.nlogo
@@ -14745,6 +15109,7 @@ cy.$('#n').qtip({
     after starting a simple python 3 web server in ~/github/purple_membrane/
     this worked:
 
+       python -m http.server 9009
        http://www.netlogoweb.org/launch#http://localhost:9009/purple_membrane_browserVersion.nlogo
 
 *------------------------------------------------------------------------------------------------------------------------
@@ -16388,6 +16753,14 @@ vizmap =  [
      import com.yworks.yfiles.layout.organic.OrganicLayout;
      OrganicLayout layouter = new OrganicLayout();
      layouter.setMinimumNodeDistance(80);
+
+*------------------------------------------------------------------------------------------------------------------------
+* github tips: refresh from master
+
+  scenario:
+     local changes not working, rename file to file-date-time
+  git fetch --all
+  git reset --hard origin/master
 
 *------------------------------------------------------------------------------------------------------------------------
 * git tips: create a local repo
@@ -45307,11 +45680,17 @@ on hazel
 *--------------------------------------------------------------------------------
 * x11 tips
 
------ support remote x11 use on macos trickster's x server
-~/bin/hazel is run by the 'emacs@hazel' menu entry of the x11 server app
-#!/bin/sh
-DISPLAY=:0.0; export DISPLAY
-ssh -2 -Y hazel emacs
+   --- (14 mar 2017)
+     install XQuartz, then start it up
+     in laptop's ~/.bashrc:   export DISPLAY=":0.0"
+     ssh -X pshannon@whovian
+
+   ----- support remote x11 use on macos trickster's x server
+    ~/bin/hazel is run by the 'emacs@hazel' menu entry of the x11 server app
+     #!/bin/sh
+     DISPLAY=:0.0; export DISPLAY
+     ssh -2 -Y hazel emacs
+
 *--------------------------------------------------------------------------------
 * gtar tips
 
