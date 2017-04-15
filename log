@@ -100,6 +100,612 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* igap cyjs model toggle todo (17 apr 2017)
+
+  cd ~/github/dora/microservices/trena-igap
+    use few inital lines in test_trenaIgapBrainServer.R
+
+  igap snp at ~ chr2:127,108,473 falls in dhs, near brain hint footprints
+  see if it creates a novel motif
+  if so, create a model with and without that motif
+  toggle back and forth
+
+  start jupyter notebook server:
+     cd ~/github/dora/notebooks/igap/
+     jupyter notebook --port=10002 --NotebookApp.token=
+
+  http://localhost:10002/notebooks/igap.ipynb
+
+*-----------------------------------------------------------------------------------------------------------------------
+* some igv.js tracks
+
+  also see:
+     file:///Users/paul/github/projects/examples/js/igvBareBones/trackTester.html
+
+           var igvOptionsLocal = {locus: "chr1:167,682,112-167,754,838", // mpzl1 promoter
+                                  showRuler: true,
+             reference: {id: "geneSymbols_hg38",
+                 fastaURL: "http://pshannon.systemsbiology.net/genomes/hg38.fa",
+                 cytobandURL: "http://pshannon.systemsbiology.net/genomes/cytoband.hg38.txt",
+                 },
+                tracks: [
+                  {name: 'Gencode v24',
+                   url: "http://pshannon.systemsbiology.net/hg38/gencode.v24.annotation.sorted.gtf.gz",
+                  indexURL: "http://pshannon.systemsbiology.net/hg38/gencode.v24.annotation.sorted.gtf.gz.tbi",
+                  format: 'gtf',
+                  visibilityWindow: 2000000,
+                  displayMode: 'EXPANDED'
+                  },
+               {name: "igap gwas scores",
+                  type: "wig",
+                  format: "bedgraph",
+                  min: 0,
+                  max: 20,
+                  url: 'http://pshannon.systemsbiology.net/hg38/variants/igap.bedgraph',
+                  indexed: false,
+                  //visibilityWindow: 1000000,
+                  color: "#4400AA"
+                  },
+
+               {name: "brain hint fp",
+                   type: "bed",
+                   format: "bed",
+                   min: 0,
+                   max: 10,
+                   color: "#AA0000",
+                   indexed: true,
+                   url: "http://pshannon.systemsbiology.net/annotations/brain_hint.bed.gz",
+                   indexURL: "http://pshannon.systemsbiology.net/annotations/brain_hint.bed.gz.tbi",
+                   },
+
+
+              {name: 'geneSymbols_hg38',
+                  url: 'http://pshannon.systemsbiology.net/hg38/geneSymbolSearch.bed',
+                  indexed: false,
+                  searchable: true,
+                  visibilityWindow: 5000000,
+                  displayMode: 'COLLAPSED',
+                  color: "#448844"
+                  },
+              {name: "brain hint fp chr1 all",
+                 type: "wig",
+                 format: "bedgraph",
+                 min: 0,
+                 max: 10,
+                 visibilityWindow: 100000,
+                 indexed: true,
+                 url: "http://pshannon.systemsbiology.net/annotations/brain_hint_chr1_all.bed.gz",
+                 indexURL: "http://pshannon.systemsbiology.net/annotations/brain_hint_chr1_all.bed.gz.tbi",
+                 },
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* .gitignore
+
+.Rhistory
+*.RData
+.DS_Store
+
+*-----------------------------------------------------------------------------------------------------------------------
+* returning to TReNA, HumanDNaseCluterFilter, broadening to try to include all regulatory region tracks (13 apr 2017)
+
+   https://genome.ucsc.edu/ENCODE/downloads.html
+
+*-----------------------------------------------------------------------------------------------------------------------
+* inject 59 possibly regualtory snps/motifs/tfs into liz blue's mpzl1 gene model (12 apr 2017)
+
+   cd ~/github/dora/notebooks/AD-family.UM0463F/addSnpEffects/
+
+   --- using prior work
+     cp /Users/paul/github/dora/datasets/AD-family.cUM0463F/snps59.hg38.bed .
+     cp -p /Users/paul/github/dora/notebooks/AD-trena/explorations/laptm5.R  .
+
+   --- new work: createTable.R
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* mike iverson, hotel california, clawhammer
+
+ https://www.youtube.com/watch?v=4MtYVyuZVG8
+
+*-----------------------------------------------------------------------------------------------------------------------
+* dan banjo
+
+
+  going up to hamburg
+  the girl I left on sandy
+  jaybird died of the whooping cough
+
+*-----------------------------------------------------------------------------------------------------------------------
+* banjo cluck: 5 techniques
+  https://www.youtube.com/watch?v=RVqWF_FC554
+*-----------------------------------------------------------------------------------------------------------------------
+* git-lfs on riptide (10 apr 2017)
+
+  /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+  brew install git-lfs
+  dir /usr/local/bin/git-lfs
+   lrwxr-xr-x  1 paul  admin  35 Apr 10 12:01 /usr/local/bin/git-lfs -> ../Cellar/git-lfs/2.0.2/bin/git-lfs
+
+*-----------------------------------------------------------------------------------------------------------------------
+* add dhs tracks to igv.js in dora (10 apr 2017)
+
+   https://genome.ucsc.edu/ENCODE/downloads.html
+   http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeRegDnaseClustered/wgEncodeRegDnaseClustered.bed.gz     9M 2011
+   http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeRegDnaseClustered/wgEncodeRegDnaseClusteredV2.bed.gz  12M
+   http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeRegDnaseClustered/wgEncodeRegDnaseClusteredV3.bed.gz  70M  2014
+
+    --- better approach?  googling wgEncodeRegDnaseClustered hg38 led to
+      http://hgdownload.cse.ucsc.edu/goldenpath/hg38/database/
+      and
+      http://hgdownload.cse.ucsc.edu/goldenpath/hg38/database/wgEncodeRegDnaseClustered.txt.gz
+
+    --- start with v2 first
+     [status: this failed on a seqlevels problem]
+     cd  ~/github/dora/datasets/tracks/dhsClustered/
+     rsync -a -P rsync://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeRegDnaseClustered/wgEncodeRegDnaseClusteredV2.bed.gz ./
+     gunzip wgEncodeRegDnaseClusteredV2.bed.gz
+        38970545 Jan 16  2013 wgEncodeRegDnaseClusteredV2.bed
+     # need PrivateCoryData installed for source("~/github/snpFoot/R/liftoverHg19BedFiles.R"); needs git-lfs (see above)
+     source("~/github/snpFoot/R/liftoverHg19BedFiles.R")
+
+     liftoverBedFile.19.38("wgEncodeRegDnaseClusteredV2.bed")
+        # first try failed: Error: is(values, "vectorORfactor") is not TRUE
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ecological research firms, for possible sword fern die-off work
+
+   confluence environmental company: http://www.confenv.com   left message (7 apr 2017)
+   anchor QEA, http://www.anchorqea.com/aqj/, left message (7 apr 2017)
+*-----------------------------------------------------------------------------------------------------------------------
+* dora skin, createGeneModel -> mergeTFmodelWithRegulatoryRegions (7 apr 2017)
+
+   region <- 'chr17:50,201,552-50,201,727'
+   target.gene <- "COL1A1"
+   result <- createGeneModel(mtx=mtx.gtexPrimary, target.gene, region)
+
+    ARNT2 maps to MA0632.1, but this is in exactly the same location MA1099.1:
+    so ARNT2 loses its footprint/motif, and creates a JSONDecodeError at
+       ---> 18      graphData = json.loads(payload['network'])
+    as json tries to parse NaN, created from an orphan ARNT2 in addGeneModelLayout
+
+
+      74 chr17:50201587-50201596 chr17 50201587 50201596 motif.in.footprint MA1099.1     10      - ENCSR000EIT   HINT skin.filler.minid     80 10.30070 4.21e-05     NA     NA     NA
+      36 chr17:50201587-50201596 chr17 50201587 50201596 motif.in.footprint MA0632.1     10      + ENCSR000EPP   HINT skin.filler.minid   2237  9.79839 9.97e-05     NA     NA     NA
+
+    confirmed looking at jsapar logos:
+       http://jaspar.genereg.net/?ID=MA1099.1&rm=present&collection=CORE
+       http://jaspar.genereg.net/?ID=MA0632.1&rm=present&collection=CORE
+
+    -- solution:  do not uniquify on oc alone, but on loc/motif
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* Refnet run error (5 apr 2017) [actually in PSICQUIC/R/IDMapper-class.R]
+
+   --- RefNet vignette reports
+    tbl.9 <- addStandardNames(idMapper, tbl.8)
+       Error in getBM(filters = filter, values = uniprots, attributes = columns,  :
+        Invalid attribute(s): uniprot_sptrembl
+        Please use the function 'listAttributes' to get valid attribute names
+
+    --- recreate in plain R
+      library(biomaRt)
+      dataset <- "hsapiens_gene_ensembl"
+      mart <- useMart(biomart="ENSEMBL_MART_ENSEMBL", dataset=dataset)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* dora skin updates for rich (1 apr 2017)
+
+   add two gtex expression datasets.  preserve access to old
+
+   cd ~/github/dora/datasets/skin/
+   scp -p pshannon@whovian:/local/Cory/skin/gtex/Rich/* .
+     # added these to ~/github/dora/.gitignore
+   print(load("gtex.primary.RData")) # [1] "gtex.primary"
+   print(load("gtex.fib.RData"))  # 1] "gtex.fib"
+   dim(gtex.fib); dim(gtex.primary)
+      [1] 18067   284
+      [1] 21436   607
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cory's reduction of liz's 59 snps (11 apr 2017)
+
+  the 59 fall into two rough groups
+
+   tbl.RUNX1_fp <- getFootprintsInRegion(fpf, "chr1", 167602155, 167602355)   chr1:167602155-167602355
+   tbl.RUNX2_fp <- getFootprintsInRegion(fpf, "chr1", 167529948, 167530148)   chr1:167529948-167530148
+
+*-----------------------------------------------------------------------------------------------------------------------
+* intersect liz blue's 59 family snps with new dhs clusters, encode, 95 cell types
+
+   --- based upon: "* new notebook for liz blue's family-UM0463, continued (6 mar 2017)"
+
+      cd  ~/github/dora/datasets/AD-family.UM0463F/
+      region of interest:   chr1:167,007,138-168,787,658
+
+   --- strategy
+     use (abuse) new TReNA HumanDNAseClusterFilter class to get dhs regions
+     ~/github/dora/datasets/AD-family.UM0463F/dhsExploration.R
+
+
+    --- hand-check this claim
+                   dhs.region                                          snp
+     chr1  167829960 167830230   350          17  chr1 167830170 167830170  rs34423320-C-T
+     https://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?rs=34423320 confirms:
+        hg38: chr1:167830170
+        as.character(getSeq(reference.genome, GRanges("chr1", IRanges(167830170, 167830170))))                  "C"
+        as.character(getSeq(reference.genome, GRanges("chr1", IRanges(167830169, 167830171))))                 "TCC"
+        as.character(getSeq(reference.genome, GRanges("chr1", IRanges(167830164, 167830174))))            "ACTATTCCCCT"
+        as.character(getSeq(reference.genome, GRanges("chr1", IRanges(167830154, 167830184))))  "TACATAATTGACTATTCCCCTAGCTGCTCCT"
+
+     ma0478.1
+         TGA[c/g]TCA
+
+     1:167829170-167831170
+
+    --- regions 2,5,19 overlap with snp 56:
+    x$tbl[c(2,5,19),]
+     chrom regionStart regionEnd regionScore sourceCount    motif       match motif.start motif.end motif.width motif.score strand                                                                                      tf
+      chr1   167829960 167830230         350          17 MA0478.1 GCATGACTCAG   167830164 167830174          11    7.938699      -                                                                                   FOSL2
+      chr1   167829960 167830230         350          17 MA0099.2     TGACTCA   167830167 167830173           7    5.833333      -                                                                                 FOS;JUN
+      chr1   167829960 167830230         350          17 MA0089.1      CATGAC   167830165 167830170           6    4.882353      - MAFG;NFE2L1;MAFF;MAFK;MAFA;MAFB;NRL;ATF2;ATF7;CREB5;NFE2L2;NFE2L3;BACH1;BACH2;JUNB;JUND
+   tbl.snps[56,]
+     chrom     start       end            snp
+      chr1 167830170 167830170 rs34423320-C-T
+
+          match  motif.start
+              ***.***
+           GCATGACTCAG    167830164
+              TGACTCA     167830167
+            CATGAC        167830165
+                 C
+                TCC
+           ACTATTCCCCT
+ TACATAATTGACTATTCCCCTAGCTGCTCCT
+
+     https://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?rs=34423320 confirms:
+        hg38: chr1:167830170
+        as.character(getSeq(reference.genome, GRanges("chr1", IRanges(167830170, 167830170))))                  "C"
+        as.character(getSeq(reference.genome, GRanges("chr1", IRanges(167830169, 167830171))))                 "TCC"
+        as.character(getSeq(reference.genome, GRanges("chr1", IRanges(167830164, 167830174))))            "ACTATTCCCCT"
+        as.character(getSeq(reference.genome, GRanges("chr1", IRanges(167830154, 167830184))))  "TACATAATTGACTATTCCCCTAGCTGCTCCT"
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* harry moses, how daylight was stolen (29 mar 2017)
+
+  on paul.thurmond.shannon@gmail.com, google drive
+*-----------------------------------------------------------------------------------------------------------------------
+* ensembl regulatory build in biomart (28 mar 2017)
+
+  library(biomaRt)
+  listEnsembl()
+               biomart               version
+  1            ensembl      Ensembl Genes 87
+  2 ENSEMBL_MART_MOUSE      Mouse strains 87
+  3                snp  Ensembl Variation 87
+  4         regulation Ensembl Regulation 87
+  5               vega               Vega 67
+  listMarts()
+                 biomart               version
+  1 ENSEMBL_MART_ENSEMBL      Ensembl Genes 87
+  2   ENSEMBL_MART_MOUSE      Mouse strains 87
+  3     ENSEMBL_MART_SNP  Ensembl Variation 87
+  4 ENSEMBL_MART_FUNCGEN Ensembl Regulation 87
+  5    ENSEMBL_MART_VEGA               Vega 67
+
+  mart.reg <- useMart("ENSEMBL_MART_FUNCGEN")
+  listDatasets(mart.reg)
+                            dataset                                description   version
+  1         mmusculus_motif_feature           Mouse Binding Motifs (GRCm38.p5) GRCm38.p5
+  2      mmusculus_external_feature Mouse Other Regulatory Regions (GRCm38.p5) GRCm38.p5
+  3      hsapiens_annotated_feature      Human Regulatory Evidence (GRCh38.p7) GRCh38.p7
+  4    mmusculus_regulatory_feature      Mouse Regulatory Features (GRCm38.p5) GRCm38.p5
+  5          hsapiens_motif_feature           Human Binding Motifs (GRCh38.p7) GRCh38.p7
+  6     hsapiens_regulatory_feature      Human Regulatory Features (GRCh38.p7) GRCh38.p7
+  7   hsapiens_mirna_target_feature     Human miRNA Target Regions (GRCh38.p7) GRCh38.p7
+  8  dmelanogaster_external_feature  Fruitfly Other Regulatory Regions (BDGP6)     BDGP6
+  9     mmusculus_annotated_feature      Mouse Regulatory Evidence (GRCm38.p5) GRCm38.p5
+  10 mmusculus_mirna_target_feature     Mouse miRNA Target Regions (GRCm38.p5) GRCm38.p5
+  11      hsapiens_external_feature Human Other Regulatory Regions (GRCh38.p7) GRCh38.p7
+
+  mart.reg <- useMart("ENSEMBL_MART_FUNCGEN", dataset="hsapiens_motif_feature")
+  mart.reg2 <- useMart("ENSEMBL_MART_FUNCGEN", dataset="hsapiens_regulatory_feature")
+
+  listAttributes (mart.reg)   # show what values can be retrieved
+  listFilters (mart.reg)      # show values to search (filter) on
+
+   --- attributes
+     listAttributes (mart.reg)
+                     name       description           page
+     1  binding_matrix_id    Binding matrix binding_motifs
+     2    chromosome_name   Chromosome Name binding_motifs
+     3   chromosome_start        Start (bp) binding_motifs
+     4     chromosome_end          End (bp) binding_motifs
+     5  chromosome_strand            Strand binding_motifs
+     6              score             Score binding_motifs
+     7      display_label     Display label binding_motifs
+     8  feature_type_name      Feature Type binding_motifs
+     9       so_accession SO Term Accession binding_motifs
+     10           so_name      SO Term Name binding_motifs
+
+   ---- filters
+   listFilters (mart.reg)
+                           name                                                  description
+     1          chromosome_name                                              Chromosome Name
+     2                    start                                                   Start (bp)
+     3                      end                                                     End (bp)
+     4                   strand                                                       Strand
+     5       chromosomal_region Chromosome Regions (e.g 1:100:10000000:-1,1:100000:200000:1)
+     6               band_start                                                   Band Start
+     7                 band_end                                                     Band End
+     8             marker_start                                                 Marker Start
+     9               marker_end                                                   Marker End
+     10           encode_region                                                Encode region
+     11 motif_binding_matrix_id                                            Binding Matrix ID
+     12 motif_feature_type_name                                            Feature Type Name
+
+     coi <- c("binding_matrix_id", "chromosome_name", "chromosome_start", "chromosome_end", "chromosome_strand",
+              "score", "display_label", "feature_type_name", "so_accession", "so_name")
+     regions<-c("5:88819630:88835936")  # 16306
+     tbl <- getBM(attributes=coi, filters="chromosomal_region", values=regions, mart=mart.reg)
+
+     binding_matrix_id chromosome_name chromosome_start chromosome_end chromosome_strand  score     display_label feature_type_name so_accession         so_name
+   1          MA0080.3               5         88827259       88827273                -1 10.029      PU1:MA0080.3               PU1   SO:0000235 TF_binding_site
+   2          MA0080.3               5         88827449       88827463                -1 10.484      PU1:MA0080.3               PU1   SO:0000235 TF_binding_site
+   3          MA0099.2               5         88828135       88828141                -1  8.468 JUN::FOS:MA0099.2          JUN::FOS   SO:0000235 TF_binding_site
+   4          MA0488.1               5         88827357       88827369                 1  9.088     Cjun:MA0488.1              Cjun   SO:0000235 TF_binding_site
+   5          MA0080.2               5         88827451       88827457                -1  8.730      PU1:MA0080.2               PU1   SO:0000235 TF_binding_site
+   6          MA0489.1               5         88828134       88828147                -1 10.201     Cjun:MA0489.1              Cjun   SO:0000235 TF_binding_site
+
+    ---- fimo, matchPWM and ensembl reg each report different results for chr5:88827259-88827273
+         which is in a high-scoring ucsc dnase cluster
+         as.character(getSeq(hg38, GRanges("chr5", IRanges(start=88827259, end=88827273)))) # [1] "CCTCTTCCTCCCTCC"
+     https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&lastVirtModeType=default&lastVirtModeExtraState=&virtModeType=default&virtMode=0&nonVirtPosition=&position=chr5%3A88827259-88827273&hgsid=586099429_KROA05e668cBdV6gQISNhvFfQfeW
+     regions<-c("5:88827259:88827273"); getBM(attributes=coi, filters="chromosomal_region", values=regions, mart=mart.reg)
+      binding_matrix_id chromosome_name chromosome_start chromosome_end chromosome_strand  score display_label feature_type_name so_accession         so_name
+    1          MA0080.3               5         88827259       88827273                -1 10.029  PU1:MA0080.3               PU1   SO:0000235 TF_binding_site
+
+     findHits("CCTCTTCCTCCCTCC", pfms)
+       start end width    score    motif             seq      match strand
+     2     1  10    10 5.562500 MA0057.1 CCTCTTCCTCCCTCC GGAGGGAGGA      -
+     3     5  11     7 4.938776 MA0081.1 CCTCTTCCTCCCTCC    GGAGGAA      -
+     1     5  10     6 4.100000 MA0056.1 CCTCTTCCTCCCTCC     GGAGGA      -
+
+     library(FimoClient)
+       FIMO_HOST <- "whovian"
+       FIMO_PORT <- 5558
+       fc <<- FimoClient(FIMO_HOST, FIMO_PORT, quiet=TRUE)
+    requestMatch(fc, list(x="CCTCTTCCTCCCTCC"))
+     X.pattern.name sequence.name start stop strand   score  p.value  q.value matched.sequence
+     1       GTF2I.p2             x     7   15      - 17.4024 2.23e-06 3.12e-05        GGAGGGAGG
+     2       MA0079.3             x     4   14      + 10.2308 9.03e-05 9.03e-04      CTTCCTCCCTC
+
+   --- use biomart ensembl reg, not just motifs, but all human regulatory features
+  mart.reg2 <- useMart("ENSEMBL_MART_FUNCGEN", dataset="hsapiens_regulatory_feature")
+  listAttributes (mart.reg2)   # show what values can be retrieved
+  listFilters (mart.reg2)      # show values to search (filter) on
+
+  coi <- c("activity", "regulatory_stable_id", "bound_seq_region_start", "bound_seq_region_end",
+           "chromosome_name", "chromosome_start", "chromosome_end",
+           "feature_type_name", "feature_type_description",
+           "epigenome_name", "epigenome_description", "so_accession", "so_name", "efo_id")
+  regions<-c("5:88819630:88835936")  # 16306
+  tbl <- getBM(attributes=coi, filters="chromosomal_region", values=regions, mart=mart.reg2)  # 204 x 14
+  as.data.frame(t(tbl[1:3,]))
+                                                            1                                  2                                                                  3
+  activity                                           INACTIVE                             ACTIVE                                                             ACTIVE
+  regulatory_stable_id                        ENSR00000183674                    ENSR00000183674                                                    ENSR00000183674
+  bound_seq_region_start                             88823801                           88823801                                                           88823801
+  bound_seq_region_end                               88830999                           88830999                                                           88830999
+  chromosome_name                                           5                                  5                                                                  5
+  chromosome_start                                   88823801                           88823801                                                           88823801
+  chromosome_end                                     88830999                           88830999                                                           88830999
+  feature_type_name                  Promoter Flanking Region           Promoter Flanking Region                                           Promoter Flanking Region
+  feature_type_description Predicted promoter flanking region Predicted promoter flanking region                                 Predicted promoter flanking region
+  epigenome_name                                         A549                              Aorta                                               B cells (PB) Roadmap
+  epigenome_description             Epithelial Lung Carcinoma REMC Epigenome (Class 2) for Aorta REMC Epigenome (Class 5) for Primary B cells from Peripheral Blood
+  so_accession                                     SO:0001952                         SO:0001952                                                         SO:0001952
+  so_name                            promoter_flanking_region           promoter_flanking_region                                           promoter_flanking_region
+  efo_id                                                 <NA>                               <NA>                                                               <NA>
+  table(tbl$feature_type_name)
+
+         CTCF Binding Site Promoter Flanking Region
+                        68                      136
+
+  --- now chose in ucsc genome browser, this region: chr5:88822502-88837849 about 15kb
+      which includes all of the h3k27ac marks, and the obvious tss-proximal dnaseclusters
+
+   mart.motifs <- useMart("ENSEMBL_MART_FUNCGEN", dataset="hsapiens_motif_feature")
+   coi <- c("binding_matrix_id", "chromosome_name", "chromosome_start", "chromosome_end", "chromosome_strand",
+           "score", "display_label", "feature_type_name", "so_accession", "so_name")
+   regions<-c("5:88822502:88837849")
+   tbl <- getBM(attributes=coi, filters="chromosomal_region", values=regions, mart=mart.motifs)
+   just 7 binding sites.  just 7 ChIP-seq experiments?
+
+     binding_matrix_id chromosome_name chromosome_start chromosome_end chromosome_strand  score     display_label feature_type_name so_accession         so_name
+   1          MA0036.2               5         88836679       88836692                 1  9.967    Gata2:MA0036.2             Gata2   SO:0000235 TF_binding_site
+   2          MA0080.3               5         88827259       88827273                -1 10.029      PU1:MA0080.3               PU1   SO:0000235 TF_binding_site
+   3          MA0080.3               5         88827449       88827463                -1 10.484      PU1:MA0080.3               PU1   SO:0000235 TF_binding_site
+   4          MA0099.2               5         88828135       88828141                -1  8.468 JUN::FOS:MA0099.2          JUN::FOS   SO:0000235 TF_binding_site
+   5          MA0488.1               5         88827357       88827369                 1  9.088     Cjun:MA0488.1              Cjun   SO:0000235 TF_binding_site
+   6          MA0080.2               5         88827451       88827457                -1  8.730      PU1:MA0080.2               PU1   SO:0000235 TF_binding_site
+   7          MA0489.1               5         88828134       88828147                -1 10.201     Cjun:MA0489.1              Cjun   SO:0000235 TF_binding_site
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ensembl regulatory build  (28 mar 2017)
+
+  http://uswest.ensembl.org/info/genome/funcgen/regulatory_build.html
+
+   The Ensembl Regulatory Build
+   Daniel R ZerbinoEmail author, Steven P Wilder, Nathan Johnson, Thomas Juettemann and Paul R FlicekEmail author
+   Genome Biology201516:56
+   DOI: 10.1186/s13059-015-0621-5©  Zerbino et al.; licensee BioMed Central. 2015
+   Received: 6 October 2014Accepted: 4 March 2015Published: 24 March 2015
+
+   Abstract
+
+   Most genomic variants associated with phenotypic traits or disease do not fall within gene coding
+   regions, but in regulatory regions, rendering their interpretation difficult. We collected public
+   data on epigenetic marks and transcription factor binding in human cell types and used it to
+   construct an intuitive summary of regulatory regions in the human genome. We verified it against
+   independent assays for sensitivity. The Ensembl Regulatory Build will be progressively enriched
+   when more data is made available. It is freely available on the Ensembl browser, from the Ensembl
+   Regulation MySQL database server and in a dedicated track hub.
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* biostrings matchPWM on TERT example
+
+   --- first, get results using the whovian fimo service
+      (see below, * microservices on whovian (9 sep 2016)   dna, fimo to test, maybe restart the service)
+
+   library(FimoClient)
+   FIMO_HOST <- "whovian"
+   FIMO_PORT <- 5558
+   fc <- FimoClient(FIMO_HOST, FIMO_PORT, quiet=FALSE)
+   sequences <- list(tert_wt1="CCCGGAGGGGG", tert_wt2= "CCCGGGAGGGG", tert_mut="CCCCTTCCGGG")
+   tbl <- requestMatch(fc, sequences)
+
+            X.pattern.name sequence.name start stop strand   score  p.value  q.value matched.sequence
+    1             MA0076.2      tert_mut     1   11      + 13.1818 2.22e-05 0.000133      CCCCTTCCGGG
+    2 ELK1,4_GABP{A,B1}.p3      tert_mut     2   11      - 11.7000 4.50e-05 0.000539       CCCGGAAGGG
+    3          ETV6_full_2      tert_mut     2   11      - 10.7245 9.30e-05 0.001120       CCCGGAAGGG
+    4             MA0645.1      tert_mut     2   11      - 10.7308 9.54e-05 0.001150       CCCGGAAGGG
+
+
+   --- create a proper pwm for MA0645.1
+     http://jaspar.genereg.net/html/DOWNLOAD/JASPAR_CORE/pfm/individual/MA0645.1.pfm
+       >MA0645.1	ETV6
+       A  [9414  342 1476    7   21 6687 6687  768  184 2049 ]
+       C  [6562 2394 6379    0    0    0   13   52  834  342 ]
+       G  [4684 4292  397 6687 6687    7   32 6687  233 3205 ]
+       T  [2002  441  308   13   22    0   41    0 6687 1091 ]
+
+      pfm <- matrix(0L, nrow=4, ncol=10, dimnames=list(c("A", "C", "G", "T"), NULL))
+      pfm[1,] <- as.integer(c(9414,342,1476,7,21,6687,6687,768,184,2049))
+      pfm[2,] <- as.integer(c(6562,2394,6379,0,0,0,13,52,834,342))
+      pfm[3,] <- as.integer(c(4684,4292,397,6687,6687,7,32,6687,233,3205))
+      pfm[4,] <- as.integer(c(2002,441,308,13,22,0,41,0,6687,1091))
+      pwm <- PWM(pfm)   # fails becuase columns do not scale to the same count
+
+   --- explore matchPWM using 1st matrix in MotifDB
+     library(MotifDb)
+     mdb <- MotifDb
+     mtx.1 <- mdb[[1]]
+     seq <- consensusString(mtx.1)
+     hits <- matchPWM(mdb[[1]], seq, with.score=TRUE)
+     mcols(hits)$score    7.769231
+
+
+   --- now try this with some TERT promoter sequences and the top fimo hit
+      grep("MA0076", names(mdb), v=TRUE)  # "Hsapiens-JASPAR_CORE-ELK4-MA0076.1" "Hsapiens-JASPAR_2014-ELK4-MA0076.2"
+      elk4.entry <- grep("MA0076", names(mdb))[1]  # first of 2
+      mdb[[1994]]
+           1 2 3 4 5 6   7    8    9
+      A 0.80 0 0 0 0 1 0.8 0.20 0.05
+      C 0.05 1 1 0 0 0 0.0 0.05 0.30
+      G 0.10 0 0 1 1 0 0.0 0.75 0.00
+      T 0.05 0 0 0 0 0 0.2 0.00 0.65
+
+     pfm.1994 <- mdb[[1994]]
+     seq <- consensusString(pfm.1994)   # "ACCGGAAGT"
+     hits <- matchPWM(pfm.1994, seq, with.score=TRUE)
+     mcols(hits)$score    8.0
+       # now extend the string: does matchPWM still find it?
+     seq2 <- sprintf("AT%sCG", seq)
+     hits2 <- matchPWM(pfm.1994, seq2, with.score=TRUE)
+       start end width           score
+        3  11     9 [ACCGGAAGT]  8
+    cbind(as.data.frame(ranges(hits)), score=mcols(hits)$score)
+       start end width score
+           1   9     9     8
+    cbind(as.data.frame(ranges(hits2)), score=mcols(hits)$score)
+        start end width score
+            3  11     9     8
+    seq.rc <- as.character(reverseComplement(DNAString(seq)))
+    matchPWM(pfm.1994, seq.rc, with.score=TRUE)   # NONE
+
+     ----  takes < 10 seconds to search 1000 matrices with one 15 base sequence
+       need to call matchPWM twice, once for the revcomp sequence.
+     search <- function(motifName, mtx, seq){
+        hits <- matchPWM(mtx, seq, with.score=TRUE);
+        if(length(hits) > 0)
+           return(data.frame(ranges(hits), score=mcols(hits)$score, motif=motifName, seq=seq))
+        return(data.frame())
+        }
+
+      xx <- lapply(1:4, function(i) search(names(mdb)[i], mdb[[i]], seq))
+      do.call("rbind", xx)
+
+    --- load and parse the latest jaspar, using utility functions from atSNP package
+     text <- scan("http://jaspar.genereg.net/html/DOWNLOAD/JASPAR_CORE/pfm/nonredundant/pfm_all.txt", what=character(), sep="\n")
+       Read 5410 items
+     url <- "http://jaspar.genereg.net/html/DOWNLOAD/JASPAR_CORE/pfm/nonredundant/pfm_all.txt"
+     jaspar_motif <- LoadMotifLibrary(url, tag=">",skiprows=1,skipcols=0,transpose=TRUE,field=1,sep=c(">","\t",""),pseudocount=1)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* biostrings matchPWM man page example (24 mar 2017)
+
+     data(HNF4alpha)
+     library(BSgenome.Dmelanogaster.UCSC.dm3)
+     chr3R <- Dmelanogaster$chr3R
+     chr3R
+
+     pfm <- consensusMatrix(HNF4alpha)
+     pwm <- PWM(pfm)  # same as 'PWM(HNF4alpha)'
+
+     round(pwm, 2)
+     maxWeights(pwm)
+     maxScore(pwm)
+     reverseComplement(pwm)
+
+     PWMscoreStartingAt(pwm, chr3R, starting.at=1:5)
+
+     hits <- matchPWM(pwm, chr3R)
+     nhit <- countPWM(pwm, chr3R)  # same as 'length(hits)'
+
+     ## Use 'with.score=TRUE' to get the scores of the hits:
+     hits <- matchPWM(pwm, chr3R, with.score=TRUE)
+     head(mcols(hits)$score)
+     min(mcols(hits)$score / maxScore(pwm))  # should be >= 0.8
+
+     ## The scores can also easily be post-calculated:
+     scores <- PWMscoreStartingAt(pwm, subject(hits), start(hits))
+
+     ## Match the minus strand:
+     matchPWM(reverseComplement(pwm), chr3R)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* atSNP (24 mar 2017)
+
+  cd ~/github
+  git clone https://github.com/chandlerzuo/atSNP.git
+  cd atSNP
+  R CMD build  .
+  R CMD install atSNP_1.0.tar.gz
+
+   [status: abandoning for now, seeing if biostrings matchPWM is good enough]
+
+
+*-----------------------------------------------------------------------------------------------------------------------
 * fix motifdb problems (23 mar 2017)
 
   --- release
@@ -110,11 +716,11 @@ bed format: chrom, start, end, name, score, strand
 
   --- devel
 
-  
+
 *-----------------------------------------------------------------------------------------------------------------------
 * MotifDb/vignettes/Makefile before deletions (23 mar 2017)
 
-pdf: 
+pdf:
 	"$(R_HOME)/bin/R" CMD Sweave MotifDb.Rnw --pdf
 
 view: pdf
@@ -134,7 +740,7 @@ genome(mySession) <- "hg38"
 track.names <- trackNames(ucscTableQuery(mySession))  # 113 tracks
    # chose a few tracks at random from this set, and discover how  many tables they hold
 grep("dnase", as.character(track.names), ignore.case=TRUE, v=TRUE)
-   # [1] "wgEncodeRegDnaseClustered" "wgEncodeRegDnase"  "wgEncodeRegDnaseWig"      
+   # [1] "wgEncodeRegDnaseClustered" "wgEncodeRegDnase"  "wgEncodeRegDnaseWig"
 grep("dnase", as.character(track.names), ignore.case=TRUE) # 35 26 37
 tableNames(ucscTableQuery(mySession, track="wgEncodeRegDnaseClustered"))
   # [1] "wgEncodeRegDnaseClustered"        "wgEncodeRegDnaseClusteredSources"
@@ -150,8 +756,8 @@ mySession <- browserSession ()
 genome(mySession) <- "hg38"
 track.names <- trackNames(ucscTableQuery(mySession))  # 113 tracks
 grep("dnase", track.names, ignore.case=TRUE, value=TRUE)
-             DNase Clusters                    DNase HS                DNase Signal 
-"wgEncodeRegDnaseClustered"          "wgEncodeRegDnase"       "wgEncodeRegDnaseWig" 
+             DNase Clusters                    DNase HS                DNase Signal
+"wgEncodeRegDnaseClustered"          "wgEncodeRegDnase"       "wgEncodeRegDnaseWig"
 track.name <- "wgEncodeRegDnaseClustered"
 tableNames(ucscTableQuery(mySession, track=track.name))
    # [1] "wgEncodeRegDnaseClustered"        "wgEncodeRegDnaseClusteredSources"
@@ -179,7 +785,7 @@ tableNames(ucscTableQuery(mySession, track="wgEncodeRegMarkH3k27ac"))
    #   "wgEncodeBroadHistoneHuvecH3k27acStdSig"
    #   "wgEncodeBroadHistoneK562H3k27acStdSig"
    #   "wgEncodeBroadHistoneNhekH3k27acStdSig"
-   #   "wgEncodeBroadHistoneNhlfH3k27acStdSig" 
+   #   "wgEncodeBroadHistoneNhlfH3k27acStdSig"
 table <- "wgEncodeBroadHistoneGm12878H3k27acStdSig"  # choose just the first cell line
 tbl.h3k27ac.1 <- getTable(ucscTableQuery (mySession, track=track, range=region, table=table))  # 303 9
   # Error in .local(object, ...) : tabular output format not available
@@ -188,7 +794,7 @@ query <- ucscTableQuery (mySession, track=track, range=region, table=table)
   # with that failure, try the table browser directly
   # filtered so that data value > 100, got very tractable example table of ~30 rows
 
-  
+
   --- michael's vignette Example 2: DNaseI hypersensitivity regions in the K562 Cell Line
 library(rtracklayer)
 track.name <- "wgEncodeUwDgf"
@@ -270,7 +876,7 @@ engineered metabolic networks.   they
      94576948 Mar 10 14:13 skin_hint.bed.gz
     485670659 Mar 10 14:07 skin_hint.bed
 
-   scp sking_hint.bed.gz* pshannon@whovian:/local/httpd/vhosts/pshannon/annotations/
+   scp sking_hint.bed.gz* pshannon@whovian:/local/httpd/vhosts/pshannon/annotations/<
 
 
 *-----------------------------------------------------------------------------------------------------------------------
@@ -4621,7 +5227,7 @@ yay!
   continuously reassemble in different combinations that
   follow the rhythm of changing climate.
 
- 
+
    --- Identifying Mature and Old Forests In Western Washington
    http://file.dnr.wa.gov/publications/lm_hcp_west_oldgrowth_guide_full_lowres.pdf
 
@@ -6837,7 +7443,7 @@ load(f) # tbl
 x <- locStringToBedTable(head(tbl$loc, n=100))
 gr1 <- GRanges(seqnames=x$chrom, IRanges(start=x$start, end=x$end))
 gr2 <- GRanges(seqnames=x$chrom, IRanges(start=x$start-50, end=x$end+50))
-head(as.data.frame(findOverlaps(gr1, gr2, type=‘any')))
+head(as.data.frame(findOverlaps(gr1, gr2, type='any')))
 #
 #  queryHits subjectHits
 # 1         1           3
@@ -18211,6 +18817,7 @@ Is there a way to do something like this?  If it were possible, we could weave h
 * biomaRt tips: get all genes (by symbol) on chr 5
 
    ensembl.hg38 <- useMart("ensembl", dataset="hsapiens_gene_ensembl")
+
 
    tbl <- getBM(attributes=c("entrezgene", "chromosome_name", "hgnc_symbol"), filters="chromosome_name", values="5", mart=ensembl.hg38)
    head(getBM(attributes=c("hgnc_symbol"), filters="chromosome_name", values="5", mart=ensembl.hg38))
