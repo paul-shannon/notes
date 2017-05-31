@@ -95,19 +95,1194 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 bed format: chrom, start, end, name, score, strand
 
 * -top-
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* aqp4 multiModels (30 may 2017)   TEADn motif disruption?
+
+  cd ~/github/TReNA/inst/misc/multiModels/
+  source("aqp4.R")
+
+  --- currently configured to find regulatory regions, and thus tfs, in
+    regionsSpec <- "chr18:26865459-26865479"
+
+    getDHSCandidates(); getFootprintCandidates()
+    m <- test.createModel("AQP4", 500, 500)
+
+  --- next up: i have lost the affect of the snps
+    create new bed files for aqp4 region, from dhs database, and the sqlite.
+
+  --- old result to reproduce, email of 11 may 2017, titled "TEAD-off: rs3875089"
+  tbl.wt[grep("TEAD", tbl.wt$tfs),]
+  motifName chrom motifStart motifEnd strand motifScore motifRelativeScore      match regulatoryRegionStart regualtoryRegionEnd                     tfs
+3   MA0090.2 chr18   26865465 26865474      +   5.653203          0.8174939 AGCATCCCTT              26865449            26865489 TEAD1;TEAD2;TEAD3;TEAD4
+21  MA0808.1 chr18   26865466 26865473      +   5.564402          0.8368466   GCATCCCT              26865449            26865489 TEAD3;TEAD1;TEAD2;TEAD4
+22  MA0809.1 chr18   26865465 26865474      +   5.470297          0.8060669 AGCATCCCTT              26865449            26865489 TEAD4;TEAD1;TEAD2;TEAD3
+
+
+   --- test.createModel reproduces this and more
+     # next up: do with the tbl.snp[2,] variant.   does these tfs.big drop out?
 
 *-----------------------------------------------------------------------------------------------------------------------
+* create aqp4 sqlite footprints database for trenaViz exploration (30 may 2017)
+
+  cd ~/s/work/priceLab/ohsu-aquaporin/
+  toMysql.R has these contents:
+
+library(TReNA)
+library(RPostgreSQL)
+library(RUnit)
+library(RSQLite)
+
+print(load("footprintsFromCory/aqp4_fp.RData"))  # fp
+names(fp$AQP4)  # [1] "tfs" "tbl" "tfs" "tbl" "tfs" "tbl" "tfs" "tbl"
+tbl.snps <- data.frame()
+tbl.snps <- rbind(tbl.snps, fp$AQP4[[2]])
+tbl.snps <- rbind(tbl.snps, fp$AQP4[[4]])
+tbl.snps <- rbind(tbl.snps, fp$AQP4[[6]])
+tbl.snps <- rbind(tbl.snps, fp$AQP4[[8]])
+dim(tbl.snps) # [1] 240237     20
+
+
+genome.db.uri    <- "postgres://bddsrds.globusgenomics.org/hg38"                  # has gtf and motifsgenes tables
+footprint.db.uri <- "postgres://bddsrds.globusgenomics.org/brain_hint"            # has hits and regions tables
+fpf <- FootprintFinder(genome.db.uri, footprint.db.uri, quiet=FALSE)
+chrom <- unique(tbl.snps$chrom) # [1] "chr18"
+start <- min(tbl.snps$start)    # [1] 26825884
+end   <- max(tbl.snps$endpos)   #  [1] 26905808
+tbl.fp <- getFootprintsInRegion(fpf, "chr18", start, end)   # dim(1185 17)
+
+
+db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="brain_hint", host="whovian")
+query <- sprintf("select * from regions where chrom='%s' and start>=%d and endpos <= %d", chrom, start, end)
+tbl.regions.a <- dbGetQuery(db, query)   # 681 x 4
+
+loc.set <- sprintf("('%s')", paste(tbl.regions.a$loc, collapse="','"))
+query.hits <- sprintf("select * from hits where loc in %s", loc.set)
+tbl.hits.a <- dbGetQuery(db, query.hits)    # 1185 x 14
+tbl.out <- merge(tbl.regions.a, tbl.hits.a, on="loc")
+
+
+# now make sure we can create new, small tbl.regions and tbl.hits.a by simple column-subsetting
+# of tbl.snps
+
+checkTrue(all(colnames(tbl.regions.a) %in% colnames(tbl.snps)))
+checkTrue(all(colnames(tbl.hits.a) %in% colnames(tbl.snps)))
+
+tbl.regions <- tbl.snps[, colnames(tbl.regions.a)]
+tbl.hits <- tbl.snps[, colnames(tbl.hits.a)]
+
+
+db.lite <- dbConnect(dbDriver("SQLite"), "aqp4.sqlite")
+dbWriteTable(db.lite, "regions", tbl.regions)
+dbWriteTable(db.lite, "hits", tbl.hits)
+dbDisconnect(db.lite)
+
+
 *-----------------------------------------------------------------------------------------------------------------------
+* clustergrammer, minimal demo (30 may 2017)
+
+  cd ~/github/clustergrammer_requirejs/examples/simpleDemo
+  open index.html
+  just two genes in 3 conditions
+
 *-----------------------------------------------------------------------------------------------------------------------
+* contra non-invasive health monitoring
+
+  http://www.cancer.net/navigating-cancer-care/prevention-and-healthy-living/cancer-screening
+
+*------------------------------------------------------------------------------------------------------------------------
+* exploring ermrest from R, in preparation for a new FootprintFinder protocol (27 may 2017)
+
+  cd ~/github/TReNA/inst/misc/ermrestExplorations/
+  simple.R
+
+  https://bdds-dev.isrd.isi.edu/ermrest/catalog/7/entity/lymphoblast:regions/loc=chr1%3A817425-817435/HITS:=(loc)=(lymphoblast:hits:loc)/REGION:=left(loc)=(lymphoblast:regions:loc)/$HITS?accept=json
+
+  curl "https://bdds-dev.isrd.isi.edu/ermrest/catalog/7/entity/public:regions/loc=chr1%3A817425-817435?accept=json"
+    [{"loc":"chr1:817425-817435","chrom":"chr1","start":817425,"endpos":817435,"id":2}]
+
+  url <- "https://bdds-dev.isrd.isi.edu/ermrest/catalog/7/entity/public:regions/loc=chr1%3A817425-817435?accept=json"
+  fromJSON(getURL(url))
+
+library(RCurl)
+library(jsonlite)
+url <- "https://bdds-dev.isrd.isi.edu/ermrest/catalog/7/entity/public:regions/loc=chr1%3A817425-817435?accept=json"
+print(fromJSON(getURL(url)))
+                 loc chrom  start endpos id
+1 chr1:817425-817435  chr1 817425 817435  2
+
+url2 <- "https://bdds-dev.isrd.isi.edu/ermrest/catalog/7/entity/public:regions/loc=chr1%3A817425-817435/HITS:=(loc)=(public:hits:loc)/REGION:=left(loc)=(public:regions:loc)/$HITS?accept=json"
+print(fromJSON(getURL(url2)))
+
+                 loc               type     name length strand        sample_id method         provenance score1  score2   score3 score4 score5 score6       id
+1 chr1:817425-817435 motif.in.footprint MA0002.2     11      + ENCSR000EIJ_hint   HINT brain.filler.minid     79 13.0345 1.59e-05     NA     NA     NA 38957240
+2 chr1:817425-817435 motif.in.footprint MA0483.1     11      - ENCSR000EIJ_hint   HINT brain.filler.minid     79 12.0517 4.18e-05     NA     NA     NA 39017717
+3 chr1:817425-817435 motif.in.footprint MA0002.2     11      + ENCSR000ENE_hint   HINT brain.filler.minid    268 13.0345 1.59e-05     NA     NA     NA 39408967
+4 chr1:817425-817435 motif.in.footprint MA0483.1     11      - ENCSR000ENE_hint   HINT brain.filler.minid    268 12.0517 4.18e-05     NA     NA     NA 39474334
+
+
+
+
+
+
+
 *-----------------------------------------------------------------------------------------------------------------------
+* hugelkultur blog post
+
+  http://www.greenseattle.org/amending-soil-through-hugelkultur/
+
 *-----------------------------------------------------------------------------------------------------------------------
+* sword fern info
+
+  --- june 2011 hatchery trail photos, jordan jackson
+    http://metropolitangardens.blogspot.com/2011/11/seward-park.html
+    http://3.bp.blogspot.com/-vTGQx6jJB4Y/TooXF2SrtxI/AAAAAAAATrM/wt7FpggKfLY/s640/Fallen+tree+0611.JPG
+    http://1.bp.blogspot.com/-CkVIBfzU74I/TooXIpvuJ9I/AAAAAAAATrk/k7q9uqsf3Xo/s1600/Seward+Park+valley+0611.JPG
+
+  --- bill gardner, ParaLogics Water Sciences
+    Name: Bill Gardner
+    Email: billgardner35@msn.com
+
+     Comment: Has symptoms of a fungal problem. Collect soil samples in a location at the leading edge of the
+     encroachment and a sample two feet into the growing area measured from the first sample. Have a lab compare the two
+     samples and look for a microbe present in first sample and absent in the second sample. If one is found the
+     restoration should be relatively simple. We deal with similar infestations (not in forest settings) routinely at
+     ParaLogics Water Sciences.
+
+
+
 *-----------------------------------------------------------------------------------------------------------------------
+* toggle hide and show div (18 may 2017)
+
+   ~/s/examples/js/verticalPanel/index.html
 *-----------------------------------------------------------------------------------------------------------------------
+* cellphoneJS, simulator webapp, add phone tree and help (17 may 2017)
+
+
+
+  cd ~/github/cellphoneJS/webpack-version/
+  make   # calls webpacks, then open index.html
+
+
+  --- bootrap sliding pane?
+    cd ~/s/examples/js/bootstrapSlider
+
 *-----------------------------------------------------------------------------------------------------------------------
+* trenaViz demo, aqp4 and rs3763043: make an sqlite database (30 may 2017)
+
+  [status (30 may 2017): cory provided /local/Cory/for_Paul/aqp4_fp.RData
+   cd ~/s/work/priceLab/ohsu-aquaporin
+   print(load("footprintsFromCory/aqp4_fp.RData"))  # fp
+   names(fp$AQP4)  # [1] "tfs" "tbl" "tfs" "tbl" "tfs" "tbl" "tfs" "tbl"
+   tbl.snps <- data.frame()
+   tbl.snps <- rbind(tbl.snps, fp$AQP4[[2]])
+   tbl.snps <- rbind(tbl.snps, fp$AQP4[[4]])
+   tbl.snps <- rbind(tbl.snps, fp$AQP4[[6]])
+   tbl.snps <- rbind(tbl.snps, fp$AQP4[[8]])
+   dim(tbl.snps) # [1] 240237     20
+
+   --- compare this to hits and regions on a whovian database
+
+
 *-----------------------------------------------------------------------------------------------------------------------
+* trenaViz demo, aqp4 and  rs3763043
+
+  [status (30 may 2017): cory provided /local/Cory/for_Paul/aqp4_fp.RData
+   cd ~/s/work/priceLab/ohsu-aquaporin
+   print(load("footprintsFromCory/aqp4_fp.RData"))  # fp
+   names(fp$AQP4)  # [1] "tfs" "tbl" "tfs" "tbl" "tfs" "tbl" "tfs" "tbl"
+
+
+[1] --- rs3763043
+[1] lostTFs.20: TEAD1,TCF12,NEUROD2,PRRX1,OTX1,ELF1,ELK3,ELF2,NFATC1,ELK4,TEAD3,ELK1,HOPX,SCX,TCF4,NFAT5,NFATC2,TCF3,NFATC4,HESX1,NHLH1,ETV4,TEAD2,FEV,LYL1,ERG,FLI1,MESP2,ARX,NEUROD6,ERF,ALX3,VSX1,RAX2,ETV1,MESP1,ETV5,TEAD4,NEUROD1,ELF4,ETV3,TWIST2,DRGX,ETV7,TWIST1,TAL1,NHLH2,RHOXF1,BHLHE22,SPDEF,ETV6,NFATC3
+[1] createdTFs.20: HSF1,HSF4,HSF2
+        IncNodePurity     gene.cor
+TEAD1     29.90525712  0.760538317
+TCF12      1.62745534  0.661929427
+NEUROD2    2.20841964 -0.563189422
+PRRX1      1.54042301  0.619890322
+
+
+
+   --- no regulatory regions in brain_hint of encode dhsclustered for any of the 4 ohsu aqp4 snps.
+     got new footprints from cory:
+     lapply(c(2,4,6,8), function(i) dim(fp$AQP4[[i]]))
+        [1] 86694    20
+        [1] 93769    20
+        [1] 29662    20
+        [1] 30112    20
+
+    tbl.snps <- data.frame()
+    tbl.snps <- rbind(tbl.snps, fp$AQP4[[2]])
+    tbl.snps <- rbind(tbl.snps, fp$AQP4[[4]])
+    tbl.snps <- rbind(tbl.snps, fp$AQP4[[6]])
+    tbl.snps <- rbind(tbl.snps, fp$AQP4[[8]])
+    dim(tbl.snps) # [1] 240237     20
+
+    table(tbl.snps$provenance)
+
+      brain_hint_16.minid       brain_hint_20.minid brain_wellington_16.minid brain_wellington_20.minid
+                    86694                     93769                     29662                     30112
+
+    tbl.bed <- unique(tbl.snps[, c("chrom", "start", "endpos", "name", "score1", "strand")])
+    dim(tbl.bed) # [1] 13936     6
+    write.table(tbl.bed, row.names=FALSE, col.names=FALSE, quote=FALSE, sep="\t", file="aqp4-fp.bed")
+
+
 *-----------------------------------------------------------------------------------------------------------------------
+* cognitive biology
+
+  bacterial cognition: http://mechanism.ucsd.edu/teaching/f13/cs200/bacterialinformationprocessing.pdf
+
 *-----------------------------------------------------------------------------------------------------------------------
+* jquery tab tips:  raise tab, on tab activation
+
+  --- for example:
+
+   <div id="trenaVizDiv">
+     <ul>
+       <li><a href="#igvDiv">IGV</a></li>
+       <li><a href="#cyOuterDiv">Network</a></li>
+       <li><a href="#modelDiv">Model</a></li>
+     </ul>
+
+
+     <div id="cyOuterDiv">
+        <div id="cyMenubarDiv">
+            <button id='cyFitButton' class="cyMenuButton">Fit</button>
+            <button id='cyFitSelectedButton'class="cyMenuButton">Fit Selected</button>
+            <button id='cySFNButton' class="cyMenuButton">SFN</button>
+            <button id='cyHideUnselectedButton' class="cyMenuButton">Hide Unselected</button>
+            <button id='cyShowAllButton' class="cyMenuButton">Show All</button>
+        </div>
+        <div id="cyDiv"></div>
+     </div>
+
+     <div id="igvDiv"> </div>
+     <div id="modelDiv">
+       tabular view coming soon
+     </div>
+   </div>
+
+
+
+  --- one solution
+    $('a[href="#igvDiv"]').click();       // raises first tabl
+
+  --- another
+    $("#trenaVizDiv").tabs({active: 2})   // raise 3rd tab
+
+
+   --- on  tab activation
+  trenaVizDiv.tabs({
+     activate: function(event, ui){
+        if(ui.newPanel.is("#cyOuterDiv")){
+          console.log("cy!");
+          handleWindowResize();
+          cy.resize();
+          }
+        else if(ui.newPanel.is("#igvDiv")){
+          console.log("igv!");
+          }
+        else if(ui.newPanel.is("#modelDiv")){
+          console.log("model!");
+          }
+        else{
+          console.log("unrecognized tab activated");
+          }
+        }
+     });
+
+
 *-----------------------------------------------------------------------------------------------------------------------
+* how to grok dbSNP and SNPlocs.Hsapiens.dbSNP144.GRCh38 (12 may 2017)
+
+snpsById(SNPlocs.Hsapiens.dbSNP144.GRCh38, "rs3763040")
+GPos object with 1 position and 2 metadata columns:
+      seqnames       pos strand |   RefSNP_id alleles_as_ambig
+         <Rle> <integer>  <Rle> | <character>      <character>
+  [1]     ch18  26864410      + |   rs3763040                D
+
+                                         |
+   chr18:26,864,405-26,864,415 wt:  ACAGGGGGGTG
+
+   IUPAC_CODE_MAP[["D"]]   # [1] "AGT"
+
+                             T/G/A
+   ATGCGTGGGATGTGGCTGGCCACCC[A/C/T]CCTGTGGAGCCAGCTCTTCCTTTAT   # reverse strand
+   Chromosome: 18:26864410
+
+   Gene:AQP4-AS1 (GeneView) AQP4 (GeneView) Functional Consequence:
+   intron variant,upstream variant 2KB Validated: by 1000G,by
+   cluster,by frequency,by hapmap HGVS: NC_000018.10:g.26864410G>A,
+   NC_000018.10:g.26864410G>T, NC_000018.9:g.24444374G>A,
+   NG_029560.1:g.6343C>A, NG_029560.1:g.6343C>T,
+   NM_001317384.1:c.32+1248C>A, NM_001317384.1:c.32+1248C>T,
+   NM_001317387.1:c.32+1248C>A, NM_001317387.1:c.32+1248C>T,
+   NM_001650.5:c.32+1248C>A, NM_001650.5:c.32+1248C>T,
+   NM_004028.4:c.-1848C>A, NM_004028.4:c.-1848C>T,
+   NR_026908.1:n.-898G>A, NR_026908.1:n.-898G>T,
+   XM_005258257.1:c.-31+1248C>T, XM_011525942.2:c.-1438C>A,
+   XM_011525942.2:c.-1438C>T, XR_243846.1:n.-181G>A
+
+  --- simpler example?
+     as.data.frame(snpsById(SNPlocs.Hsapiens.dbSNP144.GRCh38, "rs3875089"))
+       seqnames      pos strand RefSNP_id alleles_as_ambig
+     1     ch18 26865469      + rs3875089                Y  (C or T)
+     IUPAC_CODE_MAP[["Y"]] #  "CT"
+     getSequence(mm, data.frame(chrom="chr18", start=26865469, end=26865469))  # [1] "T"
+
+    but https://www.ncbi.nlm.nih.gov/snp/?term=rs3875089 says:
+       GCATAGAGAAGGTAGAAGAAAAGGG[A/G]TGCTTTTTAGCCAAATCCTCCATAT
+    blat puts this on the minus strand
+    thus [A/G] means +strand wt T, mutant allele C
+
+  --- strategy when supplied with rsid
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ohsu aquaporin AQP4 variants (12 may 2017)
+
+  https://www.ncbi.nlm.nih.gov/pubmed/26433375:
+     The Potential Roles of Aquaporin 4 in Alzheimer's Disease, 2016
+
+   ~/s/work/priceLab/ohsu-aquaporin/go.R
+
+  rs3763040: 18:26864410 A/C/T
+  rs3875089: 18:26865469 A/G
+  rs335929:  18:26855623 A/C/G
+  rs3763043: 18:26855854 A/G
+  rs9951307: 18:26850565 A/G
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* qiang's gbm variants: do they change TReNA predictions? spreadsheet for  (17 may 2017)
+
+  cd ~/s/work/qiang/gbm/
+  go.R
+
+*-----------------------------------------------------------------------------------------------------------------------
+* qiang's gbm variants: do they change TReNA predictions? (9 may 2017)
+
+
+  --- email from xiaowei
+  Here are the variants we are curious about their effects in GBM:
+
+     ---   copy number lost (hg19):
+        chr1:6,212,000-7,790,000
+
+    --- SNP (hg19):
+      chr16: 67876493   THAP11_c.36C>A    thap11 (short gene), see also nutf2 and cenpt, tsnaxip1
+      chr7:  6063107    AIMP2_c.748A>G, plus strand   also EIF2AK1 gene, minus strand, and PMS2 on minsu strand
+      chr17: 7578509   PTEN_c.803C>G
+      chr17: 7578509  TP53_c.421T>C
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* R regexpr match
+
+s <- "chr5:120-500"
+match <- regexpr("(?<chromosome>chr.*):(?<startPos>\\d+)-(?<endPos>\\d+)", "chr5:120-500", perl=TRUE)
+if(match == 1){
+   info <- attributes(match)
+   result <- list()
+   for(name in info$capture.names){
+      start <- as.integer(info$capture.start[1, name])
+      length <- as.integer(info$capture.length[1, name])
+      result[[name]] <- substring(s, start, start+length-1)
+      if(name %in% c("startPos", "endPos"))
+         result[[name]] <- as.numeric(result[[name]])
+      } # for name
+   } # if match
+
+
+print(result)
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* comparing fimo and bioc motif matching with vrk2:  is bioc good enough (5 may 2017)
+
+  cd ~/github/TReNA/inst/unitTests
+  test_getCandidates.vrk2.rs13384219.neighborhood()
+
+   candidateFilterSpec <- create.vrk2.rs13384219.neighborhood.candidateFilterSpec()
+
+   hdf <- with(candidateFilterSpec,
+               HumanDHSFilter(genomeName,
+                              encodeTableName=encodeTableName,
+                              fimoDatabase.uri=fimoDB,
+                              geneInfoDatabase.uri=geneInfoDB,
+                              regionsSpec=regionsSpec,
+                              geneCenteredSpec=geneCenteredSpec,
+                              quiet=TRUE))
+   x <- getCandidates(hdf)
+   browser()
+   checkEquals(sort(names(x)), c("tbl.bioc", "tbl.fimo", "tfs.bioc", "tfs.fimo"))
+   motifs.bioc <- x$tbl.bioc$motifname   # 148
+   motifs.fimo <- x$tbl.fimo$motifname   # 13
+
+    motifname chrom    start   endpos strand motifscore     pval         sequence chromStart chromEnd count score                                                                                                           tf
+   2   MA0078.1  chr2 57907329 57907337      -  12.303400 2.03e-05        CACATTGTC   57907313 57907333     1    98 SOX17;SOX30;SOX15;SOX7;SOX18;SOX8;SOX9;SOX10;SOX5;SOX6;SOX13;SOX4;SOX11;SOX12;SOX1;SOX2;SOX3;SOX14;SOX21;SRY
+   9   MA0646.1  chr2 57907311 57907321      -  12.183700 3.29e-05      CATGCTGGTTC   57907313 57907333     1    98                                                                                                    GCM1;GCM2
+   22  MA0834.1  chr2 57907333 57907346      -   6.857140 8.54e-05   CTATGAAGTCACAT   57907313 57907333     1    98                                                   ATF7;ATF2;CREB5;NFE2L1;NFE2L2;NFE2L3;BACH1;BACH2;JUNB;JUND
+   3   MA0088.2  chr2 57907311 57907326      +   0.844828 7.81e-05 GAACCAGCATGCAAAT   57907313 57907333     1    98                                                                                                       ZNF143
+
+
+  ---- why do we miss MA0078.1?
+    consensusString(reverseComplement(pfms[["MA0078.1"]]))  # [1] "GACAATG??"
+    consensusString(pfms[["MA0078.1"]])                     # [1] "??CATTGTC"
+   tbl <- TReNA:::.getScoredMotifs("ACCAGCATGCAAATTAGACAA", 50)[[1]]
+   matchPWM(reverseComplement(pfms[["MA0078.1"]]), "TTGTCTAATTTGCATGCTGGT", with.score=TRUE, min.score="50%")
+       start end width
+           4  12     9 [TCTAATTTG]
+
+
+  --- tbl.regions
+     chrom chromStart chromEnd count score
+   9  chr2   57907313 57907333     1    98
+   seqs <- "ACCAGCATGCAAATTAGACAA"
+
+   pfms[["MA0078.1"]]
+              1         2          3          4          5 6 7          8         9
+    A 0.2258065 0.2580645 0.09677419 0.96774194 0.00000000 0 0 0.00000000 0.0000000
+    C 0.2903226 0.2580645 0.58064516 0.00000000 0.03225806 0 0 0.00000000 0.5483871
+    G 0.1935484 0.1290323 0.03225806 0.00000000 0.00000000 0 1 0.06451613 0.3225806
+    T 0.2903226 0.3548387 0.29032258 0.03225806 0.96774194 1 0 0.93548387 0.1290323
+
+   consensusString(pfms[["MA0078.1"]]) # [1] "??CATTGTC"
+   segs.rc <- as.character(reverseComplement(DNAString(seqs)))  #  "TTGTCTAATTTGCATGCTGGT"
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+*  bdds fimo db (5 may 2017)
+
+  --- riptide
+   /Applications/Postgres.app//Contents/Versions/9.6/bin/psql -U trena --host bddsrds.globusgenomics.org fimo  password also trena
+
+  PGPASSWORD=bdds_postgres_rds_pass*word psql fimo --host=bddsrds.globusgenomics.org --port=5432 --username=galaxy
+
+*-----------------------------------------------------------------------------------------------------------------------
+* direct calls to getRegulatoryRegions yields nothing, in context of getCandidates returns > 0 rows (4 may 2017)
+
+  [status: I had the chromosme wrong.  sheesh]
+
+  > source("test_HumanDHSFilter.R"); test_checkAllEncodeTables()
+     [1] --- test_checkAllEncodeTables
+
+     [1] "fimo_hg38"
+     [1] query: select * from wgEncodeRegDnaseClustered where chrom = 'chr5' and chromStart >= 57907313 and chromEnd <= 57907333
+     [1] 0 DHS regions reported in 21 bases, start:end unmodified
+     [1] possible that start:end (21) is small relative to DHS regions, extend by 10000
+     [1] query with extended region, 17 rows
+     [1] tbl.regionsExtended: 17 rows, now have intersection
+     [1] GenomicRanges intersections of extended region with original target: 0
+
+  > test_getCandidates.vrk2.rs13384219.neighborhood()
+     [1] --- test_getCandidates.vrk2.rs13384219.neighborhood
+     [1] "fimo_hg38"
+     [1] query: select * from wgEncodeRegDnaseClustered where chrom = 'chr2' and chromStart >= 57907313 and chromEnd <= 57907333
+     [1] 0 DHS regions reported in 21 bases, start:end unmodified
+     [1] possible that start:end (21) is small relative to DHS regions, extend by 10000
+     [1] query with extended region, 20 rows
+     [1] tbl.regionsExtended: 20 rows, now have intersection
+     [1] GenomicRanges intersections of extended region with original target: 1
+
+
+  --- comparing the extended region query
+
+   select * from wgEncodeRegDnaseClustered where chrom = 'chr5' and chromStart >= 57897313 and chromEnd   <= 57917333
+   select * from wgEncodeRegDnaseClustered where chrom = 'chr2' and chromStart >= 57897313 and chromEnd   <= 57917333
+
+
+   --- once fixed, the cell type emerges
+
+    I have been using your VRK2 promoter variant to develop and test
+    the recipe-driven TReNA I have been working on.
+
+    I found just one sample in wgEncodeRegDnaseClustered, which is
+    built from 95 cell types.  So I looked into each contributing
+    table to find out which one has the DHS reads:
+
+
+   wgEncodeRegDnaseUwGm12878Peak
+
+    Described at https://www.genome.gov/26524238/encode-project-common-cell-types/
+
+   GM12878 is a lymphoblastoid cell line produced from the blood of a
+   female donor with northern and western European ancestry by EBV
+   transformation. It was one of the original HapMap cell lines and
+   has been selected by the International HapMap Project for deep
+   sequencing using the Solexa/Illumina platform. This cell line has a
+   relatively normal karyotype and grows well. Choice of this cell
+   line offers potential synergy with the International HapMap Project
+   and genetic variation studies. It represents the mesoderm cell
+   lineage. Cells will be obtained from the Coriell Institute for
+   Medical Research [coriell.org] (Catalog ID GM12878).
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* todo, wednesday (3 may 2017)
+
+   cd ~/github/TReNA/inst/unitTests
+   source("test_HumanDHSFilter.R"); test_getRegulatoryRegions()
+    [1] --- test_getRegulatoryRegions
+    [1] "fimo_hg38"
+    [1] query: select * from wgEncodeRegDnaseClustered where
+   Error in .local(conn, statement, ...) (from test_HumanDHSFilter.R#176) :
+    could not run statement: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
+
+*-----------------------------------------------------------------------------------------------------------------------
+* TReNA: some possible sources for regulatory regions
+
+   http://www.genecards.org/Guide/GeneCard (2 may 2017)
+      search for "Regulatory Elements for MEF2C Gene" on http://www.genecards.org/cgi-bin/carddisp.pl?gene=MEF2C
+
+*-----------------------------------------------------------------------------------------------------------------------
+* fimo whole genome hg38 database on whovian
+  library(RPostgreSQL)
+  database.host <- "whovian"
+  db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="fimo", host=database.host)
+  dbListTables(db)  # [1] "fimo_hg38"
+  dbGetQuery(db, "select * from fimo_hg38 limit 10")
+       motifname chrom start endpos strand motifscore     pval empty    sequence
+    1   MA0002.2    10 18991  19001      -    12.4655 2.73e-05       TTCTGTGGTTC
+    2   MA0002.2    10 19478  19488      -    13.3448 1.17e-05       TTCTGTGGTTG
+    3   MA0002.2    10 20814  20824      -    12.9483 1.69e-05       GGCTGTGGGTT
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cyjs cellphone, dijkstra shortest paths on hidden edges
+
+
+   max says:
+
+     Most functions and algorithms can be called on subgraphs such
+     that the function only considers the subgraph (i.e. calling
+     collection).
+
+   If you call cy.elements(':visible').dijkstra(), for example, only visible elements will be considered.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cellphone cyjs
+
+  cd ~/github/cellphoneJS/webpack-version
+
+  make clean install run
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* webpack jquery bootstrap cellphone simulator (24 apr 2017)
+
+
+  [better info on this: see ~/github/cellphoneJS/webpack-version/package.json]
+
+  cd ~/github/projects/examples/js/webpack/learning-webpack2/moreModularCyjs/
+
+#npm install --save-dev bootstrap
+npm install webpack
+npm install --save-dev bootstrap@v4.0.0-alpha.4
+npm install --save-dev bootstrap-sass
+npm install --save-dev extract-text-webpack-plugin
+npm install --save-dev node-sass
+npm install --save-dev resolve-url-loader@*
+npm install --save-dev url-loader@*
+npm install --save-dev file-loader@*
+npm install --save-dev sass-loader@*
+npm install --save-dev bootstrap-loader
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* upton sinclair
+
+  Sinclair helped found the California chapter of the American Civil
+  Liberties Union in the 1920s.
+
+  Sinclair is well-known for his principle: "It is difficult to get a
+  man to understand something when his salary depends on his not
+  understanding it." This line has been quoted in many political
+  books, essays, articles, and other forms of media, including Al
+  Gore's 2006 film, An Inconvenient Truth.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* barbara mclintock: the genome is a ‘highly sensitive organ of the cell’
+*-----------------------------------------------------------------------------------------------------------------------
+* git tips, github tips, unstage (large) file which can't be pushed (23 apr 2017)
+
+  remote: error: File priceLab/AD/IGAP_stage_1.txt.lifted is 383.12 MB; this exceeds GitHub's file size limit of 100.00 MB
+  remote: error: File priceLab/AD/gwasFimo/IGAP_stage_1.txt is 320.98 MB; this exceeds GitHub's file size limit of 100.00 MB
+  remote: error: File priceLab/AD/snp.zip is 391.85 MB; this exceeds GitHub's file size limit of 100.00 MB
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* webpack version of cellphoneJS (22 apr 2017)
+
+  cd ~/github/cellphoneJS/webpack-version
+  npm install webpack -g
+
+*-----------------------------------------------------------------------------------------------------------------------
+* gulp tips
+
+   npm install gulp-cli -g
+   npm install gulp -D
+   touch gulpfile.js
+   gulp --help
+
+*-----------------------------------------------------------------------------------------------------------------------
+* node and npm tips
+
+  --- where are -g modules installed?
+
+     /usr/local/bin/gulp -> /usr/local/lib/node_modules/gulp-cli/bin/gulp.js
+     dir /usr/local/lib/node_modules/
+       408 Apr 23 13:33 gulp-cli/
+       850 Feb 21 16:33 npm/
+       408 Apr 22 19:40 webpack/
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cyjs: build the latest version using gulp (23 apr 2017)
+
+  cd ~/github/cytoscape.js
+
+  git pull origin
+  npm install gulp
+  npm install
+
+  gulp build
+  gulp test
+  gulp dist
+
+   dir ~/github/cytoscape.js/dist
+
+     3347362 Apr 23 13:46 cytoscape.js
+      288661 Apr 23 13:46 cytoscape.min.js
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* simple cyjs and webpack version 2 (23 apr 2017)
+
+   cd ~/github/projects/examples/js/webpack/learning-webpack2/simpleCyjs/
+
+   following https://www.npmjs.com/package/cytoscape
+   npm install cytoscape --save   # 1 node_modules directory
+   npm install webpack
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* simple jquery and webpack version 2 (23 apr 2017)
+
+   cd ~/github/projects/examples/js/webpack/learning-webpack2/jquery
+   make clean install run
+
+   to start, 6 files:
+     index.html
+     content.js
+     entry.js
+     style.css
+     makefile
+     webpack.config.js
+        var path = require('path');
+        const webpack = require('webpack'); //to access built-in plugins
+        module.exports = {
+          entry: './entry.js',
+          plugins: [
+            new webpack.ProvidePlugin({
+              $: "jquery",
+              jQuery: "jquery"
+              })],
+          module: {
+            rules:[{
+               test: /\.css$/,
+               use: [ 'style-loader', 'css-loader' ]
+               }]},
+          output: {
+           path: path.resolve(__dirname, 'dist'),
+           filename: 'bundle.js'
+           },
+        };
+
+   ---- install modules
+     npm init -y
+     npm install jquery --save
+     npm install webpack --save
+     npm install style-loader css-loader --save-dev
+     make
+        we see that this line in entry.js executes:   $("#cyDiv").height(300);
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* learning webpack version 2 (23 apr 2017)
+
+  --- how to load css?
+     following https://webpack.js.org/loaders/css-loader/
+     import css from './style.css';
+
+  --- install npm-related modules
+    npm init -y  # create package.json
+       # add description and repository fields
+    npm install --save-dev css-loader   # adds 119 modules!
+    npm install --save-dev style-loader # adds 1 more
+
+  cd ~/github/projects/examples/js/webpack/learning-webpack2/level0
+  make
+  uses this webpack.config.js:
+
+      var path = require('path');
+      module.exports = {
+        entry: './entry.js',
+        module: {
+          rules:[{
+             test: /\.css$/,
+             use: [ 'style-loader', 'css-loader' ]
+             }]
+          },
+       output: {
+         path: path.resolve(__dirname, 'dist'),
+         filename: 'bundle.js'
+         },
+      };
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cellphoneJS simulator (22 apr 2017)
+
+   cd ~/github/cellphoneJS/submenu-simple/
+
+
+   --- to run
+     open index.html
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* toggle cyjs trena for jocelyn (21 apr 2017)
+
+  expression data: /price1/sament/human_aba
+  snps in ~/github/projects/priceLab/joceyln/psychiatricDisease/snps.scz2_108_loci.p1e4.tfbs.trn.cor.eQTL.coreTFs.xlsx
+
+*-----------------------------------------------------------------------------------------------------------------------
+* bddsrds.globusgenomics.org    ravi
+
+    ~/github/projects/examples/database/footprints/directAccessToRegionsAndHitsTables.R
+
+   genome.db.uri    <- "postgres://bddsrds.globusgenomics.org/hg38"                  # has gtf and motifsgenes tables
+   footprint.db.uri <- "postgres://bddsrds.globusgenomics.org/brain_hint"            # has hits and regions tables
+   fpf <- FootprintFinder(genome.db.uri, footprint.db.uri, quiet=FALSE)
+   tbl.fp <- getFootprintsInRegion(fpf, "chr5", 88822685, 89011824)
+
+   * direct 2-query extraction of footprints from globusgenomics brain/hint database (21 apr 2017)
+
+   library(RPostgreSQL)
+   database.host <- "bddsrds.globusgenomics.org"
+
+   # first, the hg38 gtf table
+   db.hg38 <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="hg38", host=database.host)
+   dbListTables(db.hg38)   # [1] "motifsgenes" "gtf"
+   query <- "select * from gtf where moleculetype='gene' and gene_biotype='protein_coding' limit 5"
+   dbGetQuery(db.hg38, query)[, c(1:3,5,10)]
+
+   # now, the footprint database, brain, hint as footprint caller, two tables: regions and hits
+   # the regions table has every unique chromosome:start-end region in the whole genome in which
+   # one or more samples had a footprint called.  there are no duplicates in the regions table
+   # the hits table has the actual footprint information, sample ID, score,
+   db.fp  <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="brain_hint", host=database.host)
+
+   chromosome <- "chr5"
+   start <- 88717221
+   end   <- 88717502
+
+   query.part.1 <- "select loc, chrom, start, endpos from regions"
+   query.part.2 <- sprintf("where chrom='%s' and start >= %d and endpos <= %d", chromosome, start, end)
+   query.regions <- paste(query.part.1, query.part.2)
+
+   tbl.regions <- dbGetQuery(db.fp, query.regions)   # just 5 rows
+
+
+   loc.set <- sprintf("('%s')", paste(tbl.regions$loc, collapse="','"))
+   query.hits <- sprintf("select * from hits where loc in %s", loc.set)
+   tbl.hits <- dbGetQuery(db.fp, query.hits)
+   tbl.out <- merge(tbl.regions, tbl.hits, on="loc")
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* GO annotation filter for TReNA, 94 GO terms, 2898 genes
+
+   ~/github/projects/GO/go.R
+
+   -- some plausible BP terms:
+
+     # 1 GO:0010467                      gene expression
+     # 2 GO:0006351         transcription, DNA-templated
+     # 3 GO:0097659 nucleic acid-templated transcription
+     # 4 GO:0001172         transcription, RNA-templated
+     # 5 GO:0006351         transcription, DNA-templated
+
+   print(load("~/github/TReNA/inst/extdata/human.regulatory.genes.RData"))
+    "all.regulatory.genes" "tbl.names"
+
+      sort(sapply(all.regulatory.genes, length), decreasing=TRUE)
+       GO:0006351  GO:0045944  GO:0000122  GO:0006366 unannotated  GO:0042795
+             1786         947         703         509          72          70
+       GO:0006383  GO:0042789  GO:0009303  GO:0006390  GO:0042791  GO:0042796
+               32          15          12          10           6           6
+       GO:0042797  GO:0006360  GO:0009299  GO:0009301  GO:0001172  GO:0061614
+                6           5           5           4           2           2
+       GO:0009304  GO:0097659  GO:0001059  GO:0001060  GO:0001121  GO:0009300
+                2           1           1           1           1           1
+> unlist(lapply(names(head(sort(sapply(all.regulatory.genes, length), decreasing=TRUE), n=12)), function(name) subset(tbl.names, GOID==name)$TERM))
+ [1] "transcription, DNA-templated"
+ [2] "positive regulation of transcription from RNA polymerase II promoter"
+ [3] "negative regulation of transcription from RNA polymerase II promoter"
+ [4] "transcription from RNA polymerase II promoter"
+ [5] "unannotated"  # from seth's motifsGenes list
+ [6] "snRNA transcription from RNA polymerase II promoter"
+ [7] "transcription from RNA polymerase III promoter"
+ [8] "mRNA transcription from RNA polymerase II promoter"
+ [9] "rRNA transcription"
+[10] "transcription from mitochondrial promoter"
+[11] "5S class rRNA transcription from RNA polymerase III type 1 promoter"
+[12] "snRNA transcription from RNA polymerase III promoter"
+
+
+
+names(head(sort(sapply(all.regulatory.genes, length), decreasing=TRUE), n=12))
+ [1] "GO:0006351"  "GO:0045944"  "GO:0000122"  "GO:0006366"  "unannotated"
+ [6] "GO:0042795"  "GO:0006383"  "GO:0042789"  "GO:0009303"  "GO:0006390"
+[11] "GO:0042791"  "GO:0042796"
+>
+
+
+      head(tbl.names)
+              GOID                                                                 TERM
+      1 GO:0097659                                 nucleic acid-templated transcription
+      2 GO:0001172                                         transcription, RNA-templated
+      3 GO:0006351                                         transcription, DNA-templated
+      4 GO:0000122 negative regulation of transcription from RNA polymerase II promoter
+      5 GO:0045944 positive regulation of transcription from RNA polymerase II promoter
+      6 GO:0001059                        transcription from RNA polymerase IV promoter
+
+
+
+   save(all.regulatory.genes, tbl.names, file="human.regulatory.genes.RData")
+all.regulatory.genes$unannotated
+ [1] "PRRX2"    "TEAD1"    "E2F3"     "HNF4G"    "EMX1"     "CENPB"    "LHX9"     "VENTX"
+ [9] "NR3C2"    "ZBED1"    "ZIC4"     "PKNOX2"   "TEAD4"    "RXRG"     "E2F2"     "DLX6"
+[17] "EMX2"     "EVX2"     "GSC2"     "ISL2"     "SMARCA5"  "SMARCAD1" "SMARCAL1" "SMARCD1"
+[25] "SMARCE1"  "MAZ"      "NKX2-4"   "RFXAP"    "NKX1-1"   "NKX1-2"   "HYKK"     "DBX1"
+[33] "DBX2"     "TLX3"     "FOXD4L3"  "GATAD1"   "DNMT3L"   "MTA3"     "TCF23"    "MKX"
+[41] "IRX1"     "IRX2"     "IRX4"     "IRX6"     "LEUTX"    "TPRX1"    "RHOXF2"   "RHOXF2B"
+[49] "TBPL2"    "HDX"      "RFX7"     "THAP10"   "PRKRIR"   "THAP2"    "THAP3"    "THAP4"
+[57] "THAP6"    "THAP8"    "THAP9"    "DMRTA2"   "DEC1"     "ZBED2"    "ZBED4"    "ZBED5"
+[65] "DNAJC1"   "CRAMP1"   "HMGXB3"   "TOX4"     "UBTFL1"   "UBTFL6"   "SP140"    "SP140L"
+>
+
+   go.R   # very hacky code:
+
+
+   root.0 <- "GO:0097659" # nucleic acid-templated transcription
+   root.1 <- "GO:0001172" # transcription, RNA-templated
+   root.2 <- "GO:0006351" # transcription, DNA-templated
+   root.3 <- "GO:0000122" # negative regulation of transcription from RNA polymerase II promoter
+   root.4 <- "GO:0045944" # positive regulation of transcription from RNA polymerase II promoter
+
+   roots <- c(root.0, root.1, root.2, root.3, root.4)
+   root.children <- unique(unlist(lapply(child2, showChildren)))  # 74
+
+   child2 <- unique(unlist(lapply(root.children, showChildren)))  #90
+   child3 <- unique(unlist(lapply(child2, showChildren)))  # 74
+   child4 <- unique(unlist(lapply(child3, showChildren)))  # 90
+
+   child5 <- unique(unlist(lapply(child4, showChildren)))  # 91
+   child6 <- unique(unlist(lapply(child5, showChildren)))  # 91
+
+   all.regulatory.terms <- unique(c(roots, child2, child3, child4, child5, child6))  # 95
+   all.regulatory.genes <- lapply(all.regulatory.terms, genesAnnotatedTo)
+   names(all.regulatory.genes) <- all.regulatory.terms
+   reg.genes <- unique(unlist(all.regulatory.genes, use.names=FALSE))
+   tbl.mg <- read.table("~/github/TReNA/inst/extdata/motifGenes.tsv", sep="\t", as.is=TRUE, header=TRUE)
+   unannotated.genes <- setdiff(tbl.mg$tf.gene, reg.genes) # [1] 72
+   all.regulatory.genes[["unannotated"]] <- unannotated.genes
+   reg.genesPP <- unique(unlist(all.regulatory.genes, use.names=FALSE))
+   setdiff(tbl.mg$tf.gene, reg.genesPP)
+   x <- lapply(names(all.regulatory.genes)[-96], lookupID)  # 96 is "unannotated"
+   tbl.names <- do.call("rbind", x)
+   save(all.regulatory.genes, tbl.names, file="all.regulatory.genes.RData")
+
+*-----------------------------------------------------------------------------------------------------------------------
+* proposed GO annotation filter for TReNA, look at ESR1 and CREB3L1 genes (20 apr 2017)
+
+  ESR1 is a TF, usually a homodimer, active after binding estrogen.  may be annotated as a nuclear hormone receptor
+  CREB3L1 is (?) a more conventional TF
+  DNMT3A (DNA Methyltransferase 3 Alpha)  not a proper transcription factor, but found in seth's motifsgenes.tsv
+
+     GO:0010468 regulation of gene expression
+     GO:0045893 positive regulation of transcription, DNA-templated
+
+     library(org.Hs.eg.db)
+     db <- org.Hs.eg.db
+     select(db, keys="GO:1903799", keytype="GO", columns=c("SYMBOL", "GO"))
+     library(GO.db)
+     select(GO.db, keys="GO:1903799", keytype="GOID", columns=c("GOID", "TERM", "ONTOLOGY", "DEFINITION"))
+     as.data.frame(t(select(GO.db, keys="GO:1903799", keytype="GOID", columns=c("GOID", "TERM", "ONTOLOGY", "DEFINITION"))))
+                                                                                                                                               V1
+       GOID  GO:1903799
+       TERM  negative regulation of production of miRNAs involved in gene silencing by miRNA
+       ONTOLOGY BP
+       DEFINITION Any process that stops, prevents or reduces the frequency, rate or extent
+                  of production of miRNAs involved in gene silencing by miRNA.
+
+     ---- how many and which genes are annotated to (or below)?
+        GO:0010468 regulation of gene expression
+        x <- as.list(GOBPCHILDREN)
+        x[["GO:0010468"]]
+                 is_a         is_a         is_a         is_a         is_a         is_a
+         "GO:0002331" "GO:0006355" "GO:0007468" "GO:0010608" "GO:0010628" "GO:0010629"
+                 is_a      part_of         is_a         is_a         is_a         is_a
+         "GO:0010793" "GO:0023019" "GO:0032922" "GO:0036206" "GO:0039656" "GO:0040029"
+                 is_a         is_a         is_a         is_a         is_a         is_a
+         "GO:0043484" "GO:0046782" "GO:0050684" "GO:0060968" "GO:1900095" "GO:1902796"
+                 is_a         is_a         is_a
+         "GO:1903317" "GO:2000232" "GO:2000235"
+          parent <- "GO:0010468"
+          kids <- as.character(x[[parent]])
+          family <- c(parent, kids)
+        --- get all genes annotated to goid<- "GO:0010468";
+          dim(select(db, keys=goid, keytype="GO", columns=c("SYMBOL", "GO"))) # 90 genes
+          dim(select(db, keys=kids, keytype="GO", columns=c("SYMBOL", "GO"))) # 1864
+
+       length(unique(select(db, keys=kids, keytype="GO", columns=c("SYMBOL", "GO")))$SYMBOL)  # [1] 1864
+
+         select(GO.db, keys=kids, keytype="GOID", columns=c("GOID", "TERM", "ONTOLOGY"))
+         'select()' returned 1:1 mapping between keys and columns
+                  GOID                                                              TERM ONTOLOGY
+         1  GO:0002331                                      pre-B cell allelic exclusion       BP
+         2  GO:0006355                        regulation of transcription, DNA-templated       BP
+         3  GO:0007468                           regulation of rhodopsin gene expression       BP
+         4  GO:0010608                 posttranscriptional regulation of gene expression       BP
+         5  GO:0010628                            positive regulation of gene expression       BP
+         6  GO:0010629                            negative regulation of gene expression       BP
+         7  GO:0010793                            regulation of mRNA export from nucleus       BP
+         8  GO:0023019     signal transduction involved in regulation of gene expression       BP
+         9  GO:0032922                           circadian regulation of gene expression       BP
+         10 GO:0036206                             regulation of histone gene expression       BP
+         11 GO:0039656                       modulation by virus of host gene expression       BP
+         12 GO:0040029                         regulation of gene expression, epigenetic       BP
+         13 GO:0043484                                        regulation of RNA splicing       BP
+         14 GO:0046782                                 regulation of viral transcription       BP
+         15 GO:0050684                                     regulation of mRNA processing       BP
+         16 GO:0060968                                      regulation of gene silencing       BP
+         17 GO:1900095 regulation of dosage compensation by inactivation of X chromosome       BP
+         18 GO:1902796                                   regulation of snoRNA processing       BP
+         19 GO:1903317                                  regulation of protein maturation       BP
+         20 GO:2000232                                     regulation of rRNA processing       BP
+         21 GO:2000235                                     regulation of tRNA processing       BP
+
+         select(GO.db, keys=family, keytype="GOID", columns=c("GOID", "TERM", "ONTOLOGY"))
+         'select()' returned 1:1 mapping between keys and columns
+                  GOID                                                              TERM ONTOLOGY
+         1  GO:0010468                                     regulation of gene expression       BP
+         2  GO:0002331                                      pre-B cell allelic exclusion       BP
+         3  GO:0006355                        regulation of transcription, DNA-templated       BP
+         4  GO:0007468                           regulation of rhodopsin gene expression       BP
+         5  GO:0010608                 posttranscriptional regulation of gene expression       BP
+         6  GO:0010628                            positive regulation of gene expression       BP
+         7  GO:0010629                            negative regulation of gene expression       BP
+         8  GO:0010793                            regulation of mRNA export from nucleus       BP
+         9  GO:0023019     signal transduction involved in regulation of gene expression       BP
+         10 GO:0032922                           circadian regulation of gene expression       BP
+         11 GO:0036206                             regulation of histone gene expression       BP
+         12 GO:0039656                       modulation by virus of host gene expression       BP
+         13 GO:0040029                         regulation of gene expression, epigenetic       BP
+         14 GO:0043484                                        regulation of RNA splicing       BP
+         15 GO:0046782                                 regulation of viral transcription       BP
+         16 GO:0050684                                     regulation of mRNA processing       BP
+         17 GO:0060968                                      regulation of gene silencing       BP
+         18 GO:1900095 regulation of dosage compensation by inactivation of X chromosome       BP
+         19 GO:1902796                                   regulation of snoRNA processing       BP
+         20 GO:1903317                                  regulation of protein maturation       BP
+         21 GO:2000232                                     regulation of rRNA processing       BP
+         22 GO:2000235                                     regulation of tRNA processing       BP
+
+       dim(select(db, keys=family, keytype="GO", columns=c("SYMBOL", "GO"))) #  1954    4
+
+
+   --- huge mismatch between our tbl.motifsgenes:
+     tbl.mg <- read.table("~/github/TReNA/inst/aextdata/motifGenes.tsv", sep="\t", as.is=TRUE, header=TRUE)
+     tfs <- unique(tbl.mg$tf.gene) # 845
+     tbl.go <- select(db, keys=family, keytype="GO", columns=c("SYMBOL", "GO"))
+      dim(tbl.go)  # [1] 1954    4
+      setdiff(tfs, tbl.go$SYMBOL)  # > 514
+
+      RUNX1 as sample: annotated to cellular component, core-binding factor complex
+
+select(db, keys="RUNX1", keytype="SYMBOL", columns=c("SYMBOL", "GO"))
+'select()' returned 1:many mapping between keys and columns
+   SYMBOL         GO EVIDENCE ONTOLOGY
+1   RUNX1 GO:0000975      IDA       MF
+2   RUNX1 GO:0000977      IDA       MF
+3   RUNX1 GO:0000977      IMP       MF
+4   RUNX1 GO:0001047      IDA       MF
+5   RUNX1 GO:0001228      IDA       MF
+6   RUNX1 GO:0001228      IMP       MF
+7   RUNX1 GO:0001503      IBA       BP
+8   RUNX1 GO:0002062      IBA       BP
+9   RUNX1 GO:0005515      IPI       MF
+10  RUNX1 GO:0005524      IEA       MF
+11  RUNX1 GO:0005634      IDA       CC
+12  RUNX1 GO:0005654      IDA       CC
+13  RUNX1 GO:0005737      IDA       CC
+14  RUNX1 GO:0006366      IEA       BP
+15  RUNX1 GO:0030097      IDA       BP
+16  RUNX1 GO:0030854      IMP       BP
+17  RUNX1 GO:0032743      IMP       BP
+18  RUNX1 GO:0043231      IDA       CC
+19  RUNX1 GO:0045766      ISS       BP
+20  RUNX1 GO:0045893      IDA       BP
+21  RUNX1 GO:0045944      IDA       BP
+22  RUNX1 GO:0045944      IMP       BP
+23  RUNX1 GO:0048935      TAS       BP
+24  RUNX1 GO:0071425      TAS       BP
+>
+
+*-----------------------------------------------------------------------------------------------------------------------
+* Seed limitation and lack of downed wood, not invasive species, threaten conifer regeneration in an urban forest
+
+  open ~/Documents/swordFern-dieOff/Ettingeretal2017UE-Seed-limitation-and-lack-of-downed-wood-not-invasive-species-threaten-conifer-regen.pdf
+
+   Ailene K. Ettinger & Benjamin R. Lee & Sarah Montgomery
+   2017
+
+*-----------------------------------------------------------------------------------------------------------------------
+* nylgut banjo strings (14 jan 2015, 19 apr 2017)
+
+  Aquila 5B Banjo Strings Set, medium tension, red B
+  http://www.amazon.com/Aquila-5B-Banjo-Strings-Set/dp/B005WFSNX4/ref=sr_1_1?s=books&ie=UTF8&qid=1452820761&sr=8-1&keywords=nylgut+banjo+strings
+
+*-----------------------------------------------------------------------------------------------------------------------
+* studio 3 signs 117 nw 54th st: no-boot, no boot, don't walk here seward park signs (19 apr 2017)
+
+  (206) 622-8204
+
+   request pricing on 6 foam core, 6x6 no-boot signs
+   http://www.dirtcheapsigns.com/Custom-Rider-Pins.php: H-stakes and "rider pins"
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ess configuration (18 apr 2017)
+
+  ~/.ess -> /Applications/Emacs2.app/Contents/Resources/site-lisp/ess/ess-custom.el
+  made read-write, with distributed version renamed to
+     /Applications/Emacs2.app/Contents/Resources/site-lisp/ess/ess-custom.el-orig
+
+   these ~/.emacs custom variables were set by:
+      f1-v ess-default-style
+      click on you can CUSTOMIZE this variable
+      make selection from pull down menu
+      click "Apply and Save" button
+
+     (custom-set-variables
+      ;; custom-set-variables was added by Custom.
+      ;; If you edit it by hand, you could mess it up, so be careful.
+      ;; Your init file should contain only one such instance.
+      ;; If there is more than one, they won't work right.
+      '(ess-default-style (quote OWN))
+      '(ess-indent-offset 20 t)
+      '(ess-indent-with-fancy-comments nil)
+      '(ess-own-style-list
+        (quote
+         ((ess-indent-offset . 3)
+          (ess-offset-arguments . open-delim)
+          (ess-offset-arguments-newline . prev-call)
+          (ess-offset-block . open-delim)
+          (ess-offset-continued . straight)
+          (ess-align-nested-calls "ifelse")
+          (ess-align-arguments-in-calls "function[ 	]*(")
+          (ess-align-continuations-in-calls . t)
+          (ess-align-blocks control-flow)
+          (ess-indent-from-lhs arguments fun-decl-opening)
+          (ess-indent-from-chain-start . t)
+          (ess-indent-with-fancy-comments))))
+      '(inferior-R-program-name "/usr/local/bin/R"))    # which R in ess?
+
+
+     make OWN the ess-default style
+
+  --- cannot yet make this stick, but this works in an R buffer
+     esc-x set-var
+       ess-indent-with-fancy-comments  nil
+     f1-v: describe variable ess-default-style  'RRR'.
+
+  use gui buffer to change, apply, save: You can customize this variable.
+
+     which add this to the bottom of my ~/.emacs
+
+       (custom-set-variables
+         '(ess-default-style (quote BSD)))
+
+
+  --- try changing the just installed customization file:
+     /Applications/Emacs2.app/Contents/Resources/site-lisp/ess/ess-custom.el
+     variables:
+         ess-default-style    RRR is the default
+         ess-indent-with-fancy-comments, value is t, non-nil means distinquish between #,##,###
+
+   changed t to nil
+
+    (defcustom ess-indent-with-fancy-comments nil
+      "Non-nil means distiguish between #, ##, and ### for indentation.
+       See `ess-style-alist' for for an overview of ESS indentation."
+     :type 'boolean
+     :group 'ess-edit)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* TReNA, comparing biostrings matchPWM with FootprintFinder/brain/hint, with pre-calculated fimo (17 apr 2017)
+
+   ~/github/TReNA/inst/unitTests
+
+   jaspar <- dhsFilter@pfms
+
+
+    ---- fpf.out$tbl finds 3 motifs in chr2:127107783-127107856
+
+       chrom     start       end motifName length strand score1   score2   score3    tf
+        chr2 127107794 127107814  MA0138.2     21      -    105  4.87755 7.39e-05  REST
+        chr2 127107797 127107809  ZBTB6.p2     13      +     43  9.28947 6.56e-05 ZBTB6
+        chr2 127107812 127107820  GTF2I.p2      9      +     64 13.57320 1.28e-05 GTF2I
+
+    getSequence(dhsFilter, with(fpf.out$tbl, data.frame(chrom=chrom, chromStart=start, chromEnd=end)))
+       [1] "TTCGGTCTCCGTGGCCCTAGA" "GGTCTCCGTGGCC"         "AGAGGTAGG"
+
+
+     maxScore(jaspar[["MA0138.2"]])  1] 16.48217
+     hits.fwd <- matchPWM(jaspar[["MA0138.2"]], "TTCGGTCTCCGTGGCCCTAGA", min.score="50%", with.score=TRUE)
+     hits.rev <- matchPWM(reverseComplement(jaspar[["MA0138.2"]]), "TTCGGTCTCCGTGGCCCTAGA", min.score="50%", with.score=TRUE)
+
+      mcols(hits)
+DataFrame with 1 row and 1 column
+      score
+  <numeric>
+1  10.81034
+>
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* lost lake trail plants (spring 2017)
+
+  Corylus cornuta, beaked hazelnut 40
+  Mahonia nervosa, dwarf Oregon grape 60
+  Oemleria cerasiformis, indian plum 30
+  Pseudotsuga menziesii, Douglas fir 40
+  Rubus parviflorus, thimbleberry 40
+  Rubus spectabilis, salmonberry 40
+  Rubus ursinus, trailing blackberry 50
+
 *-----------------------------------------------------------------------------------------------------------------------
 * igap cyjs model toggle todo (17 apr 2017)
 
@@ -226,6 +1401,16 @@ bed format: chrom, start, end, name, score, strand
   going up to hamburg
   the girl I left on sandy
   jaybird died of the whooping cough
+  bryson higgin's tune
+  bull of the woods - james bryan
+  farewell trion (also james bryan)
+  marion reese's cumberland gap
+  clyde davenport's boating up sandy
+
+  sugar babe (not yet learned)
+  boatman song
+  john brown's march
+  all young (modal)
 
 *-----------------------------------------------------------------------------------------------------------------------
 * banjo cluck: 5 techniques
@@ -1400,7 +2585,8 @@ net.write_json_to_file('viz','small.json')
     1) nicely explained by strand (C -> T: MAF  0.0881/441)
         https://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?rs=2710873
 
-    2) wt and mutant alleles seem to be switched  (A -> G: MAF 0.1777/890)
+
+2) wt and mutant alleles seem to be switched  (A -> G: MAF 0.1777/890)
         https://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?rs=7526076
 
     3) wt and mutant alleles seem to be switched  (C -> T: TMAF 0.2532/1268)
@@ -1506,6 +2692,32 @@ rs61766322 same observations as for previous
   --- hypothesis the motif gain snps suggest stronger up-regulatory relationships
     cd ~/github/dora/notebooks/AD-trena/explorations/
     ap2a2.R
+
+*-----------------------------------------------------------------------------------------------------------------------
+* run vrk2-pou3f2 notebook on whovian (1 may 2017)
+
+  rs13384219  A->G
+  gtcagtagtggtggaaccagcatgc[A/G]aattagacaatgtgacttcatagcc
+  Chromosome: 2:57907323
+  vrk2 tss at chr2:57908651
+  Gene:VRK2 (GeneView) Functional Consequence: upstream variant 2KB Validated: by 1000G,by cluster,by frequency,by
+    hapmap Global MAF:G=0.0623/312
+
+
+  cd ~/github/notebooks
+  bash> nohup jupyter notebook --port=10005 --NotebookApp.token= &
+  find notebook here:
+     http://whovian:10005/notebooks/shared/VRK2-Pou3f2.ipynb
+        chrom = "chr2"
+     loc = 57907323
+  chrom = "chr2"
+  loc = 57907323
+  shoulder = 7
+  snpLocus = "%s:%d-%d" % (chrom, loc-shoulder, loc+shoulder)
+  viewRange = "chr2:57,907,026-57,907,985"
+*-----------------------------------------------------------------------------------------------------------------------
+
+*-----------------------------------------------------------------------------------------------------------------------
 
 *-----------------------------------------------------------------------------------------------------------------------
 * igv.js tips, igv tips
@@ -3254,6 +4466,8 @@ sudo apachectl restart
 *-----------------------------------------------------------------------------------------------------------------------
 *  vrk2/pou3f2 bipolar snp fimo summary table (19 jan 2016)
 
+  vrk2 snp: chr2:57907323
+
   http://whovian:10005/notebooks/shared/VRK2-Pou3f2.ipynb
 
   updated notebook
@@ -4764,8 +5978,14 @@ assert(requests.get('https://igv.org/web/beta/igv-beta.min.js').status_code == 2
 *-----------------------------------------------------------------------------------------------------------------------
 * minimal cyjs, created from console: 1 node, 1 self-looped edge
 
-   $("#someDiv").append("<div id='cyDiv' style='border:1px solid red; height:200px;'>cyDiv coming soon</div>");
-   $("#cyDiv").cytoscape({elements:{nodes:[{data:{id:'a'}}], edges:[{data:{source:'a', target:'a'}}]}})
+   $("#").append("<div id='newCyDiv' style='border:1px solid red; height:200px;'>cyDiv coming soon</div>");
+
+   --- new, with 3.0.0 (22 apr 2017)
+      var cy = cytoscape({container: $('#newCyDiv'), elements:{nodes:[{data:{id:'a'}}], edges:[{data:{source:'a', target:'a'}}]}})
+
+   --- old, before 3.0 (22 apr 2017)
+     $("#newCyDiv").cytoscape({elements:{nodes:[{data:{id:'a'}}], edges:[{data:{source:'a', target:'a'}}]}})
+
 
 *-----------------------------------------------------------------------------------------------------------------------
 * minimal cyjs in html, minimal cytoscape
@@ -6560,6 +7780,12 @@ src/manager-base.ts(4,20): error TS2307: Cannot find module 'underscore'.
    ~/s/work/priceLab/mattRichards/style.js
    ~/s/examples/jupyter/javascriptMagic/cyjs/style.js
    ~/s/examples/jupyter/javascriptMagic/cyjs/igap4snpGenesetEnrichment-style.js
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cyjs tips: filter on node attributes, cellphone email property
+
+    cy.filter(function(e){return (e.isNode() && e.data("email"))}).length   // 29
+    cy.filter(function(e){return (e.isNode() && !e.data("email"))}).length  // 6
 
 *-----------------------------------------------------------------------------------------------------------------------
 * rcyjs tips, cyjs tips: png
@@ -8434,6 +9660,16 @@ The rows break out like this:
   got dmg from http://rudix.org/packages/rcs.html
    806 Apr  9  2016 /usr/local/bin/ci
 *-----------------------------------------------------------------------------------------------------------------------
+* R tips: switch statement, R switch
+
+   solver <- "hoopla"
+   switch(solver,
+          randomForest={
+             printf("randomForest")
+             },
+          printf("unrecognized solver: %s", solver )
+          )
+
 * R tips: regex, gregexpr
 
    library(stringr)
@@ -10555,6 +11791,9 @@ ZHX2
 
 *------------------------------------------------------------------------------------------------------------------------
 * cdn
+
+  https://code.jquery.com/jquery-3.2.1.slim.min.js
+
 
   http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.8/d3.min.js
 
@@ -15461,7 +16700,10 @@ collect2: error: ld returned 1 exit status
 
    --- tert gain of motif test
 
-   light–induced damage (chr5, 1,295,228 C>T and 1,295,250 C>T; hereafter termed C228T and C250T,
+   light-induced damage (chr5, 1,295,228 C>T and 1,295,250 C>T; hereafter termed C228T and C250T,
+    can't get these to  quite fit (pshannon, 18 may 2017)
+   rs2853669:   chr5:1,295,234   C/T
+   rs796832466: chr5:1,295,349
 
    chr5:1,295,228-1,295,250
    looking for (both C228T and C250T generated an identica)l 11-bp nucleotide stretch (5′-CCCCTTCCGGG-3′)
@@ -50729,7 +51971,8 @@ it will naturally pull your head back and on top of the neck rather
 than jutting forward.
 
 *------------------------------------------------------------------------------------------------------------------------
-Szentkirályi, Gadamer and Deleuze, as standing in front of a Baroque church (The building ’interpreted’ with the approach of Szentkirályi and Gadamer)
+Szentkirlyi, Gadamer and Deleuze, as standing in front of a Baroque church (The building interpreted
+ with the approach of Szentkirlyi and Gadamer)
 Antal Puhl
 Period. Polytech. Arch., Vol. 44, No. 2 (2013), pp. 55-59.
 DOI: 10.3311/PPar.7394
