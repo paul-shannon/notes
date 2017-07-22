@@ -13,6 +13,7 @@ test:
 ps aux | grep -i mysql
 
 #--- assignGeneIDs
+source("~/github/projects/utils/geneIdMapping/symToGeneID.R"); test_assignGeneIDs()
 source("~/s/data/public/human/symToGeneID.R"); test_assignGeneIDs()
 assignGeneIDs(geneSymbols)
 returns a list of 3 lists: "mapped"    "failures"  "multiples"
@@ -20,7 +21,7 @@ mapped:   a list of all the input geneSymbols, with either geneID, NA, or multip
 failures: that
 
   devel: svn co https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/<pkgname>
-release: svn co https://hedgehog.fhcrc.org/bioconductor/branches/RELEASE_3_4/madman/Rpacks/<pkgname>
+release: svn co https://hedgehog.fhcrc.org/bioconductor/branches/RELEASE_3_5/madman/Rpacks/<pkgname>
 
 
 onco:
@@ -99,6 +100,1120 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* liz blue, trem2, trenaViz, enhancers (21 jul 2017)
+
+  cd ~/s/work/priceLab/cory/lizBlue-trem2-2017jul
+
+*-----------------------------------------------------------------------------------------------------------------------
+* track types in igv.js  (19 jul 2017)
+
+   --- variable height regions
+
+               {name: "igap gwas scores",
+                  type: "wig",
+                  format: "bedgraph",
+                  min: 0,
+                  max: 20,
+                  url: 'http://pshannon.systemsbiology.net/hg38/variants/igap.bedgraph',
+                  indexed: false,
+                  //visibilityWindow: 1000000,
+                  color: "#4400AA"
+                  },
+
+     chr1 1042813 1042813 1.46699097750451
+     chr1 1063015 1063015 1.59465363982429
+     chr1 1064776 1064776 1.77288491741087
+     chr1 1065797 1065797 1.74184180665921
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* bio paragraph
+
+I spent my twenties as a carpenter, eventually returning to college to
+prepare for a second career as a scientific programmer, subsequently
+working in a variety of disciplines: atmospheric chemistry,
+psychoacoustics, mechanical engineering, radio astronomy, then
+realized his long-held aspiration to work in biology and medicine by
+joining the Insititute for Systems Biology in 2001.
+
+For many years I have wandered in, and done some volunteer work in the
+Magnificent Forest at Seward Park - a beautiful 120 acre old-growth
+forest, a lucky remnant of the million acres of doug fir/cedar/hemlock
+forests that once covered the Puget lowland.  A few years ago
+a few of us noticed, started tracking and trying to figure out
+a worrisome sword fern die-off, and account of which is available
+here:  http://sewardparkswordferndieoff.blogspot.com/
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* samtools tips: subset a bam file (18 jul 2017)
+
+   samtools view -b -h ENCSR000ENF.bam chr1 > out_chr1.bam
+   samtools index out_chr1.bam
+   samtools idxstats out_chr1.bam
+
+*-----------------------------------------------------------------------------------------------------------------------
+* piq & RSofia for cory (17 jul 2017)
+
+  ----- RSofia first
+     cd ~/s
+     curl -O https://cran.r-project.org/src/contrib/Archive/RSofia/RSofia_1.1.tar.gz
+     tar xvf RSofia_1.1.tar
+     cd RSofia/
+     R CMD install .
+     version 1.1, 2011-09-06
+     cd ~/s/RSofia/inst/unitTests/
+     R -f runTests.R
+        RUNIT TEST PROTOCOL -- Mon Jul 17 16:01:17 2017
+        ***********************************************
+        Number of test functions: 258
+        Number of errors: 0
+        Number of failures: 0
+
+  --- now piq
+     cd ~/github/piq-single
+     # git clone https://bitbucket.org/thashim/piq-single.git
+     git pull origin
+
+     cd ~/github/piq-single/testers
+     bash tester.sh
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trena dhs regions from encode:  also retrieve data when ucsc has not provided database (17 jul 2017)
+
+   --- see below "* aml trena demo for hamid (29 jun 2017)"
+     I wonder why you didn't find the CD34 DNASE1 HS track. The file:
+        wgEncodeUwDnaseCd34mobilizedPkRep1.narrowPeak.gz   (1.9M file)
+     is available here: http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeUwDnase/
+
+   http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeUwDnase/wgEncodeUwDnaseCd34mobilizedPkRep1.narrowPeak.gz
+   did liftover
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* add other genomes to trenaViz igv (13 jul 2017)  mm10
+
+   cd ~/github/projects/examples/js/igvBareBones/
+
+   --- gencode: high quality reference gene annotation for human and mouse genomes
+      https://www.gencodegenes.org/
+      url: "http://pshannon.systemsbiology.net/mm10/gencode.vM14.basic.annotation.sorted.gtf.gz",
+      indexURL: "http://pshannon.systemsbiology.net/mm10/gencode.vM14.basic.annotation.sorted.gtf.gz.tbi",
+
+   ---- mouse: get genemodels and full genomic sequence
+     reference data for igv:
+
+        gunzipped GRCm38.primary_assembly.genome.fa.gz # need bgzip compression for
+        R> bgzip("GRCm38.primary_assembly.genome.fa", "GRCm38.primary_assembly.genome.fa.gz")
+        bash> samtools faidx GRCm38.primary_assembly.genome.fa   # index the ascii file.
+
+     gencode:
+       whovian, cd /local/httpd/vhosts/pshannon/mm10/
+       bedtools sort -i gencode.vM14.basic.annotation.gtf > gencode.vM14.basic.annotation.sorted.gtf
+       library(Rsamtools)
+       bgzip("gencode.vM14.basic.annotation.sorted.gtf", "gencode.vM14.basic.annotation.sorted.gtf.gz")
+       print(indexTabix("gencode.vM14.basic.annotation.sorted.gtf.gz", format="gtf"))
+       print(indexTabix("gencode.vM14.basic.annotation.sorted.gtf.gz", format="gff"))
+        [1] "gencode.vM14.basic.annotation.sorted.gtf.gz.tbi"
+
+
+   --- igv options
+          # note: no need to specify the indexURL which accompanies fastURL
+       options = {locus: "5:88,621,548-88,999,827", //"22:40,000,000-40,200,000",
+               minimumBases: 5,
+               showRuler: true,
+               reference: {id: "mm10",
+                     fastaURL: "http://pshannon.systemsbiology.net/mm10/GRCm38.primary_assembly.genome.fa.gz",
+                  cytobandURL: "http://pshannon.systemsbiology.net/mm10/cytoBand.txt"
+                  },
+               tracks: [
+                 {name: 'Gencode vM14',
+                   url: "http://pshannon.systemsbiology.net/mm10/gencode.vM14.basic.annotation.sorted.gtf.gz",
+                  indexURL: "http://pshannon.systemsbiology.net/mm10/gencode.vM14.basic.annotation.sorted.gtf.gz.tbi",
+                  format: 'gtf',
+                  visibilityWindow: 2000000,
+                  displayMode: 'EXPANDED'
+                  },
+                 ]
+              }; // options
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* quick look at regulatory regions for alison (13 jul 2017)
+
+   cd ~/github/projects/external/alison/
+
+   gene of interest: CRH: https://www.ncbi.nlm.nih.gov/gene/1392
+   This gene is produced in both the hypothalamus and placenta, but I believe operates under different
+   levels of transcriptional regulation.
+
+      10271992 Jul 12 16:26 GSM2400374_ENCFF326MMH_peaks_hg19.bed
+          4798 Jul 12 16:23 GSM2400374_ENCLB356SYJ_README.txt
+
+    --- from the README
+       file name: ENCFF326MMH_peaks_hg19.bed.gz
+       file encode accession: ENCFF326MMH
+       status: released
+       file format: bed
+       file type: bed narrowPeak
+       file size: 2232047
+       md5sum: 3cc380cefa4be3328fbfec1061d6e264
+       content md5sum: 2a9f16e3e382d143d516331f008e85aa
+       output category: annotation
+       output type: peaks
+       assembly: hg19
+       derived from: ENCFF894CSA.bam; ENCFF163ZHO
+
+    --- the bed file
+     bed format: chrom, start, end, name, score, strand
+      1) chrom - Name of the chromosome (or contig, scaffold, etc.).
+      2) chromStart - The starting position of the feature in the chromosome or scaffold. The first base in a chromosome is numbered 0.
+      3) chromEnd - The ending position of the feature in the chromosome or scaffold. The chromEnd base is not included in the display of the feature. For example, the first 100 bases of a chromosome are defined aschromStart=0, chromEnd=100, and span the bases numbered 0-99.
+      4) name - Name given to a region (preferably unique). Use '.' if no name is assigned.
+      5) score - Indicates how dark the peak will be displayed in the browser (0-1000). If all scores were '0' when the data were submitted to the DCC, the DCC assigned scores 1-1000 based on signal value. Ideally the average signalValue per base spread is between 100-1000.
+      6) strand - +/- to denote strand or orientation (whenever applicable). Use '.' if no orientation is assigned.
+      7) signalValue - Measurement of overall (usually, average) enrichment for the region.
+      8) pValue - Measurement of statistical significance (-log10). Use -1 if no pValue is assigned.
+      9) qValue - Measurement of statistical significance using false discovery rate (-log10). Use -1 if no qValue is assigned.
+     10) peak - Point-source called for this peak; 0-based offset from chromStart. Use -1 if no point-source called.
+
+    read.table("GSM2400374_ENCFF326MMH_peaks_hg19.bed", sep="\t", nrow=3, as.is=TRUE)
+         V1    V2    V3 V4 V5 V6 V7 V8 V9 V10
+     1 chr1 10155 10305  .  0  . 32 -1 -1  75
+     2 chr1 10175 10325  .  0  . 31 -1 -1  75
+     3 chr1 10435 10585  .  0  . 84 -1 -1  75
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* hamid's T cell atac-seq multi-stage regulatory models: do atac regions vary across samples? (12 jul 2017)
+
+  cd ~/github/projects/external/hamid/TcellDevelopment/
+
+   head -2  *_1_*
+   ==> GSM2365810_ATAC_L5_1_normalizedCounts.txt <==
+   chr	start	end	symbol	refseqID	peak_annotation	L5_1
+   chr1	9772732	9773228	1700034P13Rik	NR_040462	intergenic	113.379454745262
+
+   ==> GSM2365814_ATAC_L7_1_normalizedCounts.txt <==
+   chr	start	end	symbol	refseqID	peak_annotation	L7_1
+   chr1	9772732	9773228	1700034P13Rik	NR_040462	intergenic	113.541653297377
+
+   ==> GSM2365817_ATAC_L14_1_normalizedCounts.txt <==
+   chr	start	end	symbol	refseqID	peak_annotation	L14_1
+   chr1	9772732	9773228	1700034P13Rik	NR_040462	intergenic	125.268306286882
+
+   ==> GSM2365820_ATAC_L21_1_normalizedCounts.txt <==
+   chr	start	end	symbol	refseqID	peak_annotation	L21_2
+   chr1	9772732	9773228	1700034P13Rik	NR_040462	intergenic	205.531637833183
+
+    wc -l *_1_*
+   75690 GSM2365810_ATAC_L5_1_normalizedCounts.txt
+   75690 GSM2365814_ATAC_L7_1_normalizedCounts.txt
+   75690 GSM2365817_ATAC_L14_1_normalizedCounts.txt
+   75690 GSM2365820_ATAC_L21_1_normalizedCounts.txt
+
+   --- email from hamid
+
+    If this invariance also happens around genes such as IFNG, BCL6,
+    TCF7, PRDM1, and PDCD1, then there's something wrong. If it's just
+    DNMT3A, it's a discovery :)
+
+   --- get regions in and around IFNG
+     Chr10:118441047-118445892 bp, + strand
+
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* hamid's T cell atac-seq multi-stage regulatory models (12 jul 2017)
+
+  cd ~/github/projects/external/hamid/TcellDevelopment/
+
+  --- email from hamid (12 jul 2017)
+
+    Sounds great. There is a great dataset here:
+      https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE89309
+   which has both RNA-seq and ATAC-seq for T cells as they differentiate over time.
+   The way I have been exploring this data, and would recommend to you is this:
+
+    The are 3 replicates for each of expression and ATAC-seq peaks for 'naive' T cells:
+
+     GSM2365761 	RNA_N1
+     GSM2365762 	RNA_N2
+     GSM2365763 	RNA_N3
+
+     GSM2365799 	ATAC_N1
+     GSM2365800 	ATAC_N2
+     GSM2365801 	ATAC_N3
+
+   These define the starting state of the T cells (point of
+   reference). At this point the cells are mature but "inexperienced".
+
+   Then there are expression and peak data sets with identifier like
+   RNA_L5_1, etc. The L stands for Liver tumor and the number after
+   the L is how many days after the naive cells (starting state) were
+   stimulated with antigen. What I am doing is building a gene
+   regulatory network of interactions that start in state naive and go
+   through states L5, L7, ... till L28. The data includes later days
+   (35 and 60), in these late stages a second differentiation process
+   starts (memory cell formation) and for now we can skip that stage.
+
+   So you have 4 developmental stages (L5, 7, 14, 21) with RNA and
+   ATAC-seq. The genes that I think are the most likely players are
+   listed in the attached Cytoscape annot file.
+
+
+   --- try to streamline curl of all L5,7,14,21 atac-seq files
+
+  ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2365nnn/GSM2365810/suppl/GSM2365810_ATAC_L5_1_normalizedCounts.txt.gz
+  ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2365nnn/GSM2365811/suppl/GSM2365811_ATAC_L5_2_normalizedCounts.txt.gz
+
+*-----------------------------------------------------------------------------------------------------------------------
+* clustergrammer/R/heatmap, heatmap.2, hclust (14 jul 2017), for omar
+
+   cd ~/github/heatmap/R-demo/
+
+   library(gplots)
+   cluster.info <- heatmap.2(as.matrix(USArrests), trace="none", col=rev(heat.colors(10)), margins=c(10,8))
+   print(names(cluster.info))
+
+*-----------------------------------------------------------------------------------------------------------------------
+* clustergrammer, minimal demo for omar (12 jul 2017)
+
+   cd ~/github/heatmap/clustergrammer/requirejs/
+
+          app.js                index.html      lib             tiny.json       tinyData.js
+
+          ./lib:        css/   fonts/   js/
+          ./lib/css:    bootstrap.css      custom.css              custom_scrolling.css    font-awesome.min.css
+          ./lib/fonts:  FontAwesome.otf                        fontawesome-webfont.svg         fontawesome-webfont.woff
+                        fontawesome-webfont.eot                fontawesome-webfont.ttf         fontawesome-webfont.woff2
+          ./lib/js:     bootstrap.min.js d3.js                 jquery-1.11.2.min.js
+                        clustergrammer.js                      graph-scroll.js         underscore-min.js
+
+*-----------------------------------------------------------------------------------------------------------------------
+* macos @ + acl extended attributes (9 jul 2017)
+
+   ls -le  shows the acl and extended attributes
+   sudo xattr -c *
+   chmod -N *
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* first hack at phosphorjs >= 1.0 (9 jul 2017)
+
+  cd ~/github/phosphor/examples/try0
+  npm install     # fetches libary specified in package.json
+  npm run build   # runs webpack
+
+  open index.html
+
+  experimented with ~/github/phosphor/examples/try0/src/index.ts, class ContentWidget extends Widget
+  hoped to find a way to add immediate html, then remote html.  failed for now...
+
+*-----------------------------------------------------------------------------------------------------------------------
+* first look at phosphorjs >= 1.0 (8 jul 2017)
+
+  cd ~/github/phosphor/examples/example-dockpanel
+  npm run build
+  webpack
+  open index.html
+
+*-----------------------------------------------------------------------------------------------------------------------
+* how daylight was captured, lab (8 jul 2017)
+
+    conda update anaconda
+    conda update -c conda-forge jupyterlab
+    jupyter --version      # 4.3.0
+    jupyter lab --version  # 0.25.1
+
+    conda install nglview -c bioconda
+      # installs ipywidgets-5.2
+
+*-----------------------------------------------------------------------------------------------------------------------
+* add neuron module model to the structure viz project (6 jul 2017)
+
+  cd ~/github/projects/priceLab/cory/trnStructure/firstLook
+  scp pshannon@whovian:/local/Cory/trn/genome-scale-trn/sage.modules/mod22IFG .
+
+*-----------------------------------------------------------------------------------------------------------------------
+* direct javascript manipulation of cyjs style (6 jul 2017)
+
+   cy.style().selector("node").css({"background-color": "purple"})
+   cy.style().selector("#LAIR1").css({"background-color": "purple"})
+   cy.style().selector("node:selected").css({"background-color": "purple"});
+
+   cy.style().update()
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* local indian tales
+
+  coll thrush in native seattle tells story of a doctor john who lived in or near salmon bay,
+  after the smallpox, and his failure to cure anyone in his community, and other sorts of
+  marginalization, hung himself.
+
+  lynda mapes (2 jul 2017) seattle times piece, "life before the locks" meantion:
+
+    snoqualmie tribla elder and traditional chief andy de los angeles notes the loss of
+    of the homestead of his ancstor, jim zackuse, near the north shore of lake union.
+    "gone from those waters is the portal to the underworld; gone from that place is the
+     spirit power that Zackuse, a poweful indian doctor, accessed to heal the people"
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* jquery DataTable tips:  in right panel, cyjs in left (4 jul 2017)
+
+   ~/github/projects/examples/cyjsWithDataTable/cyjsDT.html
+
+*-----------------------------------------------------------------------------------------------------------------------
+* clustergrammer grok json format (3 jul 2017)
+
+  cd ~/github/heatmap/clustergrammer/
+      requirejs/
+      matrixToClusteredJSON
+
+  pip install --upgrade clustergrammer
+
+      Col-A   Col-B   Col-C
+Row-A 0.0     -0.1    1.0
+Row-B 3.0     0.0     8.0
+Row-C 0.2     0.1     2.5
+
+
+from clustergrammer import Network
+net = Network()
+net.load_file("tiny.tsv")
+net.cluster()
+net.write_json_to_file('viz', 'tiny.json')
+
+   --- error in clustered group click (need new version of d3?)
+     clustergrammer.js:3831 Uncaught TypeError: $(...).modal is not a function
+       at SVGPathElement.<anonymous> (clustergrammer.js:3831)
+       at SVGPathElement.__onclick (d3.min.js:1)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* clustergrammer requirejs demo (3 jul 2017)
+
+  cd ~/github/projects/examples/clustergrammer/requirejsDemo-new/
+
+   cp -prv ~/github/clustergrammer/lib/* .
+   cp -prv ~/github/clustergrammer/clustergrammer.js libs/js
+   cp -prv ~/github/clustergrammer/css/custom.js libs/css/
+
+   index.html: 28 lines
+   app.js:     73 lines
+
+
+   ---- the crucial parts,  index.html:
+
+       <script data-main="app" src="http://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.2/require.min.js"></script>
+       <body>
+        <div id="cgDiv">
+           <h1 class='wait_message'>Please wait ...</h1>
+        </div>
+      </body>
+
+
+   --- the crucial parts,   app.js
+      require.config({
+          paths: {
+              'underscore'    :  'https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min',
+              'jquery'        :  'http://code.jquery.com/jquery-1.12.4.min',
+              'clustergrammer':  'lib/js/clustergrammer'
+              },
+          shim: {underscore: {
+                   exports: '_'
+                   }}
+          });
+     require(['underscore', 'jquery', 'clustergrammer'], function (_, $, clustergrammer) {
+     window.cwg = clustergrammer;
+
+
+    --- heatmap data docs
+       http://clustergrammer.readthedocs.io/clustergrammer_js.html#visualization-json
+
+    network_data =
+        {"views":
+         [{"N_row_sum": "all", "dist": "cos", "nodes":
+           {"col_nodes": [{"ini": 3, "rank": 2, "name": "s01_120405", "clust": 1,
+                           "group": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "rankvar": 2},
+                          {"ini": 2, "rank": 1, "name": "s02_120405", "clust": 0,
+                           "group": [3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0], "rankvar": 0},
+                          {"ini": 1, "rank": 0, "name": "s03_120405", "clust": 2,
+                           "group": [2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "rankvar": 1}],
+            "row_nodes": [{"ini": 2, "rank": 0, "name": "HLTF", "clust": 0,
+                           "group": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "rankvar": 0},
+                          {"ini": 1, "rank": 1, "name": "POU2F1", "clust": 1,
+                           "group": [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0], "rankvar": 1}]}},
+          {"dist": "cos", "N_row_var": "all", "nodes":
+           {"col_nodes": [{"ini": 3, "rank": 2, "name": "s01_120405", "clust": 1,
+                           "group": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "rankvar": 2},
+                          {"ini": 2, "rank": 1, "name": "s02_120405", "clust": 0,
+                           "group": [3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0], "rankvar": 0},
+                          {"ini": 1, "rank": 0, "name": "s03_120405", "clust": 2,
+                           "group": [2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "rankvar": 1}],
+            "row_nodes": [{"ini": 2, "rank": 0, "name": "HLTF", "clust": 0,
+                           "group": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "rankvar": 0},
+                          {"ini": 1, "rank": 1, "name": "POU2F1", "clust": 1,
+                           "group": [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0], "rankvar": 1}]}}],
+         "col_nodes": [{"ini": 3, "rank": 2, "name": "s01_120405", "clust": 1,
+                        "group": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "rankvar": 2},
+                       {"ini": 2, "rank": 1, "name": "s02_120405", "clust": 0,
+                        "group": [3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0], "rankvar": 0},
+                       {"ini": 1, "rank": 0, "name": "s03_120405", "clust": 2,
+                        "group": [2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "rankvar": 1}],
+         "links": [{"target": 0, "value": 5.591991, "source": 0},
+                   {"target": 1, "value": 11.939007, "source": 0},
+                   {"target": 2, "value": 7.738552, "source": 0},
+                   {"target": 0, "value": 31.060965999999997, "source": 1},
+                   {"target": 1, "value": 18.00348, "source": 1},
+                   {"target": 2, "value": 21.577569, "source": 1}],
+         "row_nodes": [{"ini": 2, "rank": 0, "name": "HLTF", "clust": 0,
+                        "group": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "rankvar": 0},
+                       {"ini": 1, "rank": 1, "name": "POU2F1", "clust": 1,
+                        "group": [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0], "rankvar": 1}]};
+
+
+
+
+     make_clust(network_data);
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* umass soil sampling (30 jun 2017)
+
+  413-545-2311
+  use y1 code: just the nutrients, no suggestions are made to remedy deficits towards a specific crop.
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* aml trena demo for hamid (29 jun 2017)
+
+   ~/github/projects/external/hamid/aml-trena/
+
+
+   --- what dhs table to use?
+
+     Will the attached MAF file of the var coords work for you?
+     I wonder why you didn't find the CD34 DNASE1 HS track. The file:
+         wgEncodeUwDnaseCd34mobilizedPkRep1.narrowPeak.gz
+     is available here:
+         http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeUwDnase/
+
+
+
+   --- full list of variants and indels
+    https://www.dropbox.com/s/5piv50xibtxj5q1/allSomaticFilteredWGS.indels.txt?dl=0
+    https://www.dropbox.com/s/8l3380aftq7jhk7/allSomaticFilteredWGS.SNVs.txt?dl=0
+
+   98693 allSomaticFilteredWGS.SNVs.txt
+   39687 allSomaticFilteredWGS.indels.txt
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* internet of species pilot project proposal, allen frontiers group (29 jun 2017)
+
+  https://www.alleninstitute.org/what-we-do/frontiers-group/about/directors-blog/posts/fifth-revolution
+
+https://www.alleninstitute.org/what-we-do/frontiers-group/about/directors-blog/posts/fifth-revolution
+
+From the end of Tom Skalak’s blog post:
+
+
+Important attributes of living systems such as adaptation during life, evolution across generations, human health and disease, social dynamics, and inter-species interactions (including human-induced changes to the environment and climate) all depend on biological information flows. Bio-geoengineering, which may now be critical to save the planet from global warming, depends on biological information flows.
+
+The Fifth Revolution is upon us, and there will be room for individual creatives, institutions, businesses, and governments to navigate among the trillions of possibilities and realize audacious dreams.
+
+-- Tom Skalak, Ph.D., Executive Director, The Paul G. Allen Frontiers Group
+
+Subject: an ISB software engineer proposes an internet of species pilot project
+
+We propose an “Internet of Species” pilot project, right here in Seattle, addressing a “canary in the coal mine” in-progress species loss in Seward Park’s 100 acre old-growth forest.  This rare remnant forest, with five hundred year old trees, bald eagles and owls, is a vital recreational resource to ethnically and economically diverse south Seattle.  The sword fern die-off, in progress since 2013, is globally unprecedented, unexplained (despite meticulous field and lab work) doubling in extent each year, and now recorded from a few sites elsewhere in the Puget Sound.   Seward Park’s Magnificent Forest is the ideal observation and experimental site for what looms as a possible regional species loss, and the consequent degradation of our forested lands.  Contributing factors are thought to be environmental stress (temperature, extreme swings in precipitation, urban pollution) the introduction of one or more novel pathogens.
+
+In the pilot project, we would identify the causes of the die-off (using the latest metagenomic sequencing techniques) and then establish internet of species monitoring via unobtrusive networked sensors, environmental and biologic, to track and improve the health of the Magnificent Forest, the jewel of Seattle’s park system.
+
+
+Show 2011/2017 before-and-after photos
+
+*-----------------------------------------------------------------------------------------------------------------------
+* structure exploration for cory's 7/10 talk (28 jun 2017)
+
+  cd ~/github/projects/priceLab/cory/trnStructure/firstLook/
+
+  --- data
+    rnaseq expresion matrix: mtx.cer from mayo: 15160   263
+    whole genome trn:   trn.mayoTcx <- readRDS("mayo.tcx.rds")  #  501037     11
+    co-expression matrix from sage: tbl.mod60 <- read.table("mod60CEB", stringsAsFactors=FALSE, sep=",", header=TRUE)
+       265 x 9 (265 genes)
+
+  --- possibiity 1
+     represent each of the co-expressed (mod60) genes as a linear model of its transcription factors
+     choosing only those tfs which meet a high threshold
+     get superset of tfs
+     create model for each target gene in the co-expressed set
+     use mds to place these models in 3 space
+     portray in 3js
+*-----------------------------------------------------------------------------------------------------------------------
+* hierarchical clustering for omar, on rosmap aqp4 model (27 jun 2017)
+
+  cd ~/github/trenaHelpers/inst/demos/aqp4/labMeeting-22jun2017
+  library(gplots)
+  mtx.rosmap.aqp4 <- mtx[c("AQP4", strongGeneModels[["rosmap"]]$tf),]
+  save(mtx.rosmap.aqp4, file="mtx.rosmap.aqp4.RData")
+  heatmap.2(mtx.rosmap.aqp4, trace='none')
+
+*-----------------------------------------------------------------------------------------------------------------------
+* gtf tips: get basic info on hg38 gene (26 jun 2017)
+
+   library(RPostgreSQL)
+   database.host <- "bddsrds.globusgenomics.org"
+   db.hg38 <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="hg38", host=database.host)
+   query <- "select * from gtf where moleculetype='gene' and gene_biotype='protein_coding' and gene_name='THAP11' limit 5"
+   dbGetQuery(db.hg38, query)[, c(1:3,5,10)]
+         chr    start   endpos strand gene_name
+     1 chr16 67842082 67844195      +    THAP11
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* qiang, laustend and xiaowei's gbm genes (26 jun 2017)
+
+  --- prior work (15 may 2017)
+    given exonic snps, found nothing of interest (just "minor possibly interesting regulatory relations"
+    suggested that non-exonic snps migbt be revealing
+
+  --- xiaowei sent two large files
+
+   cd ~/github/trenaHelpers/inst/demos/qiang
+     18170182 Jun 26 10:29 SN243_Somatic.tsv
+     21349475 Jun 26 10:30 SN291_Somatic.tsv
+
+   four genes suggested in may:
+      thap11, pten aimp2 tp53
+
+  --- thap11
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* gene annotation, kegg & go hyperGTest enrichment (26 jun 2017)  for cory
+
+  cd ~/github/projects/priceLab/cory/mef2c-targets-geneAnnotation/
+print(load("mef2c.tcx.RData"))
+tbl <- temp
+genes <- tbl$target.gene # 263
+#--- assignGeneIDs
+source("~/s/data/public/human/symToGeneID.R"); test_assignGeneIDs()
+
+
+library(GSEABase)
+library(GOstats)
+library(GO.db)
+library(Category)
+library(org.Hs.eg.db)
+library(KEGG.db)
+
+symbol.entrez.map <- assignGeneIDs(genes)$mapped
+
+gene.universe = character(0)
+geneIDs <- unlist(symbol.entrez.map, use.names=FALSE)
+
+go.params <- new("GOHyperGParams", geneIds=unique(geneIDs),
+                 universeGeneIds = gene.universe, annotation = "org.Hs.eg.db",
+                 ontology = 'BP', pvalueCutoff = 0.05, conditional = FALSE,
+                 testDirection = "over")
+
+kegg.params <- new("KEGGHyperGParams", geneIds = unique(geneIDs),
+                   universeGeneIds = character(0), annotation = "org.Hs.eg.db",
+                   pvalueCutoff = 0.1, testDirection = "over")
+
+go.bp.hgr <- hyperGTest(go.params)
+kegg.hgr  <- hyperGTest(kegg.params)
+
+
+   --- map GO term to all of its geneIDs
+      library(org.Hs.eg.db)
+      unique(unlist(mget("GO:0009060", env = org.Hs.egGO2ALLEGS), use.names=FALSE))
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* update TrenaViz addHttpGraph
+
+   fetch("http://localhost:11004?g.json").then(function(responseObj) {return responseObj.json();}).then(function(j){xx = j});
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* standard regulatoryRegions format for trenaViz (20 jun 2017)
+
+   --- FootprintFilter
+     library(TReNA)
+     genome.db.uri <- "postgres://bddsrds.globusgenomics.org/hg38"   # has gtf and motifsgenes tables
+     footprint.db.uri <- sprintf("postgres://whovian/%s", "brain_hint_20")
+     chromLoc <- list(chrom="chr18", start=26864201, end=26864369)
+     fpFilter <- FootprintFilter(genome.db.uri, footprint.db.uri, list(), with(chromLoc, sprintf("%s:%d-%d", chrom, start, end)))
+     x.fp <- getCandidates(fpFilter)
+
+    --- HumanDHSFilter
+     dhsFilter <- HumanDHSFilter(genome="hg38",
+                                 encodeTableName="wgEncodeRegDnaseClustered",
+                                 pwmMatchPercentageThreshold=85L,
+                                 geneInfoDatabase.uri="postgres://whovian/gtf",
+                                 geneCenteredSpec=list(),
+                                 regionsSpec=with(chromLoc, sprintf("%s:%d-%d", chrom, start-100, end+100)))
+     x.dhs <- getCandidates(dhsFilter)
+     intersect(x.dhs$tbl$motifName, x.fp$tbl$motifName) # [1] "MA0107.1" "MA0670.1" "MA0101.1" "MA0671.1"
+
+     x.dhs$tbl$length <- nchar(x.dhs$tbl$match)
+     tbl.dhs.demo <- subset(x.dhs$tbl, motifName=="MA0107.1")
+
+     colnames(tbl.dhs.demo)[grep("motifRelativeScore", colnames(tbl.dhs.demo))] <- "score"
+        motifName chrom motifStart motifEnd strand motifScore motifRelativeScore      match regulatoryRegionStart regualtoryRegionEnd regulatorySequence variant  tfs
+     11  MA0107.1 chr18   26864287 26864296      +   8.500000          1.0000000 GGGAATTTCC              26864220            26864370                  1      47 RELA
+     12  MA0107.1 chr18   26864293 26864302      -   7.277778          0.8562092 GGAATTTCCA              26864220            26864370                  1      47 RELA
+
+      tbl.fp.demo <- subset(x.fp$tbl, motifName=="MA0107.1")
+      colnames(x.fp$tbl) <- c("chrom", "motifStart", "motifEnd", "motifName", "length", "strand", "score1", "score", "score3")
+        chrom    start      end motifName length strand score1  score2   score3   tf
+     77 chr18 26864287 26864296  MA0107.1     10      +    156 17.3265 9.09e-07 RELA
+     85 chr18 26864288 26864297  MA0107.1     10      -    156 12.1939 3.24e-05 RELA
+
+     coi <- c("chrom", "motifStart", "motifEnd", "motifName", "strand", "score", "length", "label")
+     tbl.dhs.demo[, coi]
+        chrom motifStart motifEnd motifName strand     score length
+     11 chr18   26864287 26864296  MA0107.1      + 1.0000000     10
+     12 chr18   26864293 26864302  MA0107.1      - 0.8562092     10
+     tbl.fp.demo <- subset(x.fp$tbl, motifName=="MA0107.1")
+     tbl.fp.demo[, coi]
+        chrom motifStart motifEnd motifName strand   score length
+     77 chr18   26864287 26864296  MA0107.1      + 17.3265     10
+     85 chr18   26864288 26864297  MA0107.1      - 12.1939     10
+
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* new sword fern die-off spots
+
+   --- rochester wa, independence road (18 jun 2017) (about 10 miles ssw of olympia)
+     We own 15 acres of forest land in Rochester just off of Independence Road and began to notice a similar die-off last summer.
+     https://www.reddit.com/r/SeattleWA/comments/6hx7xz/massive_mystery_fern_dieoff_at_seattle_park/
+
+   --- lake forest park, lynda goodrich (17 jun 2017), email to tim
+      potebgoodrichl@comcast.net
+
+      Sorry, this is my third attempt to add my location to the sword
+      ferns die-off.  I have lived in Lake Forest Park for 40 years &
+      this year all my sword ferns are dying.  (These ferns are
+      underneath a 150 yr old silver maple.).
+
+   --- indianola, from dan hinkley, neighbor of heidi danilchuck
+
+      The Indianola Church Camp in Indianola, directly across the road
+      from our house at 10345 NE Shore Drive, has a perimeter trail
+      that we walk our dogs on. Our dog sitter took them for a walk
+      yesterday and happened to wonder aloud upon her return what was
+      happening to the sword ferns on the trail After we filled her in
+      on the situation, she returned to take pictures this morning.
+      In full disclosure, I have not yet seen the patches myself.
+
+      We would have to fill the manager of the Church Camp in ono the
+      situation before you could get permission to take a look at the
+      patch, if after seeing the photos you deem necessary to do, and
+      to take samples.  They should not have a problem with it and I
+      will introduce you when you are ready.
+
+
+   --- weona park, west side of lake sammamish (10 jul 2017)
+     al smith reported 30 newly dead ferns in february, no additional spread on a recent visit
+
+   --- red town trailhead, cougar mountain (10 jul 2017)
+     a few ferns in february 2017, now 30, near trail head
+
+   --- baring, highway 2 on the way to stevens pass
+     reported stpring
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* javascript this
+*-----------------------------------------------------------------------------------------------------------------------
+* ma0152.1  human/mouse/rat motif, length7, good candidate for injecting snps into TReNA footprintfinder (19 jun 2017)
+
+    loc        chr5:88894577-88894583
+    chrom                        chr5
+    start                    88894577
+    endpos                   88894583
+    type           motif.in.footprint
+    name                     MA0152.1
+    length                          7
+    strand                          +
+    sample_id  ENCSR318PRQ_wellington
+    method                 WELLINGTON
+    provenance     brain.filler.minid
+    score1                   -14.5905
+    score2                    12.2022
+    score3                   7.93e-05
+    score4                       <NA>
+    score5                       <NA>
+    score6                       <NA>
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* new brain hint|wellington|16seed|20seed footprint databses created by matt on whovian (19 jun 2017)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trenaViz multi-model network display: figure out javascript cyjs swithcing functions
+
+  --- set randomForest=0 on all TF nodes:
+    cy.nodes().filter(function(node){return node.data("type") == "TF"}).map(function(node){node.data({"randomForest": 0})})
+    cy.nodes().filter(function(node){return node.data("type") == "TF"}).map(function(node){node.data({"pearson": 0})})
+
+  --- copy wt model randomForest and pearson data to be current values
+    cy.nodes().show()
+    cy.nodes().filter(function(node){return node.data("type") == "TF"}).map(function(node){node.data({"randomForest": 0})})
+    cy.nodes().filter(function(node){return node.data("type") == "TF"}).map(function(node){node.data({"pearson": 0})})
+    cy.nodes("[type='TF']").map(function(node){node.data({"randomForest":  node.data("wt.randomForest")})})
+    cy.nodes("[type='TF']").map(function(node){node.data({"pearson":       node.data("wt.pearson")})})
+    cy.nodes().filter(function(node){return(node.data("randomForest") == 0 && node.data("type") == "TF")}).hide()
+
+    cy.nodes().show()
+    cy.nodes().filter(function(node){return node.data("type") == "TF"}).map(function(node){node.data({"randomForest": 0})})
+    cy.nodes().filter(function(node){return node.data("type") == "TF"}).map(function(node){node.data({"pearson": 0})})
+    cy.nodes("[type='TF']").map(function(node){node.data({"randomForest":  node.data("rs3875089.randomForest")})})
+    cy.nodes("[type='TF']").map(function(node){node.data({"pearson":       node.data("rs3875089.pearson")})})
+    cy.nodes().filter(function(node){return(node.data("randomForest") == 0 && node.data("type") == "TF")}).hide()
+
+
+
+
+  --- hide all TFs with 0 randomForest
+    cy.nodes().filter(function(node){return(node.data("randomForest") == 0 && node.data("type") == "TF")}).hide()
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trenaViz node attribute puzzle (18 jun 2017)
+
+   --- tiny example
+
+      g2 <- graphNEL(nodes=c("a", "b"), edgemode="undirected")
+      nodeDataDefaults(g2, attr="age") <- 24
+      nodeData(g2)
+        $a
+        $a$age
+        [1] 24
+        $b
+        $b$age
+        [1] 24
+
+      nodeData(g2, attr="age")
+        $a
+        [1] 24
+        $b
+       [1] 24
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* create multimodel trenaViz using rs3875089 (17 jun 2017)
+
+  cd ~/github/TReNA/inst/misc/multiModels
+  source("aqp4-multi.R");
+
+  pad<-8
+  i<-2
+  x.wt <- buildModelForRegion("chr18", tbl.snp$loc[i] - pad, tbl.snp$loc[i] + pad)
+  x.mut <- buildModelForRegion("chr18", tbl.snp$loc[i] - pad, tbl.snp$loc[i] + pad, tbl.snp$snp[2])
+
+  save(x.wt, x.mut, file="../../extdata/twoAQP4modelsForTesting.RData")
+
+
+    setdiff(subset(x.mut$tbl.model, randomForest>5)$tf, subset(x.wt$tbl.model, randomForest >5)$tf)
+         "SOHLH1" "NCOA2"  "NPAS1"  "NPAS3"  "EPAS1"
+    setdiff(subset(x.wt$tbl.model, randomForest>5)$tf, subset(x.mut$tbl.model, randomForest >5)$tf)
+         "TEAD1" "PRRX1" "OTX1"  "SOX4"
+
+*-----------------------------------------------------------------------------------------------------------------------
+* one MA0090.2-disrupting snps from ohsu, trenaViz (16 jun 2017)
+
+   cd ~/github/TReNA/inst/misc/multiModels
+   source("aqp4-multi.R")
+   identifyPerturbedMotifs()
+   tbl.snp
+     target.gene chromosome      loc       snp genome
+            AQP4      chr18 26864410 rs3763040   hg38
+            AQP4      chr18 26865469 rs3875089   hg38   # this disrupts TEAD1 binding
+            AQP4      chr18 26855623  rs335929   hg38
+            AQP4      chr18 26855854 rs3763043   hg38
+            AQP4      chr18 26850565 rs9951307   hg38
+
+   ---  rs3875089: chr18 26865469
+
+         pad<-8; i<-2; as.data.frame(t(subset(x.wt$tbl, motifStart > tbl.snp$loc[i]-pad  & motifEnd < tbl.snp$loc[i]+pad & motifRelativeScore > 0.70 & grepl("TEAD", tf))[, -11]))
+                                              22626                  141744                  142220
+         motifName                         MA0090.2                MA0808.1                MA0809.1
+         chrom                                chr18                   chr18                   chr18
+         motifStart                        26865465                26865466                26865465
+         motifEnd                          26865474                26865473                26865474
+         strand                                   +                       +                       +
+         motifScore                        5.653203                5.564402                5.470297
+         motifRelativeScore               0.8174939               0.8368466               0.8060669
+         match                           AGCATCCCTT                GCATCCCT              AGCATCCCTT
+         chromStart                        26850465                26850465                26850465
+         chromEnd                          26870469                26870469                26870469
+         status                                  wt                      wt                      wt
+         tf                 TEAD1;TEAD2;TEAD3;TEAD4 TEAD3;TEAD1;TEAD2;TEAD4 TEAD4;TEAD1;TEAD2;TEAD3
+
+      pad<-8; i<-2; nrow(subset(x.mut$tbl, motifStart > tbl.snp$loc[i]-pad  & motifEnd < tbl.snp$loc[i]+pad & motifRelativeScore > 0.70 & grepl("TEAD", tf)))  # [1] 0
+
+
+
+
+      subset(x.wt$tbl, motifStart >= 26865465 & motifEnd <= 26865474)
+             motifName chrom motifStart motifEnd strand motifScore motifRelativeScore      match chromStart chromEnd                                      seq status                                                                                                                                                                                                                                        tf
+      22626   MA0090.2 chr18   26865465 26865474      +   5.653203          0.8174939 AGCATCCCTT   26850465 26870469      wt                                                                                                                                                                                                                   TEAD1;TEAD2;TEAD3;TEAD4
+      141744  MA0808.1 chr18   26865466 26865473      +   5.564402          0.8368466   GCATCCCT   26850465 26870469      wt                                                                                                                                                                                                                   TEAD3;TEAD1;TEAD2;TEAD4
+      142220  MA0809.1 chr18   26865465 26865474      +   5.470297          0.8060669 AGCATCCCTT   26850465 26870469      wt                                                                                                                                                                                                                   TEAD4;TEAD1;TEAD2;TEAD3
+      97668   MA0676.1 chr18   26865465 26865473      -   5.236973          0.7024059  TTGCCTCTG   26850465 26870469      wt                                           NR2E1;NR2C1;NR2C2;NANOG;NOTO;VENTX;BSX;HHEX;HLX;EN1;EN2;EMX1;EMX2;DLX1;DLX2;DLX3;DLX4;DLX5;DLX6;DBX1;DBX2;VAX1;VAX2;TLX1;TLX2;TLX3;BARX1;BARX2;HMX1;HMX2;HMX3;MSX1;MSX2;LBX1;LBX2;BARHL1;BARHL2
+      93311   MA0671.1 chr18   26865466 26865474      -   4.617483          0.7892166  TTTGCCTCT   26850465 26870469      wt                                                                                                                                                                                                                       NFIX;NFIA;NFIB;NFIC
+      19699   MA0081.1 chr18   26865466 26865472      -   4.591837          0.8241758    TGCCTCT   26850465 26870469      wt                                                                                                                     SPIB;SPDEF;ETV6;ETV7;SPIC;EHF;ELF3;ELF5;ELF1;ELF2;ELF4;ELK1;ELK3;ELK4;ETV1;ETV4;ETV5;ERF;ETV2;FLI1;ERG;FEV;ETV3;ETV3L
+      120690  MA0719.1 chr18   26865465 26865472      +   4.148499          0.7778568   AGCATCCC   26850465 26870469      wt RHOXF1;HOPX;ISX;LEUTX;NOBOX;OTP;ARGFX;RAX;SEBOX;SHOX;UNCX;ARX;DPRX;DRGX;GSC;GSC2;ESX1;DUXA;DUX4;VSX1;VSX2;TPRX1;SHOX2;RHOXF2;RHOXF2B;RAX2;PRRX1;PRRX2;PROP1;PITX1;PITX2;PITX3;PHOX2A;PHOX2B;OTX1;OTX2;CRX;MIXL1;HESX1;ALX1;ALX3;ALX4;ELF3
+
+      subset(x.mut$tbl, motifStart >= 26865465 & motifEnd <= 26865474)
+            motifName chrom motifStart motifEnd strand motifScore motifRelativeScore      match chromStart chromEnd  status                                                                                                                                                                                              tf
+      60163  MA0595.1 chr18   26865465 26865474      +   5.982759          0.7478448 AGCACCCCTT   26850465 26870469 C   mut                                                                                                                                                                                          SREBF1
+      97645  MA0676.1 chr18   26865465 26865473      -   5.236973          0.7024059  TTGCCTCTG   26850465 26870469 C   mut NR2E1;NR2C1;NR2C2;NANOG;NOTO;VENTX;BSX;HHEX;HLX;EN1;EN2;EMX1;EMX2;DLX1;DLX2;DLX3;DLX4;DLX5;DLX6;DBX1;DBX2;VAX1;VAX2;TLX1;TLX2;TLX3;BARX1;BARX2;HMX1;HMX2;HMX3;MSX1;MSX2;LBX1;LBX2;BARHL1;BARHL2
+      58147  MA0522.2 chr18   26865465 26865474      +   5.122349          0.7083695 AGCACCCCTT   26850465 26870469 C   mut                                                                                                                                                                                 TCF3;TCF4;TCF12
+      93286  MA0671.1 chr18   26865466 26865474      -   4.617483          0.7892166  TTTGCCTCT   26850465 26870469 C   mut                                                                                                                                                                             NFIX;NFIA;NFIB;NFIC
+      19690  MA0081.1 chr18   26865466 26865472      -   4.591837          0.8241758    TGCCTCT   26850465 26870469 C   mut                                                                           SPIB;SPDEF;ETV6;ETV7;SPIC;EHF;ELF3;ELF5;ELF1;ELF2;ELF4;ELK1;ELK3;ELK4;ETV1;ETV4;ETV5;ERF;ETV2;FLI1;ERG;FEV;ETV3;ETV3L
+
+      pad<-6; i<-2; subset(x.wt$tbl, motifStart > tbl.snp$loc[i]-pad  & motifEnd < tbl.snp$loc[i]+pad & motifRelativeScore > 0.8)
+              motifName chrom motifStart motifEnd strand motifScore motifRelativeScore      match chromStart chromEnd                                      seq status                                                                                                                    tf
+               MA0090.2 chr18   26865465 26865474      +   5.653203          0.8174939 AGCATCCCTT   26850465 26870469 CCCATATATATGCTCACAATTGATAATTATTCTAATG...     wt                                                                                               TEAD1;TEAD2;TEAD3;TEAD4
+               MA0808.1 chr18   26865466 26865473      +   5.564402          0.8368466   GCATCCCT   26850465 26870469 CCCATATATATGCTCACAATTGATAATTATTCTAATG...     wt                                                                                               TEAD3;TEAD1;TEAD2;TEAD4
+               MA0809.1 chr18   26865465 26865474      +   5.470297          0.8060669 AGCATCCCTT   26850465 26870469 CCCATATATATGCTCACAATTGATAATTATTCTAATG...     wt                                                                                               TEAD4;TEAD1;TEAD2;TEAD3
+               MA0081.1 chr18   26865466 26865472      -   4.591837          0.8241758    TGCCTCT   26850465 26870469 CCCATATATATGCTCACAATTGATAATTATTCTAATG...     wt SPIB;SPDEF;ETV6;ETV7;SPIC;EHF;ELF3;ELF5;ELF1;ELF2;ELF4;ELK1;ELK3;ELK4;ETV1;ETV4;ETV5;ERF;ETV2;FLI1;ERG;FEV;ETV3;ETV3L
+      pad<-6; i<-2; subset(x.mut$tbl, motifStart > tbl.snp$loc[i]-pad  & motifEnd < tbl.snp$loc[i]+pad & motifRelativeScore > 0.8)
+              motifName chrom motifStart motifEnd strand motifScore motifRelativeScore   match chromStart chromEnd                                      seq status                                                                                                                    tf
+               MA0081.1 chr18   26865466 26865472      -   4.591837          0.8241758 TGCCTCT   26850465 26870469 CCCATATATATGCTCACAATTGATAATTATTCTAATG...    mut SPIB;SPDEF;ETV6;ETV7;SPIC;EHF;ELF3;ELF5;ELF1;ELF2;ELF4;ELK1;ELK3;ELK4;ETV1;ETV4;ETV5;ERF;ETV2;FLI1;ERG;FEV;ETV3;ETV3L
+
+
+      pad<-6; i<-2; subset(x.wt$tbl, motifStart > tbl.snp$loc[i]-pad  & motifEnd < tbl.snp$loc[i]+pad & motifRelativeScore > 0.7)
+      pad<-6; i<-2; subset(x.mut$tbl, motifStart > tbl.snp$loc[i]-pad  & motifEnd < tbl.snp$loc[i]+pad & motifRelativeScore > 0.7)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cory's instructions for aws ssh, access to latest brain footprints 4 jun 2017)
+
+
+   Ok, I've generated an ssh private key for you (attached), aka pem
+   file. I suggest you delete this email once we're done. Save the
+   file in a directory from which you ssh (or if you have a prefered
+   way, do what you know). Do the following chmod command on the pem
+   file:
+
+        chmod 400 pshannon.pem
+
+   then do the following command:
+
+        ssh-keygen -y
+
+   book..aws> ssh-keygen -y
+   Enter file in which the key is (/Users/paul/.ssh/id_rsa):
+
+     ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQG7iSP065CPzS2mQOCuPH4EU2WHlQD5tjULGhiDnWTYLBKROC+JO7kyZOE71nma4TPvBwyn9ftchsPc1L7G3pY6ga2hwzxdJbanDeAHbR5lJB3kOoBr3vkUGZ1f/BaxsStd0w4hJ7RWhqALtWQQO1WDd/QayLIFmN295TH4ipIp0w==
+
+
+
+   This will generate another long string. Send me that string. I will
+   then place that in the AWS EC2 instance. You will then ssh into the
+   instance as follows:
+
+     ssh -i <pshannon.pem> ubuntu@ec2-52-42-53-213.us-west-2.compute.amazonaws.com
+
+  The ec2 address will change every time we spin up a new instance, but how you point to the pem file will always be the same.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* next up, aqp4 (13 jun 2017)
+
+  cd ~/github/TReNA/inst/misc/multiModels/
+
+  aqp4.R, runWithAugmentedFootprints()
+  coryFP not in a database, so may wish to intersect footprints and motifs, overlap="any", then build a model.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* R tips, replicate data.frame rows, strsplit tfs: speed it up
+
+  cd ~/s/examples/R/replicateDataFrameRows
+
+     library(splitstackshape)
+     library(RUnit)
+
+     print(load("tbl.toRep.RData"))
+     dim(tbl.toRep) # [1] 37504    13
+     tbl.toRep <- subset(tbl.toRep, nchar(tf)!=0)
+     dim(tbl.toRep)
+     tfs.split <- strsplit(tbl.toRep$tf, ";")
+     length(tfs.split) # [1] 36929
+     counts <- unlist(lapply(tfs.split, length))
+     tfs.split.vec <- unlist(tfs.split)
+     tbl2 <- expandRows(tbl.toRep, counts, count.is.col=FALSE, drop=FALSE)
+     checkEquals(length(tfs.split.vec), nrow(tbl2))
+     tbl2$tf <- tfs.split.vec
+     dim(tbl2) # [1] 969392     13
+
+*-----------------------------------------------------------------------------------------------------------------------
+* R tips, replicate data.frame rows, strsplit tfs
+
+   [this is very slow on a 37k line data.frame.  see above]
+   cd ~/github/TReNA/inst/misc/multiModels/
+
+   tbl.motifs <- data.frame()
+   for(r in 1:nrow(x.wt$tbl)){
+      tfs <- strsplit(x.wt$tbl$tf[r], ";")[[1]]
+      tbl.tmp <- as.data.frame(lapply(x.wt$tbl[r,], rep, length(tfs)))
+      tbl.tmp$tf <- tfs
+      tbl.motifs <- rbind(tbl.motifs, tbl.tmp)
+      } # for r
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trenaViz: display network aqp4 + 5 snps:
+
+  see below: build no-footprint model encompassing snps + 5kb upstream (10 jun 2017)
+
+   tbl.reg <- x.wt$tbl
+   tbl.gm <- subset(model.wt$edges, IncNodePurity > 2)
+   save(tbl.reg, tbl.gm, file="~/github/TReNA/inst/extdata/aqp4-model-regRegions.RData")
+*-----------------------------------------------------------------------------------------------------------------------
+* trenaViz: create cyjs view of randomForest TReNA results (10 jun 2017)
+
+  --- from http://whovian:10001/notebooks/dora-skin.ipynb
+      ~/github/dora/notebooks/skin-PnG/dora-skin.ipynb
+      ~/github/dora/microservices/trenaCommon/trenaServer.R
+
+  def createGeneModelFromGenomeView(targetGene, expressionMatrixName):
+   region = app.getChromLocString()
+   msg = json.dumps({"cmd": "createGeneModel", "status": "request", "callback": "",
+                     "payload": {"targetGene": targetGene, "matrix": expressionMatrixName, "footprintRegion": region}})
+   socket.send_string(msg)
+   response = json.loads(socket.recv_string())
+   status = response['status']
+   print(status)
+   payload = response['payload']
+   if(status == 'error'):
+      print(payload)
+   else:
+     graphData = json.loads(payload['network'])
+     app.deleteGraph()
+     app.addGraph(graphData)
+     app.loadNetworkStyleFile("js/style-ensemble.js")
+     app.fit()
+     tbl_model = payload['model']
+     app.addGeneModelTable(json.dumps(tbl_model));
+     tbl_footprints = payload['footprints']
+     app.addFootprintTable(json.dumps(tbl_footprints));
+   return(response)
+*-----------------------------------------------------------------------------------------------------------------------
+* seward park plants
+
+  --- similar ground/stalky plants
+
+    piggyback
+    foam flower
+    fringecup
+    enchanter's nightshade
+    baldhip rose: in fact hairy stems
+    nootka rose
+    cluster rose
+
+   --- shrubs
+     high bush cranberry
+     mock orange
+
+   --- ferns
+     deer fern
+     lady fern (has hips)(fronds have no basal stem|stipe)
+     bracken fern (like lady? but with a basal stem
+     spiny wood fern: triangular fronds, bottomost pinnae are arranged two-opposite-one
+
+*-----------------------------------------------------------------------------------------------------------------------
+* aqp4 + 5 snps: build no-footprint model encompassing snps + 5kb upstream (10 jun 2017)
+
+  cd ~/github/TReNA/inst/misc/multiModels/
+  source("aqp4.R")
+  identifyMotifs()
+  dim(subset(tbl.counts[, 1:4], diff !=0))  # [1] 45  4
+  subset(tbl.counts[, 1:4], abs(diff) >= 2)
+          motif wtCount mutCount diff
+    57  MA0090.2      80       78    2
+    369 MA0808.1      77       75    2
+    370 MA0809.1     107      105    2
+  save(tbl.counts, file="aqp4.tbl.counts.5kbUpstream.RData")
+
+  buildModel()
+    subset(model.wt$edges, IncNodePurity > 2)
+           IncNodePurity   gene.cor
+    TEAD1      34.691496  0.7605383
+    SOX9       14.990602  0.7402240
+    HIF1A      13.463053  0.6949043
+    ATF7       12.213881  0.7163899
+    RFX4       11.290013  0.7504778
+    GLIS3       9.821468  0.6856911
+    SMAD9       9.246654  0.6694617
+    SP3         6.439329  0.6837160
+    GLI2        5.271985  0.5750392
+    THAP9       3.676609  0.6453760
+    SOX5        3.575288  0.6827886
+    ZBTB33      3.369010  0.6415588
+    ID4         3.264924  0.6631979
+    ZBTB7A      3.092141 -0.5151684
+    NFE2L2      2.729482  0.6886920
+    NR2E1       2.200849  0.6457334
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* MotifDb motif -> tf mapping (10 jun 2017)
+
+  use MA0090.2 -> TEAD1 as example
+  library(MotifDb)
+  unique(mcols(query(mdb, "MA0090\\."))$geneSymbol) # [1] "TEAD1"
+
+*-----------------------------------------------------------------------------------------------------------------------
+* whovian psql tips
+
+
+   --- psql shell
+     psql -U trena --host whovian   # prompts for password which is also "trena"
+     select datname from pg_database;
+
+   --- from R
+     library(RPostgreSQL)
+     db <- dbConnect(PostgreSQL(), user= "trena", password="trena", host="whovian")
+     tbl <- dbGetQuery(db, "select datname from pg_database")
+
+*-----------------------------------------------------------------------------------------------------------------------
+* track down excess of TEAD1 motifs in aqp4 model (6 jun 2017)
+
+  cd ~/github/TReNA/inst/misc/multiModels/
+  source("aqp4.R")
+  step through code in test.createModel():
+
+    start <- 26860992  #26860742
+    end   <- 26870492 # 26882685
+    m1 <- createModel("AQP4", "chr18", start, end)
+    m1.mut <- createModel("AQP4", "chr18", start, end, variants="rs3875089")
+
+
+*-----------------------------------------------------------------------------------------------------------------------
 * aqp4 multiModels (30 may 2017)   TEADn motif disruption?
 
   cd ~/github/TReNA/inst/misc/multiModels/
@@ -108,7 +1223,8 @@ bed format: chrom, start, end, name, score, strand
     regionsSpec <- "chr18:26865459-26865479"
 
     getDHSCandidates(); getFootprintCandidates()
-    m <- test.createModel("AQP4", 500, 500)
+    m <- test.createModel()
+    head(m$model.dhs$edges)
 
   --- next up: i have lost the affect of the snps
     create new bed files for aqp4 region, from dhs database, and the sqlite.
@@ -123,6 +1239,37 @@ bed format: chrom, start, end, name, score, strand
 
    --- test.createModel reproduces this and more
      # next up: do with the tbl.snp[2,] variant.   does these tfs.big drop out?
+
+
+  --- from the aforementioned test.createModel
+
+    # chr18:26,860,742-26,882,685: includes all footprints and dhs clusters
+  start <- 26860742
+  end   <- 26882685
+  m1 <- createModel("AQP4", "chr18", start, end)
+  m1.mut <- createModel("AQP4", "chr18", start, end, variants="rs3875089")
+
+    # chr18:26865450-26865480: 30 bases around rs3875089
+  start <- 26865450
+  end   <- 26865480
+  m2 <- createModel("AQP4", "chr18", start, end)
+  m2.mut <- createModel("AQP4", "chr18", start, end, variants="rs3875089")
+
+  --- now get the motifs mapped across
+   tbl.tead1.motifs <- m1$candidates.dhs$tbl[grep("TEAD1", m1$candidates.dhs$tbl$tfs),][, c("chrom", "motifStart", "motifEnd", "motifName", "motifRelativeScore")]
+   tbl.tead1.motifs <- tbl.tead1.motifs[order(tbl.tead1.motifs$motifStart),]
+   dim(tbl.tead1.motifs) #  1839    5
+   head(tbl.tead1.motifs) #  359 5
+            chrom motifStart motifEnd motifName motifRelativeScore
+     149194 chr18   26860748 26860757  MA0809.1          0.7755605
+     24304  chr18   26860748 26860757  MA0090.2          0.7355868
+     148436 chr18   26860785 26860794  MA0809.1          0.7404271
+     23678  chr18   26860785 26860794  MA0090.2          0.7206383
+     149193 chr18   26860787 26860796  MA0809.1          0.7273741
+     24303  chr18   26860787 26860796  MA0090.2          0.7050259
+  write.table(subset(tbl.tead1.motifs, motifRelativeScore >= 0.8),
+             row.names=FALSE, col.names=FALSE, quote=FALSE, sep="\t", file="tead1-motifs.bed")
+  system("scp tead1-motifs.bed pshannon@whovian:/local/httpd/vhosts/pshannon/annotations/")
 
 *-----------------------------------------------------------------------------------------------------------------------
 * create aqp4 sqlite footprints database for trenaViz exploration (30 may 2017)
@@ -251,7 +1398,9 @@ print(fromJSON(getURL(url2)))
      restoration should be relatively simple. We deal with similar infestations (not in forest settings) routinely at
      ParaLogics Water Sciences.
 
-
+   --- another healthy fern photo
+      http://thomasbancroft.photoshelter.com/image/I00008oMmkkItv8c
+        "Sword ferns grow in abundance under the closed canopy of an old growth forest at Seward Park."
 
 *-----------------------------------------------------------------------------------------------------------------------
 * toggle hide and show div (18 may 2017)
@@ -369,7 +1518,9 @@ PRRX1      1.54042301  0.619890322
 
 
   --- one solution
-    $('a[href="#igvDiv"]').click();       // raises first tabl
+    $('a[href="#igvDiv"]').click();       // raises first tab
+    see this in a switch statement:
+       ~/github/trenaUtilities/inst/scripts/trenaViz.html, raiseTab(msg)
 
   --- another
     $("#trenaVizDiv").tabs({active: 2})   // raise 3rd tab
@@ -1185,7 +2336,7 @@ select(db, keys="RUNX1", keytype="SYMBOL", columns=c("SYMBOL", "GO"))
       click on you can CUSTOMIZE this variable
       make selection from pull down menu
       click "Apply and Save" button
-
+1
      (custom-set-variables
       ;; custom-set-variables was added by Custom.
       ;; If you edit it by hand, you could mess it up, so be careful.
@@ -1411,6 +2562,29 @@ DataFrame with 1 row and 1 column
   boatman song
   john brown's march
   all young (modal)
+
+  dark-haired girl, F
+  josie-o, F
+
+
+   --- rattletap tunes
+      the girl I left on sandy
+      jaybird died (G)
+      bryson higgin's (G)
+      farewell trion (C)
+      cumberland gap, marion reese, G
+      hell up coal holler, F
+      henry king's reel
+      rocking the weary land (d, starts on a chord)
+      walking up georgia row (d)
+      charlie barnett lowe's tune (d)
+
+   --- candidates
+     elzic's farewell: https://www.youtube.com/watch?v=f1ieaEHk77c   anna & mac, mt.airy
+            wilson douglas: https://www.youtube.com/watch?v=fprZ66lKdfA
+            rockbridge: https://www.youtube.com/watch?v=sqs8O7pho88
+            banjo a la riley bagus: https://www.youtube.com/watch?v=xwUi1all8zs
+            fretless: https://www.youtube.com/watch?v=4dnhAEL_alo
 
 *-----------------------------------------------------------------------------------------------------------------------
 * banjo cluck: 5 techniques
@@ -4602,6 +5776,13 @@ cy.json({elements:[
       {data: {id:'a'}},
       {data: {id: 'e1', source: 'a', target: 'a'}}
       ]})
+
+   g <- graphNEL(nodes="a", edgemode="directed")
+   g <- graph::addEdge("a", "a", g)
+   tViz <- TrenaViz()
+   httpAddGraph(tViz, g);
+
+
 
 *-----------------------------------------------------------------------------------------------------------------------
 * cyjs/require minimal demo (18 jan 2017)
@@ -8839,6 +10020,8 @@ ImportError: No module named 'clustergrammer-widget'
 
         from clustergrammer import Network
         net = Network()
+
+
         net.load_file('/Users/paul/github/clustergrammer/txt/rc_two_cats.txt')
         net.make_clust(dist_type='cos',views=['N_row_sum', 'N_row_var'])
         net.write_json_to_file('viz', 'json/mult_view.json')
@@ -12067,7 +13250,7 @@ ZHX2
 *------------------------------------------------------------------------------------------------------------------------
 * pto paychex flex, request time off
 
-  https://myapps.paychex.com
+  https://myapps.paychex.com: pshannonSeattle, NancyCartwright88@
   Main Page > Menu > Human Resources >Compensation > Attendance/Time-Off
 
   Why we have to go through Human Resources when we are clearly not HumanResources is ridiculous.
@@ -21049,7 +22232,6 @@ models.l1 <- data.frame(t(rbind(matrix(reg.l1$lambda, nrow=1), as.matrix(reg.l1$
 colnames(models.l1)[1] <- "lambda"
 models.l1 <- melt(models, c("lambda"))
 coef_l2 <- ggplot(models.l2) + aes(x=log(lambda), y=value, color=variable) + geom_line()
-
 # Cross validation resampling the training data for L2 regression and L1 regression
 cv.l2 <- cv.glmnet(features, target, alpha=0)
 cv.l1 <- cv.glmnet(features, target, alpha=1) plot(reglm.l1, main = "L1 n-fold cross validation error")
@@ -49202,6 +50384,12 @@ checkTrue(expr, msg)
 checkException(expr, msg, silent=FALSE)
 DEACTIVATED(msg)
 
+   checkException(
+      tbl.2vars <- TReNA:::.parseVariantString(mm, "rs3763040:C"),
+      "caught!", silent=TRUE)
+
+
+
 ---- file tips, delete files and directories
 unlink ('unitTestDirectory', recursive=TRUE)
 
@@ -51037,6 +52225,26 @@ filter on 'script', find dom.max_script_run_time from default 10 to (say) 120
 
 *------------------------------------------------------------------------------------------
 * go tips, gene ontology tips
+
+  --- convenience function: goReport
+     goReport <- function(genes, ontologies="BP") {
+       tbl.genes <- select(org.Hs.eg.db, keys=genes, keytype="SYMBOL", columns=c("SYMBOL", "GO"))
+       tbl.goTerms <- select(GO.db, keys=tbl.genes$GO, keytype="GOID", columns=c("GOID", "TERM", "ONTOLOGY"))
+       tbl.merged <- merge(subset(tbl.genes, ONTOLOGY=="BP"), tbl.goTerms, by.x="GO", by.y="GOID")
+       browser(); xyz <- 99
+       dups <- which(duplicated(tbl.merged[, c(1,2)]))
+       if(length(dups) > 0)
+          tbl.merged <- tbl.merged[-dups,]
+           tbl.merged
+       } # goReport
+
+
+  --- look up one gene
+    tbl.runx1 <- select(org.Hs.eg.db, keys="RUNX1", keytype="SYMBOL", columns=c("SYMBOL", "GO"))
+    tbl.goTerms <- select(GO.db, keys=tbl.go.runx1$GO, keytype="GOID", columns=c("GOID", "TERM", "ONTOLOGY"))
+    merge(tbl.runx1, tbl.goTerms, by.x="GO", by.y="GOID")
+    merge(subset(tbl.runx1, EVIDENCE=="TAS"), tbl.goTerms, by.x="GO", by.y="GOID")
+    merge(subset(tbl.runx1, ONTOLOGY=="BP"), tbl.goTerms, by.x="GO", by.y="GOID")
 
 --- Evidence Codes [http://www.geneontology.org/GO.evidence.shtml]
 made into prolog rules, see ~/svn/data/public/GO/evidenceCodes.pl
