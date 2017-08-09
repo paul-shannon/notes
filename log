@@ -100,8 +100,261 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* refactored BrowserVizDemo now working, using npm for all javascript, webpack to assemble (9 aug 2017)
+
+  cd ~/github/BrowserVizDemoApp/
+
+  --- depends upon ~/github/BrowserVizJS, a node package, package.json and browserviz.js:
+
+      var BrowserViz = {
+          onDocumentReadyFunctions:  [],
+          name: "node BrowserViz",
+          ...
+	  }
+      module.exports = BrowserViz;
+
+    # used in ~/github/BrowserVizDemoApp/inst/browserCode/src/browservizdemo.js:
+      var hub = require("browservizjs")
+
+
+  --- to run
+   cd ~/github/BrowserVizDemoApp/inst/browserCode
+   make
+      npm update
+      webpack
+      (cd ./dist; m4 -P browservizdemo.html-template > browservizdemo.html)
+      ls -l ./dist/browservizdemo.html
+      (cd ../../..; R CMD build --no-build-vignettes BrowserVizDemoApp)
+      (cd ../../..; R CMD INSTALL `ls -at BrowserVizDemo_* | head -1`)
+
+   cd ~/github/BrowserVizDemoApp/inst/unitTests
+     in tsh-bvNode
+     source("test_BrowserVizDemo.R");
+     app <- BrowserVizDemo(PORT.RANGE)
+     checkTrue(ready(app))
+     checkEquals(ping(app), "pong")
+     title <- "simple xy plot test";
+     setBrowserWindowTitle(app, title)
+     checkEquals(getBrowserWindowTitle(app), title)
+     plot(app, 1:10, (1:10)^2)
+       # no selection yet
+
+
 *-----------------------------------------------------------------------------------------------------------------------
-* liz blue, trem2, trenaViz, enhancers (21 jul 2017)
+* chrome tips: autopen javascript console
+
+   /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --auto-open-devtools-for-tabs
+
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* do footprints truly help with unexplanined intergenic snps? (4 aug 2017)
+
+  cd ~/github/projects/priceLab/gwasADfootprintEnrichment/
+   table(tbl.gwas$CHR)
+
+    chr1 chr10 chr11 chr12 chr13 chr14 chr15 chr16 chr17 chr18 chr19  chr2 chr20 chr21 chr22  chr3  chr4  chr5  chr6  chr7  chr8  chr9
+   33885 19550 21696 20646 13870 14325 14564 15641 16122 10084 11624 35350  9607  5179  5971 27104 30036 27264 36177 27105 24237 18572
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* categorize microglial genes for omar's clustergrammer demo (3 aug 2017)
+
+  cd ~/github/projects/priceLab/cory/microglialGeneCategorization/
+  print(load("mtx.microglial.RData")) # "mtx.microglial"
+  dim(mtx.microglial) # [1] 302 264
+  goi <- rownames(mtx.microglial)
+
+
+print(load("mtx.microglial.RData")) # "mtx.microglial"
+dim(mtx.microglial) # [1] 302 264
+source("~/s/data/public/human/symToGeneID.R"); test_assignGeneIDs()
+genes <- rownames(mtx.microglial)
+symbol.entrez.map <- assignGeneIDs(genes)$mapped
+tbl.go <- select(org.Hs.eg.db, keys=genes, keytype="SYMBOL", columns=c("SYMBOL", "GO"))
+tbl.go.bp <- subset(tbl.go, ONTOLOGY=="BP")   # 3636 rows
+tbl.go.bp.tasFirst <- tbl.go.bp[order(tbl.go.bp$EVIDENCE, decreasing=TRUE),]
+tbl.x <- tbl.go.bp.tasFirst[match(genes, tbl.go.bp.tasFirst$SYMBOL),]
+go.params <- new("GOHyperGParams", geneIds=unique(geneIDs),
+                 universeGeneIds = gene.universe, annotation = "org.Hs.eg.db",
+                 ontology = 'BP', pvalueCutoff = 0.05, conditional = FALSE,
+                 testDirection = "over")
+go.bp.hgr <- hyperGTest(go.params)
+tbl.goBP <- summary(go.bp.hgr)
+
+go.cats <- list()
+unassigned.genes <- genes
+
+for(i in 1:nrow(tbl.goBP)){
+   goid <- tbl.goBP$GOBPID[i]
+   goTerm <- tbl.goBP$Term[i]
+   bp.geneIDs <- unique(unlist(mget(goid, env = org.Hs.egGO2ALLEGS), use.names=FALSE))
+   bp.symbols <- unlist(mget(bp.geneIDs, env=org.Hs.egSYMBOL), use.names=FALSE)
+   genes.this.term <- intersect(unassigned.genes, bp.symbols)
+   if(length(genes.this.term) > 0){
+      go.cats[[goTerm]] <- genes.this.term
+      unassigned.genes <- setdiff(unassigned.genes, genes.this.term)
+      }
+   } # for i
+
+
+processes.expanded <- unlist(lapply(names(go.cats), function(name) rep(name, length(go.cats[[name]]))))
+genes.assigned <- unlist(go.cats, use.names=FALSE)
+genes.unassigned <- setdiff(genes, genes.assigned)
+processes.expanded <- c(processes.expanded, rep("unassigned", length(genes.unassigned)))
+genes.assigned <- c(genes.assigned, genes.unassigned)
+length(genes.assigned); length( processes.expanded)
+
+tbl.GO <- data.frame(process=processes.expanded, stringsAsFactors=FALSE)
+rownames(tbl.GO) <- genes.assigned
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* isb expense reimbursement form (31 jul 2017)
+
+  https://intranet.systemsbiology.net/Plone/administration/finance/finance-accounts-payable/
+   choose from left menut: "Expense Reimbursement Formt" an xlsx spreadsheet
+
+*-----------------------------------------------------------------------------------------------------------------------
+* create tomtom upperdiagonal matrix from matt's tomtom.txt (31 jul 2017)
+
+   read.table("tomtom.txt", sep="\t", nrow=3, as.is=TRUE)
+                                     V1                                                V2 V3          V4          V5          V6 V7       V8       V9 V10
+    1 Scerevisiae-cispb_1.02-M0001_1.02                 Scerevisiae-cispb_1.02-M0001_1.02  0 3.40815e-19 2.85228e-15 5.70138e-15  8 TTATCACT TTATCACT   +
+    2 Scerevisiae-cispb_1.02-M0001_1.02                 Scerevisiae-ScerTF-DAL80-harbison  0 2.10796e-06 1.76415e-02 1.76316e-02  5 TTATCACT    TTATC   -
+    3 Scerevisiae-cispb_1.02-M0001_1.02 Dmelanogaster-FlyFactorSurvey-So_Cell_FBgn0003460 -1 1.45161e-04 1.21485e+00 4.00760e-01  7 TTATCACT  TATCATT   -
+  tbl <- read.table("tomtom.txt", sep="\t", nrow=-1, as.is=TRUE)
+  dim(tbl) # [1] 3963410      10
+  colnames(tbl)[1:3] <- c("a", "b", "pval")
+  length(unique(c(tbl$a, tbl$b))) # [1] 8369
+  matrix.names <- sort(unique(c(tbl$a, tbl$b)))
+  mtx <- matrix(1.0, nrow=8369, ncol=8369, dimnames=list(matrix.names, matrix.names))
+  mtx[tbl$a, tbl$b] <- tbl$pval
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* RCyjs history
+
+  devel branch:  version 1.9.4  (31 jul 2017): staticViewTemplate buttons now work.  uses latest cy.js 3.1.4
+
+*-----------------------------------------------------------------------------------------------------------------------
+* clustergrammer: add column and row groups to the display (27 jul 2017)
+
+  cd ~/github/heatmap/clustergrammer/matrixToClusteredJSON/
+  result: file:///Users/paul/github/heatmap/clustergrammer/matrixToClusteredJSON/index.html
+
+  filename = "tiny2.tsv"
+  from clustergrammer import Network
+  net = Network()
+  net.load_file(filename)
+
+  net.add_cats('row',
+      [{'title':'ODD',
+        'cats':{'true':['R1','R3']}},
+       {'title':'BIG',
+        'cats':{'true':['R3']}}
+      ])
+
+  net.add_cats('col',
+      [{'title':'ODD',
+        'cats':{'true':['C1','C3']}},
+       {'title':'BIG',
+        'cats':{'true':['C3']}}
+      ])
+
+  net.cluster()
+  net.export_net_json()
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* first clustergrammer gene expression matrix for omar, from cory (26 jul 2017)
+
+  cd ~/s/work/priceLab/cory/AD-clusters-from-sage
+
+  /local/Cory/Alzheimers/synapse.windsorized/mayo.tcx.RData
+  /local/Cory/trn/genome-scale-trn/new.sage/*.csv
+
+  For the gene lists, just read them into R and pull out the column named "external_gene_name"
+
+     958 astro_consensusdarkolivegreenTCX.csv
+     722 cer_downinad_consensuspurpleCBE.csv
+     234 cer_upinad_consensuslightcyanDLPFC.csv
+     448 endo_consensusblackCBE.csv
+     316 microg_consensussalmonIFG.csv
+     354 myelin_consensustanCBE.csv
+     804 neuron_consensusroyalblueSTG.csv
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+
+* todo (24 jul 2017)
+
+  deposit fosp check
+  auto deposit for bob and tony
+  matrices for rich
+  model notation for max
+  reimbursement for jupytercon delta flight
+  single snp for liz blue
+  guitar repair insurance
+
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* leo's champlin guitar repair (25 jul 2017)
+
+  sent photos of crack and invoice today to Traci.Hernandez@thehartford.com
+  Shannon P - Claim CP17469414 [CONFIDENTIAL]
+
+*-----------------------------------------------------------------------------------------------------------------------
+* minerva trem2 snp (24 jul 2017)
+
+   chr6:41182853 A>C
+
+   Yes, it would be great if you could evaluate how this regulatory
+   SNP alters TF binding based on TReNA. The SNP is rs9357347, located
+   within a DNase hypersensitive site, and it is predicted to alter
+   both SP1 and PPAR binding. It is located within sequence reported
+   to be subject to enhancer-associated histone marks in the
+   hippocampus.
+
+   I'm copying Nilufer to keep her in the loop.
+
+   Thank you! Minerva
+
+   --- first developed minerva.R:
+
+    cd ~/s/work/priceLab/cory/minerva-trem2-2017july
+
+
+   --- moved to github
+*-----------------------------------------------------------------------------------------------------------------------
+
+* statistical formula notation in R (24 jul 2017)
+
+   http://faculty.chicagobooth.edu/richard.hahn/teaching/formulanotation.pdf
+
+*-----------------------------------------------------------------------------------------------------------------------
+* restart dora after whovian reboot (24 jul 2017)
+
+   --- microservices
+     cd  ~/github/dora/microservices/skin-PnG
+     nohup R -f trenaSkinServer.R &
+
+   --- notebook server
+     jupyter notebook --port=10001  --NotebookApp.token=
+*-----------------------------------------------------------------------------------------------------------------------
+* add two new expression matrices to dora-skin for rich (24 jul 2017)
+
+   The two new matrices for Rich are on whovian:  /local/Cory/Alzheimers/synapse.windsorized
+   They are the two RData files in that subdirectory.
+
+   whovian, cd ~/github/dora/datasets/skin
+
+*-----------------------------------------------------------------------------------------------------------------------
+* Liz blue, trem2, trenaViz, enhancers (21 jul 2017)
 
   cd ~/s/work/priceLab/cory/lizBlue-trem2-2017jul
 
@@ -380,7 +633,6 @@ here:  http://sewardparkswordferndieoff.blogspot.com/
 * clustergrammer/R/heatmap, heatmap.2, hclust (14 jul 2017), for omar
 
    cd ~/github/heatmap/R-demo/
-
    library(gplots)
    cluster.info <- heatmap.2(as.matrix(USArrests), trace="none", col=rev(heat.colors(10)), margins=c(10,8))
    print(names(cluster.info))
@@ -2565,6 +2817,8 @@ DataFrame with 1 row and 1 column
 
   dark-haired girl, F
   josie-o, F
+  baby ben - james byrant
+  mumble mumble anaky?
 
 
    --- rattletap tunes
@@ -2742,6 +2996,36 @@ DataFrame with 1 row and 1 column
         as.character(getSeq(reference.genome, GRanges("chr1", IRanges(167830154, 167830184))))  "TACATAATTGACTATTCCCCTAGCTGCTCCT"
 
 
+
+*-----------------------------------------------------------------------------------------------------------------------
+* harry moses, how daylight was stolen (5 aug 2017)  how a piece of daylight was broken off?
+
+  hess and hilbert, 106-107:
+     dil         tu-[s]-pekwib-i-d-s               ti?e? s-lex-il          gwel tu-saxweb-txw
+     anaphoric   past-[abs]-snatch-secondary-tr-3   this abs-light-become  and  past-jump/run-caus
+  (the aforementioned)
+  secondary: one of a small set of suffixes, expanding the set of transitive endings a given stem allows
+
+  saxweb: LD200, jump, leap, scamper off; run (especially in a short burst of energy as
+          opposed to telawil, wich is to run for a sustained period)
+  saxweb-tx: transitive, run off with, kidnap; run with it (to run off with someone to a known place, possibly -DM)
+        compare liq'w: to kidnap away to an unknown destination LD 200
+
+  beck and hess and lines 76-80, including 77,
+     diɬ tuspəkwibids tiʔəʔ sləxil gwəl tusaxwəbtxw
+     diɬ  tu=s=pəkwib–bi–d=s         tiʔəʔ sləxil   gwəl tu=saxwəb–txw
+     foc past=nm=snatch–map–ics=3po prox  daylight sconj past=jump–ecs
+
+     map: middle applicative
+     ics: internal causative
+     3po: third person possessive
+       =: clitic boundary  (an unstressed word that normally occurs only in combination with another word, for example ῾m in I'm.)
+
+     ‘He snatched the daylight and ran off with it.’
+
+   lushootseed dictionary, p163
+     pkw(u) also recorded pqw(u), peqw(u): break off a piece (leaving a larger portion)
+     peqwyid: break off a piece so he can have some
 
 *-----------------------------------------------------------------------------------------------------------------------
 * harry moses, how daylight was stolen (29 mar 2017)
