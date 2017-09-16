@@ -100,6 +100,728 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+*
+*-----------------------------------------------------------------------------------------------------------------------
+* tr tips
+
+  --- solve this problem: tr: Illegal byte sequence
+
+  export LC_ALL=C; cat TableofDNAsehypersensitivitydataforpaul.txt | tr '\r' '\n'  > dhsSources.tsv
+
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* ngl select pheophytin from crystal structure of photosystem 2 1IZL (15 sep 2017)
+
+   I created an issue https://github.com/arose/ngl/issues/383#issuecomment-329830822
+
+     when viewing 1IZL, Crystal Structure of Photosystem II, I'd like to zoom in on, and see the
+     unaccompanied structure, of (for example) pheophytin, or the oxygen-evolving complex.
+
+   -- arose quickly replied
+      https://codepen.io/arose/pen/XebPwK
+
+    var stage = new NGL.Stage( "viewport" );
+    window.addEventListener( "resize", function( event ){
+       stage.handleResize();
+       }, false );
+
+    stage.loadFile( "rcsb://1IZL" ).then(function(comp){
+       comp.addRepresentation('ball+stick', { sele: 'PHO and :A' })
+       comp.autoView('PHO and :A')
+       });
+
+   --- api
+      http://nglviewer.org/ngl/api/class/src/component/component.js~Component.html
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* alison's trena project: the placental clock (15 sep 2017)
+
+
+  cd  ~/github/projects/priceLab/alison/placentalClock/
+
+ --- email (later on 5 sep 2017): a trn for just one gene, CRH
+
+    Known as the “placental clock”, corticotropin hormone (CRH) is produced by the placenta in
+    massive amounts thereby influencing the in utero environment.
+
+    Using 200 placenta microarray samples, build a model of CRH expression using placental-specific
+    footprints from +/-5kb from the TSS.
+
+    The placental footprints of interest are a subset of larger tissue grouping from ENCODE,
+    specifically samples ENCSR000EOR, ENCSR575VMI and ENCSR499IFY from the tissue extraembryonic
+    structure.
+
+
+  --- email (5 sep 2017)  asking for a full placental trn
+
+   In response to Pauls request for more problems, I am attaching my research strategy and specific
+   aims page for this grant. As you can see, I have a specific research question which I need TRENA
+   to help answer, which is drafted up in my preliminary data section.  We need to build a placenta
+   specific draft TRN to answer these questions.  I am attaching another copy of the transcriptomics
+   data (from 200 samples).  DNAse hypersensitivity data is available from 9 samples
+   (https://www.encodeproject.org/search/?type=Experiment&replicates.library.biosample.donor.organism.scientific_name=Homo+sapiens&organ_slims=placenta&assay_slims=DNA+accessibility). I
+   am not sure what else you need, but from my understanding as a test case biologist, this seems to
+   be what I understand trena would expect.  Id also appreciate any general feedback or comments you
+   have on my application if anything pops out.  Thanks! I hope this helps and let me know if you
+   need anything else and how we can work together on this.
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* docker & jlab jupyterlab (14 sep 2017)
+
+  from:
+
+    https://github.com/mikebirdgeneau/jupyterlab-docker
+    http://mikebirdgeneau.com/blog/python-docker/
+
+*-----------------------------------------------------------------------------------------------------------------------
+* rpy2 install as docker image (14 sep 2017)
+
+  [macos native install failed -- see below -- so not trying docker]
+  cd ~/tmp
+  docker pull rpy2/rpy2   #   Status: Downloaded newer image for rpy2/rpy2:latest
+  docker images | grep rpy2
+
+    REPOSITORY                TAG                 IMAGE ID            CREATED             SIZE
+    rpy2/rpy2                 latest              dd0a2957fbd9        3 days ago          1.38GB
+
+*-----------------------------------------------------------------------------------------------------------------------
+* rpy2 install (13 sep 2017)
+
+  failed to build/install:  https://bitbucket.org/rpy2/rpy2/issues/403/cannot-pip-install-rpy2-with-latest-r-340
+*-----------------------------------------------------------------------------------------------------------------------
+* jlab, jupyterlab, jupyterlab (13 sep 2017)
+
+  jupyter --version; jupyter notebook --version; jupyter lab --version # 4.2.1  5.0.0  0.27.0
+    conda update -c conda-forge jupyter
+    conda update -c conda-forge jupyterlab
+
+  track progress here: https://github.com/jupyterlab/jupyterlab/milestones
+*-----------------------------------------------------------------------------------------------------------------------
+>    model.alldna$model
+   gene  beta.lasso lasso.p.value pearson.coeff     rf.score  beta.ridge spearman.coeff concordance   pcaMax binding.sites
+4 FOXP1  0.92848103  2.821271e-08     0.9006827 2.265511e+01  0.08199787      0.8921107   0.5115060 2.101184           124
+7  PBX3  0.00000000  1.000000e+00    -0.7072301 2.262076e+01 -0.01917186     -0.8726338   0.5475756 1.626534            15
+5  HHEX  0.00000000  1.959919e-03    -0.8206347 1.865959e+01 -0.03173266     -0.8866397   0.4868999 1.467359             3
+8  TLX2  0.00000000  1.000000e+00    -0.2968107 9.922508e-04 -0.28060570     -0.2773501   0.4816145 1.404318             3
+2 FOXN3 -0.40812313  1.350927e-06    -0.7317324 8.510167e+00 -0.14663851     -0.6809279   0.4887895 1.396618           124
+1 BACH2  0.19832372  4.923623e-07     0.8396795 6.836456e+00  0.06597966      0.8098260   0.4636323 1.275841             2
+3 FOXO1  0.10422311  8.090102e-06     0.8493228 6.677053e+00  0.07371543      0.9415691   0.4526230 1.190437           124
+6   HLX -0.09892207  4.694723e-07    -0.8535354 4.174713e+00 -0.02787638     -0.8395886   0.4731160 1.178247             3
+> model.atac$model
+   gene  beta.lasso lasso.p.value pearson.coeff     rf.score  beta.ridge spearman.coeff concordance   pcaMax binding.sites
+3 FOXP1  1.07986141  2.821271e-08     0.9006827 23.432249755  0.09327269      0.8921107   0.5189486 2.201991            85
+6  PBX3  0.00000000  1.000000e+00    -0.7072301 24.334705345 -0.02080122     -0.8726338   0.5394414 1.688766            11
+7  TLX2  0.00000000  1.000000e+00    -0.2968107  0.001677437 -0.31799458     -0.2773501   0.5490774 1.492967             3
+1 FOXN3 -0.48520965  1.434750e-06    -0.7317324  6.937462895 -0.16104474     -0.6809279   0.4368318 1.439597            85
+5   HLX -0.13484042  4.694723e-07    -0.8535354  7.374724828 -0.03219004     -0.8395886   0.4761267 1.357985             3
+2 FOXO1  0.08439158  2.222069e-05     0.8493228  7.567489071  0.08232786      0.9415691   0.3921644 1.252042            85
+4  HHEX  0.00000000  1.000000e+00    -0.8206347 14.803327449 -0.03513143     -0.8866397   0.4151086 1.178915             3
+
+> model.bigAtac$model
+   gene beta.lasso lasso.p.value pearson.coeff     rf.score  beta.ridge spearman.coeff concordance   pcaMax binding.sites
+4 FOXP1  0.9284633  2.821271e-08     0.9006827 19.173642775  0.08222329      0.8921107   0.5402178 1.960882           312
+7  PBX3  0.0000000  1.000000e+00    -0.7072301 24.815464211 -0.01915537     -0.8726338   0.5245669 1.811345            32
+8  TLX2  0.0000000  1.000000e+00    -0.2968107  0.002208447 -0.27979217     -0.2773501   0.4871155 1.399496             3
+2 FOXN3 -0.4331421  1.350927e-06    -0.7317324  7.974748016 -0.14606188     -0.6809279   0.4799099 1.387913           312
+3 FOXO1  0.1139337  8.090102e-06     0.8493228  9.985391465  0.07352379      0.9415691   0.4660341 1.299375           312
+5  HHEX  0.0000000  1.959919e-03    -0.8206347 14.606146484 -0.03162607     -0.8866397   0.4156989 1.270284             3
+1 BACH2  0.2035208  4.923623e-07     0.8396795  6.276275082  0.06547852      0.8098260   0.4677285 1.266304             4
+6   HLX -0.1005293  4.694723e-07    -0.8535354  5.809852152 -0.02780077     -0.8395886   0.4333838 1.212393             3
+>
+*-----------------------------------------------------------------------------------------------------------------------
+* MotifMatcher bug (10 sep 2017)
+
+  library(trena)
+  library(MotifDb)
+  pfms.human <- as.list(query(query(MotifDb, "jaspar2016"), "hsap"))
+  tbl.regions.1 <- data.frame(chrom="chr5", start=134115543, end=134115576, stringsAsFactors=FALSE)
+  tbl.regions.2 <- data.frame(chrom="chr5", start=134115543, end=134115596, stringsAsFactors=FALSE)
+
+  mm <- MotifMatcher("hg38", pfms.human)
+    # we expect everything in 1 to also be in 2
+  tbl.motifs.1 <- findMatchesByChromosomalRegion(mm, tbl.regions.1, pwmMatchMinimumAsPercentage=92)
+  tbl.motifs.2 <- findMatchesByChromosomalRegion(mm, tbl.regions.2, pwmMatchMinimumAsPercentage=92)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igap, gwas, utility of footprints, enrichment (5 sep 2017)
+
+   cd ~/github/projects/priceLab/gwasADfootprintEnrichment/
+
+   ---- enrichment.R
+library(RPostgreSQL)
+library(trena)
+print(load("tbl.gwas.level_1.RData"))
+tbl.gwas <- subset(tbl.gwas, P < 10e-8)
+table(tbl.gwas$CHR)
+#  chr1 chr11 chr14 chr18 chr19  chr2  chr5  chr6  chr7  chr8
+#    23   240     1     1   559    54     2   271    34    19
+tbl.gwas19 <- subset(tbl.gwas, CHR=="chr19")
+dim(tbl.gwas19)
+
+database.host <- "bddsrds.globusgenomics.org"
+dbName <- "brain_hint"
+db.fp <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname=dbName, host=database.host)
+dbGetQuery(db.fp, "select * from hits limit 3")
+
+
+genome.db.uri    <- "postgres://bddsrds.globusgenomics.org/hg38"                  # has gtf and motifsgenes tables
+footprint.db.uri <- "postgres://bddsrds.globusgenomics.org/brain_hint"            # has hits and regions tables
+fpf <- FootprintFinder(genome.db.uri, footprint.db.uri, quiet=FALSE)
+chrom <- "chr19"
+start <- 1
+end   <- 58617616
+#end   <- 617616
+tbl.fp <- getFootprintsInRegion(fpf, chrom, start, end)
+save(tbl.fp, file="chr19.hint.footprints.RData")
+gr.fp <-  with(tbl.fp,   GRanges(seqnames=chrom, IRanges(start=start, end=endpos)))
+gr.snp <- with(subset(tbl.gwas, CHR=="chr19"), GRanges(seqnames=CHR, IRanges(start=oldPos, end=oldPos)))
+tbl.ov <- as.data.frame(findOverlaps(gr.snp, gr.fp, type='any'))
+length(unique(tbl.ov$queryHits))  # [1] 46
+length(gr.snp)
+printf("percentage of snps in chr19 footprints: %4.2f%%", 100 * length(unique(tbl.ov$queryHits))/ length(gr.snp))  # 8.23%
+
+fp.widths <- 1 + tbl.fp$endpos - tbl.fp$start
+mean(fp.widths)   # 11.96
+sd(fp.widths)     #  2.90
+nrow(tbl.fp)      # 1,183,971
+
+# generate integer lengths which match
+#set.seed(37)
+rnorm2 <- function(n,mean,sd) { mean+sd*scale(rnorm(n)) }
+widths <- rnorm2(n=nrow(tbl.fp), mean=mean(fp.widths), sd=sd(fp.widths))
+widths <- as.integer(round(widths))
+widths <- abs(widths)   # 12 are < 0
+starts <- sort(sample(seq_len(58617616), size=nrow(tbl.fp)))
+
+gr.simfp <- GRanges(seqnames="chr19", IRanges(start=starts, end=starts+widths))
+tbl.ovsim <- as.data.frame(findOverlaps(gr.snp, gr.simfp, type='any'))
+length(unique(tbl.ovsim$queryHits))  # [1] 46
+length(gr.snp)
+printf("percentage of snps in chr19 footprints: %4.2f%%", 100 * length(unique(tbl.ovsim$queryHits))/ length(gr.snp))  # 21.65%
+
+library(trenaViz)
+tv <- trenaViz(10000:100010)
+setGenome(tv, "hg38")
+addBedTrackFromDataFrame(tv, "gwas", tbl.gwas19[, c(1, 3, 3)], color="red")
+showGenomicRegion(tv, "chr19")
+showGenomicRegion(tv, "chr19:44,374,461-45,372,413")
+
+tbl.fpsim <- as.data.frame(gr.simfp)
+tbl.fpsim.focused <- subset(tbl.fpsim, start > 44374450 & end < 45372420)[, c(1,2,3)]
+addBedTrackFromDataFrame(tv, "fp.sim", tbl.fpsim.focused, color="blue")
+tbl.gwas19[, c(1, 3, 3)], color="red")
+
+tbl.fp.focused <- subset(tbl.fp, start > 44374450 & endpos < 45372420) [, c(2,3,4)]
+addBedTrackFromDataFrame(tv, "fp", tbl.fp.focused, color="darkgreen")
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* running chia.systemsbiology.net (5 sep 2017)
+
+  --- on eager
+    ssh pshannon@eager.systemsbiology.net   doug fir, version 3
+    cd ~/github/clevelandHighSchool
+    git pull    # get latest version of index.common
+    cd webapps/current
+
+   --- find old process, kill it, start new
+    ps x | grep run
+    8824 ?        S      1:53 /usr/lib64/R/bin/exec/R -f runCleveland.R
+
+   nohup R -f runCleveland.R
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trena/trenaViz demo for hmaid (4 sep 2017)
+
+  possibly interesting results?
+
+  --- hamid says
+
+    I can confirm that TCF7 expression is known to be high in naive
+    cells ("N" samples) and then go down sharply over time. It is
+    thought that EZH2 and the Polycombe Repressor complex are involved
+    in that repression. We can use this info to select the most
+    plausible candidate co-regulators.
+
+    Additionally, we can prioritize candidate regulators by selecting
+    those already in my network (or directly interacting with them, if
+    necessary).
+
+    BTW, TCF7 and another gene - BCL6 - are in a positive feedback
+    (mutually activating) loop, and BCL6 is also high in naive cells
+    and then declines over time. So it would be interesting to see if
+    any candidate regulators co-regulate both genes.
+
+    One complicating issue is that both BCL6 and TCF7 are themselves
+    repressors when acting alone. They become activators through the
+    action of co-factors that bind _them_ (not necessarily
+    DNA-binding). For TCF7, the activating co-factor is beta-catenin,
+    which is activated by WNT signaling. BCL6 tends to act by
+    out-competing other DNA-binding TFs.
+
+    ----
+
+   NATURE IMMUNOLOGY | ARTICLE (June 2015)
+
+    LEF-1 and TCF-1 (aka LEF1 & TCF7) orchestrate TFH differentiation by regulating
+    differentiation circuits upstream of the transcriptional repressor Bcl6
+
+   head(tbl.geneModel)
+        gene   beta.lasso lasso.p.value pearson.coeff     rf.score  beta.ridge spearman.coeff concordance    pcaMax
+        LEF1  0.336696639  1.093581e-08     0.9271825 24.474555836  0.02876639     0.87504103   0.4616362 2.5637600
+       FOXP1  0.530204004  5.420291e-08     0.9006827 13.383763620  0.09014859     0.89211073   0.5800644 2.2109767
+       ARNT2 -0.008488160  9.658097e-05    -0.8637621 22.036353175 -0.02249347    -0.80056802   0.6257747 1.9598855
+        TLX2  0.000000000  1.000000e+00    -0.2968107  0.011702321 -0.32006168    -0.27735010   0.5506956 1.8411414
+         HLX -0.063131220  7.760001e-07    -0.8535354  3.914422177 -0.03149307    -0.83958858   0.5509229 1.3229453
+        KLF2  0.000000000  1.566211e-04     0.8682252 10.728938451  0.04250484     0.82405077   0.4700648 1.3055301
+       FOXN3  0.000000000  2.308095e-04    -0.7317324  3.790987550 -0.13857376    -0.68092789   0.4066082 1.2055869
+       FOXO1  0.000000000  2.356756e-04     0.8493228  5.402958188  0.07836379     0.94156910   0.4831901 1.1707793
+        HHEX  0.000000000  1.000000e+00    -0.8206347 11.392134236 -0.03501994    -0.88663968   0.5114109 1.1554832
+        PAX9 -0.002826544  5.888288e-06    -0.7868435  2.197140009 -0.03479626    -0.75686853   0.4943390 1.1396958
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trena/trenaViz demo for hamid (3 sep 2017)
+
+   cd ~/github/projects/external/hamid/TcellDevelopment/
+
+   ---
+   --- already have ataq-seq, now need rna-seq
+   overall project here: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE89309
+
+   --- one file, and its annotation
+
+     Public on May 17, 2017
+     Title	Transcriptome analysis of tumor-specific CD8 T cells in murine solid tumors
+     Organism	Mus musculus
+     Experiment type	Expression profiling by high throughput sequencing
+     Summary	RNAseq analysis of CD8 T cells becoming dysfunctional in progressing tumors.
+                The overall goal of this study was to elucidate the molecular program that
+		mediates functional unresponsiveness in tumor-specific CD8 T cells. In comparison,
+		we also investigated CD8 T cells differentiating to functional effector and memory
+		T cells during an acute listeria infection.
+
+
+   https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSM2365761&format=file&file=GSM2365761%5FRNA%5FN1%5FnormalizedCounts%2Etxt%2Egz
+   https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSM2365762&format=file&file=GSM2365762%5FRNA%5FN2%5FnormalizedCounts%2Etxt%2Egz
+   https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSM2365763&format=file&file=GSM2365763%5FRNA%5FN3%5FnormalizedCounts%2Etxt%2Egz
+
+
+   see ~/github/projects/external/hamid/TcellDevelopment/explore.R
+   uses first 6 samples (3 naive, 3 L5) crudely mapping mouse to human genes (to pick up motifs) by
+   uppercase transformation only.   most were lost when using inparanoid mapping through protein ids.
+
+   dim(mtx.rna)#  [1] 20148     6
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* abstract for children's talk (1 sep 2017)
+
+Tools for Navigating a Data Lake
+
+Biologists and clinicians, having deep knowledge of the domains in which
+they practice, stand to benefit from easy access to many kinds of molecular
+data and algorithms.  To become relevant, however, these must be selectively
+extracted, judiciously combined, and then presented so that the
+researcher can ask the often highly specific questions which arise in
+each research project.
+
+The software and data science skills required to do this are hard to
+come by.  One solution is to employ a bioinformatician or
+computational biologist per project or research group.  A practicing
+biologist may invest the time to acquire the necessary programming
+skills.  Most common, perhaps, is the ad hoc use of spreadsheets and
+public web sites, with consequent problems of reproducibility and
+depth of analysis.
+
+I will present a middle path, using "notebooks", an approach which has
+become very popular in many scientific communities.  Juypter and
+RStudio both support high-level documents -- notebooks with code,
+data, documentation and interactive graphics.  Installation and execution of
+the code, and access to data becomes easy for the biologist.  Research
+reproducibility and easier collaboration often result.  Notebooks also
+offer a safe environment in which a motivated biologist can learn
+computational skills as time and interest permit.
+
+I will demonstrate this approach using a "trena" notebook from our
+work at the ISB, along with "trenaViz".  These two R packages,
+accompanied by project-specific notebooks, help to identify
+transcriptional regulatory networks, by combining DNAse I footprints,
+ATAQ-seq, motifs describing TF binding, and microarray or RNA-seq
+expression data, along with a wide assortment of feature selection
+algorithms (including random forest and a variety of LASSO variants).
+
+If time permits, I will also show new work for exploring the impact of
+DNA coding variants upon 3D protein structure.
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* webpack tips, learning, tutorial (30 aug 2017)
+
+   https://www.ag-grid.com/ag-grid-understanding-webpack/
+   cd ~/github/projects/examples/webpack/simpleMath/
+
+   dist/bundle.js
+   index.html
+   src/index.js, multiply.js, sum.js
+   webpack.config.js:
+      var path = require('path');
+      module.exports = {
+         entry: './src/index.js',
+         output: {
+            path: path.resolve(__dirname, './dist/'),
+            filename: 'bundle.js'
+            }
+        }
+
+   ---- bundle.js
+     (function(modules) {   // an anonymous function, executed on a list of modules (3 in this example)
+         var installedModules = {};
+         function __webpack_require__(moduleId){
+            ...
+	    }
+	 return __webpack_requore__(0);
+        })
+     ([(function(module, exports){  // module 0
+          var sum = function (a, b) {return a + b;};
+          module.exports = sum;
+          }),
+       (function(module, exports, __webpack_require__) { // module 1
+          var sum = __webpack_require__(0);
+          var multiply = function (a, b) {
+          var total = 0;
+          for (var i = 0; i < b; i++) {
+             total = sum(a, total);
+             }
+          return total;
+          };
+          module.exports = multiply;
+          }),
+       (function(module, exports, __webpack_require__) { // module 2
+          var multiply = __webpack_require__(1);
+          var sum = __webpack_require__(0);
+          var totalMultiply = multiply(5, 3);
+          var totalSum = sum(5, 3);
+          console.log('Product of 5 and 3 = ' + totalMultiply);
+          console.log('Sum of 5 and 3 = ' + totalSum);
+          })
+        ]);
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trenaViz windows tips (29 aug 2017)
+
+  --- on porch, the pricelab windows 7 laptop
+    R is installed here:
+        "C:/Program Files/R/R-3.5.1/bin/R.exe"
+    start interactive shell (in git bash shell):
+        "C:/Program Files/R/R-3.5.1/bin/R.exe" --no-save
+
+  start up git bash shell
+  start up RStudio
+  source("paul/test_tv.R")
+  runTests()
+
+  --- test_tv.R
+    library(trenaViz)
+    source(system.file(package="trenaViz", "unitTests", "test_trenaViz.R"))
+
+*-----------------------------------------------------------------------------------------------------------------------
+* GO filter example, get all genes mapped to a term AND its subterms (29 aug 2017)
+
+    library(org.Hs.eg.db)
+
+      #  GO:0010467                        gene expression
+      #  GO:0097659   nucleic acid-templated transcription
+      #  GO:0001172           transcription, RNA-templated
+      #  GO:0006351           transcription, DNA-templated
+
+    term0 <- "GO:0010467"
+    term1 <- "GO:0097659"
+    term2 <- "GO:0001172"
+    term3 <- "GO:0006351"
+
+
+
+    length(unique(unlist(mget(term0, env = org.Hs.egGO2ALLEGS), use.names=FALSE)))   # 5247
+    length(unique(unlist(mget(term1, env = org.Hs.egGO2ALLEGS), use.names=FALSE)))   # 3775
+    length(unique(unlist(mget(term2, env = org.Hs.egGO2ALLEGS), use.names=FALSE)))   # 2
+    length(unique(unlist(mget(term3, env = org.Hs.egGO2ALLEGS), use.names=FALSE)))   # 3756
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* m4 tips, backticks
+
+   --- backticks: a quick hack
+   some print statements, in i.e. javascript, use backticks so that appear in the printed form
+   cd  ~/s/examples/m4/backticks/
+   cat file-with-backticks.txt
+      util.error('Can not create element with invalid string ID `' + data.id + '`');
+   sed s/\`//g file-with-backticks.txt
+      util.error('Can not create element with invalid string ID ' + data.id + '');
+
+*-----------------------------------------------------------------------------------------------------------------------
+* webpack font-awesome (27 aug 2017)
+
+   ~/github/trenaViz/inst/browserCode/src/css/font-awesome.min.css
+
+   can be included via
+      import css from './css/trenaviz.css';
+   but that css file tries to load font files from default location http://localhost:8000/...
+   a special webpack font loader might be needed
+   maybe clustergrammer webpack.config.js has the answer?
+
+*-----------------------------------------------------------------------------------------------------------------------
+* html tips: scrolling
+
+  ~/github/projects/examples/html/scrollingDiv/scrollingDiv.html
+
+#outerDiv{
+   margin: 100px;
+   border-style: solid;
+   border-width: 5px;
+   border-color: lightblue;
+   border-radius: 10px;
+   overflow-x: scroll;
+   overflow-y: scroll;
+   height:400px;
+   }
+
+ <div id="outerDiv">
+   <img src="clustergrammer.png" height="600"></img>
+ </div>
+
+   see also, using igv.js:
+     ~/github/projects/examples/js/igvBareBones/hg38-scrolling.html
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igv.js reference tracks (27 aug 2017)
+
+  --- jim's suggestion for explicit creation of hg38 reference
+   fasta
+     https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa
+     https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa.fai
+
+    cytoband
+      https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/cytoBandIdeo.txt
+
+    for an annotation track you can use
+      https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/genes/gencode.v24.annotation.sorted.gtf.gz
+      https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/genes/gencode.v24.annotation.sorted.gtf.gz.tbi
+
+
+  --- claimed support actually not yet offered
+   jim claims that fasta and cytoband tracks automatically provided by from s3 for mm9/10, hg19/38
+   but in fact
+              reference: {id: "mm10"},
+
+   https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/hg38_annotations.xml
+
+   --- jim robinson https://github.com/igvteam/igv.js/issues/363
+
+     There is not a list per se, but its easily discoverable. First step is the "data server registry" file for the
+     genome, a flat list of xml files. For genomes of interest
+
+       http://data.broadinstitute.org/igvdata/hg18_dataServerRegistry.txt
+       http://data.broadinstitute.org/igvdata/hg19_dataServerRegistry.txt
+       http://data.broadinstitute.org/igvdata/hg38_dataServerRegistry.txt
+
+    Then look through the XMLs listed. For your purposes the "annotation" xml is probably the most interesting, for example
+
+      http://www.broadinstitute.org/igvdata/annotations/hg18/hg18_annotations.xml
+
+    Its might also be helpful to run IGV desktop, select a genome, then select "File > Load from server" to see what is there.
+    hg38 leads to this: http://www.gencodegenes.org/releases/27.html
+
+
+
+
+
+
+
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* jupytercon jupyterhub-tutorial (23 aug 2017)
+
+
+   conda install -c conda-forge jupyterhub
+   conda install notebook
+
+  jupyterhub -h
+  confirurable-http-proxy -h
+
+  conda-forge: communidty managed conda packages
+
+  pip install dockerspawner
+  docker pull jupyterhub/singleuser:0.7
+  /Applications/Docker.app/Contents/MacOS/Docker pull jupyterhub/singleuser:0.7
+
+ use ssl: wget https://dl.eff.org/crebot-auto: free ssl for any domain
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* jupytercon prep (21 aug 2017)
+
+  --- before any updates
+    jupyter --version      # 4.2.1
+    jupyter lab --version  # 0.25.1
+
+   --- do update
+    conda update -c conda-forge jupyter
+    jupyter --version      # 4.2.1
+    conda update -c conda-forge jupyterlab
+    jupyter lab --version  # 0.26.5
+
+*-----------------------------------------------------------------------------------------------------------------------
+* jquery-ui and webpack (18 aug 2017)
+
+   https://github.com/jzaefferer/webpack-jquery-ui
+   also see extensive notes below
+
+*-----------------------------------------------------------------------------------------------------------------------
+* html tips   emacs html mode
+
+  balance tabs, in html mode:  sit on the opening tag, then ^c ^f
+*-----------------------------------------------------------------------------------------------------------------------
+* isb hr howtos (17 aug 2017)
+
+PTO REQUESTS and PAY STUBS in Paychex Flex
+Go to https://www.paychexflex.com and log in.
+
+HOW TO VIEW YOUR PAID TIME OFF BALANCES
+•	From your dashboard, Select Time Off, View Details
+HOW TO REQUEST PTO
+•	Click on Human Resources from the menu
+•	Under My Info, click on Compensation
+•	Select Attendance/Time Off
+•	Click the “Add” button to enter a PTO request
+HOW TO VIEW YOUR PTO REQUESTS
+•	Click on Human Resources from the menu
+•	Under My Info, click on Compensation
+•	Select Attendance/Time Off: See current PTO balances and submitted requests (you can sort them)
+•	Select Options, Display Requests: See pending requests and PTO history (approved/declined/ cancelled requests)
+HOW TO VIEW YOUR PAYSTUBS
+•	Click on the Dashboard.  Your most recent 3 checkstubs will be displayed (pdfs)
+•	To see earlier paystubs, select View All. These go back to 10/30/2015.
+•	To view older paystubs (10/15/15 and earlier), go to Human Resources, then select the Compensation Menu and select Check History.
+SUPERVISORS: HOW TO VIEW AND APPROVE PTO REQUESTS
+•	Click on Human Resources from the menu
+•	Click the More option in the menu and select HR Admin.
+•	Click Notifications, then Time Off Requests.
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* pairserver, pshannon.net
+
+    ssh paulshannnon@paulshannnon.pairserver.com; date
+    cd ~/github/howDaylightWasStolen-harryMoses/current/harryMoses/howDaylightWasStolen/
+    scp daylight-short.html paulshannnon@pshannon.net:tmp/
+
+   date; ssh paulshannnon@paulshannnon.pairserver.com; date
+*-----------------------------------------------------------------------------------------------------------------------
+* mark from bdds chicago adds wellington_20 to the publicly facing footprint database (15 aug 2017)
+
+ PGPASSWORD=trena psql bone_element_wellington_20 --host=bddsrds.globusgenomics.org --port=5432 --username=trena
+library(RPostgreSQL)
+database.host <- "bddsrds.globusgenomics.org"
+# dbName <- "brain_hint"
+dbName <- "bone_element_wellington_20"
+db.fp <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname=dbName, host=database.host)
+dbGetQuery(db.fp, "select * from hits limit 3")
+t(dbGetQuery(db.fp, "select * from hits limit 3"))
+           1                                    2                                    3
+loc        "chr9:385991-386001"                 "chr9:735380-735390"                 "chr9:2469858-2469868"
+fp_start   " 385971"                            " 735376"                            "2469838"
+fp_end     " 385996"                            " 735401"                            "2469861"
+type       "motif.in.footprint"                 "motif.in.footprint"                 "motif.in.footprint"
+name       "Hsapiens-jaspar2016-RUNX1-MA0002.1" "Hsapiens-jaspar2016-RUNX1-MA0002.1" "Hsapiens-jaspar2016-RUNX1-MA0002.1"
+length     "11"                                 "11"                                 "11"
+strand     "-"                                  "+"                                  "-"
+sample_id  "ENCSR000EMH"                        "ENCSR000EMH"                        "ENCSR000EMH"
+method     "WELLINGTON"                         "WELLINGTON"                         "WELLINGTON"
+provenance "bone_element_wellington_20.minid"   "bone_element_wellington_20.minid"   "bone_element_wellington_20.minid"
+score1     "-13.02510"                          "-41.33410"                          " -4.54585"
+score2     "11.4157"                            "12.1910"                            "12.1236"
+score3     "6.92e-05"                           "4.08e-05"                           "4.27e-05"
+score4     NA                                   NA                                   NA
+score5     NA                                   NA                                   NA
+score6     NA                                   NA                                   NA
+>
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cory's rstudio notebook, snps for lizBlue (3 aug 2017)
+
+   ~/github/coryCodeGrabBag/lizBlue/familyAD/exploreSnps.Rmd
+
+*-----------------------------------------------------------------------------------------------------------------------
+* pair networks, pshannon.net (15 aug 2017)
+
+   pshannon.net has successfully been added to your pair Networks Web hosting account.
+   Your domain's IP address is: 216.146.223.24
+   Your name servers are:
+     ns0.ns0.com	(IP Address: 209.197.64.1)
+     dns2.pair.com	(IP Address: 216.146.195.24)
+     The domain is mapped to /usr/home/paulshannnon/public_html/pshannon.net/
+
+*-----------------------------------------------------------------------------------------------------------------------
+* bdds deliverables
+
+  publicly-facing databases: hint, wellington, 16/24 * how many tissues
+     brain, hint, lymphoblast
+     piq: segun working on this, may not be delivered
+  paper submitted: oct 1
+  rory's notebooks
+  matt working on figures for paper
+  MotifDb: gene<->motif mapping
+           motif similarity sparse matrix
+
+*-----------------------------------------------------------------------------------------------------------------------
+* httpuv, startDaemonizedServer, close port, kill port connection (14 aug 2017)
+
+   Error in startServer(host, port, app) : Failed to create server
+
+   --- rather than netstat, use lsof
+      brew install lsof  -> /usr/local/bin/lsof
+
+
+
+    lsof -i -n -P | grep TCP
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* RClustergrammer, better control of tree for the 11-step navigator (14 aug 2017)
+
+  https://stackoverflow.com/questions/7404035/how-to-plot-dendrograms-with-large-datasets
+
+  hc <- hclust(dist(USArrests)); hcd <- as.dendrogram(hc)
+  str(hcd)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* martin shelton's neuronal single cell data (13 aug 2017) as an RStudio notebook
+
+  cd ~/github/projects/external/martinShelton/neuronSingleCell
+
+*-----------------------------------------------------------------------------------------------------------------------
+* martin shelton's neuronal single cell data (10 aug 2017)
+
+  cd ~/s/work/priceLab/martinShelton/singleCellNeuronData/
+  tbl <- read.table("~/s/work/priceLab/martinShelton/singleCellNeuronData/neuron.dg2.all.txt", sep="\t", as.is=TRUE, nrow=-1, header=TRUE)
+  mtx <- as.matrix(tbl[, 2:ncol(tbl)])
+  rownames(mtx) <- sub("qpcr-", "", tbl[,1])
+  dim(mtx)
+*-----------------------------------------------------------------------------------------------------------------------
 * refactored BrowserVizDemo now working, using npm for all javascript, webpack to assemble (9 aug 2017)
 
   cd ~/github/BrowserVizDemoApp/
@@ -147,8 +869,14 @@ bed format: chrom, start, end, name, score, strand
 
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* bug.  todo.  close all postgres database connections in trena (4 aug 2017)
+
+      db.connections <- dbListConnections(RPostgreSQL::PostgreSQL())
+      lapply(db.connections, dbDisconnect)
+
+
 *-----------------------------------------------------------------------------------------------------------------------
-* do footprints truly help with unexplanined intergenic snps? (4 aug 2017)
+* do footprints truly help with unexplanined intergenic snps? (4 aug 2017) for cory's paper
 
   cd ~/github/projects/priceLab/gwasADfootprintEnrichment/
    table(tbl.gwas$CHR)
@@ -926,7 +1654,18 @@ Show 2011/2017 before-and-after photos
   save(mtx.rosmap.aqp4, file="mtx.rosmap.aqp4.RData")
   heatmap.2(mtx.rosmap.aqp4, trace='none')
 
-*-----------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+* bdds postgres footprint hint usage in 4 lines
+library(RPostgreSQL)
+database.host <- "bddsrds.globusgenomics.org"
+db.hint <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="brain_hint", host=database.host)
+dbGetQuery(db.hint, "select * from hits limit 3")
+                 loc               type     name length strand        sample_id method         provenance score1  score2   score3 score4 score5 score6
+1 chr1:187058-187068 motif.in.footprint MA0002.2     11      - ENCSR000EIJ_hint   HINT brain.filler.minid     15 12.7759 2.03e-05     NA     NA     NA
+2 chr1:817425-817435 motif.in.footprint MA0002.2     11      + ENCSR000EIJ_hint   HINT brain.filler.minid     79 13.0345 1.59e-05     NA     NA     NA
+3 chr1:943841-943851 motif.in.footprint MA0002.2     11      - ENCSR000EIJ_hint   HINT brain.filler.minid     13 12.2931 3.18e-05     NA     NA     NA
+
+*------------------------------------------------------------------------------------------------------------------------
 * gtf tips: get basic info on hg38 gene (26 jun 2017)
 
    library(RPostgreSQL)
@@ -996,6 +1735,7 @@ kegg.hgr  <- hyperGTest(kegg.params)
    --- map GO term to all of its geneIDs
       library(org.Hs.eg.db)
       unique(unlist(mget("GO:0009060", env = org.Hs.egGO2ALLEGS), use.names=FALSE))
+
 
 
 *-----------------------------------------------------------------------------------------------------------------------
@@ -2111,7 +2851,7 @@ npm install --save-dev bootstrap-loader
   Gore's 2006 film, An Inconvenient Truth.
 
 *-----------------------------------------------------------------------------------------------------------------------
-* barbara mclintock: the genome is a ‘highly sensitive organ of the cell’
+* barbara mclintock: the genome is a "highly sensitive organ of the cell"
 *-----------------------------------------------------------------------------------------------------------------------
 * git tips, github tips, unstage (large) file which can't be pushed (23 apr 2017)
 
@@ -4765,8 +5505,9 @@ write.table(tbl.bed, sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE, fi
            },
        plugins: [
            new webpack.ProvidePlugin({
-              $: "jquery",
-              jQuery: "jquery"
+              'jQuery': 'jquery',
+              '$': 'jquery',
+              'global.jQuery': 'jquery'
            })
        ]
    }
@@ -5552,6 +6293,17 @@ dim(tbl.gwas); head(tbl.gwas)
 
 *-----------------------------------------------------------------------------------------------------------------------
 * igv.js tips: tracks
+
+  --- inventory, finding tracks for various genomes
+    cd ~/s/notes/igvTracks
+    examine the xml at http://igv.broadinstitute.org/
+    copy & pasted this into  ~/s/notes/igvTracks/allTracks.xml
+    we want three files per genome.  using hg38 as the example
+
+    annotations/hg38/cytoBandIdeo.txt
+    data/hg38/gencode.v24.annotation.sorted.gtf.gz
+    data/hg38/gencode.v24.annotation.sorted.gtf.gz.tbi
+
 
   ---- cytobandURL
     1st column is chromosome, must be free of "chr" leading string, ~1000 lines
@@ -13988,7 +14740,7 @@ Seward Park's old growth "Magnificent Forest"
 * R tips ess tips, use other versions (11 aug 2016)
 
 
-   Also M-x customize-variable and then inferior-R-program-name. – Martin Morgan May 6 '11 at
+   Also M-x customize-variable and then inferior-R-program-name. Martin Morgan May 6 '11
 
 *------------------------------------------------------------------------------------------------------------------------
 * bug: anaconda R version 3.3.1 has system() readline missing symbol problem (11 aug 2016)
@@ -26546,7 +27298,7 @@ roles.csv
 *------------------------------------------------------------------------------------------------------------------------
 * docker tips whalesay
 
-    do all of this in the docker bash client shell, which can be started from the Kitematic File-> menu
+   do all of this in the docker bash client shell, which can be started from the Kitematic File-> menu
 
   cd ~/s/examples/docker/mydockerbuild
   cat Dockerfile
