@@ -100,7 +100,203 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
-*
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* pdb tips: the 6 record types
+
+   https://www.cgl.ucsf.edu/chimera/docs/UsersGuide/tutorials/pdbintro.html
+
+   Record Type	Data Provided by Record
+
+   ATOM    atomic coordinate record containing the X,Y,Z orthogonal Å
+           coordinates for atoms in standard residues (amino acids and nucleic
+           acids).
+
+   HETATM:  atomic coordinate record containing the X,Y,Z orthogonal Å
+            coordinates for atoms in nonstandard residues. Nonstandard
+            residues include inhibitors, cofactors, ions, and solvent. The
+            only functional difference from ATOM records is that HETATM
+            residues are by default not connected to other residues. Note that
+            water residues should be in HETATM records.
+
+   TER indicates the end of a chain of residues. For example, a
+       hemoglobin molecule consists of four subunit chains that are
+       not connected. TER indicates the end of a chain and prevents
+       the display of a connection to the next chain.
+
+   HELIX:  indicates the location and type (right-handed alpha, etc.) of helices. One record per helix.
+
+   SHEET: indicates the location, sense (anti-parallel, etc.) and registration with respect to the previous strand in the sheet (if any) of each strand in the model. One record per strand.
+
+   SSBOND: defines disulfide bond linkages between cysteine residues.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* pdb tips: the HELIX record
+
+HELIX	1-5	“HELIX”		character
+8-10	Helix serial number	right	integer
+12-14	Helix identifier	right	character
+16-18§	Initial residue name	right	character
+20	Chain identifier		character
+22-25	Residue sequence number	right	integer
+26	Code for insertions of residues		character
+28-30§	Terminal residue name	right	character
+32	Chain identifier		character
+34-37	Residue sequence number	right	integer
+38	Code for insertions of residues		character
+39-40	Type of helix†	right	integer
+41-70	Comment	left	character
+72-76	Length of helix	right	integer
+
+123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.
+HELIX    1   1 ASP A   34  HIS A   41  1                                   8
+HELIX    2   2 HIS A   41  LEU A   50  1                                  10
+HELIX    3   3 ASP A   51  LEU A   65  1                                  15
+
+  --- ngl select 1st helix, residues 34-41
+  x = stage.getComponentsByName('3kvk').list[0]
+  x.removeAllRepresentations()
+  x.addRepresentation("cartoon", {sele: "34-41"})
+
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* pdb tips: the ATOM record
+
+  from 3kvk
+  a single chain of 2788 atoms
+
+123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.
+ATOM      1  N   GLY A  33     -10.201  20.698  -2.001  1.00 63.90           N
+
+ 7-11: atom serial number                         1
+13-16: atom name                                  N
+   17: alternate location indicator
+18-20: residue name                             GLY
+   22: chain identifier                           A
+23-26: residue sequence number                   33
+   27: code for insertions of residuces
+31-38: X                                    -10.201
+39-46: Y                                     20.698
+47-54: Z                                     -2.001
+55-60: occupancy                              1.00
+61-66: termperature factor                   63.90
+73-76: segment identifier
+77-78: element symbol                            N
+79-80: charge
+*-----------------------------------------------------------------------------------------------------------------------
+* ngl & dhodh (19 sep 2017)
+
+  --- from the two miller syndrome papers: two mutations in dhodh, chr16
+        mutation      exon      amino acid change   location
+         c.56G>A	2	p.G19E	             chr16:70603484
+    	c.454G>A	4	p.G152R	             chr16:70608443
+
+       70,608,443        70,612,611
+     CAC GGG CTT  ... CTG GGC CCC
+         AGG              GCC
+        (mom)            (dad)
+
+
+codon   amino acid
+ GGG   Glycine
+ AGG   Arginine
+
+ GGC   Glycine
+ GCC   Alanine
+
+  cd ~/github/projects/examples/ngl/dhodh
+  index.html
+
+  ---  with referencesw to the 20 helices in 3kvk.pdb, here displaying the first two
+
+  HELIX    1   1 ASP A   34  HIS A   41  1                                   8
+  HELIX    2   2 HIS A   41  LEU A   50  1                                  10
+
+  123456789.123456789.123456789.123456789.123456789.123456789.123456789.
+  SHEET    1   A 2 VAL A  81  VAL A  83  0
+  SHEET    2   A 2 HIS A  86  PHE A  88 -1  O  PHE A  88   N  VAL A  81
+  SHEET    1   B 9 VAL A  92  ILE A  94  0
+  SHEET    2   B 9 PHE A 115  VAL A 121  1  O  PHE A 115   N  ILE A  94
+  SHEET    3   B 9 LEU A 178  LEU A 182  1  O  GLY A 179   N  VAL A 116
+
+
+  SHEET    2   A 2 HIS A  86  PHE A  88 -1  O  PHE A  88   N  VAL A  81
+
+
+   var x = stage.getComponentsByName('3kvk').list[0]
+
+   x.removeAllRepresentations()
+
+   x.addRepresentation('cartoon', {sele: "34-41", color: "blue"})
+   x.addRepresentation('cartoon', {sele: "41-51", color: "grey"})
+   x.addRepresentation('cartoon', {sele: "51-65", color: "yellow"})
+   x.addRepresentation('cartoon', {sele: "76-80", color: "green"})
+
+   x.addRepresentation('cartoon', {sele: "81-88", color: "orange"})
+
+   --- next up:
+     continue with piecewise construction and display of dhodh
+     identify the two miller syndrome snps
+
+*-----------------------------------------------------------------------------------------------------------------------
+* jocelyn trenaViz demo, two HD genes (18 sep 2017)
+
+   cd ~/github/projects/priceLab/jocelyn/trenaVizDemo-HD
+
+   --- email thread (6 sep and following)
+
+     Could we please look at two genes related to Huntington's disease:
+
+     HTT - the gene for which a CAG expansion in the first exon causes
+     Huntington's disease.  I am interested in which TF motifs and
+     footprints are within a +/- 10 kb region upstream and downstream.
+     The gene track itself is 13 kb I believe, so perhaps we should
+     extend this out 10 kb past the last exon.
+
+     MLH1 - a DNA repair enzyme implicated as a genetic modifier of HD
+     in patients and in mouse models of the disease.
+
+     Footprint predictions from brain samples will be particularly
+     interesting, but a general map across tissues will also be of
+     use.
+
+   --- our footprints are human, so jocelyn suggests this expression data:
+
+    Human Allen Brain Atlas data located here:
+
+        /proj/price1/sament/human_aba/HO351
+
+       77309399 Dec 24  2015 H0351.1009/gene_based_expression.RData
+      114036716 Dec 24  2015 H0351.1012/gene_based_expression.RData
+      101668506 Dec 24  2015 H0351.1015/gene_based_expression.RData
+      108160857 Dec 24  2015 H0351.1016/gene_based_expression.RData
+      201613948 Dec 24  2015 H0351.2001/gene_based_expression.RData
+      190818982 Dec 24  2015 H0351.2002/gene_based_expression.RData
+
+    see: http://human.brain-map.org/mri_viewers/data
+
+   scp pshannon@whovian:/proj/price1/sament/human_aba/H0351.1009/gene_based_expression.RData H0351.1009.RData
+   scp pshannon@whovian:/proj/price1/sament/human_aba/H0351.1012/gene_based_expression.RData H0351.1012.RData
+   scp pshannon@whovian:/proj/price1/sament/human_aba/H0351.1015/gene_based_expression.RData H0351.1015.RData
+   scp pshannon@whovian:/proj/price1/sament/human_aba/H0351.1016/gene_based_expression.RData H0351.1016.RData
+   scp pshannon@whovian:/proj/price1/sament/human_aba/H0351.2001/gene_based_expression.RData H0351.2001.RData
+   scp pshannon@whovian:/proj/price1/sament/human_aba/H0351.2002/gene_based_expression.RData H0351.2002.RData
+
+   scp pshannon@whovian:/proj/price1/sament/human_aba/H0351.1009/SampleAnnot.csv H0351.1009.metadata.csv
+   scp pshannon@whovian:/proj/price1/sament/human_aba/H0351.1012/SampleAnnot.csv H0351.1012.metadata.csv
+   scp pshannon@whovian:/proj/price1/sament/human_aba/H0351.1015/SampleAnnot.csv H0351.1015.metadata.csv
+   scp pshannon@whovian:/proj/price1/sament/human_aba/H0351.1016/SampleAnnot.csv H0351.1016.metadata.csv
+   scp pshannon@whovian:/proj/price1/sament/human_aba/H0351.2001/SampleAnnot.csv H0351.2001.metadata.csv
+   scp pshannon@whovian:/proj/price1/sament/human_aba/H0351.2002/SampleAnnot.csv H0351.2002.metadata.csv
+
 *-----------------------------------------------------------------------------------------------------------------------
 * tr tips
 
@@ -109,6 +305,237 @@ bed format: chrom, start, end, name, score, strand
   export LC_ALL=C; cat TableofDNAsehypersensitivitydataforpaul.txt | tr '\r' '\n'  > dhsSources.tsv
 
 *-----------------------------------------------------------------------------------------------------------------------
+* pdb tips
+
+   In the PDB data file format for macromolecular models, each atom is
+   designated either ATOM or HETATM (which stands for hetero
+   atom). ATOM is reserved for atoms in standard residues of protein,
+   DNA or RNA. HETATM is applied to non-standard residues of protein,
+   DNA or RNA, as well as atoms in other kinds of groups, such as
+   carbohydrates, substrates, ligands, solvent, and metal ions.
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* ngl tip: how to do visually distinct selections (17 sep 2017)
+
+   see https://github.com/arose/ngl/issues/161
+
+*------------------------------------------------------------------------------------------------------------------------
+* ngl tips: tube rendering
+
+   https://codepen.io/arose/pen/dzLbaK?editors=0010
+
+  stage.loadFile("data://1u19.pdb").then(function (o) {
+  o.addRepresentation("tube", {
+    sele: ":A",
+    radius: "bfactor",
+    scale: 0.010,
+    color: "bfactor",
+    colorScale: "RdYlBu"
+  })
+
+  o.addRepresentation("ball+stick", {
+    sele: ":A and sidechainAttached",
+    aspectRatio: 1.5,
+    color: "bfactor",
+    colorScale: "RdYlBu"
+  })
+
+  o.autoView(":A")
+})
+
+*------------------------------------------------------------------------------------------------------------------------
+* ngl tips: control rendering from javascript console
+
+   cd ~/github/ngl/
+   open examples/webapp.html
+   File -> PDB -> 1crn
+   stage.getComponentsByName('1crn').addRepresentation('ball+stick', { sele: '1' })
+
+   --- the protein 1crn
+
+    Crambin is a small seed storage protein from the Abyssinian
+    cabbage. It belongs to thionins. It has 46 residues (amino
+    acids). It has been extensively studied by X-ray crystallography
+    since its crystals are unique and diffract to a resolution of 0.48
+    Å. Neutron scattering measurements are available also at a
+    resolution of 1.1 Å,[2] PDB ID 3U7T.
+
+   --- some commands: these "addRepresentation" command are cumulative, with cartoon the default, these further two added.
+    var stage = new NGL.Stage( "viewport" );
+    stage.loadFile( "rcsb://1crn", {defaultRepresentation: false});
+    stage.getComponentsByName('1crn').addRepresentation('ball+stick', {sele: "*"})
+    stage.getComponentsByName('1crn').addRepresentation('ribbon', {sele: "*"})
+    stage.getComponentsByName('1crn').autoView()
+    stage.getComponentsByName('1crn').addRepresentation('ball+stick', {sele: '1-10'})
+
+
+    x = stage.getComponentsByName('1crn')
+    y = x.list[0]
+    Object.keys(y)
+    "name"
+    "uuid"
+    "visible"
+    "signals"
+    "stage"
+    "viewer"
+    "reprList"
+    "annotationList"
+    "matrix"
+    "position"
+    "quaternion"
+    "scale"
+    "transform"
+    "controls"
+    "structure"
+    "trajList"
+    "selection"
+    "structureView"
+    "defaultAssembly"
+
+
+   --- reprList keeps all of the representations thus far added:
+     stage.getComponentsByName('1crn').list[0].reprList
+   (5) [RepresentationComponent, RepresentationComponent, RepresentationComponent, RepresentationComponent, RepresentationComponent]
+        0: RepresentationComponent {name: "cartoon", uuid: "DD40FD5D-39BB-4FC7-8066-267BCD23915A", visible: true, signals: {…}, stage: Stage, …}
+	1: RepresentationComponent {name: "base", uuid: "DBB8F817-466A-4439-897A-0C17B2ED866D", visible: true, signals: {…}, stage: Stage, …}
+	2: RepresentationComponent {name: "ball+stick", uuid: "5B5A7CDA-F00B-4BF8-A2B7-80D6D2BBB739", visible: true, signals: {…}, stage: Stage, …}
+	3: RepresentationComponent {name: "ball+stick", uuid: "D084EB6B-253E-4B59-AFC0-11CF2B239C18", visible: true, signals: {…}, stage: Stage, …}
+	4: RepresentationComponent {name: "ball+stick", uuid: "1CC57707-1BFE-45CF-886B-F216BCF901F8", visible: true, signals: {…}, stage: Stage, …}length: 5__proto__: Array(0)
+
+     # remove them all?
+   stage.getComponentsByName("1crn").list[0].removeAllRepresentations()   # model no longer displayed
+
+     # now re-render:
+  stage.getComponentsByName('1crn').addRepresentation('cartoon', {sele: "*", colorScale: "Set1", colorScheme: "residueindex"})
+
+   ---- detailed control of rendering
+    var stage = new NGL.Stage( "viewport" );
+    stage.loadFile( "rcsb://1crn", {defaultRepresentation: true});
+    stage.getComponentsByName("1crn").list[0].removeAllRepresentations()
+    stage.getComponentsByName('1crn').addRepresentation('cartoon', {sele: "* and not 15", colorScale: "Set1", colorScheme: "residueindex"})
+    stage.getComponentsByName('1crn').addRepresentation("spacefill", {sele: "15", scale: "2"})
+
+  ---- view each chain of 1IZL, Crystal Structure of Photosystem II
+
+    var stage = new NGL.Stage( "viewport" );
+    stage.loadFile( "rcsb://1IZL" ).then(function(comp){
+       comp.addRepresentation('ball+stick', { sele: 'PHO and :A' })
+       comp.autoView('PHO and :A')
+       });
+
+    var pdbID = "1IZL"
+    stage.getComponentsByName(pdbID).list[0].removeAllRepresentations()
+    stage.getComponentsByName(pdbID).addRepresentation('cartoon', {sele: ":A", colorScale: "Set1", colorScheme: "residueindex"}).autoView();
+
+    stage.getComponentsByName(pdbID).list[0].removeAllRepresentations()
+    stage.getComponentsByName(pdbID).addRepresentation('cartoon', {sele: ":A OR :B", colorScale: "Set1", colorScheme: "residueindex"}).autoView();
+
+
+
+
+
+
+
+   --- more complex selection
+
+     // select C-alpha atoms of residue 10 with insertion code A
+     // from chain F in model 0 at alternate location C
+
+        10^A:F.CA%C/0
+
+    which is the same as
+
+       10 and ^A and :F and .CA and %C and /0
+
+    Single expressions may be left out as long as the order (see above) is kept, for example:
+
+       :A/0 # select chain A from model 0
+
+
+   --- the reprList after default load of 1crn:
+   stage.getComponentsByName('1crn').list[0].reprList
+  p(3) [RepresentationComponent, RepresentationComponent, RepresentationComponent]
+    0: RepresentationComponent {name: "cartoon", uuid: 1:"F555FEFF-5550-48A2-ACB9-E6FE73E0643B", visible: true, signals: {…}, stage: Stage, …}
+    1: RepresentationComponent {name: "base", uuid: "1D5F845F-9E55-41DA-B9B7-0291128912CF", visible: true, signals: {…}, stage: Stage, …}
+    2: RepresentationComponent {name: "ball+stick", uuid: "F586B4FF-F07A-4D61-90DC-395BFE74DA12", visible: true, signals: {…}, stage: Stage, …}length: 3__proto__: Array(0)
+
+   stage.getComponentsByName("1crn").list[0].removeAllRepresentations()   # model is gone
+     // then representations can be added
+    stage.getComponentsByName('1crn').addRepresentation('ribbon', {sele: "*"})  // style color all blue, sub-optimal
+
+*------------------------------------------------------------------------------------------------------------------------
+* ngl tips, build ngl demo webapp
+
+   cd ~/github/ngl/
+   npm install
+   npm run-script build
+   open examples/webapp.html
+
+   --- look for code to change visibility dynamically, as occurs in the webapp gui
+
+*------------------------------------------------------------------------------------------------------------------------
+* ngl tips selection language (17 sep 2017)
+
+   https://github.com/arose/ngl/blob/master/doc/usage/selection-language.md
+   ligand  -> (( not polymer or hetero ) and not ( water or ion ))
+
+   Select the side-chain and C-alpha atoms plus the backbone nitrogen in case of proline:
+
+      not backbone or .CA or (PRO and .N)
+
+   This selection is useful to display the sidechains together with a backbone trace.
+   Hence there is also the keyword sidechainAttached for it.
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* ngl tips
+
+  1CRN:  WATER STRUCTURE OF A HYDROPHOBIC PROTEIN AT ATOMIC RESOLUTION. PENTAGON RINGS OF WATER MOLECULES IN CRYSTALS OF CRAMBIN
+         very small
+
+   --- minimal js
+     var stage = new NGL.Stage( "viewport" );
+     stage.loadFile( "rcsb://1mbo", {defaultRepresentation: true});
+        // or:
+     stage.loadFile( "rcsb://1F45" ).then(function(component){
+       var representations = ["ball+stick", "cartoon", "spacefill", "surface",
+                              "ribbon", "tube", "rope", "rocket", "hyperball"];
+       component.addRepresentation(representations[1]);
+       component.autoView();
+       });
+
+
+   --- specify multiple representations
+     function defaultStructureRepresentation( component ){
+        // bail out if the component does not contain a structure
+       if( component.type !== "structure" ) return;
+       // add three representations
+       component.addRepresentation( "cartoon", {
+         aspectRatio: 3.0,
+         scale: 1.5
+         });
+       component.addRepresentation( "licorice", {
+         sele: "hetero and not ( water or ion )",
+         multipleBond: true
+         });
+       component.addRepresentation( "spacefill", {
+         sele: "water or ion",
+         scale: 0.5
+        });
+      }
+
+   // Pass that function as a callback whenever you load a structure file via {@link Stage#loadFile}.
+
+   stage.loadFile( "rcsb://1crn" ).then( defaultStructureRepresentation );
+   stage.loadFile( "rcsb://4hhb" ).then( defaultStructureRepresentation );
+
+
+   --- to learn some good representation color parameters, see  http://nglviewer.org/ngl/
+     eg, popup the cartoon parameters
+        colorScale: Spectral
+	colorScheme: resname, atomindex, chainindex
+
 *-----------------------------------------------------------------------------------------------------------------------
 * ngl select pheophytin from crystal structure of photosystem 2 1IZL (15 sep 2017)
 
@@ -945,6 +1372,82 @@ rownames(tbl.GO) <- genes.assigned
    choose from left menut: "Expense Reimbursement Formt" an xlsx spreadsheet
 
 *-----------------------------------------------------------------------------------------------------------------------
+* create tomtom MotifDb pfm similarity sparse matrix matt's tomtom.txt (18 sep 2017)
+
+  cd ~/github/projects/motifDb/tomtom
+  scp pshannon@khaleesi:/ssd/mrichard/data/TOMTOM/all_MotifDb_results/tomtom.txt .
+  tbl <- read.table("tomtom.txt", sep="\t", nrow=-1, as.is=TRUE)   # [1] 3963410      10
+  save(tbl, file="tbl.RData")
+     -rw-r--r--  1 paul  staff   81213283 Sep 18 14:51 tbl.RData
+     -rw-r--r--  1 paul  staff  535197180 Sep 18 14:44 tomtom.txt
+
+  tbl <- read.table("tomtom.txt", sep="\t", nrow=-1, as.is=TRUE)
+  dim(tbl) # [1] 3963410      10
+  colnames(tbl)[1:4] <- c("a", "b", "xx", "pval")
+  fivenum(tbl$pval)   # [1] 0.00000000 0.00031219 0.00380397 0.01659200 0.14829900
+
+    # more plausible are 4 and 6
+   fivenum(tbl$V4) # [1] 0.00000000 0.00031219 0.00380397 0.01659200 0.14829900
+   fivenum(tbl$V5) # [1]    0.00000    2.61272   31.83540  138.85800 1241.11000
+   fivenum(tbl$V6) # [1]  0.0000000  0.0173034  0.1467830  0.3290130 0.4999990
+
+   ---- try putting this into a sparse matrix
+     library(Matrix)
+     packageVersion("Matrix") # [1] ‘1.2.11’
+
+   ---- quick test of usage, resulting size (1.5% of regular matrix
+    smtx <- rsparsematrix(1000, 1000, density=0.01)
+    object.size(smtx)                         #   125424 bytes
+     mtx <- matrix(0, nrow=1000, ncol=1000)
+    object.size(mtx)                           # 8000200 bytes
+
+   --- test of expected full size: can it fit within a bioc package?
+      length(unique(c(tbl$a, tbl$b))) # [1] 8369
+      matrix.names <- sort(unique(c(tbl$a, tbl$b)))
+      smtx <- rsparsematrix(nrow=8369, ncol=8369, nnz=3963410)
+       mtx[tbl$a, tbl$b] <- tbl$pval
+
+   --- learn something of tomtom
+     library(MotifDb)
+     mdb.jaspar2016.human <- query(query(MotifDb, "hsapiens"), "jaspar2016")
+
+     http://meme-suite.org/tools/tomtom
+     query(query(MotifDb, "hsapiens"), "MA0511.1")[[2]]
+
+0.09322034 0.1553672 0.14218456 0.1139360 0.1167608 0.07062147 0.008474576 0.0000000000 0.014124294  0 0.000000000 0.00000000 0.03954802 0.242937853 0.1186441
+0.12523540 0.1120527 0.07438795 0.1619586 0.1459510 0.36911488 0.003766478 0.0009416196 0.002824859  0 0.000000000 0.12429379 0.17890772 0.007532957 0.1186441
+0.41713748 0.4180791 0.40112994 0.4491525 0.2306968 0.12523540 0.010357815 0.9698681733 0.000000000  1 0.998116761 0.08474576 0.14877589 0.134651601 0.4350282
+0.36440678 0.3145009 0.38229755 0.2749529 0.5065913 0.43502825 0.977401130 0.0291902072 0.983050847  0 0.001883239 0.79096045 0.63276836 0.614877589 0.3276836
+
+    paste the above 4 lines into the tomtom webform:  http://meme-suite.org/tools/tomtom
+    select target motifs: JASPAR CORE and UniPROBE Mouse
+
+   --- matches
+      MA0511.1: 2.36e-28
+      MA0002.2: 8.84e-10
+      MA0073.1: 3.12e-06
+     UP00025_2: 3.87e-05
+      MA242.1:  1.42e-04
+
+   --- suggesting our sparse matrix could have the following number of significant values
+
+     nrow(subset(tbl, pval < 10e-4))    1355004
+     nrow(subset(tbl, pval < 10e-10))     54188
+     nrow(subset(tbl, pval < 10e-8))     118607
+     nrow(subset(tbl, pval < 10e-7))     204080
+     nrow(subset(tbl, pval <= 10e-5))    731413
+     nrow(subset(tbl, pval <= 10e-1))   3963410
+
+   object.size(rsparsematrix(nrow=8369, ncol=8369, nnz=54188))   685152 bytes
+   object.size(rsparsematrix(nrow=8369, ncol=8369, nnz=118607)) 1458184 bytes
+   object.size(rsparsematrix(nrow=8369, ncol=8369, nnz=204080)) 2483856
+   object.size(rsparsematrix(nrow=8369, ncol=8369, nnz=731413)) 8811856 bytes
+
+    MotifDb already very close to bioc pkg max of 4MB: 3,987,611 Sep 18 16:15 MotifDb_1.19.7.tar.gz
+    so adding a similarity matrix of .6MB or more may not be possible.
+
+
+*-----------------------------------------------------------------------------------------------------------------------
 * create tomtom upperdiagonal matrix from matt's tomtom.txt (31 jul 2017)
 
    read.table("tomtom.txt", sep="\t", nrow=3, as.is=TRUE)
@@ -952,9 +1455,17 @@ rownames(tbl.GO) <- genes.assigned
     1 Scerevisiae-cispb_1.02-M0001_1.02                 Scerevisiae-cispb_1.02-M0001_1.02  0 3.40815e-19 2.85228e-15 5.70138e-15  8 TTATCACT TTATCACT   +
     2 Scerevisiae-cispb_1.02-M0001_1.02                 Scerevisiae-ScerTF-DAL80-harbison  0 2.10796e-06 1.76415e-02 1.76316e-02  5 TTATCACT    TTATC   -
     3 Scerevisiae-cispb_1.02-M0001_1.02 Dmelanogaster-FlyFactorSurvey-So_Cell_FBgn0003460 -1 1.45161e-04 1.21485e+00 4.00760e-01  7 TTATCACT  TATCATT   -
+
   tbl <- read.table("tomtom.txt", sep="\t", nrow=-1, as.is=TRUE)
   dim(tbl) # [1] 3963410      10
-  colnames(tbl)[1:3] <- c("a", "b", "pval")
+  colnames(tbl)[1:4] <- c("a", "b", "xx", "pval")
+  fivenum(tbl$pval)   # [1] 0.00000000 0.00031219 0.00380397 0.01659200 0.14829900
+
+    # more plausible are 4 and 6
+   fivenum(tbl$V4) # [1] 0.00000000 0.00031219 0.00380397 0.01659200 0.14829900
+   fivenum(tbl$V5) # [1]    0.00000    2.61272   31.83540  138.85800 1241.11000
+   fivenum(tbl$V6) # [1]  0.0000000  0.0173034  0.1467830  0.3290130 0.4999990
+
   length(unique(c(tbl$a, tbl$b))) # [1] 8369
   matrix.names <- sort(unique(c(tbl$a, tbl$b)))
   mtx <- matrix(1.0, nrow=8369, ncol=8369, dimnames=list(matrix.names, matrix.names))
@@ -14738,7 +15249,6 @@ Seward Park's old growth "Magnificent Forest"
 
 *------------------------------------------------------------------------------------------------------------------------
 * R tips ess tips, use other versions (11 aug 2016)
-
 
    Also M-x customize-variable and then inferior-R-program-name. Martin Morgan May 6 '11
 
