@@ -105,6 +105,74 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* install rpy2 for jupyter (lab) on whovian (23 sep 2017)
+
+   jupyter --version; jupyter notebook --version; jupyter lab --version
+      4.2.1
+      4.3.1
+      jupyter: 'lab' is not a Jupyter command
+
+   conda update -c conda-forge jupyter   
+   conda install -c conda-forge jupyterlab
+   conda upgrade -c conda-forge notebook
+   jupyter --version; jupyter notebook --version; jupyter lab --version
+     4.2.1
+     5.1.0
+     0.27.0
+
+   conda upgrade -c conda-forge notebook
+
+   --- latest python?
+    conda search python  # lots of results, but 3.6.2 listed
+    conda --version      # conda 4.3.23
+    conda update -c conda-forge conda
+    conda --version
+
+   --- latest R?
+      R --version  # 3.3.2
+      conda update r-essentials
+      R --version  # 3.4.1
+
+   --- rpy2
+
+     pip install rpy2
+       ./rpy/rinterface/_rinterface.c:80:31: fatal error: readline/readline.h: No such file or directory
+     #include <readline/readline.h>
+                                   ^
+    compilation terminated.
+    error: command 'gcc' failed with exit status 1
+
+   --- one failed suggestion from stack overflow
+       conda remove --force readline
+       pip install readline
+       pip install rpy2
+
+   --- try ldd (present, in R)
+    ldd /local/pshannon/anaconda3/lib/R/lib/libR.so | grep readline
+	libreadline.so.6 => /local/pshannon/anaconda3/lib/R/lib/../../libreadline.so.6 (0x00007f393a426000)
+
+   ---- pip install rpy2   # problem solved by jusa adding an include directory?
+      Compilation parameters for rpy2's C components:
+          include_dirs    = ['/local/pshannon/anaconda3/lib/R/include']
+          library_dirs    = ['/local/pshannon/anaconda3/lib', '/local/pshannon/anaconda3/lib/R/lib']
+          libraries       = ['gfortran', 'R', 'pcre', 'lzma', 'bz2', 'z', 'rt', 'dl', 'm', 'iconv', 'icuuc', 'icui18n']
+          extra_link_args = ['-Wl,--export-dynamic', '-fopenmp']
+
+      find /local/pshannon -name "readline.h"
+        /local/pshannon/gemini/anaconda/pkgs/readline-6.2-2/include/readline/readline.h
+        /local/pshannon/gemini/anaconda/include/readline/readline.h
+        /local/pshannon/anaconda3/pkgs/readline-6.2-2/include/readline/readline.h
+        /local/pshannon/anaconda3/envs/py27/include/readline/readline.h
+        /local/pshannon/anaconda3/include/readline/readline.h
+
+    --- another possibility:  build R from source, 
+     When compiling R from source, do not forget to specify –enable-R-shlib at the ./configure step.
+     cd ~/src
+     curl -O https://cran.r-project.org/src/base/R-3/R-3.4.1.tar.gz
+     tar zxf R-3.4.1.tar.gz 
+     ./configure --enable-R-shlib
+       configure: error: --with-readline=yes (default) and headers/libs are not available
+
 *-----------------------------------------------------------------------------------------------------------------------
 * R tips matrix tips: preserve data.frame or matrix
 
