@@ -97,8 +97,767 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* evaluating snps in footprints in the scz tsnare1 gwas loci (7 oct 2017)
+
+----- assessing  1) rs10100321
+TSNARE1 rs10100321, tfs.wt,     11 in model:  0
+TSNARE1 rs10100321, tfs.mut,    37 in model:  2
+TSNARE1 rs10100321, tfs.lost,    0 in model:  0
+TSNARE1 rs10100321, tfs.gained, 26 in model:  2
+   tf 34 gained: BHLHE22
+   tf  7 gained: ID3
+----- assessing  2) rs12234969
+TSNARE1 rs12234969, tfs.wt,     52 in model:  2
+TSNARE1 rs12234969, tfs.mut,    53 in model:  2
+TSNARE1 rs12234969, tfs.lost,    1 in model:  0
+TSNARE1 rs12234969, tfs.gained,  2 in model:  0
+----- assessing  3) rs12676511
+TSNARE1 rs12676511, tfs.wt,      7 in model:  0
+TSNARE1 rs12676511, tfs.mut,     6 in model:  0
+TSNARE1 rs12676511, tfs.lost,    1 in model:  0
+TSNARE1 rs12676511, tfs.gained,  0 in model:  0
+----- assessing  4) rs13438979
+TSNARE1 rs13438979, tfs.wt,      4 in model:  1
+TSNARE1 rs13438979, tfs.mut,     0 in model:  0
+TSNARE1 rs13438979, tfs.lost,    4 in model:  1
+TSNARE1 rs13438979, tfs.gained,  0 in model:  0
+   tf 20 lost: NFIX
+----- assessing  5) rs4284148
+TSNARE1 rs4284148, tfs.wt,      4 in model:  0
+TSNARE1 rs4284148, tfs.mut,     3 in model:  0
+TSNARE1 rs4284148, tfs.lost,    1 in model:  0
+TSNARE1 rs4284148, tfs.gained,  0 in model:  0
+----- assessing  6) rs4976977
+TSNARE1 rs4976977, tfs.wt,     13 in model:  1
+TSNARE1 rs4976977, tfs.mut,    37 in model:  2
+TSNARE1 rs4976977, tfs.lost,    5 in model:  0
+TSNARE1 rs4976977, tfs.gained, 29 in model:  1
+   tf 34 gained: BHLHE22
+----- assessing  7) rs4976982
+TSNARE1 rs4976982, tfs.wt,     36 in model:  2
+TSNARE1 rs4976982, tfs.mut,     3 in model:  0
+TSNARE1 rs4976982, tfs.lost,   34 in model:  2
+TSNARE1 rs4976982, tfs.gained,  1 in model:  0
+   tf 17 lost: TCFL5
+   tf 13 lost: EPAS1
+----- assessing  8) rs59554395
+TSNARE1 rs59554395, tfs.wt,      0 in model:  0
+TSNARE1 rs59554395, tfs.mut,    53 in model:  0
+TSNARE1 rs59554395, tfs.lost,    0 in model:  0
+TSNARE1 rs59554395, tfs.gained, 53 in model:  0
+----- assessing  9) rs7465677
+TSNARE1 rs7465677, tfs.wt,      1 in model:  0
+TSNARE1 rs7465677, tfs.mut,    22 in model:  2
+TSNARE1 rs7465677, tfs.lost,    0 in model:  0
+TSNARE1 rs7465677, tfs.gained, 21 in model:  2
+   tf 17 gained: TCFL5
+   tf 13 gained: EPAS1
+----- assessing 10) rs7822538
+TSNARE1 rs7822538, tfs.wt,     28 in model:  2
+TSNARE1 rs7822538, tfs.mut,    57 in model:  3
+TSNARE1 rs7822538, tfs.lost,    5 in model:  1
+TSNARE1 rs7822538, tfs.gained, 34 in model:  2
+   tf 32 lost: ATF3
+   tf 17 gained: TCFL5
+   tf 13 gained: EPAS1
+----- assessing 11) rs8180914
+TSNARE1 rs8180914, tfs.wt,     50 in model:  1
+TSNARE1 rs8180914, tfs.mut,    50 in model:  1
+TSNARE1 rs8180914, tfs.lost,    0 in model:  0
+TSNARE1 rs8180914, tfs.gained,  0 in model:  0
+
+tfs gained at 85%, collected: ATF3 (#34 in m2), TCFL5, EPAS1 (#23 in m1), BHLHE22, BHLHE22, ID3 (#46 in m1)
+tfs lost at 85%,   collected: TCFL5  EPAS1, NFIX (rank 11 in geneModel.2, mtx.cer)
+
+   save(tbl.geneModel.1.tfc, tbl.geneModel.2.tfc, tbl.geneModel.3.tfc,
+        tbl.geneModel.1.mdb, tbl.geneModel.2.mdb, tbl.geneModel.3.mdb,
+        file="geneModels.6.3matrices.mdb.tfc.lookup.RData")
+
+[1] rank of ATF3
+[1] table 2: 30
+[1] rank of TCFL5
+[1] rank of EPAS1
+[1] table 1: 19
+[1] rank of BHLHE22
+[1] rank of ID3
+[1] table 1: 44
+[1] rank of NFIX
+[1] table 2: 11
+[1] table 5: 3
+
+  -- looking at NFIX, rs4976977
+    head(tbl.geneModel.2.mdb)
+      gene   beta.lasso pearson.coeff  rf.score  beta.ridge spearman.coeff concordance   pcaMax binding.sites
+   1  HEY1 -0.125185660    -0.3516960 12.027139 -0.05295559     -0.3306789   0.5998627 2.149381           162
+   2   SP2  0.054781252     0.3407061  3.566340  0.03350704      0.3063749   0.4958117 1.265255          4433
+   3  NFIX  0.037892404     0.3237507  2.956642  0.02871457      0.3154248   0.4736702 1.175988           202
+   4 MEF2A  0.016101218     0.3179430  2.481262  0.04151545      0.2837201   0.4493849 1.172892            36
+   5 CENPB  0.000000000     0.2692497  4.647041  0.02803634      0.2588462   0.4623728 1.151129             7
+   6  PBX1  0.003959147     0.2688789  2.918706  0.04347878      0.2192414   0.4451965 1.090274            51
+
+   as.data.frame(snpsById(SNPlocs.Hsapiens.dbSNP150.GRCh38, "rs4976977"))
+      seqnames       pos strand RefSNP_id alleles_as_ambig
+             8 142232793      * rs4976977                W   (A -> T)
+
+     tbl.rs4976977 <- assessSnp(trena, pfms, "rs4976977", 7, 85)
+      as.data.frame(t(tbl.rs4976977[grep("NFIX", tbl.rs4976977$motifName),]))
+                                                                    3                                            61
+     motifName                      Hsapiens-jaspar2016-NFIX-MA0671.1             Hsapiens-jaspar2016-NFIX-MA0671.1
+     status                                                        wt                                           mut
+     assessed                                                 in.both                                       in.both
+     motifRelativeScore                                     0.9675002                                     0.8618954
+     delta                                                          0                                             0
+     signature          Hsapiens-jaspar2016-NFIX-MA0671.1;142232792;- Hsapiens-jaspar2016-NFIX-MA0671.1;142232792;-
+     chrom                                                       chr8                                          chr8
+     motifStart                                             142232792                                     142232792
+     motifEnd                                               142232800                                     142232800
+     strand                                                         -                                             -
+     match                                                  GTTGGCAGA                                     GATGGCAGA
+     variant                                                rs4976977                                     rs4976977
+
+
+
+
+   assessSnp(trena, pfms, "rs4976977", 10, 85)
+    3       Hsapiens-jaspar2016-NFIX-MA0671.1;142232792;-  chr8  142232792 142232800      -     GTTGGCAGA rs4976977
+    61      Hsapiens-jaspar2016-NFIX-MA0671.1;142232792;-  chr8  142232792 142232800      -     GATGGCAGA rs4976977
+
+
 *-----------------------------------------------------------------------------------------------------------------------
+* rosmap (and other)  brain expression data (8 oct 2017)
+
+  --- rosmap
+  ~/s/work/priceLab/cory/module-109/rosmap_rnaseq_fpkm_geneSymbols_24593x638.RData
+    mtx <- asinh(mtx)
+    mtx.var <- apply(mtx, 1, var)
+    deleters <- which(mtx.var < 0.01)
+    if(length(deleters) > 0)   # 15838 x 638
+       mtx <- mtx[-deleters,]
+   dim(mtx);      # [1] 15538   638
+   fivenum(mtx)   # [1]  0.000000  1.370301  2.659855  3.662176 13.081307
+   mtx.rosmap.normalized <- mtx
+   save(mtx.rosmap.normalized, file="~/s/work/priceLab/cory/brainExpressionData/mtx.rosmap.normalized.RData")
+   print(load("~/s/work/priceLab/cory/brainExpressionData/mtx.rosmap.normalized.RData"))
+
 *-----------------------------------------------------------------------------------------------------------------------
+* assess all snps in the scz tsnare1 loci (mon 9 oct)
+
+  cd ~/github/trenaSCZ
+  run assessSnp(trena, jaspar.pfms, "rs4976977", 10, 90) with just jaspar human pfms, see if any tfs are
+    lost or gained by 20%, against either cory's +/-5kb wg model, or my
+
+    save(tbl.geneModel.2, file="tbl.geneModel.cer.RData")
+    save(tbl.geneModel, file="tbl.geneModel.tcx.RData")
+    tbl.geneModel$gene
+
+ [1] "DNMT3A"  "TEAD3"   "NFKB2"   "ATF4"    "NCOR2"   "DDIT3"   "CEBPG"   "STAT3"   "TP53"
+[10] "HES5"    "NFATC2"  "BCL6"    "MZF1"    "SP4"     "MTA2"    "GLIS3"   "ETV6"    "KLF2"
+[19] "EPAS1"   "SNAPC4"  "TCF7"    "RCOR2"   "MSX1"    "REST"    "HIF1A"   "NFE2L2"  "TFE3"
+[28] "HES7"    "PRRX1"   "SMARCC2" "YAP1"    "BPTF"    "STAT5A"  "MAFK"    "ZNF410"  "RELA"
+[37] "ZNF263"  "CDC5L"   "TFAP2E"  "XBP1"    "ELK3"    "TGIF1"   "GLIS2"   "CEBPD"   "TEAD1"
+[46] "SP100"   "RFX4"    "SP1"     "ID3"     "IRF9"    "EGR4"    "ATF5"    "GTF2I"
+
+ tbl.geneModel.2$gene
+ [1] "HEY1"     "DMAP1"    "ZNF384"   "CENPB"    "SMARCA4"  "SP2"      "MEF2A"    "NFIX"
+ [9] "ZFHX2"    "DNMT3B"   "TEAD3"    "ATF4"     "TP53"     "ETV6"     "CEBPB"    "ZBTB12"
+[17] "SMARCAL1" "POU6F2"   "BPTF"     "DDIT3"    "NFKB2"    "SOX18"    "DLX1"     "SIX4"
+[25] "HYKK"     "GLIS3"    "NFIB"     "ARID5B"   "CEBPG"    "NCOA1"    "ATF3"     "MAFF"
+[33] "LHX5"     "ESRRA"    "PRRX1"    "MAFG"     "SNAI2"    "NR3C1"    "STAT3"    "BACH1"
+[41] "SOX1"     "ARNTL"    "TFE3"     "JDP2"     "RELA"     "NFE2L3"   "PAX2"     "ELK4"
+[49] "NFE2L2"   "EBF3"     "KLF6"     "SOX17"
+>
+   nothing here
+> assessSnp(trena, pfms, "rs4976977", 10, 90)
+                               motifName status assessed motifRelativeScore       delta                                         signature chrom motifStart  motifEnd strand      match   variant
+5      Mmusculus-jaspar2016-Myb-MA0100.2     wt  wt.only          0.9361425  0.11835089     Mmusculus-jaspar2016-Myb-MA0100.2;142232787;-  chr8  142232787 142232796      - AGACAGTTGG rs4976977
+4      Mmusculus-jaspar2016-Myb-MA0100.1     wt  wt.only          0.9873817  0.14511041     Mmusculus-jaspar2016-Myb-MA0100.1;142232788;+  chr8  142232788 142232795      +   GACAGTTG rs4976977
+7     Mmusculus-jaspar2016-Hic1-MA0739.1     wt  wt.only          0.9049373  0.07378138    Mmusculus-jaspar2016-Hic1-MA0739.1;142232791;-  chr8  142232791 142232799      -  AGTTGGCAG rs4976977
+31   Mmusculus-jaspar2016-Gata1-MA0035.1    mut mut.only          0.9907407 -0.22685185   Mmusculus-jaspar2016-Gata1-MA0035.1;142232791;+  chr8  142232791 142232796      +     AGATGG rs4976977
+51 Mmusculus-jaspar2016-Bhlha15-MA0607.1    mut mut.only          0.9116160 -0.11789451 Mmusculus-jaspar2016-Bhlha15-MA0607.1;142232789;-  chr8  142232789 142232796      -   ACAGATGG rs4976977
+41   Mmusculus-jaspar2016-Atoh1-MA0461.1    mut  in.both          1.0000000  0.00000000   Mmusculus-jaspar2016-Atoh1-MA0461.1;142232790;+  chr8  142232790 142232797      +   CAGATGGC rs4976977
+6    Mmusculus-jaspar2016-Atoh1-MA0461.1     wt  in.both          0.9209577  0.00000000   Mmusculus-jaspar2016-Atoh1-MA0461.1;142232790;+  chr8  142232790 142232797      +   CAGTTGGC rs4976977
+21      Hsapiens-jaspar2016-YY1-MA0095.1    mut mut.only          1.0000000 -0.20731707      Hsapiens-jaspar2016-YY1-MA0095.1;142232792;-  chr8  142232792 142232797      -     GATGGC rs4976977
+3      Hsapiens-jaspar2016-NFIX-MA0671.1     wt  wt.only          0.9675002  0.10560476     Hsapiens-jaspar2016-NFIX-MA0671.1;142232792;-  chr8  142232792 142232800      -  GTTGGCAGA rs4976977
+1      Hsapiens-jaspar2016-NFIC-MA0161.1     wt  wt.only          1.0000000  0.12680150     Hsapiens-jaspar2016-NFIC-MA0161.1;142232793;+  chr8  142232793 142232798      +     TTGGCA rs4976977
+2      Hsapiens-jaspar2016-NFIA-MA0670.1     wt  wt.only          0.9551917  0.13673896     Hsapiens-jaspar2016-NFIA-MA0670.1;142232791;-  chr8  142232791 142232800      - AGTTGGCAGA rs4976977
+11    Hsapiens-jaspar2016-GATA2-MA0036.1    mut mut.only          0.9234694 -0.26530612    Hsapiens-jaspar2016-GATA2-MA0036.1;142232791;+  chr8  142232791 142232795      +      AGATG rs4976977
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* create a dnsnp hg38 build 150 track for igv.js? (5 oct 2017)
+
+   6 years ago, mentioned on biostars:
+      http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/snp132.txt.gz
+
+   biocGet("SNPlocs.Hsapiens.dbSNP150.GRCh38")
+
+*-----------------------------------------------------------------------------------------------------------------------
+* scz demo: find a broken gene model in proximal promoter from the 108 scz-associated genetic loci (5 oct 2017)
+
+   cd ~/github/trenaSCZ
+
+   word doc with 108 loci as an embedded table.  select.  Table->Convert->Table to Text, copy and paste into emacs
+
+   https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4112379/bin/NIHMS59304-supplement-Supplementary_Information.docx
+
+   ~/github/trenaSCZ/docs/biologicalInsightsFrom108schizophreniaAssociatedGeneticLoci.pdf
+
+     Independently associated SNPs do not translate to well-bounded
+     chromosomal regions. Nevertheless, it is useful to define
+     physical boundaries for the SNP associations to identify
+     candidate risk genes. We defined an associated locus as the
+     physical region containing all SNPs correlated at r2 > 0.6 with
+     each of the 128 index SNPs. Associated loci within 250 kb of each
+     other were merged. This resulted in 108 physically distinct
+     associated loci, 83 of which have not been previously implicated
+     in schizophrenia and therefore harbour potential novel biological
+     insights into disease aetiology (Supplementary Table 3; regional
+     plots in Supplementary Figure 1). The significant regions include
+     all but 5 loci previously reported as genome-wide significant in
+     large samples (Supplementary Table 3).
+
+     For each of the schizophrenia associated loci, we identified a
+     credible causal set of SNPs (for definition see Supplementary
+     text). 36 In only 10 instances (Supplementary Table 4) was the
+     association signal credibly attributable to a known nonsynonymous
+     exonic polymorphism. The apparently limited role of protein
+     coding variants is consistent both with exome sequencing findings
+     33 and with the hypothesis that most associated variants detected
+     by GWAS exert their effects through altering gene expression
+     rather than protein structure37,38 and with the observation that
+     schizophrenia risk loci are enriched for expression quantitative
+     trait loci (eQTL).39
+
+     To try to identify eQTLs that could explain associations with
+     schizophrenia, we merged the credible causal set of SNPs defined
+     above with eQTLs from a meta-analysis of human brain cortex eQTL
+     studies (N=550) and an eQTL study of peripheral venous blood
+     (N=3754)40 (Supplementary Text). Multiple schizophrenia loci
+     contained at least one eQTL for a gene within 1 Mb of the locus
+     (Supplementary Table 4). However, in only 12 instances was the
+     eQTL plausibly causal (two in brain, and nine in peripheral
+     blood, one in both). This low proportion suggests that if most
+     risk variants are regulatory, available eQTL catalogs do not yet
+     provide power, cellular specificity, or developmental diversity
+     to provide clear mechanistic hypotheses for follow-up
+     experiments.
+
+id <- "rs12676511"
+id <- "rs4976977"
+id <- "rs4976982"
+id <- "rs7465677"
+id <- "rs7822538"
+id <- "rs12234969"
+
+
+---- TFClass:
+"PPARG" "MYB" "REST" "ATF1" "CREBL2" "CREBZF" "CREB3" "CREB3L1"
+ "CREB3L2" "CREB3L3" "CREB3L4" "CREM" "ATF3" "JDP2" "FOSB" "TBX21"
+ "TBR1" "EOMES"
+
+---- MotifDb
+ "PPARG" "Crem"  "Atf1"  "Atf3"  "TBX21" "EOMES" "Myb"   "brk"   "REST"
+
+    --- credible snps, imputed along with the standout snp
+id <- "rs12676511"
+loc <- subset(tmp.bed, rsid==id)$start # [1] 142232025
+subset(tbls.fp[["postgres://whovian/brain_wellington_20"]], motifStart <= loc & motifEnd >= loc)
+   chrom motifStart  motifEnd motifName strand    score length distance.from.tss                                    id
+8   chr8  142232005 142232025  MA0528.1      +  9.36735     21           -122826 TSNARE1.fp.downstream.122826.MA0528.1
+16  chr8  142232019 142232028  MA0606.1      - 13.09680     10           -122812 TSNARE1.fp.downstream.122812.MA0606.1
+17  chr8  142232021 142232027  MA0152.1      - 12.20220      7           -122810 TSNARE1.fp.downstream.122810.MA0152.1
+18  chr8  142232021 142232035  MA0517.1      -  9.31818     15           -122810 TSNARE1.fp.downstream.122810.MA0517.1
+
+
+id <- "rs4976977"
+loc <- subset(tmp.bed, rsid==id)$start # 142232793
+subset(tbls.fp[["postgres://whovian/brain_hint_16"]], motifStart <= loc & motifEnd >= loc)
+subset(tbls.fp[["postgres://whovian/brain_hint_20"]], motifStart <= loc & motifEnd >= loc)
+subset(tbls.fp[["postgres://whovian/brain_wellington_16"]], motifStart <= loc & motifEnd >= loc)
+subset(tbls.fp[["postgres://whovian/brain_wellington_20"]], motifStart <= loc & motifEnd >= loc)
+# all agree:
+# chr8  142232787 142232796  MA0100.2      - 14.0492     10           -122044 TSNARE1.fp.downstream.122044.MA0100.2
+
+id <- "rs4976982"
+loc <- subset(tmp.bed, rsid==id)$start  # 142235164
+subset(tbls.fp[["postgres://whovian/brain_hint_16"]], motifStart <= loc & motifEnd >= loc)
+subset(tbls.fp[["postgres://whovian/brain_hint_20"]], motifStart <= loc & motifEnd >= loc)
+subset(tbls.fp[["postgres://whovian/brain_wellington_16"]], motifStart <= loc & motifEnd >= loc)
+subset(tbls.fp[["postgres://whovian/brain_wellington_20"]], motifStart <= loc & motifEnd >= loc)
+# all 4 sources agree:
+# chr8  142235154 142235174  MA0138.2      - 9.57143     21           -119677 TSNARE1.fp.downstream.119677.MA0138.2
+
+id <- "rs7465677"
+loc <- subset(tmp.bed, rsid==id)$start  # 142239356
+subset(tbls.fp[["postgres://whovian/brain_hint_16"]], motifStart <= loc & motifEnd >= loc)
+# chrom motifStart  motifEnd motifName strand   score length distance.from.tss                                    id
+#  chr8  142239352 142239361  MA0690.1      + 10.8727     10           -115479 TSNARE1.fp.downstream.115479.MA0690.1
+#  chr8  142239352 142239364  MA0800.1      + 10.9756     13           -115479 TSNARE1.fp.downstream.115479.MA0800.1
+subset(tbls.fp[["postgres://whovian/brain_hint_20"]], motifStart <= loc & motifEnd >= loc)
+subset(tbls.fp[["postgres://whovian/brain_wellington_16"]], motifStart <= loc & motifEnd >= loc)
+subset(tbls.fp[["postgres://whovian/brain_wellington_20"]], motifStart <= loc & motifEnd >= loc)
+
+id <- "rs7822538"
+loc <- subset(tmp.bed, rsid==id)$start  # 142241748
+subset(tbls.fp[["postgres://whovian/brain_hint_16"]], motifStart <= loc & motifEnd >= loc)
+#  chrom motifStart  motifEnd motifName strand   score length distance.from.tss                                    id
+#   chr8  142241740 142241749  MA0609.1      - 12.7705     10           -113091 TSNARE1.fp.downstream.113091.MA0609.1
+#   chr8  142241741 142241748  MA0604.1      - 13.0492      8           -113090 TSNARE1.fp.downstream.113090.MA0604.1
+#   chr8  142241742 142241749  MA0605.1      - 11.9180      8           -113089 TSNARE1.fp.downstream.113089.MA0605.1
+
+subset(tbls.fp[["postgres://whovian/brain_hint_20"]], motifStart <= loc & motifEnd >= loc)
+subset(tbls.fp[["postgres://whovian/brain_wellington_16"]], motifStart <= loc & motifEnd >= loc)
+subset(tbls.fp[["postgres://whovian/brain_wellington_20"]], motifStart <= loc & motifEnd >= loc)
+
+
+id <- "rs12234969"
+loc <- subset(tmp.bed, rsid==id)$start  # 142245289
+subset(tbls.fp[["postgres://whovian/brain_hint_16"]], motifStart <= loc & motifEnd >= loc)
+subset(tbls.fp[["postgres://whovian/brain_hint_20"]], motifStart <= loc & motifEnd >= loc)
+subset(tbls.fp[["postgres://whovian/brain_wellington_16"]], motifStart <= loc & motifEnd >= loc)
+subset(tbls.fp[["postgres://whovian/brain_wellington_20"]], motifStart <= loc & motifEnd >= loc)
+# all 4 agree:
+# chrom motifStart  motifEnd motifName strand   score length distance.from.tss                                    id
+#  chr8  142245279 142245291  MA0105.4      + 1.16327     13           -109552 TSNARE1.fp.downstream.109552.MA0105.4
+#  chr8  142245289 142245308  MA0066.1      - 8.57778     20           -109542 TSNARE1.fp.downstream.109542.MA0066.1
+
+
+# collected:
+# fp.snp.motifs <- c("MA0066.1", "MA0609.1", "MA0604.1", "MA0605.1", "MA0690.1", "MA0800.1", "MA0100.2", "MA0138.2")
+
+# motifToGene(MotifDb, fp.snp.motifs, source="TFclass")
+#      motif geneSymbol pubmedID  source
+# 1  MA0066.1      PPARG 23180794 TFClass
+# 2  MA0100.2        MYB 23180794 TFClass
+# 3  MA0138.2       REST 23180794 TFClass
+# 4  MA0604.1       ATF1 23180794 TFClass
+# 5  MA0604.1     CREBL2 23180794 TFClass
+# 6  MA0604.1     CREBZF 23180794 TFClass
+# 7  MA0604.1      CREB3 23180794 TFClass
+# 8  MA0604.1    CREB3L1 23180794 TFClass
+# 9  MA0604.1    CREB3L2 23180794 TFClass
+# 10 MA0604.1    CREB3L3 23180794 TFClass
+# 11 MA0604.1    CREB3L4 23180794 TFClass
+# 12 MA0604.1       CREM 23180794 TFClass
+# 13 MA0605.1       ATF3 23180794 TFClass
+# 14 MA0605.1       JDP2 23180794 TFClass
+# 15 MA0605.1       FOSB 23180794 TFClass
+# 16 MA0609.1       CREM 23180794 TFClass
+# 17 MA0609.1     CREBL2 23180794 TFClass
+# 18 MA0609.1     CREBZF 23180794 TFClass
+# 19 MA0609.1      CREB3 23180794 TFClass
+# 20 MA0609.1    CREB3L1 23180794 TFClass
+# 21 MA0609.1    CREB3L2 23180794 TFClass
+# 22 MA0609.1    CREB3L3 23180794 TFClass
+# 23 MA0609.1    CREB3L4 23180794 TFClass
+# 24 MA0609.1       ATF1 23180794 TFClass
+# 25 MA0690.1      TBX21 23180794 TFClass
+# 26 MA0690.1       TBR1 23180794 TFClass
+# 27 MA0800.1      EOMES 23180794 TFClass
+
+# from MotifDb motif/tf mapping
+# tf.map.motifDB <- lapply(fp.snp.motifs, function(motif) unique(mcols(query(MotifDb, motif))$geneSymbol))
+# names(tf.map.motifDB) <- fp.snp.motifs
+# tf.map.motifDB
+# MA0066.1  [1] "PPARG"
+# MA0609.1  [1] "Crem"
+# MA0604.1  [1] "Atf1"
+# MA0605.1  [1] "Atf3"
+# MA0690.1  [1] "TBX21"
+# MA0800.1  [1] "EOMES"
+# MA0100.2  [1] "Myb" "brk"
+# MA0138.2  [1] "REST"
+
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* git, bioc, motifdb (4 oct 2017)
+
+  cd ~/github/MotifDb
+   git remote -v
+    origin	https://github.com/PriceLab/MotifDb.git (fetch)
+    origin	https://github.com/PriceLab/MotifDb.git (push)
+
+  git remote add upstream git@git.bioconductor.org:packages/MotifDb.git
+
+  git remote -v
+    origin	https://github.com/PriceLab/MotifDb.git (fetch)
+    origin	https://github.com/PriceLab/MotifDb.git (push)
+    upstream	git@git.bioconductor.org:packages/MotifDb.git (fetch)
+    upstream	git@git.bioconductor.org:packages/MotifDb.git (push)
+
+
+git status
+Unmerged paths:
+  (use "git add <file>..." to mark resolution [after, I assume, manual editing]
+                        or: git checkout HEAD <each of these files in turn,
+			    which means: treat my local version as the true one)
+
+	both added:      NAMESPACE
+	both added:      R/MotifList-class.R
+	both added:      R/zzz.R
+	both added:      inst/unitTests/test_MotifDb.R
+	both added:      man/query.Rd
+
+git checkout HEAD man/query.Rd
+git add .
+git commit -m "merged"
+git push origin master
+git push upstream master
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* astrakan cafe: https://www.youtube.com/watch?v=HWWi4fFPTl8
+*-----------------------------------------------------------------------------------------------------------------------
+* biomaRt tss tips (29 sep 2017)
+
+  --- for mouse
+   mm10 <- useMart(biomart="ensembl", dataset="mmusculus_gene_ensembl")
+   getBM(attributes=c("chromosome_name", "transcription_start_site", "mgi_symbol", "strand"), filters="mgi_symbol", value="Tcf7", mart=mm10)
+       chromosome_name transcription_start_site mgi_symbol strand
+                    11                 52282571       Tcf7     -1
+                    11                 52283014       Tcf7     -1
+   goi <- c("Bcl6", "Tcf7", "Pdcd1", "Prdm1", "Brat1")
+
+   ---- is tss corrected for strand?
+   getBM(attributes=c("chromosome_name", "transcription_start_site", "mgi_symbol", "strand"), filters="mgi_symbol", value="Bcl6", mart=mm10)
+      chromosome_name transcription_start_site mgi_symbol strand
+                   16                 23988852       Bcl6     -1
+                   16                 23972380       Bcl6     -1
+   use this in igv:  chr16:23988852-23972380
+   mgi says: Chr16:23965052-23988852
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* hamid's larget model: create the code he will use (29 sep 2017)
+
+   cd ~/github/TcellExhaustion/
+   source("explore.R")
+   tbl.net <- readHamidsTCellNetwork()
+   length(unique(c(tbl.net$Source, tbl.net$Target))) #  119
+
+   hamid says:  My favorite genes are Bcl6, Tcf7, Pdcd1, and Prdm1
+
+*-----------------------------------------------------------------------------------------------------------------------
+* hamid's larger model (29 sep 2017)  [from emails (27 sep 2017)]
+
+   cd ~/github/TcellExhaustion/
+   My favorite genes are BCL6, TCF7, PDCD1, and PRDM1 :)
+
+
+   --- I proposed:
+
+    1) take all the TFs in your model (do I have the latest version?)
+
+    2) report scores and locations of all associated motifs, of those TFs,
+       in the promoters of all genes in the model.  Include possibilities of
+       self-regulation.  (Promoter +/- 5kb?  Bigger?  From which TSS?)
+       Each putative regulation will motif match, binding site count, and expression
+       modeling scores.
+
+    3) Look for new TFs not yet in your model, predicted by trena to be
+       possible regulators
+
+   --- hamid replies
+
+    Yes, that's pretty much what _I_ hope to do. If it makes things
+    easier, you don't need to run the analysis for all the 113 genes
+    in the network. I am happy to do that if you show me how.
+
+    -- I need to make the search fairly stringent, so maybe limit the
+       genomic regions to be searched to just 2Kbp upstream and 200bp
+       downstream of each TSS.
+
+   Likewise, to be conservtive, I'd use only the motifs in MotifDB (or
+   even just JASPAR + Jolma2013) and set the PWM match threshold to
+   90% or higher.
+
+   Here is the simplistic way I was thinking of doing it:
+
+     1) Run Trena on all 113 genes in my network, save the results as a table.
+
+     2) I can then post-process the results to subset just the TFs in
+     my 113 gene network, filter by various scoring/matching criteria,
+     ask whether hits for my TFs are enriched compared to other TFs,
+     look at co-occurrence patterns, etc.
+
+  -- I _imagine_ this means is to be able to run Trena in a "headless"
+     mode (no HTML output), then after selecting hits of interest, to
+     visualize just those ones post-hoc.
+
+  --- to which I said:
+
+    I will write a function parameterized by
+
+      target gene
+      expression matrix
+      upstream
+      downstream
+      pfms
+      motif match threshold
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* chrome bug with version 61.0.3163.100   net::ERR_CACHE_OPERATION_NOT_SUPPORTED  (28 sep 2017)
+
+   VM37:1 GET https://s3.amazonaws.com/igv.broadinstitute.org/data/hg19/encode/wgEncodeBroadHistoneGm12878H3k4me3StdSig.bigWig
+   net::ERR_CACHE_OPERATION_NOT_SUPPORTED
+
+  --- i think i noticed automatic update to Version 61.0.3163.100 (Official Build) (64-bit) yesterday
+
+   got older version here:
+     https://www.slimjet.com/chrome/google-chrome-old-version.php
+     first trying 59.0.3071.86 from (12 jun 2017)
+
+
+   defaults read com.google.Keystone.Agent checkInterval    # 180000 (or some similar number)
+   defaults write com.google.Keystone.Agent checkInterval 0
+   defaults read com.google.Keystone.Agent checkInterval    # 0
+
+*-----------------------------------------------------------------------------------------------------------------------
+* footprint databases on bdds, whovian, khaleesi
+
+   database.host <- "whovian.systemsbiology.net"
+   db <- dbConnect(PostgreSQL(), user="trena", password="trena", host=database.host)
+   dbGetQuery(db, "select datname from pg_database")
+
+   dbListTables(db)
+   dbDisconnect(db)
+
+   database.host <- "bddsrds.globusgenomics.org"
+   db <- dbConnect(PostgreSQL(), user="trena", password="trena", host=database.host)
+   dbGetQuery(db, "select datname from pg_database")
+
+   dbListTables(db)
+   dbDisconnect(db)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trenaViz tips
+
+  --- add tracks
+
+   starts <- 26860646 + round(runif(segments,3,300))
+   ends   <- starts + round(runif(segments,3,8))
+   tbl.bed <- data.frame(chr=rep("18", segments),
+                         start=starts,
+                         end=ends,
+                         name=LETTERS[1:segments],
+                         score=runif(segments, -1, 1),
+                         stringsAsFactors=FALSE)
+
+   addBedTrackFromDataFrame(tv, "tbl.bed", tbl.bed, displayMode="EXPANDED", color="darkRed")
+   showGenomicRegion(tv, sprintf("chr18:%d-%d", min(tbl.bed$start) - 10, max(tbl.bed$end) + 10))
+
+   tbl.bedGraph <- tbl.bed[, c(1,2,3,5,4)]
+   addBedGraphTrackFromDataFrame(tv, "tbl.bedGraph", tbl.bedGraph, color="darkGreen",
+                                 minValue=min(tbl.bedGraph$score), maxValue=max(tbl.bedGraph$score),
+                                 displayMode="EXPANDED")
+
+   checkEquals(sort(getTrackNames(tv)), c("Gencode v24",  "tbl.bed", "tbl.bedGraph"))
+   Sys.sleep(3)
+   removeTracksByName(tv, c("tbl.bed", "tbl.bedGraph"))
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* seth ament's schizophrenia trenaViz demo (2 oct 2017): do snps align to genome?
+
+  cd ~/github/trenaSCZ/gwas/
+  gwas biggest hit: rs4702  chr15:90883330
+     GCCAGCCCGGCTGGTTTTGTAAGAT[A/G]CTGGGTTGGTGCACAGTGATTTTTT
+   blat: GCCAGCCCGGCTGGTTTTGTAAGATACTGGGTTGGTGCACAGTGATTTTTT
+     98.1%    15   +   90,883,305  90883355     51
+
+  in early intron: rs17514846
+  dbsnp says: https://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?rs=17514846
+   chr15:90873320
+   GCGCCTGA[A/C/G]GCCTGCTTTCTT
+
+*-----------------------------------------------------------------------------------------------------------------------
+* seth ament's schizophrenia trenaViz demo (28 sep 2017)
+
+   genes of interest (email 20 sep 2017): FURIN, TSNARE1, CNTN4, CLCN3, SNAP91, SOX2, FOXG1, and SREBF1
+  following manhattan plot in seth's email (26 sep 2017):
+  cd ~/github/trenaSCZ/gwas/
+  go.R subsets the big "ckqny.scz2snpres" file, 9.4M rows into just a region around FURBIN, with ~1800 snps
+  key change from original approach, inspired by that manhattan plot: includes all pval <= 0.5
+     eventually producing scores:
+      fivenum(tbl.snps$score)  [1]  0.3011169  0.4590452  0.7221617  1.2014184 11.6386500
+
+  read these in to ~/github/trenaSCZ/explore.R
+
+*-----------------------------------------------------------------------------------------------------------------------
+* seth ament's schizophrenia trenaViz demo (25 sep 2017)
+
+   --- from email (20 sep 2017)
+
+   The best SCZ RNA-seq dataset is on Synapse. The individual-level
+   data are controlled access, but the differential expression results
+   are public and available here:
+   https://www.synapse.org/#!Synapse:syn5607603 I think that's the
+   main thing we want to display, anyway.
+
+   I don't yet have the ATAC-seq data from these samples. It was
+   generated trough PsychENCODE, and I'm still applying for the
+   data. In the meantime, a closely related dataset is here:
+   https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE83345
+
+   A handful of genes of interest in this dataset are FURIN, TSNARE1,
+   CNTN4, CLCN3, SNAP91, SOX2, FOXG1, and SREBF1.
+
+   The SCZ GWAS are available here:
+   https://www.med.unc.edu/pgc/results-and-downloads
+
+
+   --- bigWig files
+     https://software.broadinstitute.org/software/igv/bigwig
+
+        The bigWig format is for display of dense, continuous data
+        that will be displayed as a graph. BigWig files are created
+        initially from WIG type files, using the UCSC program
+        wigToBigWig. Alternatively, bigWig files can be created from
+        bedGraph files, using the UCSC program bedGraphToBigWig. In
+        either case, the resulting bigWig files are in an indexed
+        binary format. The main advantage of the bigWig files is that
+        only the portions of the files needed to display a particular
+        region are transferred, so for large data sets bigWig is
+        considerably faster than regular WIG files.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* gwas track, seth's scz (26 sep 2017)
+
+                 {name: "igap gwas scores",
+                  type: "wig",
+                  format: "bedgraph",
+                  min: 0,
+                  max: 20,
+                  url: 'http://pshannon.systemsbiology.net/hg38/variants/igap.bedgraph',
+                  indexed: false,
+                  //visibilityWindow: 1000000,
+                  color: "#4400AA"
+                  },
+
+*-----------------------------------------------------------------------------------------------------------------------
+* bigwig files, igv.js, tiny test (26 sep 2017)
+
+   /Library/Frameworks/R.framework/Versions/3.4/Resources/library/rtracklayer/tests/test.bw
+   scp /Library/Frameworks/R.framework/Versions/3.4/Resources/library/rtracklayer/tests/test.bw pshannon@whovian:/local/httpd/vhosts/pshannon/experiments/
+
+           # 9 regions on chr2 and chr19:
+    system.file(package="rtracklayer", "tests", "test.bw")
+
+    import(system.file(package="rtracklayer", "tests", "test.bw"))
+    GRanges object with 9 ranges and 1 metadata column:
+          seqnames       ranges strand |     score
+             <Rle>    <IRanges>  <Rle> | <numeric>
+      [1]     chr2 [   1,  300]      * |        -1
+      [2]     chr2 [ 301,  600]      * |     -0.75
+      [3]     chr2 [ 601,  900]      * |      -0.5
+      [4]     chr2 [ 901, 1200]      * |     -0.25
+      [5]     chr2 [1201, 1500]      * |         0
+      [6]    chr19 [1501, 1800]      * |      0.25
+      [7]    chr19 [1801, 2100]      * |       0.5
+      [8]    chr19 [2101, 2400]      * |      0.75
+      [9]    chr19 [2401, 2700]      * |         1
+      -------
+      seqinfo: 2 sequences from an unspecified genome
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* bigwig files, import, rtracklayer (26 sep 2017)
+
+   https://support.bioconductor.org/p/58156/
+   library(rtracklayer)
+   bw.file <- system.file("tests", "test.bw", package="rtracklayer")
+   xx = import(test_bw, which=seqinfo(BigWigFile(test_bw))["chr19"])
+   length(xx)   # [1] 1653959
+
+
+   cd ~/github/trenaSCZ/geo/
+   bw.file <- "GSM2199917_S2_Neuronal_Nuclei.bw"
+   xx <- import(bw.file, which=seqinfo(BigWigFile(bw.file))["chr19"])
+     GRanges object with 4 ranges and 1 metadata column:
+           seqnames       ranges strand |     score
+              <Rle>    <IRanges>  <Rle> | <numeric>
+       [1]    chr19 [1501, 1800]      * |      0.25
+       [2]    chr19 [1801, 2100]      * |       0.5
+       [3]    chr19 [2101, 2400]      * |      0.75
+       [4]    chr19 [2401, 2700]      * |         1
+       -------
+       seqinfo: 2 sequences from an unspecified genome
+   length(xx) # 4
+
+   bw.file <- "GSM2199917_S2_Neuronal_Nuclei.bw"
+   xx <- import(bw.file, which=seqinfo(BigWigFile(bw.file))["chr13"])
+   bw.file <- "GSM2199917_S2_Neuronal_Nuclei.bw"
+   xx <- import(bw.file, which=seqinfo(BigWigFile(bw.file))["chr13"])
+   length(xx) # [1] 7352354
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* matt mccoy installs rpy2 on whovian for me to use with notebooks
+
+
+   It looks like you needed to install the readline-dev headers. And
+   when I say you, I mean me since that is something you root powers
+   to do. So I installed that dev headers:
+
+    [root@whovian mmccoy]# yum install readline-devel
+       And then installed the rpy2 plugin as you:
+    [root@whovian mmccoy]# su pshannon
+    whovian.mmccoy> cd
+    whovian.~> pwd   # /users/pshannon
+    whovian.~> pip install rpy2
+       Collecting rpy2
+       Using cached rpy2-2.9.0.tar.gz
+       Requirement already satisfied: six in /local/pshannon/anaconda3/lib/python3.5/site-packages (from rpy2)
+       Building wheels for collected packages: rpy2
+       Running setup.py bdist_wheel for rpy2 ... done
+       Stored in directory: /users/pshannon/.cache/pip/wheels/6a/9d/7c/81f13b770d01fe5c33ea466e1febfae0cefaa576d39a90b4d0
+       Successfully built rpy2
+       Installing collected packages: rpy2
+       Successfully installed rpy2-2.9.0
+    Seems to be installed just fine now:
+    whovian.~> pip show rpy2
+      Name: rpy2
+      Version: 2.9.0
+      Summary: Python interface to the R language (embedded R)
+      Home-page: http://rpy2.bitbucket.io
+      Author: Laurent Gautier
+      Author-email: lgautier@gmail.com
+      License: GPLv2+
+      Location: /local/pshannon/anaconda3/lib/python3.5/site-packages
+      Requires: six
+
+*-----------------------------------------------------------------------------------------------------------------------
+* aqp4 trenaViz demo for matt, "eat our own dogfood" (25 sep 2017)
+
+  new private github repo:
+
+    cd  ~/github/aquaporin4
+    explore.R
+
+  --- previous work, for 6/25 price lab meeting
+    cd ~/github/trenaHelpers/inst/demos/aqp4/labMeeting-22jun2017
+    library(gplots)
+    mtx.rosmap.aqp4 <- mtx[c("AQP4", strongGeneModels[["rosmap"]]$tf),]
+    save(mtx.rosmap.aqp4, file="mtx.rosmap.aqp4.RData")
+    heatmap.2(mtx.rosmap.aqp4, trace='none')
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* inslee's environmental staff, approach re sword ferns (25 sep 2017)
+
+Natural Resources / Environment
+Robert Duff
+Senior Policy Advisor, Environment
+(360) 902-0532
+robert.duff@gov.wa.gov
 *-----------------------------------------------------------------------------------------------------------------------
 * github bioconductor motifdb maintainer push priviletes (25 sep 2017)
 
@@ -107,7 +866,11 @@ bed format: chrom, start, end, name, score, strand
   https://goo.gl/forms/eg36vcBkIUjfZfLe2 and indicating, in the email,
   the svn or github id associated with your public key(s).
 
-  --- do i already have a ssh key for github?
+  --- do i already have a ssh key for github?   3 possiblilites.  used the first
+      dir ~/.ssh/id_rsa*
+        -rw-------  1 paul  staff  891 Feb  1  2016 /Users/paul/.ssh/id_rsa
+        -rw-------  1 paul  staff  245 Feb  1  2016 /Users/paul/.ssh/id_rsa.pub
+
     dir ~/.ssh/id_dsa*
         -rw-------  1 paul  staff  668 Feb  1  2016 id_dsa
         -rw-r--r--  1 paul  staff  621 Feb  1  2016 id_dsa.pub
@@ -116,6 +879,16 @@ bed format: chrom, start, end, name, score, strand
         -rw-------  1 paul  staff  1766 Jan 20  2016 /Users/paul/.ssh/github_rsa
         -rw-r--r--  1 paul  staff   404 Jan 20  2016 /Users/paul/.ssh/github_rsa.pub
 
+   --- add id_rsa.pub to github
+
+
+   https://www.bioconductor.org/developers/how-to/git/sync-existing-repositories/
+
+    I submitted my keys by giving my Github ID via the form Martin linked:
+
+      https://goo.gl/forms/eg36vcBkIUjfZfLe2
+
+
 
 *-----------------------------------------------------------------------------------------------------------------------
 * try nglview in notebook, for daylight an dhodh (23 sep 2017)
@@ -123,6 +896,7 @@ bed format: chrom, start, end, name, score, strand
   cd ~/github/nglview
   git pull origin
   python setup.py install
+
 *-----------------------------------------------------------------------------------------------------------------------
 * install rpy2 for jupyter (lab) on whovian (23 sep 2017)
 
@@ -409,7 +1183,19 @@ codon   amino acid
 
 
 *------------------------------------------------------------------------------------------------------------------------
-* ngl tip: how to do visually distinct selections (17 sep 2017)
+* ngl tips: operations on crambin (1 oct 2017)
+
+  file:///Users/paul/github/projects/examples/ngl/crambin/crambin.html
+  c = stage.getComponentsByName("1crn").list[0]
+  c.removeAllRepresentations();
+  c.addRepresentation('cartoon');
+  c.removeAllRepresentations();
+  defaultStructureRepresentation(c)
+
+  c.addRepresentation("spacefill", {sele: "10", scale:2})
+
+*------------------------------------------------------------------------------------------------------------------------
+* ngl tips: how to do visually distinct selections (17 sep 2017)
 
    see https://github.com/arose/ngl/issues/161
 
@@ -438,6 +1224,15 @@ codon   amino acid
 })
 
 *------------------------------------------------------------------------------------------------------------------------
+* ngl tips: defaultStructureRepresentation
+
+    // apparently defined and standard for ngl
+
+  function defaultStructureRepresentation( component ){
+     if( component.type !== "structure" ) return;
+
+
+*------------------------------------------------------------------------------------------------------------------------
 * ngl tips: control rendering from javascript console
 
    cd ~/github/ngl/
@@ -451,8 +1246,8 @@ codon   amino acid
     cabbage. It belongs to thionins. It has 46 residues (amino
     acids). It has been extensively studied by X-ray crystallography
     since its crystals are unique and diffract to a resolution of 0.48
-    Å. Neutron scattering measurements are available also at a
-    resolution of 1.1 Å,[2] PDB ID 3U7T.
+    . Neutron scattering measurements are available also at a
+    resolution of 1.1 ,[2] PDB ID 3U7T.
 
    --- some commands: these "addRepresentation" command are cumulative, with cartoon the default, these further two added.
     var stage = new NGL.Stage( "viewport" );
@@ -794,7 +1589,7 @@ chrom <- "chr19"
 start <- 1
 end   <- 58617616
 #end   <- 617616
-tbl.fp <- getFootprintsInRegion(fpf, chrom, start, end)
+tbl.fp <- getFootprintsInRegion(fpf, chrom, start, end)l
 save(tbl.fp, file="chr19.hint.footprints.RData")
 gr.fp <-  with(tbl.fp,   GRanges(seqnames=chrom, IRanges(start=start, end=endpos)))
 gr.snp <- with(subset(tbl.gwas, CHR=="chr19"), GRanges(seqnames=CHR, IRanges(start=oldPos, end=oldPos)))
@@ -1691,6 +2486,11 @@ rownames(tbl.GO) <- genes.assigned
   cd ~/s/work/priceLab/cory/lizBlue-trem2-2017jul
 
 *-----------------------------------------------------------------------------------------------------------------------
+* index and public-facing webserver on whovian (aka trena|pshannnon.systemsbiology.net) (26 sep 2017)
+
+   /local/httpd/vhosts/pshannon/
+
+*-----------------------------------------------------------------------------------------------------------------------
 * track types in igv.js  (19 jul 2017)
 
    --- variable height regions
@@ -1710,6 +2510,48 @@ rownames(tbl.GO) <- genes.assigned
      chr1 1063015 1063015 1.59465363982429
      chr1 1064776 1064776 1.77288491741087
      chr1 1065797 1065797 1.74184180665921
+
+
+   --- bigWig (works with 1.0.9, 26 sep 2017)
+
+    simple and general javascript solution: loadTrack seems to adapt to file type, maybe by file extension
+    igv.browser.loadTrack(
+      {url: 'https://s3.amazonaws.com/igv.broadinstitute.org/data/hg19/encode/wgEncodeBroadHistoneGm12878H3k4me3StdSig.bigWig',
+       name: 'H3k4me3'
+      })
+
+    ~/github/projects/examples/js/igvBareBones/bigWig.html
+
+ $(document).ready(function () {
+    var igvDiv, options;
+    igvDiv = $("#igvDiv")[0];
+    options = {locus: "chr2:1-2000",
+               minimumBases: 5,
+               showRuler: true,
+               reference: {id: "hg38"},
+               tracks: [
+                 {name: 'Gencode v24',
+                       url: "https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/genes/gencode.v24.annotation.sorted.gtf.gz",
+                  indexURL: "https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/genes/gencode.v24.annotation.sorted.gtf.gz.tbi",
+                  format: 'gtf',
+                  visibilityWindow: 2000000,
+                  displayMode: 'EXPANDED'
+                  },
+                 {name: 'test.bw',
+                  url: "http://pshannon.systemsbiology.net/experiments/test.bw",
+		  color: "darkGeen"
+		  },
+                  {name: "Gm12878H3k4me3",
+                   url: "https://s3.amazonaws.com/igv.broadinstitute.org/data/hg19/encode/wgEncodeBroadHistoneGm12878H3k4me3StdSig.bigWig",
+		   color: "blue"
+                  }
+
+                 ]
+              }; // options
+        browser = igv.createBrowser(igvDiv, options);
+    });
+
+
 
 
 *-----------------------------------------------------------------------------------------------------------------------
@@ -4162,7 +5004,8 @@ DataFrame with 1 row and 1 column
   dark-haired girl, F
   josie-o, F
   baby ben - james byrant
-  mumble mumble anaky?
+  come on boys lets go to anaky?  http://neighborlymusic.net/m3222l07/wp-content/uploads/2016/05/Come-On-Boys-Lets-Go-To-Anaky.mp3
+  roosian rabbit (straight & crooked) - john salyer
 
 
    --- rattletap tunes
@@ -6368,6 +7211,31 @@ Examples
   --- what happens?
     the python directory ~/github/dora/dora/static
 
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ipywidget cookiecutter (7 oct 2017)
+
+  cd ~/github/widget-cookiecutter
+  git pull origin
+  pip install cookiecutter  # Collecting cookiecutter, Downloading cookiecutter-1.5.1-py2.py3-none-any.whl (44kB)
+
+  jupyter --version            # 4.2.1
+  jupyter notebook --version   # 5.1.0
+
+  cookiecutter https://github.com/jupyter/widget-cookiecutter.git
+   # answer questions, creates ~/github/jupyWidget
+
+
+  python setup.py build
+  pip install -e .
+
+  jupyter nbextension install --py --symlink --sys-prefix jupyWidget
+  jupyter nbextension enable --py --sys-prefix jupyWidget
+
+  jupyter notebook
+  from jupyWidget import *
+  hw = HelloWorld()
+  hw
 
 *-----------------------------------------------------------------------------------------------------------------------
 * the dora notebook app (9 feb 2017)
@@ -25717,12 +26585,13 @@ Any advice?   Thanks - and thanks for this very promising software!
   git init
   git add .
   git commit -m "first commit"
+     # at github, create new repo, maybe initialize with license
   git remote add origin https://github.com/PriceLab/metnetsViz
   git remote -v
-  git push origin master
+  git push origin master    # git push --force origin master any files were added to new repo (e.g., license)
 
 
-
+*------------------------------------------------------------------------------------------------------------------------
 * github tips: TReNA (17 feb 2016)
 
   book, cd ~/github
@@ -54863,6 +55732,7 @@ architecture alongside these two works.
 
 Keywords
 baroque; folding; hermeneutics; Szentkirályi; Gadamer; Deleuze
+lindsey kevitch
 *------------------------------------------------------------------------------------------------------------------------
 * martha's tachycardia
 SVT -- Supraventricular tachycardia
