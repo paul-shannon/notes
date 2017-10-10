@@ -100,16 +100,40 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* github bioconductor motifdb maintainer push priviletes (25 sep 2017)
+
+  The new maintainer will need to make their ssh public key available;
+  do this by filling in the form at
+  https://goo.gl/forms/eg36vcBkIUjfZfLe2 and indicating, in the email,
+  the svn or github id associated with your public key(s).
+
+  --- do i already have a ssh key for github?
+    dir ~/.ssh/id_dsa*
+        -rw-------  1 paul  staff  668 Feb  1  2016 id_dsa
+        -rw-r--r--  1 paul  staff  621 Feb  1  2016 id_dsa.pub
+       but also have
+    dir ~/.ssh/github_rsa*
+        -rw-------  1 paul  staff  1766 Jan 20  2016 /Users/paul/.ssh/github_rsa
+        -rw-r--r--  1 paul  staff   404 Jan 20  2016 /Users/paul/.ssh/github_rsa.pub
+
+
 *-----------------------------------------------------------------------------------------------------------------------
+* try nglview in notebook, for daylight an dhodh (23 sep 2017)
+
+  cd ~/github/nglview
+  git pull origin
+  python setup.py install
 *-----------------------------------------------------------------------------------------------------------------------
 * install rpy2 for jupyter (lab) on whovian (23 sep 2017)
+
+  [status: asked it for help]
 
    jupyter --version; jupyter notebook --version; jupyter lab --version
       4.2.1
       4.3.1
       jupyter: 'lab' is not a Jupyter command
 
-   conda update -c conda-forge jupyter   
+   conda update -c conda-forge jupyter
    conda install -c conda-forge jupyterlab
    conda upgrade -c conda-forge notebook
    jupyter --version; jupyter notebook --version; jupyter lab --version
@@ -162,11 +186,11 @@ bed format: chrom, start, end, name, score, strand
         /local/pshannon/anaconda3/envs/py27/include/readline/readline.h
         /local/pshannon/anaconda3/include/readline/readline.h
 
-    --- another possibility:  build R from source, 
+    --- another possibility:  build R from source,
      When compiling R from source, do not forget to specify –enable-R-shlib at the ./configure step.
      cd ~/src
      curl -O https://cran.r-project.org/src/base/R-3/R-3.4.1.tar.gz
-     tar zxf R-3.4.1.tar.gz 
+     tar zxf R-3.4.1.tar.gz
      ./configure --enable-R-shlib
        configure: error: --with-readline=yes (default) and headers/libs are not available
 
@@ -4149,7 +4173,7 @@ DataFrame with 1 row and 1 column
       cumberland gap, marion reese, G
       hell up coal holler, F
       henry king's reel
-      rocking the weary land (d, starts on a chord)
+      rocking the weary land (d, starts on A chord)
       walking up georgia row (d)
       charlie barnett lowe's tune (d)
 
