@@ -96,6 +96,60 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* having started an R/rpy2 enabled jupyter notebook server: now, rpy2 tips (10 oct 2017)
+
+  https://pandas.pydata.org/pandas-docs/stable/r_interface.html
+
+  # cell 0
+  import pandas as pd
+  from rpy2.robjects import r
+  from rpy2.robjects import pandas2ri
+  pandas2ri.activate()
+  type(r['iris'])      
+     #  -> either pandas.core.frame.DataFrame or rpy2.robjects.vectors.DataFrame depending upon
+     # pandas2ri.activate() having been called
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* rpy2 on docker (10 cot 2017)
+
+  --- advice from website
+  a jupyter notebook (on port 8888):   docker run --rm -p 8888:8888     rpy2/jupyter
+  an ipython console:                  docker run -it --rm -p 8888:8888 rpy2/jupyter ipython
+
+  --- on riptide, macos
+   docker pull rpy2/rpy2     #  Status: Downloaded newer image for rpy2/rpy2:latest
+   docker pull rpy2/jupyter
+
+   docker images
+      REPOSITORY                    TAG                 IMAGE ID            CREATED             SIZE
+      rpy2/jupyter                  latest              70a1c2f3745e        40 hours ago        1.56GB
+      rpy2/rpy2                     latest              2640bc9a72e9        44 hours ago        1.39GB
+      jupyterlabdocker_jupyterlab   latest              47ad43cd27ee        3 weeks ago         894MB
+      hello-world                   latest              05a3bd381fc2        4 weeks ago         1.84kB
+      rpy2/rpy2                     <none>              dd0a2957fbd9        4 weeks ago         1.38GB
+
+   docker run -it --rm -p 8888:8888 rpy2/jupyter ipython
+      -i: interactive
+      -t: allocates a pseuod tty
+    --rm: Automatically remove the container when it exits
+      -p: 8888:8888
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* rpy2 on whovian (10 oct 2017)
+
+  see below: "* matt mccoy installs rpy2 on whovian for me to use with notebooks"  (25 sep 2017, i think)
+
+  jupyter --version # 4.2.1
+  jupyter notebook --version  # 5.1.0
+
+  whovian, cd ~/github/notebooks/rpy2-examples
+  jupyter notebook --port=10002 --NotebookApp.token=
+
+
 *-----------------------------------------------------------------------------------------------------------------------
 * evaluating snps in footprints in the scz tsnare1 gwas loci (7 oct 2017)
 
@@ -800,7 +854,6 @@ git push upstream master
 
 *-----------------------------------------------------------------------------------------------------------------------
 * matt mccoy installs rpy2 on whovian for me to use with notebooks
-
 
    It looks like you needed to install the readline-dev headers. And
    when I say you, I mean me since that is something you root powers
