@@ -93,25 +93,364 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 bed format: chrom, start, end, name, score, strand
 
 * -top-
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+* tsnare1: 4 models, including one full-gene-width featuring NFIX at rank 6 (16 oct 2017)
+
+  ~/github/trenaSCZ/models.4.tsnare1.RData
+
+   models[[4]]$model
+
+        gene   beta_lasso lasso_p_value pearson_coeff  rf_score   beta_ridge spearman_coeff concordance    pcaMax binding_sites
+   1    HEY1 -0.116640795  1.763493e-08   -0.35169596 9.6364993 -0.043209155    -0.33067885   0.5087673 2.3346656            18
+   2    ATF4 -0.048179356  2.908785e-09   -0.36607043 3.2347112 -0.020207543    -0.34219233   0.4401295 1.6679723             2
+   3     SP2  0.055140966  1.917944e-07    0.34070605 2.4869304  0.028257044     0.30637491   0.5008607 1.5477612           481
+   4   TEAD3 -0.051125438  2.752150e-07   -0.34068484 3.6328926 -0.027830691    -0.33792656   0.3877975 1.4174264            15
+   5   CEBPB -0.002562345  1.940289e-07   -0.34749866 2.4884687 -0.014149534    -0.34168796   0.4263384 1.3262001             7
+   6    NFIX  0.029478567  5.617065e-05    0.32375068 2.1968356  0.023612831     0.31542482   0.4178171 1.2086336            20
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* trenaViz (RCyjs?) graph to illuminate slow conversion to JSON (16 oct 2017)
+
+   A graphNEL graph with directed edges
+   Number of Nodes = 1669
+   Number of Edges = 3260
+
+  save(g.lo, file="~/github/trenaViz/inst/extdata/graph_1669nodes_3260edges_challenge_for_converting_to_json.RData")
+*------------------------------------------------------------------------------------------------------------------------
+* create npm package for igv.js to use in jupy notebook widget (15 oct 2017)
+
+  good reference: https://quickleft.com/blog/creating-and-publishing-a-node-js-module/
+
+npm set init.author.name "Paul Shannon"
+npm set init.author.email "paul.thurmond.shannon@gmail.com"
+npm set init.author.url "http://pshannon.net"
+
+my npm user name: paul-shannon
+my npm password: old tree
+
+  --- install grunt to build latest igv
+    npm install grunt -g
+    npm install   # solves "task 'copy' not found"
+    type -a grunt   # grunt is /usr/local/bin/grunt
+
+    cd ~/github/igv.js
+    git pull origin
+
+    grunt
+    Done, without errors.
+    dir dist
+          102 Oct 15 06:40 css/
+          238 Feb 18  2016 doc/
+      1587630 Oct 15 06:38 igv.js
+       748250 Oct 15 06:40 igv.min.js
+       824599 Oct 15 06:40 igv.min.map
+          170 Oct 15 06:40 img/
+
+   --- now set up a github repo (which can be used as if in npm repo)
+     cd ~/github
+     git clone https://github.com/paul-shannon/igv.js.npm.git
+     cd igv.js.npm
+     cp ../igv.js/dist/igv.js .
+       # edit every reference to datatables.net -> datatables
+     cp ../igv.js/dist/css/igv.css .
+     mkdir img
+     cp ../igv.js/dist/img/* img/
+     cp ../igv.js/img/favicon.ico img/
+
+   npm init   # maybe needed with (for me, failed) use of mocha and chai
+   make sure .gitignore excludes node_modules
+
+   git add, commit, push
+
+   ---- in the developing jupy widgets 7.0.1 igv/cyjs/nlm notebook
+     cd ~/github/jupyGVto3D
+     add this to js/webpack.config
+        { test: /\.svg$/, use: ['svg-loader']}
+
+     add this new igv.js.np to js/package.json, resulting in these dependencies:
+      "dependencies": {
+        "@jupyter-widgets/base": "^1.0.0",
+        "cytoscape": "^3.2.4",
+        "datatables": "^1.10.13",
+        "igv_wrapper": "github:paul-shannon/igv.js.npm",
+        "lodash": "^4.17.4"
+        }
+
+     and these lines to js/lib/gvto3d.js
+       var igv = require('igv.js.npm')
+       var xyz = require('igv.js.npm/igv.css')
+
+
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* igv npm wrapper!  (14 oct 2017)
+
+   https://github.com/datavisyn/igv_wrapper
+   cd ~/github/jupyGVto3D/js
+   npm install --save github:datavisyn/igv_wrapper
+
+*------------------------------------------------------------------------------------------------------------------------
+* igv.js jupter (14 oct 2017)
+
+
+   cd ~/github/igv.js-jupyter/
+   make
+
+    build:
+    	pip install -e .
+
+    enable:
+    	jupyter nbextension install --py igv
+    	jupyter nbextension enable --py igv
+
+    run:
+    	(cd ./examples; jupyter notebook --NotebookApp.token= "API Example.ipynb")
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* webpack introduction, maybe useful for igv's jim robinson (14 oct 2017)
+
+   https://webpack.js.org/guides/getting-started/
+
+*------------------------------------------------------------------------------------------------------------------------
+* webpack shimming igv.js, part of the jupyGVto3D project (14 oct 2017)
+
+   see this, may be helpful (https://stackoverflow.com/questions/29017440/shimming-a-package-with-webpack)
+
+module.exports = {
+  resolve:{
+    alias:{
+      // Make it so that 'require' finds the right file.
+      "klaviyo": "./bower_components/learnmarklet/index.js"
+    }
+  },
+  module: {
+    loaders: [{
+      // Rewrite the file so that it exports the window global.
+      test: __dirname + '/bower_components/learnmarklet/index.js',
+      loader: 'exports?window._learnq'
+    }]
+  }
+}
+
+*------------------------------------------------------------------------------------------------------------------------
+* build upon jupyWidgetTabsDemo: jupyGVto3D (13 oct 2017)
+
+   cd ~/github
+   cookiecutter https://github.com/jupyter/widget-cookiecutter.git
+   cd jupyGVto3D/js/lib
+   cp ../../../jupyWidgetTabsDemo/js/lib/tabsdemo.js gvto3d.js
+      in emacs, gvto3d.js, replace all TabsDemo with GVto3D
+   in js/lib:
+       index.js, change "example.js" to "gvto3d.js"
+       embed.js, change "example.js" to "gvto3d.js"
+       extension.js:
+             "jupyGVto3D": "nbextensions/jupyGVto3D/index",
+
+
+   cp ../../jupyWidgetTabsDemo/jupyWidgetTabsDemo/TabsDemo.py GVto3D.py
+   rm example.py
+      in emacs, GVto3D.py replace all TabsDemo with GVto3D
+   cd ~/github/jupyGVto3D
+   cp ../jupyWidgetTabsDemo/makefile .
+   cp ../jupyWidgetTabsDemo/examples/basicDemo/simple.ipynb examples/basicDemo/
+
+   in ~/github/jupyGVto3D/jupyGVto3D/__init__.py, replace
+       from .example import *
+   with
+       from .GVto3D import *
+
+   --- easy to get wrong: name of model, view, model's module, view's module.  python and js must agree
+
+     ~/github/jupyGVto3D/js/lib/gvto3d.js:
+
+        _model_name:       'GVto3DModel',
+        _view_name:        'GVto3DView',
+        _model_module:     'jupyGVto3D',         // this refers to the directory of the python code
+        _view_module:      'jupyGVto3D',         // this refers to the directory of the python code
+        _model_module_version: '0.1.0',
+        _view_module_version:  '0.1.0',
+         msgFromKernel: "",
+
+     ~/github/jupyGVto3D/jupyGVto3D/
+       _view_name = Unicode('GVto3DView').tag(sync=True)
+       _model_name = Unicode('GVto3DModel').tag(sync=True)
+       _view_module = Unicode('jupyGVto3D').tag(sync=True)        # this refers to the directory of the python code
+       _model_module = Unicode('jupyGVto3D').tag(sync=True)       # this refers to the directory of the python code
+       _view_module_version = Unicode('^0.1.0').tag(sync=True)
+       _model_module_version = Unicode('^0.1.0').tag(sync=True)
+
+        msgFromKernel = Unicode("").tag(sync=True)
+       _browserState = Unicode("").tag(sync=True)
+
+
+   cd ~/github/jupyGVto3D
+   make build run
+
 *-----------------------------------------------------------------------------------------------------------------------
+* script to install R package only if needed (13 oct 2017) trenaGWAS01
+
+   source("http://bioconductor.org/biocLite.R")
+
+   code.pkgs <- c("GenomicRanges",
+                  "Biostrings",
+                  "BiocParallel",
+                  "DBI",
+                  "RPostgreSQL",
+                  "RMySQL",
+                  "RSQLite",
+                  "lassopv",
+                  "randomForest",
+                  "flare",
+                  "vbsr",
+                  "stringr",
+                  "httpuv",
+                  "colorspace",
+                  "annotate",
+                  "splitstackshape")
+
+   biocLite(code.pkgs)
+
+   data.pkgs <- c("BSgenome",
+                  "BSgenome.Hsapiens.UCSC.hg38",
+                  "BSgenome.Hsapiens.UCSC.hg19",
+                  "BSgenome.Mmusculus.UCSC.mm10",
+                  "org.Hs.eg.db",
+                  "org.Mm.eg.db",
+                  "SNPlocs.Hsapiens.dbSNP150.GRCh38")
+
+   for(data.pkg in data.pkgs){
+      suppressWarnings(
+         needed <- !require(data.pkg, character.only=TRUE, quiet=TRUE)
+         )
+      printf("%s needed? %s", data.pkg, needed)
+      if(needed)
+         biocLite(data.pkg,quiet=FALSE)
+      } # for
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* footprint database retrieval times (12 oct 2017)
+
+   hg38, chr5:88,903,373-88,907,372 (proximal promoter of a mef2c transcript): 251 footprints, all 4 brain db's,
+                                     251 footprints)
+
 *-----------------------------------------------------------------------------------------------------------------------
+* create a Dockerfile for my R Demo class which can be used in docker rpy2 (11 oct 2017)
+
+   cd ~/github/jupy-rpy2-R-package-experiment
+
+  ---- a simple class "Demo", which returns a small data.frame with get:
+     d <- Demo()
+     tbl <- get(d)
+     checkTrue(is.data.frame(tbl))
+     checkEquals(dim(tbl), c(6, 3))
+     checkEquals(colnames(tbl), c("a", "b", "c"))
+
+
+
+
+  inst/docker/Dockerfile
+
+    FROM rpy/jupyter
+    RUN installGithub.r paul-shannon/jupy-rpy2-R-package-experiment
+
+   --- good bioc Dockerfile for bioc/deseq here:
+      https://hub.docker.com/r/genomicpariscentre/deseq/~/dockerfile/
+
+   --- working version, though much mystery
+     cd ~/github/Demo/inst/docker/
+     R CMD build ../..      # creates Demo_0.99.0.tar.g
+     docker build . -t rpy2_demo
+
+        FROM rpy2/jupyter:latest
+        ADD . /home/jovyan/work
+        WORKDIR /home/jovyan/work
+        USER root
+        RUN chown -R $NB_USER:users /home/jovyan/work
+        RUN ls -lap /home/jovyan
+        RUN R CMD INSTALL /home/jovyan/work/Demo_0.99.0.tar.gz
+        USER $NB_USER
+
+     docker images
+     REPOSITORY                    TAG                 IMAGE ID            CREATED             SIZE
+     rpy2_demo                     latest              f74f0fcddf19        3 minutes ago       1.56GB
+     ....
+
+    --- try it out: some trouble with a mystery user
+
+      cd ~/github/Demo/inst/docker/
+       docker run --rm -p 8888:8888 rpy2_demo
+       Set username to: jupyteruser
+       usermod: user 'jovyan' does not exist
+         (jovyan is a github user with 4 repos: pythreejs, jupyter-devinstall, jpypaths, jupyter-flight-simulator)
+
+
 *-----------------------------------------------------------------------------------------------------------------------
-* having started an R/rpy2 enabled jupyter notebook server: now, rpy2 tips (10 oct 2017)
+* start an R/rpy2 enabled jupyter notebook server + some rpy2 tips, data.frame to pandas DataFrame (10 oct 2017)
+
+  on riptide, with Docker app running in the background
+
+  --- is the image installed?
+    book.docker> docker images
+    REPOSITORY                    TAG                 IMAGE ID            CREATED             SIZE
+    rpy2_demo                     latest              f74f0fcddf19        13 hours ago        1.56GB
+    rpy2/jupyter                  latest              70a1c2f3745e        3 days ago          1.56GB
+
+  --- where did it come from?
+     docker pull rpy2/rpy2     #  Status: Downloaded newer image for rpy2/rpy2:latest
+     docker pull rpy2/jupyter
+
+  --- start the container (from anywhere which has the docker image)
+
+     docker run --rm -p 8888:8888 rpy2/jupyter:latest
 
   https://pandas.pydata.org/pandas-docs/stable/r_interface.html
 
   # cell 0
-  import pandas as pd
-  from rpy2.robjects import r
-  from rpy2.robjects import pandas2ri
-  pandas2ri.activate()
-  type(r['iris'])      
+import pandas as pd
+from rpy2.robjects import r
+from rpy2.robjects import pandas2ri
+pandas2ri.activate()
+type(r['iris'])
+
+  Out[1]:  pandas.core.frame.DataFrame
+
+   Establishes good data exchange between R and the python kernel & notebook
+
      #  -> either pandas.core.frame.DataFrame or rpy2.robjects.vectors.DataFrame depending upon
      # pandas2ri.activate() having been called
 
 
 *-----------------------------------------------------------------------------------------------------------------------
-* rpy2 on docker (10 cot 2017)
+* rpy2 tips, s4 tips
+
+  http://rpy2.readthedocs.io/en/version_2.8.x/_static/notebooks/s4class.html
+
+*-----------------------------------------------------------------------------------------------------------------------
+* R docker tips: a good base Dockerfile (12 oct 2017_
+
+  https://github.com/glamp/r-docker/blob/master/Dockerfile
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* jupyter tips docker tips jupyter/docker tips (12 oct 2017)
+
+   https://github.com/jupyter/docker-stacks/blob/master/minimal-notebook/Dockerfile
+
+    for the Minimal Jupyter Notebook Stack - the ancestor of all jupyter notebook server docker images?
+    TODO:  will warrant close study!
+
+*-----------------------------------------------------------------------------------------------------------------------
+* rpy2 on docker (10 cot 2017) on my laptop, riptide
 
   --- advice from website
   a jupyter notebook (on port 8888):   docker run --rm -p 8888:8888     rpy2/jupyter
@@ -129,13 +468,15 @@ bed format: chrom, start, end, name, score, strand
       hello-world                   latest              05a3bd381fc2        4 weeks ago         1.84kB
       rpy2/rpy2                     <none>              dd0a2957fbd9        4 weeks ago         1.38GB
 
-   docker run -it --rm -p 8888:8888 rpy2/jupyter ipython
-      -i: interactive
-      -t: allocates a pseuod tty
-    --rm: Automatically remove the container when it exits
-      -p: 8888:8888
+   ---- to run the ipython console:
+     docker run -it --rm -p 8888:8888 rpy2/jupyter ipython
+        -i: interactive
+        -t: allocates a pseudo tty
+      --rm: Automatically remove the container when it exits
+        -p: 8888:8888
 
-
+   ---- to run the jupyter notebook on port 8888:
+      docker run --rm -p 8888:8888 rpy2/jupyter:2.9.x
 
 
 *-----------------------------------------------------------------------------------------------------------------------
@@ -1112,6 +1453,19 @@ ATOM      1  N   GLY A  33     -10.201  20.698  -2.001  1.00 63.90           N
 77-78: element symbol                            N
 79-80: charge
 *-----------------------------------------------------------------------------------------------------------------------
+* dhodh gvto3d demo (15 oct 2017)
+
+  --- variants:  hg38       rsid           exon     nucleotide       substition at codon   substitution
+   chr16	72012084    rs267606765      2           56             G19E                  G-to-A
+
+   chr16	72017043    rs267606766      4          454             G152R                 G-to-A
+     CTGCAGGTATGGATTTAACAGTCAC[A/G]GGCTTTCAGTGGTGGAACACAGGTT
+     GGG ⇒ AGG	NP_001352.2	152	G [Gly] ⇒ R [Arg]
+
+  pdb 3u20 "Chain A, Dihydroorotate Dehydrogenase (Dhodh) Crystal Structure In Complex With Small Molecule Inhibitor"
+  http://www.rcsb.org/pdb/explore.do?structureId=3u2o
+
+*-----------------------------------------------------------------------------------------------------------------------
 * ngl & dhodh (19 sep 2017)
 
   --- from the two miller syndrome papers: two mutations in dhodh, chr16
@@ -1119,7 +1473,8 @@ ATOM      1  N   GLY A  33     -10.201  20.698  -2.001  1.00 63.90           N
          c.56G>A	2	p.G19E	             chr16:70603484
     	c.454G>A	4	p.G152R	             chr16:70608443
 
-       70,608,443        70,612,611
+hg38   72,012,084        72,017,043
+hg18?  70,608,443        70,612,611
      CAC GGG CTT  ... CTG GGC CCC
          AGG              GCC
         (mom)            (dad)
@@ -1134,6 +1489,65 @@ codon   amino acid
 
   cd ~/github/projects/examples/ngl/dhodh
   index.html
+
+   ---- from omim's entry on miller syndrome:
+
+    .0004  MILLER SYNDROME
+     DHODH, GLY152ARG    dbSNP:rs267606766 RCV000018294
+       In 2 sibs from 1 kindred segregating Miller syndrome (263750), Ng et al. (2010) identified a G-to-A
+       transition at nucleotide 454 in exon 4 of the DHODH gene, resulting in a gly-to-arg substitution at
+        codon 152 (G152R). The sibs were compound heterozygous for another missense mutation (126064.0005).
+
+     https://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?rs=267606766
+     CTGCAGGTATGGATTTAACAGTCAC[A/G]GGCTTTCAGTGGTGGAACACAGGTT
+     CTGCAGGTATGGATTTAACAGTCACAGGCTTTCAGTGGTGGAACACAGGTT blat: chr 16   +   72017018  72017068     51
+     Chromosome: 16:72017043   gly 152 arg
+
+library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
+dhodh <- "1723"
+dhodh_txs <- transcriptsBy(txdb, by="gene")[[dhodh]]   # 9 transcripts
+   # maybe the first transcript provides what i need
+   #  [1]    chr16 [72008588, 72027664]      + |    133963  uc059wxo.1
+tx.names <- dhodh_txs$tx_name[1] #
+exons.dhodh.tx1 <- exonsBy(txdb, "tx", use.names=TRUE)[tx.names]
+exon.2 <- exons.dhodh.tx1[[1]][2]
+  [1]    chr16 [72012050, 72012262]      + |    399485        <NA>         2
+exon.4 <- exons.dhodh.tx1[[1]][4]
+  [1]    chr16 [72017024, 72017106]      + |    399494        <NA>         4
+
+library(BSgenome.Hsapiens.UCSC.hg38)
+Hsapiens <- BSgenome.Hsapiens.UCSC.hg38
+getSeq(Hsapiens, exon.4)
+  A DNAStringSet instance of length 1
+    width seq
+[1]    83 GTATGGATTTAACAGTCAC G GGCTTTCAGTGGTGGAACACAGGTTACGGGCCAGACAGCAGAAGCAGGCCAAGCTCACAGAAG
+  # odd: the reported mutation is A->G, but here the reference appears to have G
+  # my own notes from the garfield slide shows the sequence is G->C
+translate(DNAStringSet(df$DNA_seqs))
+translate(DNAStringSet(c("GGG", "AGG", "GGC", "GCC")))
+  A AAStringSet instance of length 4
+    width seq
+[1]     1 G
+[2]     1 R
+[3]     1 G
+[4]     1 A
+>
+
+    .0005  MILLER SYNDROME
+    DHODH, GLY202ALA    dbSNP:rs267606767 RCV000018295
+    In sibs from a kindred segregating Miller syndrome (263750), Ng et al. (2010) identified heterozygosity
+    for a G-to-C transversion at nucleotide 605 in exon 5 of the DHODH gene, resulting in a gly-to-ala
+    substitution at codon 202 (G202A).
+
+
+  --- hoped (but failed) to find a dbSnp track ready to go in igv.js
+    came close with
+       https://igv.org/web/examples/api.html
+      ~/github/igv.js/examples/api.html
+
+        url: 'https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz',
+        indexURL: 'https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz.tbi',
 
   ---  with referencesw to the 20 helices in 3kvk.pdb, here displaying the first two
 
@@ -2128,7 +2542,7 @@ score6     NA                                   NA                              
 
 
 *-----------------------------------------------------------------------------------------------------------------------
-* cory's rstudio notebook, snps for lizBlue (3 aug 2017)
+* cory's rstudio notebook, snps for lizBlue (3 aug 2017)   markdown example
 
    ~/github/coryCodeGrabBag/lizBlue/familyAD/exploreSnps.Rmd
 
@@ -2524,7 +2938,8 @@ rownames(tbl.GO) <- genes.assigned
      nohup R -f trenaSkinServer.R &
 
    --- notebook server
-     jupyter notebook --port=10001  --NotebookApp.token=
+     cd ~/github/dora/notebooks/skin-PnG
+     nohup jupyter notebook --port=10001  --NotebookApp.token=  &
 *-----------------------------------------------------------------------------------------------------------------------
 * add two new expression matrices to dora-skin for rich (24 jul 2017)
 
