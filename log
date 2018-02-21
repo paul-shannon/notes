@@ -98,6 +98,2645 @@ bed format: chrom, start, end, name, score, strand
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------------------------------
+* mentewab's frd3 project into an RStudio notebook (21 feb 2018)
+
+  cd ~/github/projects/external/mentewab/arabidopsis.zinc/
+
+  --- revisit prior work
+
+*------------------------------------------------------------------------------------------------------------------------
+* david beck, Line.toHTML and Text.toHTML (21 feb 2018)
+
+   in progress: ~/github/IJAL-interlinear/iiGenerator/test_Line.py
+   next up: separate out a determineTierType method for Line.py.  this will be called with
+   each tier (each row in the dataframe returned by getTable(line)), preparatory to
+   calling a tier-type-specific toHTML.
+
+# david beck email (28 jan 2018)
+#
+#  create HTML for up to six lines (e.g., a line in a practical
+#  orthography, a line in phonetic transcription, a parsing line, a
+#  glossing line, a free translation in Language 1, and a free
+#  transltion in Language 2). The parsing line and glossing line have
+#  some other constraints on them (the annotations on these two lines
+#  have to match perfectly and exhaustively).
+#
+#  suggesting these tier types:
+#    1) text
+#    2) phonemes
+#    3) parsing
+#    4) glossing
+#    5) free translation language 1
+#    6) free translation language 2
+#
+#  this functions's first job is to idenitfy the tier type, using iformal rules
+def tierToHtml(tier):
+
+  keys = list(tier.keys())
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* joshua crowley, uw lingnusitics phd student
+
+   http://students.washington.edu/jcrowgey/
+
+     I'm a PhD candidate in the Department of Linguistics. The crux of
+     my PhD research is the creation of linguistically motivated
+     computational resources for (d)xʷləšucid (Lushootseed, Puget
+     Salish), the local language of the Puget Sound area for the last
+     2000 or so years. Visit my Lushootseed tools page here to
+     download stuff and try out some demos.
+
+     I'm grateful to my advisor Emily Bender, as well as David Beck
+     and Sharon Hargus for their support and advice on my projects.
+
+     http://students.washington.edu/jcrowgey/lushootseed/
+
+     This page contains links to downloads and/or demos of tools for
+     analyzing and studying Lushootseed. These tools are being
+     developed by Joshua Crowgey in the context of PhD research at the
+     University of Washington.
+
+*------------------------------------------------------------------------------------------------------------------------
+* david beck describes TOKTk's use of eaf xml (21 feb 2018)
+
+  --- from email (28 jan 2018) "TOLTk - Invitation to collaborate"
+
+  Authors use ELAN to produce an .eaf file with minimally four tiers—a
+  line of text, a free translation, an interlinear parsing line, and a
+  glossing line. The best structure for TOLTk has the text line
+  time-aligned and the other tiers dependent on that line (though the
+  app can handle other configurations as long as only one tier is
+  associated with time codes and the annotations on the other tiers
+  line up with the annotations on the text line). TOLTk can create an
+  HTML file with up to six lines (e.g., a line in a practical
+  orthography, a line in phonetic transcription, a parsing line, a
+  glossing line, a free translation in Language 1, and a free
+  transltion in Language 2). The parsing line and glossing line have
+  some other constraints on them (the annotations on these two lines
+  have to match perfectly and exhaustively). Authors will divide a
+  recording into lines of text and then subdivide each line into words
+  which are parsed and glossed on those two lines. Translations are
+  going to match the textline.
+
+*------------------------------------------------------------------------------------------------------------------------
+* david beck, what kind of html does ELANtoHtml produce? (21 feb 2018)
+
+  apparently uses html table elements
+
+   ~/github/howDaylightWasStolen-harryMoses/davidBeck/TOLTk/ELANtoHtml/
+   ~/github/howDaylightWasStolen-harryMoses/davidBeck/TOLTk/NEW TEST.html
+
+   ijal style guide:  https://www.americanlinguistics.org/wp-content/uploads/IJAL-interlinear.pdf
+   monkey and thunder:  http://www.americanlinguistics.org/?page_id=2032
+   language described here: https://en.wikipedia.org/wiki/Ayapa_Zoque
+
+  --- the first line from monkey and thunder, with just two tiers:
+
+    <table id="a1" class="CuPED-annotation">
+      <tbody>
+         <tr class="CuPED-annotation-line CuPED-annotation-tier-0">
+           <td rowspan="4" width="25px">1)<br />
+              <img class="alignnone size-full wp-image-481"
+                   src="https://www.americanlinguistics.org/wp-content/uploads/speaker.png"
+	           alt="speaker" width="25" height="25"  onclick="playAnnotation(0.388, 8.895)"/>
+               </td>
+           <td class="CuPED-annotation-text" colspan="2">
+               <i>Por ejemplo el, como se llama, el mono,</i>
+               </td>
+          </tr>
+        <tr class="CuPED-annotation-line CuPED-annotation-tier-4">
+          <td colspan="2">&lsquo;For example it, what do you call it, the monkey,&rsquo;</td>
+        </tr>
+     </tbody>
+   </table>
+
+   --- line 1's eaf markup, with two empty tiers
+
+    <TIER LINGUISTIC_TYPE_REF="default-lt" TIER_ID="AYA">
+        <ANNOTATION>
+            <ALIGNABLE_ANNOTATION ANNOTATION_ID="a1" TIME_SLOT_REF1="ts1" TIME_SLOT_REF2="ts2">
+                <ANNOTATION_VALUE>Por ejemplo el, como se llama, el mono,</ANNOTATION_VALUE>
+            </ALIGNABLE_ANNOTATION>
+        </ANNOTATION>
+
+    <TIER LINGUISTIC_TYPE_REF="phonemic" PARENT_REF="AYA" TIER_ID="AYA2">
+        <ANNOTATION>
+            <REF_ANNOTATION ANNOTATION_ID="a58" ANNOTATION_REF="a1">
+                <ANNOTATION_VALUE></ANNOTATION_VALUE>
+            </REF_ANNOTATION>
+        </ANNOTATION>
+
+    <TIER LINGUISTIC_TYPE_REF="translation" PARENT_REF="AYA2" TIER_ID="GL">
+        <ANNOTATION>
+            <REF_ANNOTATION ANNOTATION_ID="a156" ANNOTATION_REF="a58">
+                <ANNOTATION_VALUE></ANNOTATION_VALUE>
+            </REF_ANNOTATION>
+        </ANNOTATION>
+
+    <TIER LINGUISTIC_TYPE_REF="translation" PARENT_REF="AYA" TIER_ID="ENG">
+        <ANNOTATION>
+            <REF_ANNOTATION ANNOTATION_ID="a91" ANNOTATION_REF="a1">
+                <ANNOTATION_VALUE>‘For example it, what do you call it, the monkey,’</ANNOTATION_VALUE>
+            </REF_ANNOTATION>
+        </ANNOTATION>
+
+
+   --- the fifth line, with four tiers
+
+     <table id="a5" class="CuPED-annotation">
+        <tbody>
+          <tr class="CuPED-annotation-line CuPED-annotation-tier-0">
+             <td rowspan="4" width="25px">5)<br />
+               <img class="alignnone size-full wp-image-481"
+                    src="https://www.americanlinguistics.org/wp-content/uploads/speaker.png"
+                    alt="speaker" width="25" height="25"
+                    onclick="playAnnotation(22.985, 25.296)"/>
+               </td>
+             <td class="CuPED-annotation-text" colspan="6">Uudzu ich ninhwej yu tu kuy.</td>
+             </tr>
+         <tr class="CuPED–annotation–line CuPED–annotation–tier–2">
+           <td>ʔuː¢u</td>
+           <td>ʔit</td>
+           <td>nǝ=y=ŋ•weh</td>
+           <td>yu</td>
+           <td>tu</td>
+           <td>kuy</td>
+           </tr>
+         <tr class="CuPED–annotation–line CuPED–annotation–tier–3">
+           <td>monkey</td>
+           <td>exist</td>
+           <td><small>HAB</small>=3A=<small>MOUTH</small>•cry</td>
+           <td>in</td>
+           <td>one</td>
+           <td>tree</td>
+           </tr>
+         <tr class="CuPED-annotation-line CuPED-annotation-tier-4">
+           <td colspan="6">&lsquo;Monkey is shouting in a tree.&rsquo;</td>
+         </tr>
+        </tbody>
+      </table>
+
+    --- the eaf markup
+
+        <ANNOTATION>
+            <ALIGNABLE_ANNOTATION ANNOTATION_ID="a5" TIME_SLOT_REF1="ts9" TIME_SLOT_REF2="ts10">
+                <ANNOTATION_VALUE>Uudzu ich ninhwej yu tu kuy.</ANNOTATION_VALUE>
+            </ALIGNABLE_ANNOTATION>
+        </ANNOTATION>
+
+
+    <TIER LINGUISTIC_TYPE_REF="phonemic" PARENT_REF="AYA" TIER_ID="AYA2">
+        ...
+        <ANNOTATION>
+            <REF_ANNOTATION ANNOTATION_ID="a62" ANNOTATION_REF="a5">
+                <ANNOTATION_VALUE>ʔuː¢u	ʔit	nǝ=y=ŋ•weh	yu	tu	kuy</ANNOTATION_VALUE>
+            </REF_ANNOTATION>
+
+    <TIER LINGUISTIC_TYPE_REF="translation" PARENT_REF="AYA2" TIER_ID="GL">
+        ...
+        <ANNOTATION>
+            <REF_ANNOTATION ANNOTATION_ID="a160" ANNOTATION_REF="a62">
+                <ANNOTATION_VALUE>monkey	exist	HAB=3A=MOUTH•cry	in	one	tree</ANNOTATION_VALUE>
+            </REF_ANNOTATION>
+        </ANNOTATION>
+
+    <TIER LINGUISTIC_TYPE_REF="translation" PARENT_REF="AYA" TIER_ID="ENG">
+        ...
+        <ANNOTATION>
+            <REF_ANNOTATION ANNOTATION_ID="a95" ANNOTATION_REF="a5">
+                <ANNOTATION_VALUE>‘Monkey is shouting in a tree.’</ANNOTATION_VALUE>
+            </REF_ANNOTATION>
+        </ANNOTATION>
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* david beck, iiGenerator Line class, Text class (11, 20 feb 2018)
+
+  cd ~/github/IJAL-interlinear/iiGenerator/
+  python test_Line.py
+    --- test_daylight_0
+    --- test_monkey_0
+    --- test_monkey_all
+     0) Por ejemplo el, como se llama, el mono,
+     1) este, se sabe que el mono es un animal que grita muy fuerte.
+     2) Pero el trueno grita mas.
+
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* rstudio trenaViz unit tests running on newtrena (20 feb 2018)
+
+   cd ~/github/eqtlTrenaNotebooks/rstudio/
+   make export -n
+      docker save -o trenastudio_08-image trenastudio_08:latest
+      # scp trenastudio_08-image pshannon@newtrena:tmp/
+      # newtrena.tmp> docker load < trenastudio_08-image
+
+   newtrena> cd /users/pshannon/github/eqtlTrenaNotebooks
+   docker load < /local/pshannon/trenastudio_08-image
+   trena.eqtlTrenaNotebooks> docker run -d -p 8787:8787  -v /notebooks/:/home/rstudio/notebooks trenastudio_08
+     # all tests run!
+
+*------------------------------------------------------------------------------------------------------------------------
+* mef2c rstudio demo (19 feb 2018)
+
+   ADNI.808_indiv.minGQ_21.pass.ADNI_ID.chr19.vcf.tar
+   on newtrena:
+     cd ~/s/examples/vcf
+       # shortage of space in /tmp/ ~pshannon, so
+     scp pshannon@whovian:/local/Cory/for_Paul/ADNI.808_indiv.minGQ_21.pass.ADNI_ID.chr5.vcf.tar /local/pshannon/vcf
+
+    7575370075 Dec 16  2014 ADNI.808_indiv.minGQ_21.pass.ADNI_ID.chr5.vcf.gz
+        170875 Dec 17  2014 ADNI.808_indiv.minGQ_21.pass.ADNI_ID.chr5.vcf.gz.tbi
+
+   --- extraction code: newtrena:/s/examples/vcf/adni.chr5.hg19.R
+     library(VariantAnnotation)
+     library(Rsamtools)
+     vcf.filename <- "/local/pshannon/vcf/ADNI.808_indiv.minGQ_21.pass.ADNI_ID.chr5.vcf.gz"
+     file.exists(vcf.filename)
+
+     hg38.roi <- "chr5:88,391,000-89,322,000"
+     hg19.roi <- "chr5:87686817-88617817"
+     hg19.start <- 87686817
+     hg19.end   <- 88617817
+     hg19.end - hg19.start
+
+     mef2c.gr <- GRanges("5", IRanges(hg19.start, hg19.end))
+     # mef2c.gr <- GRanges("5", IRanges(1, 10000000))
+     params <- ScanVcfParam(which=mef2c.gr)
+     tabixFile <- TabixFile(vcf.filename)
+     vcf <- readVcf(tabixFile, "hg19", params)
+
+     vcf.geno <- geno(vcf)
+     mtx.geno <- vcf.geno$GT
+     dim(mtx.geno)  # 11140 808
+
+     mtx.012 <- matrix(0, nrow=nrow(mtx.geno), ncol=ncol(mtx.geno), dimnames=list(rownames(mtx.geno), colnames(mtx.geno)))
+     mtx.012[which(mtx.geno=="0/1")] <- 1
+     mtx.012[which(mtx.geno=="1/1")] <- 2
+     dim(mtx.012)
+     save(mtx.012, mtx.geno, file="mef2c.vcf.hg19.RData")
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* dog poop bags (jan-feb 2018)
+
+   The dog poop bag dispenser at the head of the sqebeqsed trail (the
+   south entrance on the upper loop road) has been mostly empty for
+   the last month or so.
+
+   I contacted our new Parks plant ecologist, Eric Sterner, about
+   this.  Eric is always responsive, always sensible - a good person
+   to work with.
+
+  —— Eric’s reply (22 january):
+
+   I contacted the district again.  As of recently COLA
+   https://seattlecola.org/ has taken over all poop bag dispensers
+   city wide.  They said to contact them directly to report this.
+
+  —— I contacted COLA and got this response (also 22 january):
+
+   Thanks for reaching out to us. COLA is only responsible for filling
+   the poop bag dispensers at the off-leash areas around the city. For
+   poop bag dispensers in standard parks, you should contact the crew
+   chief for that particular park.
+
+  --- last heard from eric sterner (29 january)
+
+    Hi Paul,
+
+    Just making sure I followed up with you.  The crew chief is Rodney
+    Nealer- 386-1987 is the district office number.  Please use this
+    for emergencies that I can’t handle.  We Parks went through a
+    re-org and now SE and SC are one large district.
+
+    Please let me know what I can do to help.  I sent an email to the
+    district but haven’t heard back from them.
+
+  -- 20 feb 2018
+     failed to reach Rodney Nealer, or to leave voice mail, at 386-1987
+     called 24-Hour Maintenance Request Line (206) 684-7250, spoke to DK (?), very friendly & helpful
+        she will send an email to Rodney, cc'ing me
+
+   --- 20 feb 2018
+     DJ's email  to Rodney.Nealer@seattle.gov, Patrick.Merriam@seattle.gov
+
+     I received a call from Paul Shannon about the concern at Seward
+     Park- The doggie Mitts have not been replaced for months. He has
+     contacted the COLA about if they are responsible and they are
+     only responsible for the off leash Dog parks.  Dog owners are not
+     picking up after their dogs and it’s become a huge concern.
+     Mr. Shannon is asking for a call back with information on how we
+     can fix this situation.
+
+     Paul Shannon- 206-732-1423
+     Thank you!
+     DJ
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* combine kegg pathways for noa (16 feb 2018)
+
+   cd ~/github/projects/priceLab/noa/keggPathways/
+   [drawing from ~/s/examples/R/kegg/go.R (2 oct 2013, for lisa mcferrin?)]
+
+   Malaria_Homo sapiens_hsa05144 - T3, T4
+   Primary immunodeficiency_Homo sapiens_hsa05340 - T4
+   NF-kappa B signaling pathway_Homo sapiens_hsa04064 - T3, T4
+   African trypanosomiasis_Homo sapiens_hsa05143 - T4
+   Cytokine-cytokine receptor interaction_Homo sapiens_hsa04060- T3, T4
+
+*------------------------------------------------------------------------------------------------------------------------
+* trenaViz in plain R and in rstudio container (18 feb 2018)
+
+   cd ~/github/eqtlTrenaNotebooks/rstudio/
+
+    docker images | grep trenastudio
+    trenastudio_08             latest              b2a88aefb377        6 hours ago         9.35GB
+    trenastudio_07             latest              7acbdd02cf6e        27 hours ago        9.16GB
+    trenastudio_06             latest              c3011ac5e077        43 hours ago        8.77GB
+    trenastudio_05             latest              c7a90c5401ba        44 hours ago        2.8GB
+    trenastudio_04             latest              697692372436        45 hours ago        1.42GB
+    trenastudio_03             latest              1e9b6d97247f        45 hours ago        1.42GB
+    trenastudio_02             latest              4766947a3343        47 hours ago        1.27GB
+    trenastudio_01             latest              7b7ffcebe5f1        47 hours ago        1.08GB
+    trenastudiotest            latest              5b5f12662eb6        47 hours ago        4.75GB
+    pshannon/trenastudio       latest              cb9bf046d679        2 days ago          4.75GB
+
+   sudo docker run -d -p 8787:8787 trenastudio_08
+   localhost:8787   look for tester.R
+
+   also, for bash
+      docker run -ti --rm trenastudio_01 bash
+
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* docker container "trenastudio" (16 feb)   add rocker/rstudio:latest, and still invoke rstudio server (16 feb 2018)
+
+   --- step 01: nothing additional, but create our own image
+     cd ~/github/eqtlTrenaNotebooks/rstudio/
+     docker build -t trenastudio_01  -f Dockerfile.01  .
+        FROM rocker/rstudio
+        CMD ["/init"]
+      sudo docker run -d -p 8787:8787 trenastudio_01
+         # rstudio is function, bash works, but very little to see
+      docker run -ti --rm trenastudio_01 bash
+
+   --- step 02: add bashCustomizations, learn who the default user is  (root)
+      FROM rocker/rstudio
+      COPY .  /home/rstudio/
+      RUN cat /home/rstudio/myBashCustomizations >> /home/rstudio/.bashrc
+      RUN cat /home/rstudio/myRprofile >> /home/rstudio/.Rprofile
+      CMD ["/init"]
+      docker build -t trenastudio_02  -f Dockerfile.02  .
+      docker run --rm  -it --user rstudio trenastudio_02 bash
+       # this allows a successful biocGet("httpuv"), creating /usr/local/lib/R/site-library/httpuv
+
+   --- step 03: add bashCustomizations, learn who the default user is  (root)
+      FROM rocker/rstudio
+      COPY .  /home/rstudio/
+      RUN cat /home/rstudio/myBashCustomizations >> /home/rstudio/.bashrc
+      RUN cat /home/rstudio/myRprofile >> /home/rstudio/.Rprofile
+
+      CMD ["/init"]
+      docker build -t trenastudio_03  -f Dockerfile.03  .
+      sudo docker run -d -p 8787:8787 trenastudio_03
+      docker run --rm  -it --user rstudio trenastudio_03 bash
+        # this allows a successful biocGet("httpuv"), creating /usr/local/lib/R/site-library/httpuv, owned by rstudio:staff
+        # GenomicRanges did not install.  need zlib
+
+   --- step 04: install GenonicRanges, which nees zlib
+      FROM rocker/rstudio
+      COPY .  /home/rstudio/
+      RUN cat /home/rstudio/myBashCustomizations >> /home/rstudio/.bashrc
+      RUN cat /home/rstudio/myRprofile >> /home/rstudio/.Rprofile
+
+      CMD ["/init"]
+      docker build -t trenastudio_04  -f Dockerfile.04  .
+      sudo docker run -d -p 8787:8787 trenastudio_04
+      docker run --rm  -it --user rstudio trenastudio_04 bash
+      # this allows a successful biocGet("httpuv"), creating /usr/local/lib/R/site-library/httpuv, owned by rstudio:staff
+      # GenomicRanges did not install.  need zlib
+
+FROM rocker/rstudio
+COPY .  /home/rstudio/
+RUN cat /home/rstudio/myBashCustomizations >> /home/rstudio/.bashrc
+RUN cat /home/rstudio/myRprofile >> /home/rstudio/.Rprofile
+RUN apt-get update
+RUN apt-get install libxml2-dev -y
+RUN apt-get -y install libmariadb-client-lgpl-dev -y
+RUN apt-get install libpq-dev -y
+RUN sudo apt-get install libpng-dev -y
+RUN sudo apt-get install zlib1g-dev -y
+user rstudio
+WORKDIR /home/rstudio
+RUN mkdir library
+RUN R -f installTrenaPrequisites-04.R
+user root
+CMD ["/init"]
+
+
+--- step 05: BSgenome data package, and all trena prereq code packages
+FROM trenastudio_04
+user rstudio
+WORKDIR /home/rstudio
+RUN R -f installTrenaPrequisites-05.R
+user root
+CMD ["/init"]
+
+docker build -t trenastudio_05  -f Dockerfile-05  .
+sudo docker run -d -p 8787:8787 trenastudio_05
+docker run --rm  -it --user rstudio trenastudio_05 bash
+
+
+--- step 07: all of my rapidly changing packages
+FROM trenastudio_06
+user rstudio
+run mkdir /home/rstudio/pkgs
+COPY pkgs/* /home/rstudio/pkgs/
+WORKDIR /home/rstudio
+RUN R CMD INSTALL  --no-test-load /home/rstudio/pkgs/BrowserViz_2.0.1.tar.gz
+RUN R CMD INSTALL  --no-test-load /home/rstudio/pkgs/trena_1.1.12.tar.gz
+RUN R CMD INSTALL  --no-test-load /home/rstudio/pkgs/trenaViz_0.99.39.tar.gz
+RUN R CMD INSTALL  --no-test-load /home/rstudio/pkgs/SingleGeneData_0.99.4.tar.gz
+RUN R CMD INSTALL  --no-test-load /home/rstudio/pkgs/MEF2C.data_0.99.15.tar.gz
+RUN R CMD INSTALL  --no-test-load /home/rstudio/pkgs/SingleGeneAnalyzer_0.99.18.tar.gz
+RUN R CMD INSTALL  --no-test-load /home/rstudio/pkgs/MotifDb_1.21.2.tar.gz
+
+user root
+CMD ["/init"]
+
+docker build -t trenastudio_07  -f Dockerfile-07  .
+sudo docker run -d -p 8787:8787 trenastudio_07
+docker run --rm  -it --user rstudio trenastudio_07 bash
+
+
+
+
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* rstudio server and docker (16 feb 2018)
+
+--- first test
+cd ~/s/docker-rstudio
+sudo docker run -d -p 8787:8787 rocker/rstudio
+docker images | grep -i rstudio
+rocker/rstudio             latest              a734502ee101        46 hours ago        1.08GB
+
+--- extend the
+
+*------------------------------------------------------------------------------------------------------------------------
+* seward dogs
+
+bret rogers: 306.330.1646
+
+(05 jan 2018): called in report on white truck guy, a letter was sent
+(13 feb 2018, tue, suzanne):   6/4/2   (total, off-leash, off-trail)
+(14 feb 2018, wed, suzanne):   5/5/3
+(15 feb 2018, thu, suzanne):  10/1/0
+
+
+--- 14 feb 2018
+met two officers in truck on lower loop.  they rarely leave the truck...
+
+--- 16 feb 2018
+phone call with animal control:
+2 officers from animal control, two from parks, always in pairs
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* created tbl.motifs, all jaspar2018 human + mouse motifs in the mef2c bounds,
+
+/usr/local/bin/R -f getAllMotifsBioc.R    # explicit R path for ananconda avoidance
+
+10048725 Feb 15 09:46 tbl.motifs.jaspar2018.human.mouse.chr5.88391000.89322000.RData
+
+*------------------------------------------------------------------------------------------------------------------------
+* another go at running jupyterhub
+
+https://github.com/jupyterhub/jupyterhub-deploy-docker
+
+jupyterhub-deploy-docker provides a reference deployment of JupyterHub, a multi-user Jupyter Notebook environment, on
+a single host using Docker.
+
+Possible use cases include:
+
+Creating a JupyterHub demo environment that you can spin up relatively quickly.
+Providing a multi-user Jupyter Notebook environment for small classes, teams, or departments.
+
+cd ~/github
+git clone https://github.com/jupyterhub/jupyterhub-deploy-docker.git
+
+*------------------------------------------------------------------------------------------------------------------------
+* jupyterhub singleuser, how to launch a notebook server in a container: DockerSpawner (15 feb 2018)
+
+
+DockerSpawner enables JupyterHub to spawn single user notebook servers in Docker containers.
+https://github.com/jupyterhub/dockerspawner
+
+*------------------------------------------------------------------------------------------------------------------------
+* jupyterhub container, reference example (9 feb 2018)
+
+cd ~/s/work/jupyterHub/
+conda update jupyterhub
+conda update notebook
+jupyterhub --version         # 0.8.1
+jupyter notebook --version   # 5.4.0
+
+https://hub.docker.com/r/jupyterhub/jupyterhub/
+
+npm install -g configurable-http-proxy
+pip3 install jupyterhub
+If you plan to run notebook servers locally, you will need to install the Jupyter notebook package:
+
+pip3 install --upgrade notebook
+
+Run the Hub server, To start the Hub server, run the command:
+
+type -a jupyterhub
+/usr/local/bin/jupyterhub
+/Users/paul/anaconda/bin/jupyterhub
+
+jupyterhub  #   Visit https://localhost:8000 in your browser, and sign in with your unix PAM credentials.
+skips login, figures out I am paul, opens a single user notebook server
+
+JupyterHub is now running at http://:8000/
+[I 2018-02-14 15:48:45.534 JupyterHub spawner:978] Spawning jupyterhub-singleuser --port=64057
+Failed to set groups [Errno 1] Operation not permitted
+[W 2018-02-14 15:48:46.097 SingleUserNotebookApp configurable:168] Config option `open_browser` not recognized by `SingleUserNotebookApp`.  Did you mean `browser`?
+[I 2018-02-14 15:48:46.995 SingleUserNotebookApp singleuser:365] Starting jupyterhub-singleuser server version 0.8.1
+[I 2018-02-14 15:48:47.001 JupyterHub log:122] 200 GET /hub/api (@127.0.0.1) 1.34ms
+[I 2018-02-14 15:48:47.003 SingleUserNotebookApp notebookapp:1585] Serving notebooks from local directory: /Users/paul
+[I 2018-02-14 15:48:47.003 SingleUserNotebookApp notebookapp:1585] 0 active kernels
+[I 2018-02-14 15:48:47.003 SingleUserNotebookApp notebookapp:1585] The Jupyter Notebook is running at:
+[I 2018-02-14 15:48:47.003 SingleUserNotebookApp notebookapp:1585] http://[all ip addresses on your system]:64057/user/paul/
+
+
+--- next up: explore configuration mentioned (documented?) here
+https://jupyterhub.readthedocs.io/en/0.7.2/getting-started.html
+
+Installation
+See the project's README for help installing JupyterHub.
+
+Planning your installation
+Prior to beginning installation, it's helpful to consider some of the following:
+
+deployment system (bare metal, Docker)
+Authentication (PAM, OAuth, etc.)
+Spawner of singleuser notebook servers (Docker, Batch, etc.)
+Services (nbgrader, etc.)
+JupyterHub database (default SQLite; traditional RDBMS such as PostgreSQL,) MySQL, or other databases supported by SQLAlchemy)
+
+
+--- next up: experiment with the spawner.cmd
+~/s/work/jupyterHub/jupyterhub_config.py
+
+## The command used for starting the single-user server.
+#
+#  Provide either a string or a list containing the path to the startup script
+#  command. Extra arguments, other than this path, should be provided via `args`.
+#
+#  This is usually set if you want to start the single-user server in a different
+#  python environment (with virtualenv/conda) than JupyterHub itself.
+#
+#  Some spawners allow shell-style expansion here, allowing you to use
+#  environment variables. Most, including the default, do not. Consult the
+#  documentation for your spawner to verify!
+#c.Spawner.cmd = ['jupyterhub-singleuser']
+changesd this to 'jupyterhub-singleuser-bogus' and found indeed:
+raise child_exception_type(errno_num, err_msg, err_filename)
+FileNotFoundError: [Errno 2] No such file or directory: 'jupyterhub-singleuser-bogus': 'jupyterhub-singleuser-bogus'
+
+book.jupyterHub> type -a jupyterhub-singleuser
+jupyterhub-singleuser is /Users/paul/anaconda/bin/jupyterhub-singleuser
+
+see what args are passed, and if it is easy to run, eg, the mef2c docker-compose "up" command
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* jupyter notebook server fails with " ModuleNotFoundError: No module named 'pysqlite2'" (14 feb 2018)
+
+from pysqlite2 import dbapi2 as sqlite3 -
+
+traced to this ~/anaconda/lib/python3.6/site-packages/notebook/services/sessions/sessionmangager.py
+
+try:
+import sqlite3
+except ImportError:
+# fallback on pysqlite2 if Python was build without sqlite
+from pysqlite2 import dbapi2 as sqlite3
+
+don't know why this suddenely appeared
+
+maybe install from scratch?   https://www.sqlite.org/download.html
+trying this:  http://www.razorsql.com/download.html
+
+--- reproduce problem from command line
+file sqlite3 /Users/paul/anaconda/bin/sqlite3
+bash> sqlite3
+dyld: Library not loaded: @rpath/libtinfo.5.dylib
+Referenced from: /Users/paul/anaconda/bin/sqlite3
+Reason: image not found
+
+conda update anaconda  #  large number of new packages installed, huge number updated, some downgraded
+
+bash> sqlite3  # now works!  jupyter notebook now works!
+SQLite version 3.20.1 2017-08-24 16:21:36
+Enter ".help" for usage hints.
+Connected to a transient in-memory database.
+Use ".open FILENAME" to reopen on a persistent database.
+sqlite>
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* MEF2C.data package: fix tbl.snp.hg38.score-ref-alt.RData to follow bed format in first 5 columns (14 feb 2018)
+
+~/github/eqtlTrenaNotebooks/mef2c/MEF2C.data/inst/unitTests
+print(load("../extdata/tbl.snp.hg38.score-ref-alt.RData"))
+rownames(tbl.snp) <- NULL
+head(tbl.snp, n=3)
+
+rsid chrom      pos      score iupac ref alt A1 CER_Beta CER_P TX_Beta  TX_P IGAP_A1 IGAP_OR IGAP_Pvalue RegulomeDB Rsquared_rs254776 Dprime_rs254776
+1  rs7721099  chr5 88640561 0.13018179     Y   C   T  C     0.01 0.722    0.01 0.756       C    0.99       0.741          6             0.021           0.213
+2  rs7703782  chr5 88642739 0.07417243     W   A   T  A     0.01 0.722    0.01 0.756       A    1.00       0.843          7             0.021           0.213
+3 rs10514301  chr5 88643836 0.07262964     Y   C   T  T     0.01 0.722    0.01 0.756       T    1.00       0.846          7             0.021           0.213
+
+--- provenance
+provenance: ~/github/projects/external/mayo.AD.collaboration/020516_TableForCorySeth_AD_eQTL_Loci.xlsx
+liftover to  ~/github/projects/external/mayo.AD.collaboration/mef2c-snps-hg38.tsv
+and then to ~/github/projects/external/mayo.AD.collaboration/tbl.snp.hg38.score-ref-alt.RData
+
+--- background from cory
+"CER is used by Mayo as cerebellum. If you got it from IGAP, I'm not clear. I quickly scanned the
+IGAP paper and couldn't find anything that fit:  https://eprints.soton.ac.uk/369403/1/ng.2802.pdf
+
+Fig. 7.1 shows a Manhattan plot from the first stage of a large-scale GWAS of AD risk loci
+(Lambert et al., 2013). The plot shows on the y-axis the negative log-base-10 of the P value
+for each of the polymorphisms in the genome (along the x-axis), when tested for differences in
+frequency between 17,008 cases and 37,154 controls. The line shows the threshold for
+genome-wide significance (P < 5 × 10–8). Diamonds represent SNPs with the smallest P values in
+the overall analysis from that article.
+
+https://www.sciencedirect.com/topics/biochemistry-genetics-and-molecular-biology/manhattan-plot
+
+
+
+--- needed
+rename score column to "score.old"
+add -log10(tbl.snp$CER_P) as "score"
+pos -> start, start -> end
+rearrange columns
+
+--- do it
+print(load("../extdata/tbl.snp.hg38.score-ref-alt.RData"))
+rownames(tbl.snp) <- NULL
+colnames(tbl.snp)[ grep("pos", colnames(tbl.snp))] <- "start"
+colnames(tbl.snp)[ grep("score", colnames(tbl.snp))] <- "score.old"
+colnames(tbl.snp)[ grep("rsid", colnames(tbl.snp))] <- "name"
+tbl.snp$end <- tbl.snp$start
+tbl.snp$score <- -log10(tbl.snp$CER_P)
+bed.coi <- c("chrom", "start", "end", "name", "score")
+all(bed.coi %in% colnames(tbl.snp))
+other.coi <- setdiff(colnames(tbl.snp), bed.coi)
+tbl.snp <- tbl.snp[, c(bed.coi, other.coi)]
+head(tbl.snp, n=3)
+chrom    start      end       name     score  score.old iupac ref alt A1 CER_Beta    CER_P TX_Beta  TX_P IGAP_A1 IGAP_OR IGAP_Pvalue RegulomeDB Rsquared_rs254776 Dprime_rs254776
+1  chr5 88640561 88640561  rs7721099 0.1414628 0.13018179     Y   C   T  C     0.01 0.722000    0.01 0.756       C    0.99     0.74100          6             0.021           0.213
+2  chr5 88642739 88642739  rs7703782 0.1414628 0.07417243     W   A   T  A     0.01 0.722000    0.01 0.756       A    1.00     0.84300          7             0.021           0.213
+3  chr5 88643836 88643836 rs10514301 0.1414628 0.07262964     Y   C   T  T     0.01 0.722000    0.01 0.756       T    1.00     0.84600          7             0.021           0.213
+fivenum(tbl.snp$score)     # [1] 0.008773924 0.266802735 0.609064893 3.590933260 6.598599459
+fivenum(tbl.snp$score.old) # [1] 0.003926346 0.289066472 1.022300457 1.682983160 5.037630664
+save(tbl.snp, file="~/github/eqtlTrenaNotebooks/mef2c/MEF2C.data/inst/extdata/tbl.snp.hg38.score-ref-alt.bedFormat.RData"))
+*------------------------------------------------------------------------------------------------------------------------
+* inappropriate sign contact: publicspace@seattle.gov
+
+(13 feb 2018): hillside college prep
+(13 dec 2017) PSM2017-0407: lloyd's acupuncture, UPS, Think tutoring
+
+*------------------------------------------------------------------------------------------------------------------------
+* adni vcf geno data.frame to cory (12 feb 2018) just two rsids.
+
+[status: quick and easy.  cory gave me file.  i copied to newtrena
+   from whovian:/local/Cory/for_Paul/ADNI.808_indiv.minGQ_21.pass.ADNI_ID.chr19.vcf.tar
+
+~/s/examples/vcf/
+-rw-r--r-- 1 pshannon pricelab       4570 Feb 13 14:18 ADNI.chr19-rs429358-rs7412.RData
+-rw-r--r-- 1 pshannon pricelab       1350 Feb 13 14:12 adni.chr19.hg19.R
+-rw-r--r-- 1 pshannon pricelab 3045335040 Feb 13 14:03 ADNI.808_indiv.minGQ_21.pass.ADNI_ID.chr19.vcf.tar
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* adni vcf geno data.frame to cory (12 feb 2018)
+
+# cd ~/s/work/priceLab/cory/vcfExtraction/
+cd ~/github/projects/priceLab/cory/syanpse_AMPAD_vcf
+working in apoe.R
+
+--- get chr19 vcf and tbi files from synapse
+https://www.synapse.org/#!Synapse:syn11724002
+point-and-click to  https://www.synapse.org/#!Synapse:syn10995753.2
+downloaded:
+SCH_11923_B01_GRM_WGS_2017-04-27_19.recalibrated_variants.annotated.vcf.gz 65M
+gunzip SCH_11923_B01_GRM_WGS_2017-04-27_19.recalibrated_variants.annotated.vcf.gz  732k lines
+
+--- vcf genotype info extraction
+
+a simple script for  mef2c
+~/github/eqtlTrenaNotebooks/mef2c/MEF2C.data/inst/dataPrep/getAllVariants.R
+
+--- cory's spec
+
+I'm looking for the status of these two rsids: rs429358 and rs7412
+The APOE gene is located from Chromosome 19: 44,905,754-44,909,393
+
+--- ~/s/work/priceLab/cory/vcfExtraction/apoe.R
+
+
+
+--- existing was just chr5:
+print(load("~/github/dockerizedMicroservices/trena.mef2c/trena/data/mtx.tcx.pheno.geno.RData"))
+[1] "tbl.pheno"          "tbl.geno"           "samples.ad"         "samples.ctl"        "mtx.tcx.normalized"
+> dim(tbl.geno)
+[1] 1279  354
+> tbl.geno[1:10, 1:10]
+chrom    start      end allele.1 allele.2 1000 1005 1010 1015 1019
+5:88010133_A/T   chr5 88714316 88714316        A        T    0    0    0    0    0
+5:88010224_G/A   chr5 88714407 88714407        G        A    0    0    0    0    0
+5:88010323_G/GT  chr5 88714506 88714506        G       GT    0    1    2    0    2
+5:88010829_C/T   chr5 88715012 88715012        C        T    1    0    0    0    0
+5:88010849_T/C   chr5 88715032 88715032        T        C    0    0    0    0    0
+5:88010896_C/T   chr5 88715079 88715079        C        T    0    0    0    0    0
+5:88010938_T/C   chr5 88715121 88715121        T        C    0    0    0    0    0
+5:88011139_G/C   chr5 88715322 88715322        G        C    1    1    2    2    2
+5:88011447_C/T   chr5 88715630 88715630        C        T    0    0    0    0    0
+5:88011935_A/G   chr5 88716118 88716118        A        G    0    0    0    0    0
+
+*------------------------------------------------------------------------------------------------------------------------
+* create igapVariants track from the mef2c notebook (12 feb 2018)
+
+cd ~/github/eqtlTrenaNotebooks/mef2c/MEF2C.data/inst/extdata
+library(MEF2C.data)
+x <- MEF2C.data()
+bounds <- getGenomicBounds(x) # $chrom [1] "chr5" $start [1] 88391000 $end [1] 89322000
+print(load("~/s/work/priceLab/AD/tbl.igapVariants.hg38.pvalgt0.05.RData"))      # "tbl.igapVariants"
+tbl.igapVariants.mef2c <- subset(tbl.igapVariants, chrom==bounds$chrom & start >= bounds$start & end <= bounds$end)  # 228 11
+
+save(tbl.igapVariants.mef2c, file="~/github/eqtlTrenaNotebooks/mef2c/MEF2C.data/inst/extdata/tbl.igapVariants.mef2c.RData")
+*------------------------------------------------------------------------------------------------------------------------
+* IGAP variants file from cory - add to mef2c notebook (12 feb 2018)
+
+this appears to be at least a partial repetition of previous work, see below
+
+* create full fimo track for all gwas snsp  (~20 feb 2017)
+
+--- take advantage of that work:
+print(load("~/s/work/priceLab/AD/tbl.gwas.level_1.RData")) # tbl.gwas
+fivenum(tbl.gwas$P) #  1.000e-150  1.005e-02  2.270e-02  3.620e-02  0.05
+tbl.gwas$score <- -log10(tbl.gwas$P)
+fivenum(tbl.gwas$score)  #  1.301030   1.441291   1.643974   1.997834 150.000000
+tbl.igapVariants <- tbl.gwas
+colnames(tbl.igapVariants) <- c("chrom", "hg19pos", "start", "id",  "mut", "ref", "beta", "stderr", "pval", "score")
+tbl.igapVariants$end <- tbl.igapVariants$start
+pco <- c("chrom", "start", "end", "id", "score", "mut", "ref", "beta", "stderr", "pval", "hg19pos")
+tbl.igapVariants <- tbl.igapVariants[, pco]
+dim(tbl.igapVariants)  # [1] 438609     11
+save(tbl.igapVariants, file="~/s/work/priceLab/AD/tbl.igapVariants.hg38.pvalgt0.05.RData")
+
+http://web.pasteur-lille.fr/en/recherche/u744/igap/igap_download.php
+
+Two dataset are provided. The first one corresponds to the
+meta-analysis results obtained in stage 1 including genotyped and
+imputed data (7,055,881 single nucleotide polymorphisms, 1000G phase
+1 alpha imputation, Build 37, Assembly Hg19) of 17,008 Alzheimer's
+disease cases and 37,154 controls. The second one corresponds to the
+meta-analysis results of the 11,632 SNPs that were genotyped and
+tested for association in an independent set of 8,572 Alzheimer's
+disease cases and 11,312 controls with the combined stage1/stage2
+P-values.
+
+Each file consists of the following information for each SNP and its
+association to Alzheimer's disease based on meta-analysis in the
+publication mentioned below. Although the individual datasets
+examined excluded any SNPs with call rates <95%, IGAP meta-analysis
+only analyzed SNPs either genotyped or successfully imputed in at
+least 40% of the AD cases and 40 % of the control samples across all
+datasets.
+
+Chromosome: Chromosome of the SNP (Build 37, Assembly Hg19)
+Position: Position of the SNP (Build 37, Assembly Hg19)
+MarkerName: SNP rsID or chromosome:position if rsID not available
+Effect_allele: Reference allele (coded allele)
+Non_Effect_allele: Non reference allele (non coded allele)
+Beta: Overall estimated effect size for the effect allele
+SE: Overall standard error for effect size estimate
+Pvalue: Meta-analysis Pvalue using regression coefficients (beta and standard error)
+
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* python tips python xml tips
+
+working in ~/github/IJAL-interlinear/iiGenerator/Line.py
+with ~/github/IJAL-interlinear/testData/monkeyAndThunder/AYA1_MonkeyandThunder.eaf
+doc.find("*/*/*[@ANNOTATION_ID='a58']/../..").attrib
+finds first element 3 levels down with a58 attribute, then climbs up two levels to get parent and its attributes
+
+
+{'LINGUISTIC_TYPE_REF': 'phonemic', 'PARENT_REF': 'AYA', 'TIER_ID': 'AYA2'}
+
+without wild cards:
+doc.findall("TIER/ANNOTATION/REF_ANNOTATION[@ANNOTATION_ID='a58']../..")   # [<Element 'TIER' at 0x10de9b188>]
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* python parse xml, generateDS, david beck, apply to ELAN schema, daylight, monkey (10 feb 2019)
+
+--- first use
+cd ~/github/IJAL-interlinear/testData
+generateDS.py -o EAF.py  EAFv2.8.xsd
+
+import EAF as eaf
+doc = eaf.parse("daylight77a.eaf", silence=True)
+header = doc.get_HEADER()
+md = header.get_MEDIA_DESCRIPTOR()
+md[0].get_MEDIA_URL()
+doc.get_HEADER().get_MEDIA_DESCRIPTOR()[0].get_MEDIA_URL()
+'file:///Users/paul/github/howDaylightWasStolen-harryMoses/peelingOffSomeDaylight/daylight77a.wav'
+len(doc.get_TIME_ORDER().get_TIME_SLOT()) # 4
+tiers = doc.get_TIER()
+tier0 = tiers[0]
+annotations = tier0.get_ANNOTATION()
+anno0 = annotations[0]
+isAlignable = anno0.get_ALIGNABLE_ANNOTATION() != None
+isReferencing = anno0.get_REF_ANNOTATION() != None
+if(isAlignable):
+anno = anno0.get_ALIGNABLE_ANNOTATION()
+anno.get_TIME_SLOT_REF1() # 'ts1'
+anno.get_TIME_SLOT_REF2() # 'ts2'
+anno.get_ANNOTATION_ID() 'a1'
+anno.get_ANNOTATION_VALUE()   # 'dil tu'
+
+anno_referencing = anno0.get_REF_ANNOTATION()
+
+cd ~/github/projects/examples/xml/python/generateDS/people/
+# tutorial/de  and data files  up to odate, otherwise KeyError: 'airplane'
+cp  generateDS-2.29.5/tutorial/Code/people.x* .
+generateDS.py -o people_api.py -s app.py --super=people_api people.xsd
+
+--- imports
+~/github/projects/examples/xml/python/generateDS/people/demo.py
+
+import sys
+import people_api as api
+
+--- create a list of persons - that is, a sequence complexType "peopleType"
+def test(names):
+people = api.peopleType()
+for count, name in enumerate(names):
+id = '%d' % (count + 1, )
+person = api.personType(name=name, id=id)
+people.add_person(person)
+people.export(sys.stdout, 0)
+
+test(['albert', 'betsy', 'charlie'])
+
+---- add new method to the PersonType class
+def get_extensiontype_(self): return self.extensiontype_
+def get_html(self):
+return "<b> %s </b>" % self.name
+def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
+
+---- parse and traverse, use that new method
+x = api.parse("people.xml", silence=True)
+assert(len(x.get_person()) == 4)
+for person in x.get_person():
+print(person.get_html())
+
+*------------------------------------------------------------------------------------------------------------------------
+* generate python classes from xsd (10 feb 2018)
+
+--- generateDS  2.29.5 (17 jan 2018)
+https://pypi.python.org/pypi/generateDS/
+
+generateDS.py generates Python data structures (for example,
+class definitions) from an XML Schema document. These data
+structures represent the elements in an XML document described by
+the XML Schema. It also generates parsers that load an XML
+document into those data structures. In addition, a separate file
+containing subclasses (stubs) is optionally generated. The user
+can add methods to the subclasses in order to process the
+contents of an XML document.
+
+pip install generateDS
+Successfully installed generateDS-2.29.5
+~/anaconda/lib/python3.6/site-packages/generateDS-2.29.5.dist-info/*
+~/anaconda/lib/python3.6/site-packages/libgenerateDS/gui/
+
+described here: http://www.davekuhlman.org/generateDS.html
+
+prerequisite: https://pypi.python.org/pypi/lxml/
+import lxml  # works
+pip install lxml # requirement already satisfied
+
+--- first use
+cd ~/github/projects/examples/xml/python/generateDS/people
+# tutorial/de  and data files  up to odate, otherwise KeyError: 'airplane'
+cp  generateDS-2.29.5/tutorial/Code/people.x* .
+generateDS.py -o people_api.py -s people_appl1.py --super=people_api people.xsd
+
+generateDS -o People.py -s app.py  people.xsd
+python
+import People as p
+p0 = p.parse("people.xml", silence=True)
+type(p0) # <class 'People.peopleType'>
+len(p0.get_comments()) # 3
+
+--- first use
+cd ~/github/projects/examples/xml/python/generateDS/people/
+# tutorial/de  and data files  up to odate, otherwise KeyError: 'airplane'
+cp  generateDS-2.29.5/tutorial/Code/people.x* .
+generateDS.py -o people_api.py -s app.py --super=people_api people.xsd
+
+--- imports
+~/github/projects/examples/xml/python/generateDS/people/demo.py
+
+import sys
+import people_api as api
+
+--- create a list of persons - that is, a sequence complexType "peopleType"
+def test(names):
+people = api.peopleType()
+for count, name in enumerate(names):
+id = '%d' % (count + 1, )
+person = api.personType(name=name, id=id)
+people.add_person(person)
+people.export(sys.stdout, 0)
+
+test(['albert', 'betsy', 'charlie'])
+
+---- add new method to the PersonType class
+def get_extensiontype_(self): return self.extensiontype_
+def get_html(self):
+return "<b> %s </b>" % self.name
+def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
+
+---- parse and traverse, use that new method
+x = api.parse("people.xml", silence=True)
+assert(len(x.get_person()) == 4)
+for person in x.get_person():
+print(person.get_html())
+
+
+
+--- methods?
+class peopleType(GeneratedsSuper):
+help(p0)
+class peopleType(GeneratedsSuper)
+|  Method resolution order:
+|      peopleType
+|      GeneratedsSuper
+|      builtins.object
+|
+|  Methods defined here:
+|
+|  __init__(self, comments=None, person=None, specialperson=None, programmer=None, python_programmer=None, java_programmer=None)
+|      Initialize self.  See help(type(self)) for accurate signature.
+|  add_comments(self, value)
+|  add_java_programmer(self, value)
+|  add_person(self, value)
+|  add_programmer(self, value)
+|  add_python_programmer(self, value)
+|  add_specialperson(self, value)
+|  build(self, node)
+|  buildAttributes(self, node, attrs, already_processed)
+|  buildChildren(self, child_, node, nodeName_, fromsubclass_=False)
+|  export(self, outfile, level, namespace_='', name_='peopleType', namespacedef_='', pretty_print=True)
+|  exportAttributes(self, outfile, level, already_processed, namespace_='', name_='peopleType')
+|  exportChildren(self, outfile, level, namespace_='', name_='peopleType', fromsubclass_=False, pretty_print=True)
+|  get_comments(self)
+|  get_java_programmer(self)
+|  get_person(self)
+|  get_programmer(self)
+|  get_python_programmer(self)
+|  get_specialperson(self)
+|  hasContent_(self)
+|  insert_comments_at(self, index, value)
+|  insert_java_programmer_at(self, index, value)
+|  insert_person_at(self, index, value)
+|  insert_programmer_at(self, index, value)
+|  insert_python_programmer_at(self, index, value)
+|  insert_specialperson_at(self, index, value)
+|  replace_comments_at(self, index, value)
+|  replace_java_programmer_at(self, index, value)
+|  replace_person_at(self, index, value)
+|  replace_programmer_at(self, index, value)
+|  replace_python_programmer_at(self, index, value)
+|  replace_specialperson_at(self, index, value)
+|  set_comments(self, comments)
+|  set_java_programmer(self, java_programmer)
+|  set_person(self, person)
+|  set_programmer(self, programmer)
+|  set_python_programmer(self, python_programmer)
+|  set_specialperson(self, specialperson)
+
+
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* python xml, as applied to ELAN eaf markup (10 feb 2018)
+
+from xml.etree import ElementTree as etree
+xmlFile = open("~/github/IJAL-interlinear/testData/daylight77a.eaf", 'r')
+tree = etree.parse(xmlFile)
+root = tree.getroot()
+
+for child in root:  # direct children only
+print(child)
+
+<Element 'HEADER' at 0x10f635098>
+<Element 'TIME_ORDER' at 0x10f63f818>
+<Element 'TIER' at 0x10f63f9a8>
+<Element 'TIER' at 0x10f63fbd8>
+<Element 'LINGUISTIC_TYPE' at 0x10f63fe08>
+<Element 'LINGUISTIC_TYPE' at 0x10f63fe58>
+<Element 'LINGUISTIC_TYPE' at 0x10f63fea8>
+<Element 'LOCALE' at 0x10f63fef8>
+<Element 'LOCALE' at 0x10f63ff48>
+<Element 'CONSTRAINT' at 0x10f63ff98>
+<Element 'CONSTRAINT' at 0x10f645048>
+<Element 'CONSTRAINT' at 0x10f645098>
+<Element 'CONSTRAINT' at 0x10f6450e8>
+<Element 'EXTERNAL_REF' at 0x10f645138>
+
+len(root.findall("TIER"))  # 2
+tier1 = root.findall("TIER")[0]
+type(tier1) # <class 'xml.etree.ElementTree.Element'>
+type(root)  # <class 'xml.etree.ElementTree.Element'>
+
+tier1.attrib  # a python dictionary: {'DEFAULT_LOCALE': 'tr', 'LINGUISTIC_TYPE_REF': 'default-lt', 'TIER_ID': 'speech'}
+tier1.find("ANNOTATION").find("ALIGNABLE_ANNOTATION").attrib # {'ANNOTATION_ID': 'a1', 'TIME_SLOT_REF1': 'ts1', 'TIME_SLOT_REF2': 'ts2'}
+annotations = tier1.findall("ANNOTATION")
+len(annotations)
+
+*------------------------------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------------------------------
+* jupyter dashboard (9 feb 2018)
+
+jupyter --version 4.2.1
+
+http://jupyter-dashboards-layout.readthedocs.io/en/latest/getting-started.html
+
+conda install jupyter_dashboards -c conda-forge
+to be installed:  jupyter_dashboards: 0.7.0-py36_0 conda-forge
+
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* chrom, chromosome, seqnames, aliases for igv.js (6 feb 2018)
+
+
+[see background, next item below]
+
+tested this in
+~/github/projects/examples/js/igvBareBones/hg38.html
+
+
+options = {locus: "AQP4",
+minimumBases: 5,
+showRuler: true,
+reference: {id: "hg38",
+fastaURL: "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa",
+cytobandURL: "https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/cytoBandIdeo.txt",
+aliasURL: "http://trena.systemsbiology.net/hg38/chromosomeAliases.txt"
+},
+tracks: [
+{name: 'Gencode v24',
+url: "https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/genes/gencode.v24.annotation.sorted.gtf.gz",
+indexURL: "https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/genes/gencode.v24.annotation.sorted.gtf.gz.tbi",
+type: 'annotation',
+format: 'gtf',
+visibilityWindow: 500000,
+displayMode: 'EXPANDED',
+color: 'darkGreen',
+height: 300,
+searchable: false
+},
+]
+}; // options
+browser = igv.createBrowser(igvDiv, options);
+
+the test:
+
+cd  ~/github/projects/examples/js/igvWithChromosomeAliases/
+
+
+
+--- open tair10.html
+
+
+--- reproduce the problem
+cd ~/s/data/public/TFBS/arabidopsis/
+
+head TAIR10_GFF3_genes.gff
+Chr1	TAIR10	chromosome	1	30427671	.	.	.	ID=Chr1;Name=Chr1
+Chr1	TAIR10	gene	3631	5899	.	+	.	ID=AT1G01010;Note=protein_coding_gene;Name=AT1G01010
+Chr1	TAIR10	mRNA	3631	5899	.	+	.	ID=AT1G01010.1;Parent=AT1G01010;Name=AT1G01010.1;Index=1
+
+gunzip Arabidopsis_thaliana.TAIR10.dna.toplevel.fa.gz
+head -5 Arabidopsis_thaliana.TAIR10.dna.toplevel.fa
+>1 dna:chromosome chromosome:TAIR10:1:1:30427671:1 REF
+CCCTAAACCCTAAACCCTAAACCCTAAACCTCTGAATCCTTAATCCCTAAATCCCTAAAT
+CTTTAAATCCTACATCCATGAATCCCTAAATACCTAATTCCCTAAACCCGAAACCGGTTT
+
+cd ~/github/projects/examples/js/igvWithChromosomeAliases/
+
+
+cd ~/github/projects/examples/js/igvBareBones/tair10
+head TAIR10_GFF3_genes.gff
+Chr1	TAIR10	chromosome	1	30427671	.	.	.	ID=Chr1;Name=Chr1
+Chr1	TAIR10	gene	3631	5899	.	+	.	ID=AT1G01010;Note=protein_coding_gene;Name=AT1G01010
+Chr1	TAIR10	mRNA	3631	5899	.	+	.	ID=AT1G01010.1;Parent=AT1G01010;Name=AT1G01010.1;Index=1
+Chr1	TAIR10	protein	3760	5630	.	+	.	ID=AT1G01010.1-Protein;Name=AT1G01010.1;Derives_from=AT1G01010.1
+Chr1	TAIR10	exon	3631	3913	.	+	.	Parent=AT1G01010.1
+
+*------------------------------------------------------------------------------------------------------------------------
+* background on chrom, chromosome, seqnames, aliases for igv.js (6 feb 2018)
+
+issue #507 on the igv.js github repo:
+
+Re: [igvteam/igv.js] no luck creating TAIR10 gene annotation track (#507)
+
+--- email from jim (7 jan 2018)
+
+So the problem is, in fact, a mismatch between fasta and gff/gtf3/wig
+files. What is the name of the "N" chromosome in the fasta file? I am
+guessing its "N" since the first chromosome is "1". Ideally, you
+shouldn't have to rely on alias mapping hacks, such as IGV does for "1" ->
+"chr1". If you have control of the fasta file here changing the names to
+match your annotation files would fix the problem. However there is an
+easier way, create a tab-delimited file of aliases and set it in the
+property "aliasURL" of your reference object. The file should have 1 line
+per chromosome with all possible names for the chromosome listed, in
+arbitrary order. So
+
+1 <tab> Chr1
+2 <tab> Chr2
+
+etc. Oddly this isn't documented, correcting that now.
+
+On Sun, Jan 7, 2018 at 1:09 PM, Paul Shannon <notifications@github.com>
+wrote:
+
+> All of what you see below may be more of me barking up the wrong tree. If
+> so, I apologize!
+>
+> The Athaliana fasta file starts
+>
+> >1 dna:chromosome chromosome:TAIR10:1:1:30427671:1 REF
+> CCCTAAACCCTAAACCCTAAACCCTAAACCTCTGAATCCTTAATCCCTAAATCCCTAAAT
+> CTTTAAATCCTACATCCATGAATCCCTAAATACCTAATTCCCTAAACCCGAAACCGGTTT
+>
+> The problem I encountered can be demonstrated using just the locus search
+> box in the UI, after the above fasta reference track has been loaded. (I
+> believe that the silent failures I observed when loading tracks
+> programmatically, with ChrN rather than chrN, are related to what you can
+> more simply reproduce in the search box.)
+>
+> These two locus-naming styles work in the search box after the above fasta
+> file is loaded as the reference track:
+>
+> N:start-end
+> chrN:start-end
+>
+> igv.js helpfully transforms chrN: to N: and maps it to the fasta
+> sequence. The N:start-end style locus is displayed in the search box
+> after igv strips off the chr.
+>
+> But using ChrN:start-end pops up the Unrecognized locus ... error dialog
+> box.
+> I believe that, when loading tracks programmatically (small bed files I
+> create on the fly from R), or other annotation tracks prepared by others,
+> that ChrN:start-end loci are simply (and silently) dropped.
+>
+> In practice, TAIR genome files and tracks seem to use that style:
+>
+> ChrN:start-end
+>
+> Though of course the fasta file excerpted above omits the Chr.
+> It may be narrowly self-serving for me to ask this - and it may skip over
+> complexities I do not yet grasp - but since igv.js already converts all
+> chrN:start-end loci to N:start-end to agree with the fasta data, maybe it
+> could also be case insensitive, and convert ChrN:start-endto N:start-end
+> as well?
+>
+> The alternative I see is for me to convert annotation files to 'chrN' or
+> simply "N". Or modify the fasta file. I will be glad to follow your lead on
+> this.
+>
+
+*------------------------------------------------------------------------------------------------------------------------
+* MEF2C-wishlist: explore vcf in a tiny region(5 feb 2018)
+
+59bp  chr5:88,821,183-88,821,241
+liftover to hg19
+hg38.roi <- "chr5:88,821,183-88,821,241"  # 59bp region where an eqtl snp intersects one footprint, near 3 others
+snp is:   rs244761
+hg19.roi <- chr5:88117000-88117058
+
+--- just look at 58 bases
+hg19.start <- 88117000
+hg19.end   <- 88117058
+mef2c.gr <- GRanges(5, IRanges(hg19.start, hg19.end))
+params <- ScanVcfParam(which=mef2c.gr)
+
+tabixFile <- TabixFile(vcf.filename)
+vcf <- readVcf(tabixFile, "hg19", params)
+
+header(vcf)
+samples(349): 1000 1005 ... 981 991
+meta(2): META contig
+fixed(2): ALT FILTER
+info(24): AC AF ... VariantType culprit
+geno(12): GT AB ... RGQ SB
+as.data.frame(info(header(vcf)))
+Number    Type                                                                                                                                          Description
+AC                       A Integer                                                                          Allele count in genotypes, for each ALT allele, in the same order as listed
+AF                       A   Float                                                                                   Allele Frequency, for each ALT allele, in the same order as listed
+AN                       1 Integer                                                                                                          Total number of alleles in called genotypes
+BaseQRankSum             1   Float                                                                                    Z-score from Wilcoxon rank sum test of Alt Vs. Ref base qualities
+DP                       1 Integer                                                                                            Approximate read depth; some reads may have been filtered
+DS                       0    Flag                                                                                                                 Were any of the samples downsampled?
+END                      1 Integer                                                                                                                        Stop position of the interval
+ExcessHet                1   Float                                                                                         Phred-scaled p-value for exact test of excess heterozygosity
+FS                       1   Float                                                                                 Phred-scaled p-value using Fisher's exact test to detect strand bias
+HaplotypeScore           1   Float                                                                                      Consistency of the site with at most two segregating haplotypes
+InbreedingCoeff          1   Float                    Inbreeding coefficient as estimated from the genotype likelihoods per-sample when compared against the Hardy-Weinberg expectation
+MLEAC                    A Integer    Maximum likelihood expectation (MLE) for the allele counts (not necessarily the same as the AC), for each ALT allele, in the same order as listed
+MLEAF                    A   Float Maximum likelihood expectation (MLE) for the allele frequency (not necessarily the same as the AF), for each ALT allele, in the same order as listed
+MQ                       1   Float                                                                                                                                  RMS Mapping Quality
+MQ0                      1 Integer                                                                                                                     Total Mapping Quality Zero Reads
+MQRankSum                1   Float                                                                            Z-score From Wilcoxon rank sum test of Alt vs. Ref read mapping qualities
+NEGATIVE_TRAIN_SITE      0    Flag                                                                             This variant was used to build the negative training set of bad variants
+POSITIVE_TRAIN_SITE      0    Flag                                                                            This variant was used to build the positive training set of good variants
+QD                       1   Float                                                                                                                  Variant Confidence/Quality by Depth
+ReadPosRankSum           1   Float                                                                                Z-score from Wilcoxon rank sum test of Alt vs. Ref read position bias
+SOR                      1   Float                                                                                  Symmetric Odds Ratio of 2x2 contingency table to detect strand bias
+VQSLOD                   1   Float                                                         Log odds of being a true variant versus being false under the trained gaussian mixture model
+VariantType              1  String                                                                                                                             Variant type description
+culprit                  1  String                      The annotation which was the worst performing in the Gaussian mixture model, likely the reason why the variant was filtered out
+
+info(vcf)
+t(as.data.frame(info(vcf)))
+5:88117019_T/C 5:88117027_A/T 5:88117036_G/T
+AC                  1              204            3             # number of alt alleles
+AF                  0.001433       0.292          0.004298      # alt allele frequency
+AN                  698            698            698           # total number of alleles in called genotypes, here:2 * sample count
+BaseQRankSum        -2.699         -0.368         1.21
+DP                  12586          12839          12511         # read depth
+DS                  FALSE          FALSE          FALSE
+END                 NA             NA             NA
+ExcessHet           3.0103         6.1159         3.029
+FS                  0              0.524          0
+HaplotypeScore      NA             NA             NA
+InbreedingCoeff     -0.0014        -0.0389        -0.0043
+MLEAC               1              204            3
+MLEAF               0.001433       0.292          0.004298
+MQ                  60             60             60
+MQ0                 0              0              0
+MQRankSum           -0.468         0.032          -0.085
+NEGATIVE_TRAIN_SITE FALSE          FALSE          FALSE
+POSITIVE_TRAIN_SITE FALSE          TRUE           TRUE
+QD                  14.87          15.75          13.95
+ReadPosRankSum      0.022          0.485          -0.555
+SOR                 0.68           0.767          0.69
+VQSLOD              17.72          20.29          18.45
+VariantType         "NA"           "NA"           "NA"
+culprit             "MQ"           "MQ"           "MQ"
+
+
+
+
+lapply(vcf.geno, dim)
+$GT     [1] 5824  349
+$AB     [1] 5824  349
+$AD     [1] 5824  349
+$DP     [1] 5824  349
+$GQ     [1] 5824  349
+$MIN_DP [1] 5824  349
+$MQ0    [1] 5824  349
+$PGT    [1] 5824  349
+$PID    [1] 5824  349
+$PL     [1] 5824  349
+$RGQ    [1] 5824  349
+$SB     [1] 5824  349    4
+
+
+
+
+as.data.frame(rowRanges(vcf))
+seqnames    start      end width strand paramRangeID REF ALT      QUAL FILTER
+5:88117019_T/C        5 88117019 88117019     1      *         <NA>   T   C    684.13   PASS
+5:88117027_A/T        5 88117027 88117027     1      *         <NA>   A   T 105464.44   PASS
+5:88117036_G/T        5 88117036 88117036     1      *         <NA>   G   T   1730.08   PASS
+
+hg19       hg38
+88117027   88821210
+maf:  T=0.4838/2423 (1000 Genomes)    (the variant allele, T, has been seen in 2423 subjects, 0.4838 frequency)
+A=0.4934/14368 (TOPMED)         (the reference allele, A, seen in 14368 TOPMED subjects, 0.4934 frequency)
+
+print(load("../extdata/tbl.snp.hg38.score-ref-alt.RData"))
+as.data.frame(t(subset(tbl.snp, pos == 88821210)))
+
+rsid              rs244761
+chrom                 chr5
+pos               88821210
+score             0.419075
+iupac                    W
+ref                      A
+alt                      T
+A1                       T
+CER_Beta              -0.1
+CER_P             1.73e-06
+TX_Beta              -0.03
+TX_P                 0.343
+IGAP_A1                  T
+IGAP_OR               0.99
+IGAP_Pvalue          0.381
+RegulomeDB               5
+Rsquared_rs254776    0.426
+Dprime_rs254776      0.667
+
+I have been using -log10(CER_P) as the score to represent in igv.  how do i interpret the low (e-6) CER_P
+in the face of the MAF scores?  That, though commong, this snp is often found in those who suffer from AD?
+
+*------------------------------------------------------------------------------------------------------------------------
+* all AD variants from vcf file into MEF2C-wishlist notebook (5 feb 2018)
+
+[status:  grok the AD vcf file by extraction, maybe then ask jim why it does not display as is in igv.js]
+
+on whovian:
+
+/local/httpd/vhosts/pshannon/ampad/SCH_11923_B01_GRM_WGS_2017-04-27_10.recalibrated_variants.vcf.gz
+/local/httpd/vhosts/pshannon/ampad/SCH_11923_B01_GRM_WGS_2017-04-27_10.recalibrated_variants.vcf.gz.tbi
+
+--- check out ~/github/projects/examples/js/igvBareBones/vcfDemo.html
+cannot see full AD track, so look instead at chr7-sub.vcf.gz(.tbi), which ships with VariantAnnotation package
+library(VariantAnnotation)
+f <- system.file(package="VariantAnnotation", "extdata", "chr7-sub.vcf.gz")
+file.exists(f) # [1] TRUE
+vcf <- readVcf(f, "hg19")
+range(rowRanges(vcf))
+<Rle>            <IRanges>  <Rle>
+7 [55000001, 55999347]      *
+chr7:55000001-55999347
+
+*------------------------------------------------------------------------------------------------------------------------
+* randy's complaint to the city (5 feb 2018)
+seattle dept of construction & inspections, jung potts, 206.727.8434
+I called at jung's suggestion victoria simpson  206.733.9266
+randy's claim:
+bare soil
+erosion on to his property
+jung's summary "drainage water small not cause signficant adverse impace to down gradient properties"
+
+*------------------------------------------------------------------------------------------------------------------------
+* eqtl mef2c wishlist for cory: display footprints for whole region, hint+wellington, 16+20 (5 feb 2019)
+
+cd ~/github/eqtlTrenaNotebooks/mef2c/MEF2C.data/inst/dataPrep/
+
+in notebook:
+trena.getBounds() # {'chrom': 'chr5', 'start': 88391000, 'end': 89322000}   # 931,000
+format of footprint table:
+tbl_fp.iloc[1:5,]
+chrom	start	end	motifName	strand	score	length	distance.from.tss	id	db	geneSymbol	pubmedID
+chr5	88618417	88618431	Hsapiens-jaspar2016-STAT1::STAT2-MA0517.1	+	15.2667	15	-285840	MEF2C.fp.downstream.285840.Hsapiens-jaspar2016...	well_16	STAT1::STAT2	24194598
+chr5	88618418	88618431	Hsapiens-jaspar2016-STAT1-MA0137.1	-	16.1798	14	-285839	MEF2C.fp.downstream.285839.Hsapiens-jaspar2016...	well_16	STAT1	24194598
+chr5	88620325	88620345	Hsapiens-jaspar2016-ZNF263-MA0528.1	-	11.0333	21	-283932	MEF2C.fp.downstream.283932.Hsapiens-jaspar2016...	hint_20	ZNF263	24194598
+chr5	88620326	88620346	Hsapiens-jaspar2016-ZNF263-MA0528.1	-	9.3222	21	-283931	MEF2C.fp.downstream.283931.Hsapiens-jaspar2016...	hint_20	ZNF263	24194598
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* ijal/elan ijal-interlinear project, module and github repo directory structure (4 feb 2018)
+
+https://www.kennethreitz.org/essays/repository-structure-and-python
+
+*------------------------------------------------------------------------------------------------------------------------
+* create 4-line interlinearized eaf/elan markup for the first line of how daylight was stolen (3 feb 2018)
+
+https://www.americanlinguistics.org/wp-content/uploads/IJAL-interlinear.pdf
+describes:
+1) phonetic or phonemic transcripion
+2) parsing of the words into morphemes given in full, or underlying, phonological form
+3) analysis of the parsed elements, following the conventions above
+- use small caps for grammatical labels
+- indicate affix boundaries with an n-dash rather than a hyphen (*)
+- use the equal sign for clitics, include it on both lines of the analysis
+- use a period instead of a space for multiword glosses
+- never leave spaces on the analysis lines
+4)  a gloss or free translation
+
+ʔal kwi tuhaʔkw gwəl xwiʔ gwətuslə il
+ʔal kwi tu=haʔkw gwəl xwiʔ gwə=tu=slə il
+at REM PAST=long.time SCONJ NEG SBJ=PAST=daylight
+‘In the distant past, there was no daylight.’
+
+we encourage the use of four-line format, we recognize that for reasons of space, or for
+languages where morphophonemics is not an issue, three-line format may be a reasonable choice for
+some authors.
+phonemic: as the speaker conceives of the sounds, sometimes conflating two which are phonetic distinct:
+the ‘t’ sounds are phonetically different  – the ‘t’ in ‘strewn’ is not aspirated, while the ‘t’ in ‘tenth’ is aspirated.
+
+phonetic       phonemic
+‘strewn’	[stru:n]   	/strun/
+‘tenth’	[tʰɛ̃n̪θ]         /tɛnθ/
+
+http://australianlinguistics.com/speech-sounds/phonemic-vs-phonetic/
+wikipedia: emic vs etic
+
+In anthropology, folkloristics, and the social and behavioral sciences, emic and etic refer to two
+kinds of field research done and viewpoints obtained:[1] emic, from within the social group (from
+the perspective of the subject) and etic, from outside (from the perspective of the observer).
+
+*------------------------------------------------------------------------------------------------------------------------
+* vo2max, cardiovascular health (cvh) and good overall health (3 feb 2018)
+
+Regulation of Mitochondrial Biogenesis and GLUT4 Expression by Exercise, John O. Holloszy
+
+The effect of acute exercise on GLUT4 levels in peripheral blood mononuclear cells of sled dogs.
+
+https://www.trainingpeaks.com/blog/vo2max-estimates-workouts-can-tell-us/
+https://www.firstbeat.com/app/uploads/2015/10/white_paper_vo2_estimation.pdf
+
+*------------------------------------------------------------------------------------------------------------------------
+* move riptide eqtlTrenaNotebooks to newtrena (1 feb 2018)
+
+need source for these packages, as implied by this prep for the trena Dockerfile
+
+
+buildup my ~/github/repos, by cloning or pulling within these projects:
+~/github/BrowserViz-1.git
+~/github/trena
+~/github/trenaVz
+~/github/ipyTrenaViz
+~/github/eqtlTrenaNotebooks
+~github/MotifDb.git
+
+cd ~/paul/github/eqtlTrenaNotebooks/mef2c/trena
+
+make packages -n
+(cd ./pkgs; R CMD build --no-build-vignettes ~/github/BrowserViz-1)
+(cd ./pkgs; R CMD build --no-build-vignettes ~/github/trenaViz)
+(cd ./pkgs; R CMD build --no-build-vignettes ~/github/trena)
+(cd ./pkgs; R CMD build --no-build-vignettes ~/github/eqtlTrenaNotebooks/mef2c/SingleGeneData)
+(cd ./pkgs; R CMD build --no-build-vignettes ~/github/eqtlTrenaNotebooks/mef2c/MEF2C.data)
+(cd ./pkgs; R CMD build --no-build-vignettes ~/github/eqtlTrenaNotebooks/mef2c/SingleGeneAnalyzer)
+(cd ./pkgs; R CMD build --no-build-vignettes ~/github/MotifDb)
+
+--- some mostly stable, pre-built docker images
+~/github/eqtlTrenaNotebooks/mef2c/trena/Dockerfile
+FROM pshannon/trenaserver:latest
+~/github/eqtlTrenaNotebooks/mef2c/nbserver/Dockerfile
+FROM pshannon/ipytrenaviz:v0.9.13
+
+--- on riptide
+docker save -o pshannnon-trenaserver-image pshannon/trenaserver:latest
+scp pshannnon-trenaserver-image pshannon@newtrena:tmp/
+newtrena.tmp> docker load < pshannnon-trenaserver-image
+docker save -o pshannnon-ipytrenaviz-image pshannon/ipytrenaviz:v0.9.13
+newtrena.tmp>  docker load < pshannnon-ipytrenaviz-image
+
+trena.tmp> docker images
+REPOSITORY                 TAG                 IMAGE ID            CREATED             SIZE
+pshannon/ipytrenaviz       v0.9.13             81bf3754b403        2 days ago          4.79GB
+pshannon/trenaserver       latest              08bbc71818cf        3 weeks ago         11.8GB
+
+--- create shared volume
+sudo docker volume create mef2c_sharedData
+docker volume ls
+DRIVER              VOLUME NAME
+...
+local               mef2c_sharedData
+
+--- error
+
+ERROR: for mef2c_nbserver_1 Cannot start service nbserver: OCI
+runtime create failed: container_linux.go:296: starting container
+process caused "process_linux.go:398: container init caused
+\"rootfs_linux.go:58: mounting \\\"/users/pshannon/github/eqtlTrenaNotebooks/mef2c/nbserver/notebooks\\\"
+to rootfs \\\"/var/lib/docker/200000.200000/overlay2/35bd18bceef80122829560ab77b3c67152ff7c187afaddfc4603aa174d71dbe8/merged\\\"
+at \\\"/home/jovyan/mef2c/notebooks\\\" caused \\\"stat /users/pshannon/github/eqtlTrenaNotebooks/mef2c/nbserver/notebooks: permission denied\\\"\"": unknown
+
+where docker-compose.yml is:
+
+version: '3.2'
+services:
+trena:
+build: ./trena
+ports:
+- "5548:5548"
+volumes:
+- type: volume
+source: sharedData
+target: /home/trena/tmp
+
+nbserver:
+build: ./nbserver
+command:  start-notebook.sh --NotebookApp.base_url=/ --port=8888 --NotebookApp.token=
+ports:
+- "8888:8888"
+volumes:
+- type: volume
+source: sharedData
+target: /home/jovyan/mef2c/tmp
+- "./nbserver/notebooks:/home/jovyan/mef2c/notebooks"
+
+volumes:
+sharedData:
+
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* jupyter notebook with jquery jaspar tab (1 feb 2018)
+
+cd ~/github/dora/notebooks/AD-family.UM0463F/dora-lizBlue.ipynb
+"           var jasparIframeText = \"<iframe id='jasparIframe' seamless='seamless' scrolling='auto' height='600' width='95%' align='middle' scale='1.5'></iframe>\";\n",
+"           tab7.append(\"<div id='jasparInfoDiv' style='border:1px solid gray; margin: auto; width: 98% height: 500px;'>\" + jasparIframeText + \"</div>\");\n",
+"           var jasparIframeText = \"<iframe id='jasparIframe' seamless='seamless' scrolling='auto' height='600' width='95%' align='middle' scale='1.5'></iframe>\";\n",
+"           tab7.append(\"<div id='jasparInfoDiv' style='border:1px solid gray; margin: auto; width: 98% height: 500px;'>\" + jasparIframeText + \"</div>\");\n",
+
+*------------------------------------------------------------------------------------------------------------------------
+* bookshelves for dan hulse (31 jan 2018)
+
+15 piles of books, 2' per pile -> 30' shelves needed
+8' of shelves on backside of current tower
+22-25 feet needed
+
+*------------------------------------------------------------------------------------------------------------------------
+* seward park carrying capacity?  from rececol@lists.ncsu.edu (30 jan 2018)
+
+see Robert Manning’s book “Parks and Carrying Capacity” (Island Press, 2007),
+you can refer to Chapter 9 for some nice work using normative social
+science approaches on roadways in Acadia National Park here in the US.
+*------------------------------------------------------------------------------------------------------------------------
+* eric sterner, southeast and southcentral seattle parks ecologist
+
+Rodney Nealer is the crew chief:  386-1987 is the district office number  (29 jan 2018)
+
+*------------------------------------------------------------------------------------------------------------------------
+* joanne harris: a different class,  book for amy
+*------------------------------------------------------------------------------------------------------------------------
+* * trena/mef2c/eqtl/enhancer notebook (28 jan 2018): make a package out of server.R
+
+cd ~/github/eqtlTrenaNotebooks/mef2c/trena/data/
+package.skeleton("mef2cAnalyzer", code_files="../server.R")
+
+--- SingleGeneAnalyzer: constructed with genome, targetGene, tss, and a data package
+sga <- SingleGeneAnalyzer(genomeName="hg38", targetGene="MEF2C", targetGene.TSS=88904257, "MEF2C.data")
+
+--- MEF2C: constructed with expression matrices & etc
+~ /github/eqtlTrenaNotebooks/mef2c/MEF2C.data
+
+*------------------------------------------------------------------------------------------------------------------------
+* david beck   try to get Mini-project, MonkeyAndThunder, working (3 feb 2018)
+
+*------------------------------------------------------------------------------------------------------------------------
+* david beck, tkinter, ELANtoHtml (27 jan 2018)   seems that tkinter is broken on macos
+
+cd ~/github/TOLTk
+previous work (6 jan 2018)
+~/github/howDaylightWasStolen-harryMoses/davidBeck/TOLTk/
+
+pyhton 3.6.0
+import tkinter
+tkinter  # <module 'tkinter' from '/Users/paul/anaconda/lib/python3.6/tkinter/__init__.py'>
+tkinter.TkVersion  # 8.5
+
+
+tkinter._test()   # no window displayed
+
+--- upgrade?
+conda upgrade tk
+
+conda:    4.3.29-py36_0 conda-forge --> 4.3.33-py36_0 conda-forge
+python:   3.6.0-0                   --> 3.6.4-0       conda-forge
+readline: 6.2-2                     --> 7.0-0         conda-forge
+sqlite:   3.13.0-0                  --> 3.20.1-2      conda-forge
+tk:       8.5.18-0                  --> 8.6.7-0       conda-forge
+zlib:     1.2.8-3                   --> 1.2.11-0      conda-forge
+
+now:
+python 3.6.4
+import tkinter
+tkinter.TkVersion  # 8.6
+tkinter._test()    # very simple, but seems to run fine
+
+python EtoHtml.py # works!
+
+
+--- end of day status, using two well-elements, of two tiers each
+cd ~/github/howDaylightWasStolen-harryMoses/peelingOffSomeDaylight/
+-rw-r--r--   1 paul  staff    3516 Jan 27 17:31 daylight77a.eaf
+-rw-r--r--@  1 paul  staff  258804 Jan 27 15:28 daylight77a.wav
+the .eaf file is not quite legal, leads to unterminated while loop
+
+--- email to david at end of saturday
+
+It’s been an -interesting- afternoon!  And fun.  I’ve learned a
+bit about TOLTk, and surely have lots more understanding to
+acquire.  Lots...
+
+I found I needed to “conda update” both my python and tk for
+tkinter to work.
+
+I cobbled together a very rough (linguistically naive) .eaf file,
+with just two tiers (“speech” and “translation”) each with two
+elements - the first two well-separated sounds in line 77 of How
+Daylight Was Stolen.
+
+There is some non-obvious way in which my xml violates the schema.
+
+https://www.freeformatter.com/xml-validator-xsd.html  tells me:
+
+Cvc-identity-constraint.4.3: Key 'linTypeNameRef' With Value
+'speech' Not Found For Identity Constraint Of Element
+'ANNOTATION_DOCUMENT'., Line '50', Column '23’.
+
+I thought that ‘speech’ was legit in this attribute of a tier element:
+
+<TIER DEFAULT_LOCALE="tr" LINGUISTIC_TYPE_REF="speech" TIER_ID="P-Spch">
+<ANNOTATION>
+<ALIGNABLE_ANNOTATION ANNOTATION_ID="a1" TIME_SLOT_REF1="ts1" TIME_SLOT_REF2="ts2">
+<ANNOTATION_VALUE>dil tu</ANNOTATION_VALUE>
+</ALIGNABLE_ANNOTATION>
+</ANNOTATION>
+
+but clearly not!
+
+EtoHtml.py balks at that violation, a while loop runs forever,
+leading me to what might be my first contribution - you be the
+judge!
+
+I propose:
+
+EtoHtml.py, upon reading the .eaf file, validates it against the schema, reports errors,
+suggests fixes when it can.
+
+Does one usually create the .eaf file using ELAN?
+
+Don’t hesitate to tell me if, at any point, you see me wandering off clueless in any of this work.
+
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* trena/mef2c/eqtl/enhancer notebook (26 jan 2018)
+
+gene.models already present
+
+--- adding cer,ros,tcs expression matrices with enhancers a::b appended
+add mtx.cer, mtx.ros, mtx.tcx - with dimers:
+cd  ~/github/dockerizedMicroservices/trena.mef2c/dev/trns/
+save("mtx.cer", "mtx.ros", "mtx.tcx",
+file="~/github/eqtlTrenaNotebooks/mef2c/trena/data/mtx.withDimers.cer.ros.tcx.RData")
+130383010 Jan 26 15:58 ~/github/eqtlTrenaNotebooks/mef2c/trena/data/mtx.withDimers.cer.ros.tcx.RData
+
+
+--- get the 22 enhancer regions
+cd ~/github/dockerizedMicroservices/trena.mef2c/dev/trns/geneHancer/
+
+tbl.elite <- read.table("geneHancer/enhancer_elite_ids.txt", sep="\t", as.is=TRUE, header=TRUE)            #  243281      6
+tbl.geneScoresAll <- read.table("geneHancer/enhancer_gene_scores.txt", sep="\t", as.is=TRUE, header=TRUE)  #  934287      9
+tbl.mef2cScores <- subset(tbl.geneScoresAll, symbol==targetGene)
+clusters.mef2c <- tbl.mef2cScores$cluster_id
+tbl.mef2c.eLocs <- subset(tbl.elite, cluster_id %in% clusters.mef2c)[, c("chrom", "start", "end")]
+tbl.mef2c.eLocs$chrom <- paste("chr", tbl.mef2c.eLocs$chrom, sep="")
+save(tbl.mef2c.eLocs, file="~/github/eqtlTrenaNotebooks/mef2c/trena/data/tbl.mef2c.eLocs.RData")
+
+
+--- and their motifs
+tbl.motifs <- findMatchesByChromosomalRegion(mm, tbl.mef2c.eLocs, pwmMatchMinimumAsPercentage=85)  # 43076
+shortMotifNames <- unlist(lapply(tbl.motifs$motifName,
+function(name) {tokens <- strsplit(name, "-")[[1]]; return(tokens[length(tokens)])}))
+tbl.motifs$shortMotif <- shortMotifNames
+tbl.eMotifs.tfc <- associateTranscriptionFactors(MotifDb, tbl.motifs, source="TFClass", expand.rows=TRUE)
+dim(tbl.eMotifs.tfc)  # [1] 891914     15
+tbl.eMotifs.mdb <- associateTranscriptionFactors(MotifDb, tbl.motifs, source="MotifDb", expand.rows=TRUE)
+dim(tbl.eMotifs.mdb)  # [1]  43076    15
+
+save(tbl.eMotifs.mdb, tbl.eMotifs.tfc, file="~/github/eqtlTrenaNotebooks/mef2c/trena/data/tbl.eMotifs.RData")
+
+*------------------------------------------------------------------------------------------------------------------------
+* red/orange permanent arrows, seward park lower loop (8 dec 2016)
+
+email to kyle griggs (8 dec 2016): "arrows in permanent paint, recently appeared,  on the Seward Park lower loop"
+seattle parrks maintenance request line: 206.684.7250, referred to
+kyle griggs, parks events manager: 206.684.4080
+
+(25 jan 2018: 3pm): kyle out of town, steve returned my call, said kyle will contact me next week.
+
+*------------------------------------------------------------------------------------------------------------------------
+* jlab and trenaviz, progress - but 0.31.1 still not ready
+
+~/github/trenavizjlab/
+
+addAll.ipyTrenaViz.code 7193adc with jquery tabs disabled, displays imperfectly in jlab
+* igvOnly                 88bb2f5 just igv, but new view has no contents
+master                  cd0f91c successful creation of trenaViz, value change, display
+
+igvOnly displays jquery tab-less genome browser which sometimes displays double tracks,
+sometimes opens to another view, somtimes barely works at all.
+
+abandonded for now, but check back periodically.
+
+*------------------------------------------------------------------------------------------------------------------------
+* grok trenavizjlab python and js
+
+--- trenavizjlab/trenavizjlab/trenaviz.py
+import ipywidgets as widgets
+from traitlets import Unicode
+@widgets.register
+class HelloWorld(widgets.DOMWidget):
+"""An example widget."""
+_view_name = Unicode('HelloView').tag(sync=True)
+_model_name = Unicode('HelloModel').tag(sync=True)
+_view_module = Unicode('trenavizjlab').tag(sync=True)
+_model_module = Unicode('trenavizjlab').tag(sync=True)
+_view_module_version = Unicode('^0.1.0').tag(sync=True)
+_model_module_version = Unicode('^0.1.0').tag(sync=True)
+value = Unicode('Hello trenaviz.py!').tag(sync=True)
+
+--- trenavizjlab/js/src/trenaviz.js
+var widgets = require('@jupyter-widgets/base');
+var _ = require('lodash');
+var HelloModel = widgets.DOMWidgetModel.extend({
+defaults: _.extend(widgets.DOMWidgetModel.prototype.defaults(), {
+_model_name : 'HelloModel',
+_view_name : 'HelloView',
+_model_module : 'trenavizjlab',
+_view_module : 'trenavizjlab',
+_model_module_version : '0.1.0',
+_view_module_version : '0.1.0',
+value : 'HelloModel  trenaviz.js!'
+})
+});
+var HelloView = widgets.DOMWidgetView.extend({
+render: function() {
+this.value_changed();
+this.model.on('change:value', this.value_changed, this);
+},
+value_changed: function() {
+this.el.textContent = this.model.get('value');
+}
+});
+module.exports = {
+HelloModel : HelloModel,
+HelloView : HelloView
+};
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* build a nop trenavizjlab (25 jan 2018)
+
+
+
+cookiecutter widget-cookiecutter/
+author_name []: Paul Shannon
+author_email []: paul.thurmond.shannon@gmail.com
+github_project_name [jupyter-widget-example]: trenavizjlab
+github_organization_name []: paul-shannon
+python_package_name [trenavizjlab]:
+npm_package_name [trenavizjlab]:
+npm_package_version [0.1.0]:
+project_short_description [A Custom Jupyter Widget Library]: ipywidget for trena
+
+cd ~/github/trenavizjlab/
+make tiny change: ~/github/trenavizjlab/trenavizjlab/example.py
+value = Unicode('Hello trenavizjlab!').tag(sync=True)
+(not here: js/src/example.py, value: 'Hello trenaviz')
+
+python setup.py build
+pip install -e .
+
+jupyter nbextension install --py --symlink --sys-prefix trenavizjlab
+jupyter nbextension enable --py --sys-prefix trenavizjlab
+
+test in notebook - success:
+jupyter notebook
+import trenavizjlab; trenavizjlab.HelloWorld();
+
+jupyter labextension install @jupyter-widgets/jupyterlab-manager
+dir ~/.local/share/virtualenvs/jupyterlab-6cM4hFxX/share/jupyter/lab/extensions/
+8291 Jan 24 13:57 jupyter-widgets-jupyterlab-manager-0.33.1.tgz
+
+jupyter labextension install js
+producing
+
+dir ~/.local/share/virtualenvs/jupyterlab-6cM4hFxX/share/jupyter/lab/extensions/
+jlabwidget2-0.1.0-8b5c422a6679087a41d214af3f54bf3fb9892ba0.tgz   100158 Jan 24 14:31
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* modify ipyTrenaViz to work with jlab (25 jan 2018)
+
+cd ~/github/ipyTrenaViz/
+created new branch:   * jlab.0.31.0 444e130 before jupyterlab
+
+---- js/package.json
+added this at bottom:   "jupyterlab": {"extension": "src/extension-jupyterlab"}
+top:   "version": "0.2.1",
+
+--- js/lib/index.js
+removed ALL but
+module.exports = require('./ipytrenaviz.js');
+module.exports['version'] = require('../package.json').version;
+
+--- js/lib/extension-jupyterlab.js
+var extension = require('./index');
+var base = require('@jupyter-widgets/base');
+module.exports = {
+id: 'jupyter.extensions.jupyter-trenaviz',
+requires: [base.IJupyterWidgetRegistry],
+activate: function(app, widgets) {
+widgets.registerWidget({
+name: 'trenaviz',
+version: extension.version,
+exports: extension
+});
+},
+autoStart: true
+};
+
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* sylvain and jason provide PR for jupyter widget-cookiecutter (24 jan 2018)
+
+
+cd ~/github/widget-cookiecutter
+small changes to these files
+
+{{cookiecutter.github_project_name}}/js/lib/extension-jupyterlab.js
+{{cookiecutter.github_project_name}}/js/lib/index.js
+{{cookiecutter.github_project_name}}/js/package.json
+
+cd ~/github/jupyterlab
+pipenv shell
+cd ~/github
+
+any old extensions?
+dir ~/.local/share/virtualenvs/jupyterlab-6cM4hFxX/share/jupyter/lab/extensions/
+100270 Jan 22 13:38 jlabhello-0.1.0-d10bb9b5dfddde6cb3e0e2aef5cb455ae9ac218b.tgz
+348781 Jan 22 12:32 jupyter-leaflet-0.5.1.tgz
+8291 Jan 24 13:31 jupyter-widgets-jupyterlab-manager-0.33.1.tgz
+
+cookiecutter widget-cookiecutter/
+author_name []: Paul Shannon
+author_email []: pshannon@systemsbiology.org
+github_project_name [jupyter-widget-example]: jlabwidget
+github_organization_name []: paul-shannnon
+python_package_name [jlabwidget]:
+npm_package_name [jlabwidget]:
+npm_package_version [0.1.0]:
+project_short_description [A Custom Jupyter Widget Library]: test new cookiecutter template
+
+cd ~/github/jlabwidget
+python setup.py build
+pip install -e .
+
+jupyter nbextension install --py --symlink --sys-prefix jlabwidget2
+jupyter nbextension enable --py --sys-prefix jlabwidget2
+
+test in notebook - success:
+jupyter notebook
+import jlabwidget
+jlabwidget.HelloWorld()
+
+jupyter labextension install @jupyter-widgets/jupyterlab-manager
+dir ~/.local/share/virtualenvs/jupyterlab-6cM4hFxX/share/jupyter/lab/extensions/
+8291 Jan 24 13:57 jupyter-widgets-jupyterlab-manager-0.33.1.tgz
+
+jupyter labextension install js
+producing
+
+dir ~/.local/share/virtualenvs/jupyterlab-6cM4hFxX/share/jupyter/lab/extensions/
+jlabwidget2-0.1.0-8b5c422a6679087a41d214af3f54bf3fb9892ba0.tgz   100158 Jan 24 14:31
+
+jupyter labextension install jlabwidget
+jupyter labextension install jlabwidget  #- fails at pack step
+/usr/local/bin/npm pack /Users/paul/github/jlabhello/jlabhello
+npm ERR! addLocal Could not install /Users/paul/github/jlabhello/jlabhello
+npm ERR! argv "/usr/local/bin/node" "/usr/local/bin/npm" "pack" "/Users/paul/github/jlabhello/jlabhello"
+npm ERR! eisdir EISDIR: illegal operation on a directory, read
+
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* simple bdds footprint access script, for trena.org (24 jan 2018)
+
+--- suggested by segun
+
+dbname="urinary_bladder_wellington20"
+port="5432"
+driver=dbDriver("PostgreSQL")
+user="trena"
+password="trena"
+host="bddsrds.globusgenomics.org"
+
+db.chipseq <- dbConnect(drv=driver, user=user, password=password, dbname=dbname, host=host, port=port)
+chipseq.hits <- dbGetQuery(db.chipseq, “select * from hits”)
+
+
+--- from my prior notes
+library(RPostgreSQL)
+
+database.host <- "whovian.systemsbiology.net"
+database.host <- "bddsrds.globusgenomics.org"
+db <- dbConnect(PostgreSQL(), user="trena", password="trena", host=database.host)
+dbGetQuery(db, "select datname from pg_database")
+
+dbListTables(db)
+dbDisconnect(db)
+
+database.host <- "bddsrds.globusgenomics.org"
+db <- dbConnect(PostgreSQL(), user="trena", password="trena", host=database.host)
+dbGetQuery(db, "select datname from pg_database")
+
+dbListTables(db)
+dbDisconnect(db)
+
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* next up, bv2:  add d3 plotting (24 jan 2018)
+
+previously working version in
+~/github/bv2Demo/inst/browserCode/src/bv2demo.js
+~/github/BrowserVizDemo/inst/scripts/browserVizDemo.html
+
+*------------------------------------------------------------------------------------------------------------------------
+* build jlab ipyleaflet (22 jan 2018)
+
+cd ~/github/jupyterlab/
+pipenv shell  > prompt now reads "(jupyterlab-6cM4hFxX) book.ipyleaflet> "
+cd ~/github/ipyleaflet
+git pull origin
+
+grep version  js/package.json   "version": "0.5.1",
+pip uninstall ipyleaflet        # Successfully uninstalled ipyleaflet-0.5.4
+
+i am not sure what these two version numbers imply.  nor if installation goes to virtual or ananaconda directory
+experiment to see.
+
+--- strategy 1: (jupyterlab-6cM4hFxX) book.ipyleaflet> conda install -c conda-forge ipyleaflet
+ipyleaflet: 0.5.3-py36_0 conda-forge --> 0.5.4-py36_0 conda-forge
+found this, just created:
+/Users/paul/anaconda/pkgs/ipyleaflet-0.5.4-py36_0/   Jan 22 11:41
+(jupyterlab-6cM4hFxX) book.ipyleaflet> find ~/.local/share/virtualenvs/jupyterlab-6cM4hFxX/ | grep leaflet
+dir /Users/paul/.local/share/virtualenvs/jupyterlab-6cM4hFxX//share/jupyter/nbextensions/jupyter-leaflet
+lrwxr-xr-x   /Users/paul/.local/share/virtualenvs/jupyterlab-6cM4hFxX//share/jupyter/nbextensions/jupyter-leaflet -> /Users/paul/github/ipyleaflet/ipyleaflet/static
+
+jupyter labextension install jupyter-leaflet
+
+jupyter lab
+from ipyleaflet import *
+ipyleaflet.version_info   # (0, 5, 4, 'final', 0)
+Map(zoom=4, basemap=basemaps.Esri.NatGeoWorldMap)   # works
+
+--- strategy 2: from github clone'd to riptide
+conda uninstall ipyleaflet   # ipyleaflet: 0.5.4-py36_0 conda-forge
+ls -lat ~/anaconda/pkgs/ipyleaflet-0.5.4-py36_0/  # still there
+dir ~/.local/share/virtualenvs/jupyterlab-6cM4hFxX/lib/python3.6/site-packages # but not here
+
+cd ~/github/ipyleaflet
+pip install -e .
+~/.local/share/virtualenvs/jupyterlab-6cM4hFxX/lib/python3.6/site-packages/ipyleaflet.egg-link  31 Jan 22 12:12 /Users/paul
+points right back here here: /Users/paul/github/ipyleaflet
+jupyter nbextension install --py --symlink --sys-prefix ipyleaflet
+jupyter nbextension enable --py --sys-prefix ipyleaflet
+jupyter labextension install jupyter-leaflet   # lengthy yarn/webpack
+
+jupyter lab paths
+~/.local/share/virtualenvs/jupyterlab-6cM4hFxX/share/jupyter/lab/extensions/jupyter-leaflet-0.5.1.tgz
+348781 Jan 22 12:14
+
+try it out:
+jupyter lab
+from ipyleaflet import *; version_info  # (0, 5, 4, 'final', 0)   # despite 0.5.1 in the tgz above
+Map(zoom=4, basemap=basemaps.Esri.NatGeoWorldMap)
+console error "Error: Object 'jupyter.widget' not found in registry" apparently not a problem
+
+--- verify that above lab/extensions/jupyter-leaflet-0.5.1.tgz is really running
+rm /Users/paul/.local/share/virtualenvs/jupyterlab-6cM4hFxX/share/jupyter/lab/extensions/jupyter-leaflet-0.5.1.tgz
+jupyter lab   # "jupyter-leaflet needs to be removed from build.  build?"
+yes leads to lengthy yarn/webpack invocation, rebuild, reload
+
+stop then restart jlab, run 2 lines of js above:
+Error displaying widget
+main.b2bd5f3988e6ad09b03e.js:1 Module jupyter-leaflet, semver range ~0.5.1 is not registered as a widget module
+
+--- reinstall extension:
+jupyter labextension install jupyter-leaflet   # works
+
+abandoned for now, after posting issues to
+https://github.com/jupyter-widgets/ipywidgets/issues/1916
+https://github.com/jupyter-widgets/widget-cookiecutter/issues/29
+
+
+
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* jlab ipyleaflet excavation: how does it become a proper jlab/ipywidget? (22 jan 2018)
+
+~/github/ipyleaflet/js/webpack.config.js
+module.exports = [
+{entry: './src/extension.js',  // Notebook extension
+output: {filename: 'extension.js',
+path: path.resolve(__dirname, '..', 'ipyleaflet', 'static'),
+libraryTarget: 'amd'
+}
+},
+{entry: './src/notebook.js',  // jupyter-leaflet bundle for the notebook
+output: {
+filename: 'index.js',
+path: path.resolve(__dirname, '..', 'ipyleaflet', 'static'),
+libraryTarget: 'amd'
+},
+devtool: 'source-map',
+module: {rules: rules},
+externals: ['@jupyter-widgets/base']
+},
+{entry: './src/embed.js',  // embeddable jupyter-leaflet bundle
+output: {
+filename: 'index.js',
+path: path.resolve(__dirname, 'dist'),
+libraryTarget: 'amd',
+publicPath: 'https://unpkg.com/jupyter-leaflet@' + version + '/dist/'
+},
+devtool: 'source-map',
+module: {rules: rules},
+externals: ['@jupyter-widgets/base']
+}
+];
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* jlab extension cookiecutter!  (but no ipywidgets involved :{) (22 jan 2018)
+
+https://github.com/jupyterlab/extension-cookiecutter-js
+~/github/extension-cookiecutter-js/
+*------------------------------------------------------------------------------------------------------------------------
+* does ipywidget cookiecutter support jlab jupyter lab? (20 jan 2018)
+
+cd ~/github/jupyerlab
+pipenv shell
+
+cd ~/github/widget-cookiecutter
+git pull origin
+pip install cookiecutter  # Collecting cookiecutter, Downloading cookiecutter-1.5.1-py2.py3-none-any.whl (44kB)
+
+jupyter --version            # 4.2.1
+jupyter notebook --version   # 5.1.0
+
+cookiecutter https://github.com/jupyter/widget-cookiecutter.git
+# answer questions, creates ~/github/jlabhello
+cd ~/github/jlabhello
+python setup.py build
+pip install -e .
+
+jupyter nbextension install --py --symlink --sys-prefix jlabhello
+jupyter nbextension enable --py --sys-prefix jlabhello
+
+test in notebook - success:
+jupyter notebook
+import jlabhello
+jlabhello.HelloWorld()
+
+jupyter labextension install jlabhello  #- fails at pack step
+/usr/local/bin/npm pack /Users/paul/github/jlabhello/jlabhello
+npm ERR! addLocal Could not install /Users/paul/github/jlabhello/jlabhello
+npm ERR! argv "/usr/local/bin/node" "/usr/local/bin/npm" "pack" "/Users/paul/github/jlabhello/jlabhello"
+npm ERR! eisdir EISDIR: illegal operation on a directory, read
+
+by hand, the npm pack step:
+cd ~/github/jlabhello
+jupyter labextension install js
+jlabhello-0.1.0.tgz
+Errored, use --debug for full output:
+ValueError: "/Users/paul/github/jlabhello/js" is not a valid extension:
+No `jupyterlab` key
+
+--- added this to jlabhello/js/package.json
+,
+"jupyterlab": {
+"extension": true
+}
+---- reran
+jupyter labextension install --debug  js
+jupyter labextension install @jupyter-widgets/jupyterlab-manager
+
+
+---
+dir ~/.local/share/virtualenvs/jupyterlab-6cM4hFxX/share/jupyter/lab/extensions/
+100102 Jan 20 10:51 jlabhello-0.1.0-c06116f0a9e70cae536fdd4eb003cbd6797fbcb8.tgz
+8196 Jan 20 08:56 jupyter-widgets-jupyterlab-manager-0.33.0.tgz
+
+--- but when testing (i think this is the crucial step)
+Module jlabhello, semver range ^0.1.0 is not registered as a widget module
+
+jupyter notebook
+from jlabhello import *
+hw = HelloWorld()
+hw
+
+jupyter lab
+from jlabhello import *
+hw = HelloWorld()
+
+--- added ~/github/jlabhello/js/lib/jupyterlab-plugin.js
+hope to use it to register the widget with jlab
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* jlab directories
+
+within a virtualenv directory, eg  ~/.local/share/virtualenvs/jupyterlab-6cM4hFxX/
+share/jupyter/lab/extensions/  *.tgz files, widgets for example
+share/jupyter/lab/staging/     webpack.*.config.js, package.json, node_modules/, build/ yarn.*, linked_packages
+
+--- and versions
+jupyter --version            # 4.4.0
+jupyter notebook --version   # 5.3.1
+jupyter lab --version        # 0.31.1
+
+*------------------------------------------------------------------------------------------------------------------------
+* "Error displaying widget"  jlab and IntSlider (20 jan 2018)  using conda install to get latest ipywidgets
+
+cd ~/github/jupyterlab
+make sure conda python will be used:
+type python       # python is hashed (/Users/paul/anaconda/bin/python)
+python --version  # Python 3.6.1 :: Anaconda custom (x86_64)
+
+pipenv install git+git://github.com/jupyterlab/jupyterlab.git#egg=jupyterlab
+# explicit version
+pipenv --python /Users/paul/anaconda/bin/python install git+git://github.com/jupyterlab/jupyterlab.git#egg=jupyterlab --three
+
+pipenv shell
+(jupyterlab-6cM4hFxX) book.jupyterlab> conda install -c conda-forge ipywidgets
+# packages in environment at /Users/paul/anaconda:
+ipywidgets                7.1.0                    py36_0    conda-forge
+~/anaconda/pkgs/ipywidgets-7.1.0-py36_0/    # installed (9 jan 2018) older versions also present in pkgs directory
+
+--- from
+
+To install the JupyterLab extension you also need to run the
+command below in a terminal which requires that you have nodejs
+installed.
+
+jupyter labextension install @jupyter-widgets/jupyterlab-manager
+
+--- https://github.com/jupyter-widgets/ipywidgets/tree/master/packages/jupyterlab-manager#package-install
+says
+For JupyterLab 0.30, use jupyter labextension install @jupyter-widgets/jupyterlab-manager@0.31
+For JupyterLab 0.31rc1, use jupyter labextension install @jupyter-widgets/jupyterlab-manager@0.32
+For JupyterLab 0.31rc2, use jupyter labextension install @jupyter-widgets/jupyterlab-manager@0.33
+
+Note: A clean reinstall of the JupyterLab extension can be done
+by first running the jupyter lab clean command which will remove
+the staging and static directories from the lab directory. The
+location of the lab directory can be queried by executing the
+command jupyter lab path in your terminal.
+
+jupyter lab clean
+removes /Users/paul/.local/share/virtualenvs/jupyterlab-6cM4hFxX/share/jupyter/lab/staging/
+leaves static/ intact
+and leaves .tgz files in /Users/paul/.local/share/virtualenvs/jupyterlab-6cM4hFxX/share/jupyter/lab/extensions/
+
+dir /Users/paul/.local/share/virtualenvs/jupyterlab-6cM4hFxX/src
+Jan 20 07:39 ipyleaflet/
+Jan 20 07:40 ipytrenaviz/
+
+rm -rf  /Users/paul/.local/share/virtualenvs/jupyterlab-6cM4hFxX/src/*
+
+(jupyterlab-6cM4hFxX) book.jupyterlab> jupyter labextension install @jupyter-widgets/jupyterlab-manager
+~/.local/share/virtualenvs/jupyterlab-6cM4hFxX/share/jupyter/lab/staging/package.json
+/.local/share/virtualenvs/jupyterlab-6cM4hFxX/share/jupyter/lab/staging
+
+claim above that "jupyter lab clean" removes s
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* "Error displaying widget"  jlab and IntSlider (20 jan 2018)  trying to build ~/github/ipywidgets from source
+
+cd ~/github/ipywidgets
+git pull
+npm install --global lerna
+npm install
+npm run build  # fails, don't know why
+
+12 error build Errored while running script in '@jupyter-widgets/base'
+13 error execute callback with error
+14 error Error: spawn yarn ENOENT
+
+
+
+pipenv install git+git://github.com/jupyterlab/jupyterlab.git#egg=jupyterlab
+pipenv shell
+jupyter labextension install @jupyter-widgets/jupyterlab-manager
+jupyter --version      # 4.4.0
+jupyter lab --version  # 0.31.1
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* build jlab from github source (19 jan 2018)
+
+following https://github.com/jupyterlab/jupyterlab
+
+pip install pipenv
+pipenv --python /Users/paul/anaconda/bin/python install git+git://github.com/jupyterlab/jupyterlab.git#egg=jupyterlab --three
+
+oddly:
+/Users/paul/.local/share/virtualenvs/jupyterlab-6cM4hFxX/.Python ->
+/Library/Frameworks/Python.framework/Versions/3.6/Python
+
+
+pipenv shell
+Spawning environment shell (/bin/bash). Use 'exit' to leave.
+book.jupyterlab> source /Users/paul/.local/share/virtualenvs/jupyterlab-6cM4hFxX/bin/activate
+(jupyterlab-6cM4hFxX)> jupyter labextension install @jupyter-widgets/jupyterlab-manager
+(jupyterlab-6cM4hFxX)> cd ../ipyleaflet
+pip install -e .     # or conda install -c conda-forge ipyleaflet
+jupyter nbextension install --py --symlink --sys-prefix ipyleaflet
+jupyter nbextension enable --py --sys-prefix ipyleaflet
+jupyter labextension install jupyter-leaflet
+
+dir ~/.local/share/virtualenvs/jupyterlab-6cM4hFxX/share/jupyter/lab/extensions/
+348781 Jan 19 15:40 jupyter-leaflet-0.5.1.tgz
+8196 Jan 19 15:29 jupyter-widgets-jupyterlab-manager-0.33.0.tgz
+
+--- try it out
+from ipyleaflet import *
+m = Map(zoom=4, basemap=basemaps.Esri.NatGeoWorldMap)
+m
+
+--- now add ipyTrenaViz
+cd ~/github/ipyTrenaViz
+in makefile:
+
+build:
+(cd ./js; npm update)
+(cd ./js; webpack --config webpack.config.js)
+pip install -e .
+jupyter nbextension install --user --py ipyTrenaViz
+jupyter nbextension enable --user --py --sys-prefix ipyTrenaViz
+jupyter labextension install js/
+
+the labextension install, invoking webpack, balked at
+ERROR in ./~/ipyTrenaViz/lib/ipytrenaviz.js
+Module not found: Error: Can't resolve '../css/ipytrenaviz.css' in
+'/Users/paul/.local/share/virtualenvs/jupyterlab-6cM4hFxX/share/jupyter/lab/staging/node_modules/ipyTrenaViz/lib'
+so I commented out that line in ~/github/ipyTrenaViz/js/lib/ipytrenaviz.js
+//require('../css/ipytrenaviz.css')
+
+then make build ran to completion, creating
+
+dir ~/.local/share/virtualenvs/jupyterlab-6cM4hFxX/share/jupyter/lab/extensions/
+-rw-r--r--  1 paul  staff  491552 Jan 19 16:37 ipyTrenaViz-0.1.0-de046bec9ffdc4d7554816f5c5be4e64a9eff78a.tgz
+-rw-r--r--  1 paul  staff  348781 Jan 19 15:40 jupyter-leaflet-0.5.1.tgz
+-rw-r--r--  1 paul  staff    8196 Jan 19 15:29 jupyter-widgets-jupyterlab-manager-0.33.0.tgz
+
+--- test it out in jlab
+from ipyTrenaViz import *
+app = ipyTrenaViz()
+"Error displaying widget" so   # also for import ipywidgets as widgets; widgets.IntSlider()
+
+jupyter lab clean
+jupyter labextension install @jupyter-widgets/jupyterlab-manager
+dir ~/.local/share/virtualenvs/jupyterlab-6cM4hFxX/share/jupyter/lab/extensions/
+491552 Jan 19 16:37 ipyTrenaViz-0.1.0-de046bec9ffdc4d7554816f5c5be4e64a9eff78a.tgz
+348781 Jan 19 15:40 jupyter-leaflet-0.5.1.tgz
+8196 Jan 19 17:09 jupyter-widgets-jupyterlab-manager-0.33.0.tgz
+
+--- start back up here!
+maybe cookiecutter now supports jupyter lab ipywidgets?
+
+
+*------------------------------------------------------------------------------------------------------------------------
+
+*------------------------------------------------------------------------------------------------------------------------
+* geneHancer data files
+
+~/s/data/geneHancer/
+
+*------------------------------------------------------------------------------------------------------------------------
+* new wholegenome trns for rich, in excel spreadsheet
+
+~/s/work/priceLab/cory/wholeGenomeModelsForRichGelinas/fibroblast-skin-wholeGenome-trns.xlsx
+
+*------------------------------------------------------------------------------------------------------------------------
+* add new data to rich gelinas' trena skin notebook (18 jan 2018)
+
+status: no new data after all (or maybe just offer him a printer version of the trns shown below)
+however, working on this today I created a new repo
+
+~/github/gelinasTrenaNotebooks  with this project in the directory skin/
+
+--- review previous work
+cd ~/github/dockerizedMicroservices/trenaGelinas/
+last changes:
+
+12043 Dec  4 07:32 /Users/paul/github/dockerizedMicroservices/trenaGelinas/trena/server.R
+619 Dec  2 06:31 /Users/paul/github/dockerizedMicroservices/trenaGelinas/nbserver/Dockerfile
+6576 Dec  1 15:58 /Users/paul/github/dockerizedMicroservices/trenaGelinas/nbserver/hub/Trena.py
+
+
+--- additions
+new TRNs on khaleesi:
+/ssd/cory/skin/primary.skin.trn.2018.RData
+/ssd/cory/skin/fibrblast.trn.2018.RData
+make these into excel spreadsheets
+
+cd ~/s/work/priceLab/cory/wholeGenomeModelsForRichGelinas
+
+some as yet unspecified gtex expression files
+
+--- new repo
+https://github.com/PriceLab/gelinasTrenaNotebooks/skin
+cd ~/github/gelinasTrenaNotebooks/skin/trena
+make: docker build -t gelinas_skin_trena .
+
+*------------------------------------------------------------------------------------------------------------------------
+* add enhancers to the mef2c/eqtl/nb dev code (17 jan 2018)
+
+cd ~/github/dockerizedMicroservices/trena.mef2c/dev/trns/geneHancer
+
+scp pshannon@whovian:/local/Cory/for_Paul/GeneHancerV4.6.zip
+
+length(intersect(x0$trn$tf[1:20], x1$trn$tf[1:20])) [1] 13
+"STAT4"  "HLF"    "SATB2"  "PAX7"   "TCF12"  "EMX1"   "FOXO4"  "SATB1"
+"FOXP2"  "FOXP1"  "MEF2A"  "ARNTL2" "CUX2"
+
+subset(x1$trn, tf %in% intersect(x0$trn$tf[1:20], x1$trn$tf[1:20]))
+tf   betaLasso  lassoPValue pearsonCoeff    rfScore    betaRidge spearmanCoeff concordance    pcaMax bindingSites
+1   STAT4  0.13902359 1.612987e-40    0.8222381 36.3925565  0.027125013     0.8163422   0.6058984 2.9943961           78
+4     HLF  0.11122772 1.959520e-40    0.8228660 19.4390638  0.020220658     0.8243394   0.5416860 2.1942511           18
+6   TCF12 -0.04674286 4.172777e-37   -0.8059771 14.8052997 -0.008102866    -0.8342644   0.4428027 1.7575043           16
+8    PAX7  0.01538617 1.250748e-19    0.7657263 14.8043616  0.022462643     0.7494851   0.4665698 1.5401325           23
+9   SATB2  0.00000000 8.471013e-02    0.7777867  8.3265743  0.026023180     0.7387937   0.4108515 1.1791792           21
+11  FOXO4 -0.06268142 1.559942e-23   -0.6666125  2.1246145 -0.010839521    -0.6932668   0.4132046 0.9986048          269
+12  SATB1  0.00000000 3.084678e-03    0.7531396  2.7193361  0.018747094     0.7419640   0.3435974 0.9340806           21
+13  MEF2A  0.00000000 6.452282e-11    0.5439086  1.1657127  0.020540135     0.5897306   0.3587163 0.9281485           83
+14   EMX1  0.00000000 1.000000e+00    0.7766642  1.5207081  0.017908538     0.7412446   0.3593369 0.9124583           61
+16   CUX2  0.00000000 4.149254e-03    0.6396740  0.7218424  0.020917033     0.6156686   0.3594313 0.8883633           21
+17  FOXP2  0.00000000 5.272520e-02    0.5442309  0.3392688  0.022542161     0.5826982   0.3727711 0.8820791          269
+18  FOXP1  0.00000000 4.953293e-08    0.4816962  0.3540256  0.021382068     0.4583228   0.3584711 0.8555581          269
+19 ARNTL2  0.00000000 2.032527e-01    0.6990507  1.5208736  0.017006982     0.6263698   0.3415935 0.8392316            6
+
+
+x0 <- makeGeneModel(bindingSiteSource="footprints",
+tbl.roi,
+mtx=mtx.tcx,
+tfMappingSource="TFclass",
+targetGene="MEF2C",
+orderByColumn="pcaMax",
+solverInclusivenessCutoff=1.0)
+
+> x0$trn[1:20,]
+tf    betaLasso  lassoPValue pearsonCoeff    rfScore   betaRidge spearmanCoeff concordance    pcaMax bindingSites
+1    STAT4  0.209178576 1.067286e-40    0.8222381 50.2859678  0.04062230     0.8163422   0.5985812 2.6110936            2
+2      HLF  0.161300097 9.055275e-41    0.8228660 27.3020591  0.03716863     0.8243394   0.5162161 1.9438602            2
+3    SATB2  0.133489800 4.340943e-32    0.7777867 23.1185678  0.04043287     0.7387937   0.4861902 1.6712532            2
+4     PAX7  0.060012965 3.109705e-28    0.7657263 25.4054121  0.03385133     0.7494851   0.4726657 1.5931193            3
+5    TCF12 -0.101646994 3.369016e-38   -0.8059771 21.2540653 -0.01682615    -0.8342644   0.4512390 1.5576332            2
+6     EMX1  0.010779184 2.900499e-24    0.7766642 11.1869081  0.02680383     0.7412446   0.4148448 1.1791034            2
+7     DLX5  0.055778372 2.956162e-23    0.7256759  5.3244415  0.02363210     0.7183409   0.4101677 1.0630569            2
+8    FOXO4 -0.096279656 3.462867e-24   -0.6666125  4.5628783 -0.02385038    -0.6932668   0.4186813 0.9469751           15
+9   NFE2L2 -0.025561218 1.208124e-17   -0.7260237 10.8921804 -0.01806696    -0.7607224   0.3355231 0.8465352            1
+10   SATB1  0.000000000 2.296988e-01    0.7531396  6.0533919  0.02580412     0.7419640   0.3400282 0.8385793            2
+11   FOXP2  0.000000000 5.378016e-05    0.5442309  0.7544415  0.03621466     0.5826982   0.3544876 0.8091339           15
+12   FOXP1  0.002518103 3.461654e-10    0.4816962  0.9806138  0.03524760     0.4583228   0.3484092 0.7970005           15
+13   MEF2A  0.000000000 4.290879e-09    0.5439086  1.5159244  0.03187979     0.5897306   0.3344778 0.7955320            7
+14  ARNTL2  0.000000000 1.948250e-05    0.6990507  4.7674915  0.02331372     0.6263698   0.3086149 0.7681543            2
+15    DLX1  0.000000000 5.322818e-03    0.7080039  2.9637191  0.02001524     0.7154921   0.3205489 0.7476546            2
+16    CUX2  0.000000000 8.672334e-02    0.6396740  1.7013109  0.02685640     0.6156686   0.3274960 0.7427865            2
+17   MEF2D  0.000000000 7.065220e-01    0.7176109  1.3536384  0.01794961     0.7174035   0.3302029 0.7284112            7
+18    LHX6  0.000000000 1.096710e-02    0.6648152  1.4228158  0.02106894     0.6926288   0.3207341 0.7252035            1
+19 NEUROD6  0.000000000 8.123547e-01    0.6781973  1.2475556  0.02302837     0.6277146   0.3261011 0.7244887            4
+20    MTA3  0.000000000 9.735987e-01    0.6541876  0.9775025  0.01795441     0.6355220   0.3169008 0.6791058            3
+
+tbl.roi.enhanced <- rbind(tbl.roi, tbl.mef2c.eLocs)
+x1 <- makeGeneModel(bindingSiteSource="footprints",
+tbl.roi.enhanced,
+mtx=mtx.tcx,
+tfMappingSource="TFclass",
+targetGene="MEF2C",
+orderByColumn="pcaMax",
+solverInclusivenessCutoff=1.0)
+
+tf   betaLasso  lassoPValue pearsonCoeff    rfScore    betaRidge spearmanCoeff concordance    pcaMax bindingSites
+1   STAT4  0.13902359 1.612987e-40    0.8222381 36.3925565  0.027125013     0.8163422   0.6058984 2.9943961           78
+2  PKNOX2  0.14307614 1.346812e-41    0.8315445 26.6744824  0.018177081     0.8026526   0.5581772 2.5023558           40
+3    TBR1  0.14096656 2.663418e-36    0.8056979 19.3033590  0.033592885     0.7648214   0.5415913 2.2104260           17
+4     HLF  0.11122772 1.959520e-40    0.8228660 19.4390638  0.020220658     0.8243394   0.5416860 2.1942511           18
+5   SMAD5 -0.08008778 1.945324e-34   -0.7848854 24.6227134 -0.007523052    -0.8028646   0.4805929 2.0948950           19
+6   TCF12 -0.04674286 4.172777e-37   -0.8059771 14.8052997 -0.008102866    -0.8342644   0.4428027 1.7575043           16
+7    EGR3  0.06502560 3.895841e-30    0.7688233 12.1899557  0.024257914     0.7364451   0.5007594 1.6995533          368
+8    PAX7  0.01538617 1.250748e-19    0.7657263 14.8043616  0.022462643     0.7494851   0.4665698 1.5401325           23
+9   SATB2  0.00000000 8.471013e-02    0.7777867  8.3265743  0.026023180     0.7387937   0.4108515 1.1791792           21
+10  TSHZ2  0.03392098 4.790255e-18    0.6772084  0.7747176  0.018662817     0.6817202   0.4069187 1.0913218            9
+11  FOXO4 -0.06268142 1.559942e-23   -0.6666125  2.1246145 -0.010839521    -0.6932668   0.4132046 0.9986048          269
+12  SATB1  0.00000000 3.084678e-03    0.7531396  2.7193361  0.018747094     0.7419640   0.3435974 0.9340806           21
+13  MEF2A  0.00000000 6.452282e-11    0.5439086  1.1657127  0.020540135     0.5897306   0.3587163 0.9281485           83
+14   EMX1  0.00000000 1.000000e+00    0.7766642  1.5207081  0.017908538     0.7412446   0.3593369 0.9124583           61
+15    MKX  0.00000000 7.701829e-01    0.7259564  0.9115327  0.019307379     0.6791805   0.3629188 0.8985996           40
+16   CUX2  0.00000000 4.149254e-03    0.6396740  0.7218424  0.020917033     0.6156686   0.3594313 0.8883633           21
+17  FOXP2  0.00000000 5.272520e-02    0.5442309  0.3392688  0.022542161     0.5826982   0.3727711 0.8820791          269
+18  FOXP1  0.00000000 4.953293e-08    0.4816962  0.3540256  0.021382068     0.4583228   0.3584711 0.8555581          269
+19 ARNTL2  0.00000000 2.032527e-01    0.6990507  1.5208736  0.017006982     0.6263698   0.3415935 0.8392316            6
+20  TSHZ3  0.00000000 5.844875e-01    0.7362576  0.8306165  0.013983432     0.7156245   0.3439935 0.8284409            9
+
+
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* "complete" attempt to reproduce cory's cer, tcx and ros trena models for mef2c (17 jan 2018)
+
+~/github/dockerizedMicroservices/trena.mef2c/dev/trns/reproduceCorysThreeGraphs.R
+contains nicely generalized, and extensively tested function makeGeneModel
+
+
+-----  tbl.tcx
+cory pauls.rank   paul corys.rank
+STAT4          1  STAT4          1
+HLF          2    HLF          2
+SATB2          3  SATB2          3
+EGR3         NA   PAX7         NA
+EMX1          6  TCF12          7
+ARID2         NA   EMX1          5
+TCF12          5   DLX5          9
+NFE2L2         10  FOXO4         NA
+DLX5          7  SATB1         NA
+FOXP1         12 NFE2L2          8
+
+-----  tbl.cer
+cory pauls.rank  paul corys.rank
+STAT4          1 STAT4          1
+MEF2D          2 MEF2D          2
+SP8         NA  ZIC4          7
+SP9         NA  CUX2          5
+CUX2          4   TEF         10
+PAX7          8 NPAS1         NA
+ZIC4          3  ZIC1         NA
+TBPL1         NA  PAX7          6
+BPTF         NA FOXP1         NA
+TEF          5 FOXN2         NA
+
+----- tbl.ros
+cory pauls.rank  paul corys.rank
+SATB2         78 STAT4          5
+SATB1         12 MEF2D         NA
+SCRT1        135  ZIC4         NA
+NFATC3        147  CUX2         NA
+STAT4          1   TEF         NA
+RARG         NA NPAS1         NA
+FOXP1          9  ZIC1         NA
+ZNF740         13  PAX7         NA
+EMX1         52 FOXP1          7
+HLF         20 FOXN2         NA
+
+*------------------------------------------------------------------------------------------------------------------------
+* trena mef2c eqtl notebook including dimers (16 jan 2018)
+
+context:
+the eqtl notebook explores the effect of variants on the target gene's regulatory model
+different parameters produce different models:
+roi
+motif hits: from footprint databases, using MotifMatcher on regions from  encode dhs or all DNA
+which MotifDb pwms, what sequence matching score threshold
+either MotifDb or TFclass motif-to-TF mapping
+
+work out these possibilities using
+~/github/dockerizedMicroservices/trena.mef2c/dev/trns/reproduceCorysThreeGraphs.R
+with MEF2C
+
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* update release (3_6) and devel (master) branches of PSICQUIC (16 jan 2017)
+
+precipitating event:  biomaRt update rendered hsapiens unavailable.  uprev'd to not-yet-in-bioc biomaRt, breaking the build
+following: https://bioconductor.org/developers/how-to/git/
+ALSO see:  https://bioconductor.org/developers/how-to/git/bug-fix-in-release-and-devel/
+
+cd ~/github
+git clone git@git.bioconductor.org:packages/PSICQUIC     # gets the master (devel) branch
+cd PSICQUIC
+
+--- first, the devel branch (aka "master")
+git branch -v
+* master 2cb20dc testing now robust (if uninformative) aginst biomaRt failures
+edited DESCRIPTION
+downrev'd biomaRt requirement from 2.35.5, bumped version and date
+Version: 1.17.3
+Date: 2018-01-16
+Depends: R (>= 3.2.2), methods, IRanges, biomaRt (>= 2.34.1), BiocGenerics, httr, plyr
+git commit -m "downrev'd biomaRt required version" DESCRIPTION
+git push
+
+--- now release
+git checkout RELEASE_3_6
+found DESCRIPTION already fixed, but bump version just to keep this as a good example
+Version: 1.16.4
+Date: 2018-01-16
+Depends: R (>= 3.2.2), methods, IRanges, biomaRt (>= 2.34.1), BiocGenerics, httr, plyr
+git commit -m "bumped version" DESCRIPTION
+git push
+
+cd ..
+R CMD build --no-build-vignettes PSICQUIC
+building ‘PSICQUIC_1.16.4.tar.gz’
+R CMD CHECK --ignore-vignettes  --no-manual PSICQUIC_1.16.4.tar.gz
+
+cd PSICQUIC
+git checkout master
+cd ..
+R CMD build --no-build-vignettes PSICQUIC
+building ‘PSICQUIC_1.16.4.tar.gz’
+R CMD CHECK --ignore-vignettes  --no-manual PSICQUIC_1.16.4.tar.gz
+building ‘PSICQUIC_1.17.3.tar.gz’
+R CMD CHECK --ignore-vignettes  --no-manual PSICQUIC_1.17.3.tar.gz
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* trena + dimers (12 jan 2018)
+
+~/github/dockerizedMicroservices/trena.mef2c/dev/trns/reproduceCorysThreeGraphs.R
+
+add.dimer.expression <- function(mtx, dimers) {
+for(dimer in dimers){
+genes <- strsplit(dimer, "::")[[1]]
+if(all(genes %in% rownames(mtx))){
+dimer.vec <- rep(1, ncol(mtx))
+for(gene in genes){
+mtx.sub <- mtx[gene,, drop=FALSE]
+#browser()
+dimer.vec <- dimer.vec * mtx.sub[1,]
+} # for gene
+mtx <- rbind(mtx, dimer.vec)
+rownames(mtx)[nrow(mtx)] <- dimer
+} # if all genes found
+} # for dimer
+invisible(mtx)
+} # add.dimer.expression
+
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* bv2, bvd2a
+
+directory                package                     class           shell
+   ~/github/bv2                                bv2          BrowserViz2Class          sh-bv2
+   ~/github/BrowserVizDemoApp    BrowserVizDemoApp       BrowserVizDemoClass         sh-bv2a
+
+
+   --- next up
+     (for wednesday 17 jan 2018):
+         consider using npm for the js base functionality
+	 create new unit test that does all operations in just one browser tab
+	 include a demo version of a queryprocessor
+
+     (friday 12 jan 2018): review all code in both packages, lean? tested?
+                           start with bv2, which has its own unit tests
+                           think through, then maybe experiment with opening separate browser ports + processes
+			   make better names!
+
+*------------------------------------------------------------------------------------------------------------------------
+* cory's ben barres mouse gene nomenclature problem (12 jan 2018)
+
+  old: Sfpi1
+  new: Spi1
+
+   --- explore, maybe solve this
+      ~/github/projects/priceLab/cory/mouseGeneNames/names.R
+
+   library(org.Mm.eg.db)
+   ls(org.Mm.egALIAS2EG)[grep("spi1", ls(org.Mm.egALIAS2EG), ignore.case=TRUE)]
+    #  [1] "spi1"   "Spi1"   "Spi1-1" "Spi1-2" "Spi1-3" "Spi1-4" "Spi1-5" "Spi1-6" "Spi10"  "Spi11"  "Spi12"  "Spi13"
+    # [13] "Spi14"  "Spi15"  "Spi16"  "Spi17"
+   ls(org.Mm.egALIAS2EG)[grep("spi1$", ls(org.Mm.egALIAS2EG), ignore.case=TRUE)]
+   # [1] "spi1" "Spi1"
+
+   select(org.Mm.eg.db, keys=c("Sfpi1", "Spi1", "spi1"), keytype="ALIAS", columns=c("SYMBOL", "ENTREZID", "GENENAME", "ENSEMBL"))
+     ALIAS       SYMBOL ENTREZID                                                                 GENENAME            ENSEMBL
+   1 Sfpi1         Spi1    20375          spleen focus forming virus (SFFV) proviral integration oncogene ENSMUSG00000002111
+   2  Spi1         Spi1    20375          spleen focus forming virus (SFFV) proviral integration oncogene ENSMUSG00000002111
+   3  spi1 Serpina3d-ps   435318 serine (or cysteine) peptidase inhibitor, clade A, member 3D, pseudogene               <NA>
+
+
+*------------------------------------------------------------------------------------------------------------------------
 * cory's ad brain expression matrices, current favorites (10 jan 2017)
 
   whovian: /local/Cory/Alzheimers/synapse.windsorized
@@ -113,20 +2752,92 @@ bed format: chrom, start, end, name, score, strand
        -rw-r--r--. 1 cfunk pricelab 178570307 Jul 27 13:25 Scaled_Winsorized_ROSMAP_Expression.csv
 
 *------------------------------------------------------------------------------------------------------------------------
-* jlab tips
+* jupyter install ipyleaflet from source, github, no jlab (19 jan 2018)
 
-   install latest jupyter lab:  Can you try this with the latest release candidate, 0.31rc2?
-      pip install jupyterlab --pre
+   cd ~/github/ipyleaflet/
+   git pull origin
+   pip install -e .
+   jupyter nbextension install --py --symlink --sys-prefix ipyleaflet
+   jupyter nbextension enable --py --sys-prefix ipyleaflet
+   jupyter notebook examples/BaseMap.ipynb
 
-   We encourage extension authors to add the `jupyterlab-extensions` GitHub topic to
-   any repository with a JupyterLab extension to facilitate discovery.
-   You can see a list of extensions by searching Github for the
-   [jupyterlab-extensions](https://github.com/search?utf8=%E2%9C%93&q=topic%3Ajupyterlab-extensions&type=Repositories)
-   topic.
+*------------------------------------------------------------------------------------------------------------------------
+* build jlab from github source
+*------------------------------------------------------------------------------------------------------------------------
+* jlab install ipyleaflet
 
-  You can list the currently installed extensions by running the command:
+   conda install -c conda-forge ipyleaflet
+       The following NEW packages will be INSTALLED:   ipyleaflet: 0.5.3-py36_0 conda-forge
+   jupyter labextension install jupyter-leaflet
+   dir ~/.local/share/virtualenvs/jupyterlab-6cM4hFxX/share/jupyter/lab/extensions:
+      348781 Jan 19 15:40 jupyter-leaflet-0.5.1.tgz
+        8196 Jan 19 15:29 jupyter-widgets-jupyterlab-manager-0.33.0.tgz
 
-    jupyter labextension list
+   --- try it out
+     from ipyleaflet import *
+     m = Map(zoom=4, basemap=basemaps.Esri.NatGeoWorldMap)
+     m
+     ---> Error displaying widget
+     jupyter labextension enable --sys-prefix --py jupyterlab_widgets
+     jupyter labextension enable --sys-prefix --py jupyterlab_widgets
+
+   this works in notebook and in jlab
+
+*------------------------------------------------------------------------------------------------------------------------
+* jlab add nglview (did not work)
+
+   conda config --add channels conda-forge
+   conda install nglview -c bioconda
+   might need: jupyter-nbextension enable nglview --py --sys-prefix
+
+# if you already installed nglview, you can `upgrade`
+conda upgrade nglview --force
+# might need: jupyter-nbextension enable nglview --py --sys-prefix
+
+*------------------------------------------------------------------------------------------------------------------------
+* jlab tips install tips
+
+   --- (19 jan 2018)
+      from https://github.com/jupyterlab/jupyterlab
+      jupyter notebook --version  # 5.1.0
+      from conda:
+         conda install -c conda-forge jupyterlab
+           jupyterlab:          0.30.6-py36_0 conda-forge --> 0.31.0-py36_0 conda-forge
+           jupyterlab_launcher: 0.6.0-py36_0  conda-forge --> 0.10.2-py36_0 conda-forge
+         jupyter lab --version  # 0.31.0
+         jupyter lab path
+           Application directory:   /Users/paul/anaconda/share/jupyter/lab
+           User Settings directory: /Users/paul/.jupyter/lab/user-settings
+           Workspaces directory /Users/paul/.jupyter/lab/workspaces
+         http://ipywidgets.readthedocs.io/en/stable/user_install.html
+            conda install -c conda-forge ipywidgets
+               # All requested packages already installed.
+               # packages in environment at /Users/paul/anaconda:
+               ipywidgets                7.1.0                    py36_0    conda-forge
+
+        try it out, experiment with provided widgets
+	  fails in chrome, but works in safari and firefox
+	  Uncaught (in promise) TypeError: Cannot read property 'data' of undefined
+            at main.f769e66d9e353fed0521.js:1
+             at Array.map (<anonymous>)
+
+       experiment with widgets:
+           jupyter labextension install @jupyter-widgets/jupyterlab-manager
+	   user firefox
+              import ipywidgets as widgets
+              widgets.IntSlider()
+
+       this works.  nglview does NOT work
+
+   --- try to build a custom widget, use it in jlab
+      find ~/anaconda -newer checkpoint
+      jupyter lab clean
+      touch checkpoint
+      jupyter labextension install @jupyter-widgets/jupyterlab-manager
+      find ~/anaconda -newer checkpoint  # lots of stuff, but maybe of more interest:
+        /Users/paul/anaconda/share/jupyter/lab/extensions/jupyter-widgets-jupyterlab-manager-0.33.0.tgz
+
+
 
 
 *------------------------------------------------------------------------------------------------------------------------
@@ -356,6 +3067,8 @@ bed format: chrom, start, end, name, score, strand
 
 *------------------------------------------------------------------------------------------------------------------------
 * more atac-seq for mentewabs arabidopsis frd3 study? (4 jan 2018)
+
+  cd ~/github/projects/external/mentewab/arabidopsis.zinc
 
   TPC2017-LSB-00581R1_Supplemental_Dataset_7.xlsx  from Maher et al, 2017 (see below)
   wrote 4 sheets out, since first two, on a cadusual read, seem to be root cells
@@ -599,7 +3312,8 @@ subset(tbl.xref, proteinId=="Q9FM03")
    all but 24 motifs have uniprot ids
 
    library(ag.db)
-  select(ag.db, keys=toupper(c(orf)), keytype="TAIR", columns=c("SYMBOL", "ENTREZID", "GENENAME", "REFSEQ"))
+   keytypes(ag.db)
+   select(ag.db, keys=toupper(c(orf)), keytype="TAIR", columns=c("SYMBOL", "ENTREZID", "GENENAME", "REFSEQ"))
           TAIR SYMBOL ENTREZID                                 GENENAME    REFSEQ
    1 AT5G60200   TMO6   836142 Encodes a Dof-type transcription factor. NM_125413
    2 AT5G60200   TMO6   836142 Encodes a Dof-type transcription factor. NP_568920
@@ -854,6 +3568,7 @@ subset(tbl.xref, proteinId=="Q9FM03")
 
 *------------------------------------------------------------------------------------------------------------------------
 * get tair10 aka tair9 amended (28 dec 2017)
+
   biocGet("BSgenome.Athaliana.TAIR.TAIR9")
   tair9 <- BSgenome.Athaliana.TAIR.TAIR9
    seqlengths(tair9)
@@ -1251,7 +3966,6 @@ A BigWigFile knows about seqinfo(), so
      library(Rsamtools)
      indexFa("Arabidopsis_thaliana.TAIR10.dna.toplevel.fa")    # fa fai fasta index Rsamtools tips
 
-
    --- gene track again, following the above example
       gunzip Araport11_genes.20150701.gff3.gz
       sort -k1,1 -k4,4n  Araport11_genes.20150701.gff3 -o  Araport11_genes_sorted.20150701.gff3
@@ -1259,8 +3973,6 @@ A BigWigFile knows about seqinfo(), so
           [1] "TAIR10_genes_sorted.gff3.gz"
       print(indexTabix("Araport11_genes_sorted.20150701.gff3.gz", format="gff"))
           [1] "TAIR10_genes_sorted.gff3.gz.tbi"
-
-
 
 *------------------------------------------------------------------------------------------------------------------------
 * arabidopsis athaliana motifs for mentewab (26 dec 2017)
@@ -1525,6 +4237,11 @@ function playMp3(id)
   resolution:  col2a1 is on chr12!
 
 *------------------------------------------------------------------------------------------------------------------------
+* docker/jupter tips: run nbserver explosed at localhost:8888, inside a container, without authentication
+
+   docker run -d -p 8888:8888 eqtl_mef2c_nbserver start-notebook.sh --NotebookApp.token=''
+
+*------------------------------------------------------------------------------------------------------------------------
 * docker tips, docker load
 
    docker save <image> | bzip2 | pv | ssh user@host 'bunzip2 | docker load'
@@ -1552,7 +4269,7 @@ function playMp3(id)
 * mef2c eqtl trenaSNP trena.mef2c notebook (18 dec 2017)
 
   cd ~/github/dockerizedMicroservices/trena.mef2c
-  eqtl data is  now in !/github/dockerizedMicroservices/trena.mef2c/trena/data/mef2c.tsv
+  eqtl data is  now in ~/github/dockerizedMicroservices/trena.mef2c/trena/data/mef2c.tsv
 
   provenance: ~/github/projects/external/mayo.AD.collaboration/020516_TableForCorySeth_AD_eQTL_Loci.xlsx
   liftover to  ~/github/projects/external/mayo.AD.collaboration/mef2c-snps-hg38.tsv
@@ -1602,6 +4319,11 @@ function playMp3(id)
   filename <- "SCH_11923_B01_GRM_WGS_2017-04-27_5.recalibrated_variants.vcf.gz"
   tabixFile <- TabixFile(filename)
   vcf <- readVcf(tabixFile, "hg19", params)
+
+
+   --- toSnpMatrix
+
+     res <- genotypeToSnpMatrix(vcf)
 
   --- header(vcf)
     class: VCFHeader
@@ -1684,6 +4406,10 @@ function playMp3(id)
   --- synapse containers explained, general intro to project and data management
     http://docs.synapse.org/articles/getting_started.html#project-and-data-management-on-synapse
 
+  --- web interface to ampad "knowledge portal"
+
+     https://www.synapse.org/#!Synapse:syn11724002
+
   ---  next synapse R client
      https://github.com/Sage-Bionetworks/synapser/
 
@@ -1706,7 +4432,7 @@ function playMp3(id)
 
   --- from brian bot
     I asked; is there a query I can make through the R client which, given a project synid  syn10901601
-    will return a list of filenames and synods, so that I can examine the (very descriptive) filenames,
+    will return a list of filenames and synids, so that I can examine the (very descriptive) filenames,
     and then retrieve files of interest to me by their associated synids?
 
     brian replied:
@@ -1765,7 +4491,7 @@ qq <- synQuery('SELECT id, name FROM file WHERE parentId=="syn10901601" AND data
 
 
 *------------------------------------------------------------------------------------------------------------------------
-* metewab's reply to my questions (13 dec 2017)
+* mentewab's reply to my questions (13 dec 2017)
 
   Here are answers to you questions:
 
@@ -2710,7 +5436,7 @@ options = {
 
 
 
-   The mount is created inside the container’s /world
+   The mount is created inside the container's /world
    directory. Docker does not support relative paths for mount points
    inside the container.
 
@@ -8658,6 +11384,38 @@ GPos object with 1 position and 2 metadata columns:
 *-----------------------------------------------------------------------------------------------------------------------
 * R regexpr match
 
+  --- generalized use of this approach, using function "parse"
+     #--------------------------------------------------------------------------------
+     # define a function to parse the rownames into chrom, pos, ref, alt
+     #--------------------------------------------------------------------------------
+     parse <- function(string, regex, numeric.fields){
+        match <- regexpr(regex, string, perl=TRUE)
+        if(match == 1){
+           info <- attributes(match)
+           result <- list()
+           for(name in info$capture.names){
+              start <- as.integer(info$capture.start[1, name])
+              length <- as.integer(info$capture.length[1, name])
+              result[[name]] <- substring(string, start, start+length-1)
+              if(name %in% numeric.fields)
+                 result[[name]] <- as.numeric(result[[name]])
+              } # for name
+           } # if match
+        result
+        }
+     #--------------------------------------------------------------------------------
+     # call that function, create a data.frame of the results
+     #--------------------------------------------------------------------------------
+     regex <- "(?<chrom>.*):(?<pos>\\d+)_(?<ref>.*)\\/(?<alt>.*)"
+     example.rownames <- c("5:87686888_T/A", "5:87687578_T/G", "5:87688238_A/G", "5:87688421_C/T", "5:87688422_G/A", "5:87688472_C/G")
+       # we assign the "pos" to the second extracted substring, want it to be promoted to numeric
+     x <- lapply(example.rownames, function(rowname) parse(rowname, regex, "pos"))
+     tbl.pos <- as.data.frame(do.call(rbind, x))
+     tbl.pos$chrom <- paste("chr", tbl.pos$chrom, sep="")
+
+
+  --- first use of this approach
+
 s <- "chr5:120-500"
 match <- regexpr("(?<chromosome>chr.*):(?<startPos>\\d+)-(?<endPos>\\d+)", "chr5:120-500", perl=TRUE)
 if(match == 1){
@@ -8675,7 +11433,37 @@ if(match == 1){
 
 print(result)
 
+s <- "5:87686888_T/A"
+s2 <- "5:87688861_GATTT/G"
 
+match <- regexpr("(?<chromosome>.*):(?<pos>\\d+)_(?<ref>.*)\\/(?<alt>.*)", s2, perl=TRUE)
+if(match == 1){
+   info <- attributes(match)
+   result <- list()
+   for(name in info$capture.names){
+      start <- as.integer(info$capture.start[1, name])
+      length <- as.integer(info$capture.length[1, name])
+      result[[name]] <- substring(s2, start, start+length-1)
+      if(name %in% c("pos"))
+         result[[name]] <- as.numeric(result[[name]])
+      } # for name
+   } # if match
+
+parse <- function(string, regex, numeric.fields){
+   match <- regexpr(regex, string, perl=TRUE)
+   if(match == 1){
+      info <- attributes(match)
+      result <- list()
+      for(name in info$capture.names){
+         start <- as.integer(info$capture.start[1, name])
+         length <- as.integer(info$capture.length[1, name])
+         result[[name]] <- substring(s2, start, start+length-1)
+         if(name %in% c("pos"))
+            result[[name]] <- as.numeric(result[[name]])
+         } # for name
+      } # if match
+   result
+   }
 
 *-----------------------------------------------------------------------------------------------------------------------
 * comparing fimo and bioc motif matching with vrk2:  is bioc good enough (5 may 2017)
@@ -8933,6 +11721,28 @@ npm install --save-dev bootstrap-loader
        850 Feb 21 16:33 npm/
        408 Apr 22 19:40 webpack/
 
+  --- how to specify a git repo
+      make this change in the dependencies section of  ~/github/ipyTrenaViz/js/package.json
+     "dependencies": {
+        ...
+        "jquery-ui": "^1.12.1",
+        "igv_js_npm": "github:paul-shannon/igv.js.npm"
+        }
+
+   --- browservizjs
+     ~/github/bv2/inst/browserCode/
+
+       only the LAST of the browservizjs value is used
+
+    "dependencies": {
+       "browservizjs": "^1.0.21",
+       "browservizjs": "github:paul-shannon/browservizjs",
+       "browservizjs": "file:///Users/paul/github/browservizjs",
+       "jquery": "^3.2.1",
+       "webpack": "^2.4.1"
+        },
+
+    "browservizjs": "^1.0.21",
 
 
 *-----------------------------------------------------------------------------------------------------------------------
@@ -9357,6 +12167,20 @@ select(db, keys="RUNX1", keytype="SYMBOL", columns=c("SYMBOL", "GO"))
   http://www.amazon.com/Aquila-5B-Banjo-Strings-Set/dp/B005WFSNX4/ref=sr_1_1?s=books&ie=UTF8&qid=1452820761&sr=8-1&keywords=nylgut+banjo+strings
 
 *-----------------------------------------------------------------------------------------------------------------------
+*  Mike Seeger on gourd banjo: gCGA#D [7,3, 4, 5], josh thomas roustabout
+                             eAEGB
+                              g C G Bflat D, three half-steps lower, in E
+  gCGBflat-D
+
+G-minor variant. Mike Seeger, Roustabout ("Solo"). Seeger plays this
+on a gourd banjo, tuned down. He gives his source as "Josh Thomas of
+Hollins, VA, an exceptional blind black banjo picker and singer", who
+was recorded in 1970 by Cliff Endress
+
+  https://go.platformpurple.com/play/35711?e=homespun
+  good riff at about 5:08 5:29
+
+*-----------------------------------------------------------------------------------------------------------------------
 * studio 3 signs 117 nw 54th st: no-boot, no boot, don't walk here seward park signs (19 apr 2017)
 
   (206) 622-8204
@@ -9589,6 +12413,24 @@ DataFrame with 1 row and 1 column
 *-----------------------------------------------------------------------------------------------------------------------
 * dan banjo
 
+  --- 2 feb 2018
+    girl i left on sandy
+    baby ben
+    anaky
+    john browns march
+    boatman's song
+
+  ---- (19 jan 2018)
+
+    the girl I left on sandy
+    jaybird died of the whooping cough
+    bryson higgin's tune
+    bull of the woods - james bryan
+    john brown's march
+    come on boys lets go to anaky  http://neighborlymusic.net/m3222l07/wp-content/uploads/2016/05/Come-On-Boys-Lets-Go-To-Anaky.mp3
+    roosian rabbit (straight & crooked) - john salyer
+
+
   indian squaw (john salyer)
   old beech leaves
 
@@ -9608,7 +12450,8 @@ DataFrame with 1 row and 1 column
 
   dark-haired girl, F
   josie-o, F
-  baby ben - james byrant
+  baby ben - james byrant: http://dla.acaweb.org/cdm/singleitem/collection/Warren/id/2883/rec/1
+                           ~/Music/dan/babyBen.mp3 (source recording?  jess moore)
   come on boys lets go to anaky  http://neighborlymusic.net/m3222l07/wp-content/uploads/2016/05/Come-On-Boys-Lets-Go-To-Anaky.mp3
   roosian rabbit (straight & crooked) - john salyer
 
@@ -9820,6 +12663,13 @@ DataFrame with 1 row and 1 column
        =: clitic boundary  (an unstressed word that normally occurs only in combination with another word, for example ῾m in I'm.)
 
      ‘He snatched the daylight and ran off with it.’
+
+        (77) diɬ tuspəkwibids tiʔəʔ slə il gwəl tusaxwəbtxw
+             diɬ tu=s=pəkwib–bi–d=s tiʔəʔ slə il gwəl tu=saxwəb–txw
+             foc past=nm=snatch–map–ics=3po prox daylight sconj past=jump–ecs
+                 ‘He snatched the daylight and ran off with it.’
+
+
 
    lushootseed dictionary, p163
      pkw(u) also recorded pqw(u), peqw(u): break off a piece (leaving a larger portion)
@@ -10827,7 +13677,7 @@ net.write_json_to_file('viz','small.json')
     jupyter lab
 
   pip install jupyterlab
- jupyter serverextension enable --py jupyterlab --sys-prefix
+  jupyter serverextension enable --py jupyterlab --sys-prefix
 
 *-----------------------------------------------------------------------------------------------------------------------
 * jupyterlab build and install
@@ -11335,9 +14185,11 @@ rs61766322 same observations as for previous
    ~/github/projects/examples/js/igvBareBones/trackTester.html
 
 *-----------------------------------------------------------------------------------------------------------------------
-* create full fimo track for all gwas snsp
+* create full fimo track for all gwas snsp  (~20 feb 2017)
 
-  cd /Users/paul/s/data/priceLab//AD/gwasFimo/
+   # obsolete cd /Users/paul/s/data/priceLab//AD/gwasFimo/
+  (12 feb 2018) now found here: ~/s/work/priceLab/AD
+
   found that print(load("../tbl.gwas.level_1.RData")) has ref/mut pairs which, allowing for liftover, do not
   match the hg38 reference genome nor dbsnp.  abandanoned in favor of
 
@@ -13710,7 +16562,33 @@ ACSSF,2010m1,wa,000,0013,0000003,23437,13658,2887,3662,4008,2870,2206,1573,1219,
 *-----------------------------------------------------------------------------------------------------------------------
 * musical instrument insurance (11 jan 2016)
 
+  ---  16 jan 2018:  paid $328,
+
+    I have requested that the premium be returned to last years. I
+    would suggest you make the payment that was billed and if they
+    allow the reduction they will credit back the overage. I think
+    there is a good chance it will be reduced.  Best Wishes, Ellis
+
+      Ellis W. Hershman, V.P
+      Musical Instrument Department
+      Heritage Insurance Services, Inc.
+      826 Bustleton Pike, Suite 203
+      Feasterville, PA 19053
+
+      Tel: 1.800.289.8837  ext. 107
+      Fax: 215.322.5854
+      ellish@musicins.com
+      www.musicins.com
+
+
+
+
    managed by hartford insurance
+   jan 2016: $250
+   jan 2017: $250
+   shipping costs to asheville, guitar?: $41
+   reimbursement for guitar repair, rough handling at planeside: $125
+   jan 2018: Policy Number: 44MSAS8266, Reminder: Your Bill is Due on 01/13/2018, $328
 
    --- leo
       1936 Gibson L7, $4000
@@ -18011,6 +20889,27 @@ The rows break out like this:
 *-----------------------------------------------------------------------------------------------------------------------
 * R tips: switch statement, R switch
 
+  --- strong example in ~/github/eqtlTrenaNotebooks/mef2c/SingleGeneAnalyzer/R/SingleGeneAnalyzer.R
+
+    tbl.snps <- switch(variants.track,
+       "eqtl.snps" = {
+            tbl.tmp <- obj@singleGeneData@misc.data[["eqtl.snps"]][, c("chrom", "pos", "pos", "rsid", "score")];
+            colnames(tbl.tmp) <- c("chrom", "start", "end", "rsid", "score")
+            tbl.snps <- tbl.tmp
+            },
+       "wgVariants" = {
+            tbl.tmp <- obj@singleGeneData@misc.data[["wgVariants"]]
+            tbl.tmp$end <- tbl.tmp$pos;
+            colnames.ordered <- c("chrom","pos","end","ref","alt","het.altAD","het.altCTL",
+                                  "hom.altAD","hom.altCTL","any.altAD","any.altCTL")
+            tbl.tmp <- tbl.tmp[, colnames.ordered]
+            colnames(tbl.tmp)[2] <- "start"
+            tbl.snps <- tbl.tmp
+            }
+        ) # switch on variants.track
+
+   --- another example
+
    solver <- "hoopla"
    switch(solver,
           randomForest={
@@ -18019,6 +20918,7 @@ The rows break out like this:
           printf("unrecognized solver: %s", solver )
           )
 
+*------------------------------------------------------------------------------------------------------------------------
 * R tips: regex, gregexpr
 
    library(stringr)
@@ -20228,6 +23128,8 @@ tbl.to_csv("test.tsv", sep="\t", header=False, index=False)
 
   import pandas as pd
   tbl = pd.DataFrame([["chr1", "10", "100", "fp1", 9.9], ["chr1", 90, 130, "fp2", 0.5]])
+
+  df1=pd.read_csv("http://pythonhow.com/wp-content/uploads/2016/01/Income_data.csv")
 
 *------------------------------------------------------------------------------------------------------------------------
 * from descartes to kant in two pages (6 sep 2016)
@@ -23431,6 +26333,7 @@ select * from footprints limit 3;
   cp  ~/s/examples/igv/igv-web/snpFootBed/index.html
 
    curl -O http://ftp.ensembl.org/pub/release-77/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.chromosome.22.fa.gz
+
 *------------------------------------------------------------------------------------------------------------------------
 * liz blue, try1 (8 jul 2016) first look, grok the vcf file
 
@@ -31275,6 +34178,8 @@ Any advice?   Thanks - and thanks for this very promising software!
   git remote -v
   git push origin master    # git push --force origin master any files were added to new repo (e.g., license)
 
+   -- if trouble, especially "refspec master does not match any"
+     do a round trip on the new github repo's .gitignore or README.md: pull, change, add, commit, push
 
 *------------------------------------------------------------------------------------------------------------------------
 * github tips: TReNA (17 feb 2016)
