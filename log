@@ -102,7 +102,82 @@ bed format: chrom, start, end, name, score, strand
 *------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------
+* install a new shiny app in shinyProxy server (27 jun 2018)
+
+  --- on host trena
+    shinyApp(ui, server, options=list(host="0.0.0.0", port=60013, launch.browser=FALSE))
+    cd ~/github/trenaShinyApps/shinyProxyDemo/eulerMyAdaptation
+    mkdir demo
+    cp euler/* demo/
+    rm -rf euler
+    docker build -t pshannon/demo .
+    docker images | grep demo
+        pshannon/demo                   latest              c73e16dc3c94        About a minute ago   996MB
+    docker run --rm -p 60020:3838 pshannon/demo
+    http://trena:60020
+    
+
+
 *------------------------------------------------------------------------------------------------
+* shinyProxy commands I am allowed to run (27 jun 2018)
+
+   root@trena:/etc/sudoers.d# cat shinyproxy
+        Cmnd_Alias     EDIT_CONFIG = /usr/bin/vi /etc/shinyproxy/application.yml
+        Cmnd_Alias     START_SPROXY = /bin/systemctl start shinyproxy
+        Cmnd_Alias     RESTART_SPROXY = /bin/systemctl restart shinyproxy
+        Cmnd_Alias     STOP_SPROXY = /bin/systemctl stop shinyproxy
+        Cmnd_Alias     STATUS_SPROXY = /bin/systemctl status shinyproxy
+
+     pshannon ALL=(ALL) EDIT_CONFIG, START_SPROXY, RESTART_SPROXY, STOP_SPROXY, STATUS_SPROXY
+
+*------------------------------------------------------------------------------------------------
+* shinyProxy configuration on trena (27 jun 2018)
+
+  --- email from matt (20 jun 2018)
+  
+    You can edit it on trena, but you have to run the command exactly as it is configured in the
+    sudoers file, like this:
+
+     /usr/bin/vi /etc/shinyproxy/application.yml
+
+    --- congruent with this Dockerfile
+       FROM openanalytics/r-base
+       MAINTAINER Paul Shannon "pshannon@systemsbiology.org"
+       # system libraries of general use
+       RUN apt-get update && apt-get install -y \
+           sudo \
+           pandoc \
+           pandoc-citeproc \
+           libcurl4-gnutls-dev \
+           libcairo2-dev \
+           libxt-dev \
+           libssl-dev \
+           libssh2-1-dev \
+           libssl1.0.0
+          # system library dependency for the demo app
+       RUN apt-get update && apt-get install -y \
+           libmpfr-dev
+          # basic shiny functionality
+       RUN R -e "install.packages(c('shiny', 'rmarkdown'), repos='https://cloud.r-project.org/')"
+          # install dependencies of the demo app
+       RUN R -e "install.packages('Rmpfr', repos='https://cloud.r-project.org/')"
+          # copy the app to the image
+       RUN mkdir /root/demo
+       COPY demo /root/demo
+       COPY Rprofile.site /usr/lib/R/etc/
+       EXPOSE 3838
+       CMD ["R", "-e", "shiny::runApp('/root/demo')"]
+
+
+    --- added this apps entry
+
+     - name: paul_euler
+       display-name: demo
+       docker-cmd: ["R", "-e", "shiny::runApp('/root/demo')"]
+       docker-image: pshannon/demo
+       groups: scientists
+		  
+
 *------------------------------------------------------------------------------------------------
 * slides for olmstead legacy (25 jun 2018)
 
