@@ -104,7 +104,21 @@ bed format: chrom, start, end, name, score, strand
 *------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------
-* 
+* slides for olmstead legacy (25 jun 2018)
+
+  * Originally called Bailey Peninsula, hilly Seward Park boasts some of Seattle’s oldest-growth
+    native forest thanks to John Charles Olmsted, who helped save it from development. It is a prime
+    example of the Olmsted Brothers’ ecological approach to park design, with many woodland trails,
+    an amphitheater and a shoreline trail.   [http://www.olmstedonline.org/]
+  
+  * PSME-TSHE/MANE-POMU: Seattle Parks ecologists classification the Magnificent Forest
+
+       PSME: doug fir (PSEUDOTSUGA MENZIESII
+       TSHE: western hemlock (TSUGA HETEROPHYLLA
+       MANE: dwarf Oregon Graph (MAHONIA NERVOSA)
+       POMU: sword fern (POLYSTICHUM MUNITUM)
+
+  * 
 *------------------------------------------------------------------------------------------------
 * ijal  iiGenerator  Line.py (24 jun 2018)
 
