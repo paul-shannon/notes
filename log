@@ -101,6 +101,18 @@ bed format: chrom, start, end, name, score, strand
 *------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------
+* ess for emacs, from github, simple configuration (27 jun 2018)
+
+  used this on trena:
+    cd ~/github
+    git clone https://github.com/emacs-ess/ESS.git
+
+    add to .emacs
+
+    (add-to-list 'load-path "~/github/ESS/lisp")
+    (load "ess-site")   ;; finds ~/github/ESS/lisp/ess-site.el
+    (ess-toggle-underscore nil)
+
 *------------------------------------------------------------------------------------------------
 * install a new shiny app in shinyProxy server (27 jun 2018)
 
@@ -115,7 +127,7 @@ bed format: chrom, start, end, name, score, strand
         pshannon/demo                   latest              c73e16dc3c94        About a minute ago   996MB
     docker run --rm -p 60020:3838 pshannon/demo
     http://trena:60020
-    
+
 
 
 *------------------------------------------------------------------------------------------------
@@ -134,7 +146,7 @@ bed format: chrom, start, end, name, score, strand
 * shinyProxy configuration on trena (27 jun 2018)
 
   --- email from matt (20 jun 2018)
-  
+
     You can edit it on trena, but you have to run the command exactly as it is configured in the
     sudoers file, like this:
 
@@ -176,7 +188,7 @@ bed format: chrom, start, end, name, score, strand
        docker-cmd: ["R", "-e", "shiny::runApp('/root/demo')"]
        docker-image: pshannon/demo
        groups: scientists
-		  
+
 
 *------------------------------------------------------------------------------------------------
 * slides for olmstead legacy (25 jun 2018)
@@ -185,7 +197,7 @@ bed format: chrom, start, end, name, score, strand
     native forest thanks to John Charles Olmsted, who helped save it from development. It is a prime
     example of the Olmsted Brothers’ ecological approach to park design, with many woodland trails,
     an amphitheater and a shoreline trail.   [http://www.olmstedonline.org/]
-  
+
   * PSME-TSHE/MANE-POMU: Seattle Parks ecologists classification the Magnificent Forest
 
        PSME: doug fir (PSEUDOTSUGA MENZIESII
@@ -193,7 +205,7 @@ bed format: chrom, start, end, name, score, strand
        MANE: dwarf Oregon Graph (MAHONIA NERVOSA)
        POMU: sword fern (POLYSTICHUM MUNITUM)
 
-  * 
+  *
 *------------------------------------------------------------------------------------------------
 * ijal  iiGenerator  Line.py (24 jun 2018)
 
@@ -252,56 +264,56 @@ pd.set_option('display.width', 1000)
 * eaf structure
 
    --- email to david beck (24 jun 2018)
-   
+
   Since tiers and annotation elements are a little unpredictable, I am trying to create a robust
   “line structure detector” using Monkey and Thunder, LOKONO and my own home-brew of the first four
   lines of Harry Moses.
 
     For context, here are your six tier types with some of my notes added:
-    
+
     a) spokenText:      acharacter string, unstructured, time-aligned
-    b) tokenizedWords:  structured, a list of N character strings, 
+    b) tokenizedWords:  structured, a list of N character strings,
                        encoded via tabs in a single ANNOTATION element, or
                        via multiple ANNOTATION elements implicitly grouped
-                       via a shared ANNOTATION_REF attribute pointing to 
+                       via a shared ANNOTATION_REF attribute pointing to
                        the spokenText parent element
     c) tokenizedGlosses: structured, also of length N
     d) freeTranslation: unstructured, tied to spokenText via an ANNOTATION_REF element,
                        distinguished from a tokenizedWords element by its
                        TIER_ID and LINGUISTIC_TYPE_REF (which are not from a controlled
-                       vocabulary) 
-    e) transcribedText (this would have potentially different uses, 
-                       but would most often be a close phonetic 
-                       transcription in addition to the orthographic 
+                       vocabulary)
+    e) transcribedText (this would have potentially different uses,
+                       but would most often be a close phonetic
+                       transcription in addition to the orthographic
                        transcription in the first line):  structured or unstructured (I assume the latter)
-    f) secondFreeTranslation: unstructured 
-    
+    f) secondFreeTranslation: unstructured
+
     Legal combinations:
-    
-     1) a + d (as in the first four lines of AYA1_MonkeyandThunder.eaf, in which 
+
+     1) a + d (as in the first four lines of AYA1_MonkeyandThunder.eaf, in which
         the story is introduced in Spanish, translated into English)
      2) a + b + c + d  (perhaps the most common usage)
      3) a + b + c + d + e and/or f
-    
+
      4) just a   (maybe not of interest to IJAL, but perhaps for an early draft of a project?)
      5) a + b?
      6) a + b + c?
-    
+
     b and c are necessarily structured, yes?  By tabs or child elements?  Assuming so, this simple
     algorithm seems possible, in which everything needed can be deduced from the eaf document,
     without user input:
-    
+
       1) Determine the tier which has ALIGNABLE_ANNOTATION elements
       2) Are structured tiers present?  If two, determine which is the parent tier (the native language)
       3) What are the remaining unstructured tiers?  Deduce their full hierarchy from their
          PARENT_REF values.
-    
+
     Here is a slightly divergent example from LOKONO_IJAL_2.  There are 3 structured tiers:
-    
-    
+
+
       ~/github/IJAL-interlinear/testData/LOKONO_IJAL_2.eaf
-  
-  
+
+
     <TIER DEFAULT_LOCALE="en" LINGUISTIC_TYPE_REF="default-lt" TIER_ID="Orthographic represntation">
         <ANNOTATION><ALIGNABLE_ANNOTATION ANNOTATION_ID="a23" TIME_SLOT_REF1="ts1" TIME_SLOT_REF2="ts2">
                 <ANNOTATION_VALUE>Bâmun koba tha aba loko hiyaro.</ANNOTATION_VALUE> </ALIGNABLE_ANNOTATION>
@@ -325,7 +337,7 @@ pd.set_option('display.width', 1000)
                 <ANNOTATION_VALUE>woman</ANNOTATION_VALUE> </REF_ANNOTATION>
 
 
-   
+
 *------------------------------------------------------------------------------------------------
 * elpy, an ess-like python environment for emacs (24 jun 2018)
 
@@ -351,11 +363,11 @@ pd.set_option('display.width', 1000)
          q: quit
 
      put this in ~/.pdbrc
-        
+
      In pdb, make the following alias (which you can add to your .pdbrc file so it's always available):
 
          alias ll u;;d;;l
-     
+
 *------------------------------------------------------------------------------------------------
 * ijal python (23 jun 2018)
 
