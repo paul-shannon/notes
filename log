@@ -100,6 +100,61 @@ bed format: chrom, start, end, name, score, strand
 *------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------
+* shiny, docker, shinyProxy: the euler example (28 jun 2018)
+
+    cd ~/github/trenaShinyApps/shinyProxyDemo/eulerMeAlternateInstallDirectory/euler/
+    
+    --- Rprofile.site
+     local({options(shiny.port = 3838, shiny.host = "0.0.0.0")})
+
+    
+    --- euler/app.R
+      port <- 3838
+      shinyOptions <- list(port=port)
+      if(Sys.info()[["nodename"]] == "trena.systemsbiology.net"){
+         port <- 60032
+         shinyOptions <- list(host="0.0.0.0", port=port, launch.browser=FALSE)
+         }
+     print(paste0("running on trena, using port ", port))
+     app <- shinyApp(ui=ui, server=server, options=shinyOptions)
+
+      build:
+      	docker build -t eulershinyproxy3 -f Dockerfile .
+      drun:
+      	docker run -p 60030:3838  eulershinyproxy3         # -d: detach   -p port|publish
+      dbash:
+      	docker run -it -p 60031:3838 eulershinyproxy3 bash
+           # start R
+	   # shiny::runApp("/home/euler/app.R", launch.browser=FALSE)
+           # make sure EXPOSE 3838 is in Dockerfile
+           # Rprofile.site:
+           # local({
+           #     options(shiny.port = 3838, shiny.host = "0.0.0.0")
+           #    })
+           # euler/app.R ends like this:
+           # shinyOptions <- list(port=3838)
+           # if(Sys.info()[["nodename"]] == "trena.systemsbiology.net"){
+           #    port <- 60032
+           #    shinyOptions <- list(host="0.0.0.0", port=port, launch.browser=FALSE)
+           #    }
+           # print(paste0("running on trena, using por t", port))
+           # shinyApp(ui=ui,server=server, options=shinyOptions)
+      shell:
+  	R -f runFromShellNoDocker.R &
+           # source("euler/app.R")
+           # Sys.sleep(3)
+           # runApp(app)
+
+     --- sudo /usr/bin/vi /etc/shinyproxy/application.yml
+       - name: paul_euler3
+           display-name: euler3
+           docker-cmd: ["/usr/bin/R", "-e", "shiny::runApp('/home/euler/app.R')"]
+           docker-image: eulershinyproxy3
+           groups: scientists
+		       
+
+  
+
 *------------------------------------------------------------------------------------------------
 * ess for emacs, from github, simple configuration (27 jun 2018)
 
