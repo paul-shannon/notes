@@ -97,17 +97,310 @@ bed format: chrom, start, end, name, score, strand
 * -top-
 *------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------
+* ijal Line.py david beck (4 jul 2018)
+
+  cd ~/github/IJAL-interlinear/iiGenerator/
+  ready (at least in part):
+    test_spokenTextID()
+    test_deduceWordRepresentation(): noWords, tokenizedWords, or wordsDistributedInElements
+    test_traverse(): identifies spoken text, free translation, fails to traverse on
+       noWords representation at start of monkey, where there is an empty phoneme line
+
+
 *------------------------------------------------------------------------------------------------
+* BiocParallel bplapply "database disk image is malformed" bug (3 jul 2018)
+
+   --- fix from martin (5 jul 2018)
+
+     the problem here is that library(org.Hs.eg.db) opens a database connection in the main thread,
+     and then the workers use it independently in the worker threads via select(). The solution is
+     like your Postgres example, to open (and close) the connection on the workers. Something like
+
+     library(AnnotationDbi)
+     lookup <- function(geneSymbols, dbfile) {
+        db <- AnnotationDbi::loadDb(dbfile)
+        on.exit(RSQLite::dbDisconnect(dbconn(db)))
+        tbl.map <- AnnotationDbi::select(
+          db, keys=geneSymbols, keytype="SYMBOL", columns="ENSEMBL"
+           )
+         }
+     x <- bplapply(geneSymbols.list, lookup, dbfile(org.Hs.eg.db))
+
+     For what it's worth the 'old school' join can be replaced by (a sluggish)
+
+     tf.geneSymbols <-
+     unique( select(org.Hs.eg.db, "GO:0003700", "SYMBOL", "GOALL")$SYMBOL)
+
+
+   https://support.bioconductor.org/p/110570/
+
+  ~/github/trenaSGM/inst/batch/cory/AD/bplapply-bug.R
+
+library(BiocParallel)
+library(org.Hs.eg.db)
+
+lookup <- function(geneSymbols){
+   tbl.map <- select(org.Hs.eg.db, keys=geneSymbols, keytype="SYMBOL", columns="ENSEMBL")
+   }
+
+tf.entrezIDs <- unique(unlist(get("GO:0003700", envir=org.Hs.egGO2ALLEGS)), use.names=FALSE)
+tf.geneSymbols <- unique(unlist(mget(tf.entrezIDs, envir=org.Hs.egSYMBOL), use.names=FALSE))
+
+geneSymbols.list <- list(g1=tf.geneSymbols, g2=tf.geneSymbols, g3=tf.geneSymbols)
+x <- bplapply(geneSymbols.list, lookup)
+
+source("bplapply-bug.R")
+Error: BiocParallel errors
+element index: 1, 2, 3
+first error: database disk image is malformed
+
+
+sessionInfo()
+R version 3.5.0 (2018-04-23)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 16.04.4 LTS
+
+Matrix products: default
+BLAS: /local/users/pshannon/local/lib/R/lib/libRblas.so
+LAPACK: /local/users/pshannon/local/lib/R/lib/libRlapack.so
+
+locale:
+  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8
+  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+  [9] LC_ADDRESS=C               LC_TELEPHONE=C
+ [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+
+ attached base packages:
+ [1] parallel  stats4    stats     graphics  grDevices utils     datasets
+ [8] methods   base
+
+ other attached packages:
+ [1] org.Hs.eg.db_3.6.0   AnnotationDbi_1.42.1 IRanges_2.14.10
+ [4] S4Vectors_0.18.3     Biobase_2.40.0       BiocGenerics_0.26.0
+ [7] BiocParallel_1.14.1
+
+ loaded via a namespace (and not attached):
+  [1] Rcpp_0.12.17    digest_0.6.15   DBI_1.0.0       RSQLite_2.1.1
+  [5] blob_1.1.1      tools_3.5.0     bit64_0.9-7     bit_1.1-14
+  [9] compiler_3.5.0  pkgconfig_2.0.1 memoise_1.1.0
+
 *------------------------------------------------------------------------------------------------
+* trena bplapply
+
+   --- used just for database lookup.  runs fast and robustly
+
+     library(BiocParallel)
+     library(RPostgreSQL)
+     dbcall <- function(rows){
+       database.host <- "bddsrds.globusgenomics.org"   # "khaleesi"
+       dbName <- "brain_hint_20"
+       db.fp <- dbConnect(PostgreSQL(),
+                          user="trena", password="trena",
+                          dbname=dbName, host=database.host)
+       query <- sprintf("select * from hits limit %d", rows)
+       tbl <- dbGetQuery(db.fp, query)
+       dbDisconnect(db.fp)
+       return(tbl)
+       }
+
+     row.counts <- sample(1:1000, 100)  # 86 workers on our linux box.
+     system.time(results <- bplapply(row.counts, dbcall,
+                                     BPPARAM=MulticoreParam()))
+     fivenum(unlist(lapply(results, nrow))) # 13.0 277.0 521.0 759.5 993.0
+
+
+*------------------------------------------------------------------------------------------------
+* GO enrichment, kegg, pathway enrichment for cory (3 jul 2018)
+
+   ~/github/genomescale_scripts/pathwayEnrichment.R
+
+    drawing from ancient ~/s/data/public/human/xref.R
+                         ~/s/data/utils/go.R
+
+*------------------------------------------------------------------------------------------------
+* igap ad genes (from cory, 25 jun 2018)
+
+  igap.ad.genes <- c("CR1", "BIN1", "CD2AP", "EPHA1", "CLU", "MS4A6A", "PICALM",
+                     "ABCA7", "CD33", "HLA-DRB5", "HLA-DRB1", "PTK2B", "SORL1",
+                     "SLC24A4", "RIN3", "DSG2", "INPP5D", "MEF2C", "NME8", "ZCWPW1",
+                     "CELF1", "FERMT2", "CASS4", "APOE", "TOMM40")
+
+
+*------------------------------------------------------------------------------------------------
+* cytoscape.js minimal, loads json graph saved from RCyjs, demonstrates need for promise
+
+  cd ~/github/STP/miscellany/cytoscape-promise-experiments/
+
+    -rw-r--r--  1 paul  staff    1499 Jul  2 14:55 basic.html
+    -rw-r--r--  1 paul  staff  785864 Jul  2 14:27 cytoscape.js
+    -rw-r--r--  1 paul  staff  162082 Jul  2 15:05 sampleGraph.json
+
+*------------------------------------------------------------------------------------------------
+* freya mathews, ecological self, descola: bodies and minds (2 jul 2018)
+
+  p40 construction of our own identity w/in a cartesian framework involves primary identification
+  with our mental substance and only a secondary, grudging contingent identification with
+  our bodies.  however no general criterion for identifying and individuating mental substances
+  is available within the cartesian framework.  leading to the cartesian legacy "problem of
+  other minds".  the only criterion avialable is spatio-temporal, which requires clear and
+  distinct boundaries encouraging a crude behaviorist orientation in social thinking.
+
+  compare descola's achuar, and the early missionary/native experiments reported by levi-strauss
+  in which shared mentalities and shared cultures are assumed across species boundaries.
+  every critter has a soul, missionaries have a soul, but do they have a body that rots?
+  while the missionaries knew indians had bodies, were not sure they had souls.
+
+*------------------------------------------------------------------------------------------------
+* david beck, Line.py, added tier classification, trying to automate a good-enogh structure determination (1 jul 2018)
+
+  cd ~/github/IJAL-interlinear/iiGenerator/
+  test_Line.py
+
+  def test_getTable_from_LOKONO():
+     print("--- test_getTable_from_LOKONO")
+     pd.set_option('display.width', 1000)
+     filename = "../testData/LOKONO_IJAL_2.eaf"
+     doc = etree.parse(filename)
+     x2 = Line(doc, 3)
+     tbl2 = x2.getTable()
+     assert(x2.classifyTier(0) == "spokenText")
+     assert(x2.classifyTier(1) == "nativeGlossOrFreeTranslation")
+     assert(x2.classifyTier(2) == "nativeMorpheme")
+
+   call upon this code in Line.py
+
+     if(hasTimes):
+        return("spokenText")
+     if(not hasText):
+        return("empty")
+     if(directChildElement):
+        if(hasChildren):
+           return("nativeMorpheme")
+        else:
+           return("nativeGlossOrFreeTranslation")
+     return("unrecognized")
+
+
+   --- next up: distinguish between nativeGloss and freeTranslation
+      both are terminal leaves, I think
+        but nativeGlosses have nativeMorpheme parents
+      handle tabs versus multiple elements, for both nativeMorphemes and nativeGlosses
+
+*------------------------------------------------------------------------------------------------
+* Myrmecophily in beetles (Coleoptera): evolutionary patterns and biological mechanisms
+
+  see sterelny, thought in a hostile world, p15.
+
+  meer muh CO philly
+
+  http://www.antwiki.org/wiki/images/5/52/Parker_2016.pdf
+
+ants recognize and react to one another by specific chemical and mechanical cues, so parasites bearing
+no physical or other resemblance to the ants can invade and explore their nests by
+mimicking the right specific signals.  thus a number of beetle species live in ant ntests, mimicking
+the ants'chemical signature and the food-begging gestures.  these beetles persuade their hots to feed
+them and even to tolerate their feeding upon the ants' larvae (The Ants, Holldobler
+and Wildonw, 19990,  498-505)
+
+agnets that rely wholly on detection systems (single-cued discriminatory mechanisms, p14) are
+limited in an important way.  in dennett's felicitous phrase, they are "sphexish"; so called
+for a wasp whose search routine was rigidly controled by a specific cue.
+
+  sphexish: deterministic; pre-programmed   of wasps from the sphex genus
+
+   Uses in philosophy
+
+   Some writers in the philosophy of mind, most notably Daniel
+   Dennett, have cited Sphex's behavior for their arguments about
+   human and animal free will[5].
+
+  Some Sphex wasps drop a paralyzed insect near the opening of the
+  nest. Before taking provisions into the nest, the Sphex first
+  inspects the nest, leaving the prey outside. During the inspection,
+  an experimenter can move the prey a few inches away from the
+  opening. When the Sphex emerges from the nest ready to drag in the
+  prey, it finds the prey missing. The Sphex quickly locates the moved
+  prey, but now its behavioral "program" has been reset. After
+  dragging the prey back to the opening of the nest, once again the
+  Sphex is compelled to inspect the nest, so the prey is again dropped
+  and left outside during another stereotypical inspection of the
+  nest. This iteration can be repeated several times without the Sphex
+  changing its sequence; by some accounts, endlessly. Dennett's
+  argument quotes an account of Sphex behavior from Dean Wooldridge's
+  Machinery of the Brain (1963).[6] Douglas Hofstadter[7] and Daniel
+  Dennett[8] have used this mechanistic behavior as an example of how
+  seemingly thoughtful behavior can actually be quite mindless, the
+  opposite of free will (or, as Hofstadter described it,
+  sphexishness).
+
+  Philosopher Fred Keijzer challenges this use of Sphex, citing
+  experiments in which behavioral adaptations are observed after many
+  iterations. Keijzer sees the persistence of the Sphex example in
+  cognitive theory as an indication of its rhetorical usefulness, not
+  its factual accuracy.[9] Of course, the repeated inspection of a
+  disturbed nest may very well be an adaptive behavior, thus
+  diminishing the aptness of Hofstadter's metaphor.
+
+
+   Origin: Coined by Douglas Hofstadter in his column Metamagical Themas, after a study of the behaviour of sphexide wasps.
+
+  Sphexishness
+
+  One kind of determinism, genetic fixity, is illustrated powerfully
+  by the example of the digger wasp, Sphex ichneumoneus: When the time
+  comes for egg laying, the wasp Sphex builds a burrow for the purpose
+  and seeks out a cricket which she stings in such a way as to
+  paralyze but not kill it. She drags the cricket into the burrow,
+  lays her eggs alongside, closes the burrow, then flies away, never
+  to return. In due course, the eggs hatch and the wasp grubs feed off
+  the paralyzed cricket, which has not decayed, having been kept in
+  the wasp equivalent of deep freeze. To the human mind, such an
+  elaborately organized and seemingly purposeful routine conveys a
+  convincing flavor of logic and thoughtfulness--until more details
+  are examined. For example, the Wasp's routine is to bring the
+  paralyzed cricket to the burrow, leave it on the threshold, go
+  inside to see that all is well, emerge, and then drag the cricket
+  in. If the cricket is moved a few inches away while the wasp is
+  inside making her preliminary inspection, the wasp, on emerging from
+  the burrow, will bring the cricket back to the threshold, but not
+  inside, and will then repeat the preparatory procedure of entering
+  the burrow to see that everything is all right. If again the cricket
+  is removed a few inchies while the wasp is inside, once again she
+  will move the cricket up to the threshold and re-enter the burrow
+  for a final check. The wasp never thinks of pulling the cricket
+  straight in. On one occasion this procedure was repeated forty
+  times, always with the same result. (Woodridge, 1963, p. 82) Dennett
+  (1996), following Hofstadter (1982), calls this kind of very simply
+  determined behavior sphexish, but believes that too much has been
+  made of emblematic stories (or intuition pumps) like the one above,
+  because human behavior is much more complexly determined.
+
+
+   ---- the dangerous game of the highwayman beetle
+
+     https://clas.asu.edu/content/dangerous-game-highwayman-beetle
+     the original article:
+        http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0180847#sec001
+
+-----------------------------------------------------------------------------------------------
+* rcyjs no browser file found (29 jun 2018)
+
+  cd ~/tmp/rcyjs-release/
+  git clone git@git.bioconductor.org:packages/RCyjs
+  grep -i version DESCRIPTION # Version: 2.3.1
+  git checkout RELEASE_3_7    # Version: 2.2.0
+
 *------------------------------------------------------------------------------------------------
 * shiny, docker, shinyProxy: the euler example (28 jun 2018)
 
     cd ~/github/trenaShinyApps/shinyProxyDemo/eulerMeAlternateInstallDirectory/euler/
-    
+
     --- Rprofile.site
      local({options(shiny.port = 3838, shiny.host = "0.0.0.0")})
 
-    
+
     --- euler/app.R
       port <- 3838
       shinyOptions <- list(port=port)
@@ -151,9 +444,9 @@ bed format: chrom, start, end, name, score, strand
            docker-cmd: ["/usr/bin/R", "-e", "shiny::runApp('/home/euler/app.R')"]
            docker-image: eulershinyproxy3
            groups: scientists
-		       
 
-  
+
+
 
 *------------------------------------------------------------------------------------------------
 * ess for emacs, from github, simple configuration (27 jun 2018)
@@ -267,6 +560,9 @@ bed format: chrom, start, end, name, score, strand
    cd ~/github/IJAL-interlinear/iiGenerator/
    using elpy successfully
 
+   phoneme:  smallest units of sound
+   morpheme: smallest units of meaning
+
    the only active test at present is
       test_spokenTextID
    this id, typically "aN" points to children.
@@ -276,7 +572,7 @@ bed format: chrom, start, end, name, score, strand
                   each word has backpointers from two children via the ANNOTATION_REF filed
                           one morpheme:   a20516 -> a12117
                           one gloss:      a22373 -> a12117
-    next up: use these backpointers to idenityf
+    next up: use these backpointers to idenity
        the translation
        the tokenized elements (three tiers here) which may each by a single tab-delimited element, or a siblings, one phoneme/morpheme/gloss per element
 
@@ -310,10 +606,6 @@ pd.set_option('display.width', 1000)
 * python console width pandas
 
    pd.set_option('display.width', 1000)
-
-
-
-
 
 *------------------------------------------------------------------------------------------------
 * eaf structure
@@ -27129,6 +27421,22 @@ tbl.iloc[:, [4,3,4]]
          4    3    4
     0  9.9  fp1  9.9
     1  0.5  fp2  0.5
+
+  # loc with boolean indexing:
+
+tbl['name'] == 'fp1'
+# 0     True
+# 1    False
+# 2    False
+# 3    False
+
+tbl.loc[tbl['name'] == 'fp1']
+#  chrom  start  end name  score
+#0  chr1     10  100  fp1    9.9
+
+
+tbl.loc[tbl['name'] == 'fp1', 'score'].tolist()   # [9.9]
+
 
 tbl.to_csv("test.tsv", sep="\t", header=False, index=False)
 
