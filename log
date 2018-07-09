@@ -96,6 +96,79 @@ bed format: chrom, start, end, name, score, strand
 
 * -top-
 *------------------------------------------------------------------------------------------------
+
+*------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------
+* trem2 shiny app (9 jul 2018)
+
+  ssh pshannon@trena
+  cd ~/github/trenaShinyApps/trem2/shinyApp/
+  make runInShell runInBackground dockerImage
+
+*------------------------------------------------------------------------------------------------
+*  max postgres connections on khaleesi is 16, how to increase?  (9 jul 2018)
+
+   https://stackoverflow.com/questions/39079934/where-to-define-the-maximum-number-of-connections-in-postgres
+
+   postgresql.conf = max_connections = 100
+*------------------------------------------------------------------------------------------------
+* youtube -> mp3
+
+   --- clipgraph (8 jul 2018)
+
+
+   --- email from johnny (12 nov 2017)
+      I use something called MacX Video Converter Pro.
+      Website here: https://www.macxdvd.com/mac-video-converter-pro/
+      Feel free to pay for it, but for the record I have paid for it *at least twice* (they have been terrible
+        in the past at licensing), and have no qualms about sharing the download.
+      Serial number: AYFYA-CRPF5-Y7K4N-6BFVH
+      If they need an email it is morenoise@gmail.com.
+
+   --- got trial version (8 jul 2018)
+
+*------------------------------------------------------------------------------------------------
+* sword fern photos (7 jul 2018)
+
+  cd ~/s/fernPhotos/experimentalPlanting2018
+
+   NUMBERED FERNS 2018:
+      subsequent to the inital 3 sets of 12, 1-17/18, each a directory
+   activeDieOff:
+     fern01-12
+   groundZeroSouth:
+      fern01-12
+   groundZeroNorth:
+      fern01-12
+   lazarus:
+     (7 feb - 2 jun)
+   n of 2 survivir (jillian weed #1)
+     (18 feb 2018 - 2 jun 2018)
+
+   rebirth
+
+*------------------------------------------------------------------------------------------------
+* git tips
+
+   https://blog.github.com/2015-06-08-how-to-undo-almost-anything-with-git/
+
+   --- check and winnow staged files
+
+       git reset HEAD dockerImages/trenaPrereqsData/SNPlocs.Hsapiens.dbSNP150.GRCh38_0.99.20.tar.gz
+
+
+   --- history
+      git log
+      git reflog: commit messages,
+
+   ---  git reset
+    git reset --hard HEAD
+    git reset --hard HEAD~4
+    git reset --hard HEAD
+    git reset --hard HEAD~1
+
 *------------------------------------------------------------------------------------------------
 * ijal Line.py david beck (4 jul 2018)
 
