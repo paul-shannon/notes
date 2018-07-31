@@ -78,7 +78,7 @@ tail -f /var/log/httpd/rcytoscape/access_log
 
 
 .git/config, git tips, ssh login: 	url = git@github.com:paul-shannon/browservizjs.git
-*------------------------------------------------------------------------------------------------100
+*------------------------------------------------------------------------------------------------
 ;; eval last sexp: ^x^e
 (set-background-color "wheat")
 (set-background-color "lemonChiffon3")
@@ -96,10 +96,707 @@ bed format: chrom, start, end, name, score, strand
 
 * -top-
 *------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------
+*------------------------------------------------------------------------------------------------
+* shinyproxy
+
+     /etc/shinyproxy/application.yml
+     /etc/shinyproxy/shinyproxy.log
 
 *------------------------------------------------------------------------------------------------
+*  animate omar's interaction networ, over time (26 jul 2018)
+
+  cd ~/github/interactionNetworks/analysis-viz/networkAnimation/
+    interaction_bundle_dayNumber.RData
 *------------------------------------------------------------------------------------------------
+* cyjShiny: a first rough version (26 jul 2018)
+
+  cd ~/github/cyjShiny/inst/browserCode
+  make
+  cd ../unitTests
+  R> source("tinyApp.R"); shinyApp(ui, server)
+  cannot yet load style file.   this might help:
+    https://stackoverflow.com/questions/25297489/accept-http-request-in-r-shiny-application
+
 *------------------------------------------------------------------------------------------------
+* shinyWidget tips
+
+   --- pass data to widget constructor called in R
+      see https://raw.githubusercontent.com/daattali/timevisBasic/master/R/timevisBasic.R
+
+*------------------------------------------------------------------------------------------------
+* ijal design2 (25 jul 2018): extract subset and write out wav file
+
+
+   --- extractAudio.py
+     from xml.etree import ElementTree as etree
+     filename = "../testData/daylight_1_4.eaf"
+     xmlDoc = etree.parse(filename)
+     timeSlots = xmlDoc.findall("TIME_ORDER/TIME_SLOT")
+     startTimes = [int(x.attrib["TIME_VALUE"]) for x in timeSlots]
+     print(startTimes)
+     soundFileElement = xmlDoc.findall("HEADER/MEDIA_DESCRIPTOR")
+     soundFileURI = soundFileElement[0].attrib["MEDIA_URL"]
+
+
+
+from xml.etree import ElementTree as etree
+from scipy.io.wavfile import *
+
+def getAudioSpecs(filename):
+   xmlDoc = etree.parse(filename)
+   timeSlots = xmlDoc.findall("TIME_ORDER/TIME_SLOT")
+   startTimes = [int(x.attrib["TIME_VALUE"]) for x in timeSlots]
+   soundFileElement = xmlDoc.findall("HEADER/MEDIA_DESCRIPTOR")
+   soundFileURI = soundFileElement[0].attrib["RELATIVE_MEDIA_URL"]
+   #soundTimeOrigin = soundFileElement[0].attrib["TIME_ORIGIN"]
+   print(soundFileURI)
+   print(startTimes)
+
+test_getSpecs():
+   getAudioSpecs("../testData/daylight_1_4.eaf")
+   getAudioSpecs("../testData/LOKONO_IJAL_2.eaf")
+   getAudioSpecs("../testData/monkeyAndThunder/AYA1_MonkeyandThunder.eaf")
+
+
+rate, mtx = read("../testData/daylight_1_4.wav")
+mtx.shape
+mtx.shape[0]/rate   # about 23 seconds
+
+# [0, 6600, 12700, 17800]
+start = 0
+end = int(6000 * rate/1000)
+phrase = mtx[start:end, ]
+phrase.shape
+write('daylight.01.wav', rate, phrase)
+
+
+
+
+
+*------------------------------------------------------------------------------------------------
+* ijal Line.py david beck (21 jul 2018)
+
+  cd ~/github/IJAL-interlinear/iiGenerator/
+
+  --- see below (4 jul 2018)
+  ready (at least in part):
+    test_spokenTextID()
+    test_deduceWordRepresentation(): noWords, tokenizedWords, or wordsDistributedInElements
+    test_traverse(): identifies spoken text, free translation, fails to traverse on
+       noWords representation at start of monkey, where there is an empty phoneme line
+
+  --- first task: in reading a line, of any tier has no text, do not include it in the table
+     demonstrated in test_Line.py, test_traverse():
+         filename = "../testData/monkeyAndThunder/AYA1_MonkeyandThunder.eaf"
+         doc = etree.parse(filename)
+         x0 = Line(doc, 0)
+         x0.getTable()  # lines 1 and 3 have no TEXT
+
+*------------------------------------------------------------------------------------------------
+* very preliminary cyjShiny widget (20 jul 2018)
+
+  cd ~/github/cyjShiny
+  next up:
+     - how to make widget height follow the window size
+     - how to put message-hander.js into the bundle?
+     - add some basic butons - in js?
+     - loadStyleSheet in R
+
+*------------------------------------------------------------------------------------------------
+* alison: predicting perturbed tf binding sites for palcental rs7594852: 2 genes (20 jul 2018)
+
+   cd ~/github/trenaShinyApps/alison/CKAP2L/dataPrep/
+   trena-motifbreakR-enhancer-study.R
+
+   loads previously calculated chr2 gene enhancers
+   gets jaspar2018, hocomoco and swissregulon motifs
+   runs motifbreakR on that snp
+   filters the results
+   gets trena models on all those chr2 genes, extracts tfs
+   intersect tfs with motifbreakrR tfs (those associated with the broekne binding at the snp)
+   merge the tables, simplify, mailed this to alison
+
+I found two “strong” motifbreakR results with the Cincinnati snp, rs7594852
+
+The method:
+  1) find all genes on chr2 with enhancers which intersect the snp
+  2) find all the human (hocomoco, jaspar2018, swissregulon) motifs which break on this snp
+  3) find all the trena-predicted tfs, rank <= 10, each of the chr2 genes in #1
+  4) select the motif/tf/targetGenes which meet criteria 1-3
+
+They are just two.   RGPD8 seems to be the stronger of the two, with negative spearman, 15% binding match lost, wild-type being a strong (94%) match.
+
+We don’t want to treat this as gospel truth (even computationally) without more and some repeat analysis.  This was a quick study and needs careful checking - which I will be glad to do if this results is at all interesting.
+
+- Paul
+
+
+                                                    2                                   4
+targetGene                                      POLR1B                               RGPD8
+TF                                               INSM1                                NFIA
+REF                                                  C                                   C
+ALT                                                  T                                   T
+snpPos                                       112764177                           112764177
+motifPos                                             2                                   6
+dataSource                                 HOCOMOCOv10                         HOCOMOCOv10
+seqMatch                                  cgcctcctggCa                             cctggCa
+pctRef                                       0.8773316                           0.9444337
+pctAlt                                       0.7960562                           0.7932736
+effect                                          strong                              strong
+betaLasso                                    0.0000000                          -0.1205352
+lassoPValue                               8.926726e-01                        2.068607e-17
+pearsonCoeff                                 0.2820912                          -0.5169928
+rfScore                                       3.298819                            8.425475
+spearmanCoeff                                0.2909920                          -0.5437562
+pcaMax                                        2.141165                            1.291639
+rank                                                 6                                   7
+
+
+*------------------------------------------------------------------------------------------------
+* trena whole genome models, batch, bplapply (20 jul 2018)
+
+ khaleesi:~/github/trenaSGM/inst/batch/cory/AD/tbl.models.all.RData
+    -rw-r--r--     1 pshannon pricelab 191829284 Jul 12 16:00 tbl.models.all.RData
+
+  copied to riptide:
+  load("~/github/trenaSGM/inst/batch/cory/AD/tbl.models.all.RData")
+
+
+*------------------------------------------------------------------------------------------------
+* create single geneHancer data.frame for chr2, for alison, a quick foray (20 jul 2018)
+
+  performed on khaleesi
+  ~/github/genomescale_scripts/geneHancer/v4.7
+
+    # get all the genes on chromsome 2
+    # build a multi-gene table with all of the genehancer data
+    source("getAllEnhancers.R")
+    library(org.Hs.eg.db)
+    library(BiocParallel)
+    tbl.chrom <- as.data.frame(org.Hs.egCHR)
+    genes.chrom2 <- subset(tbl.chrom, chromosome=="2")$gene_id   # 4245
+    keytypes(org.Hs.eg.db)
+    #  [1] "ACCNUM"       "ALIAS"        "ENSEMBL"      "ENSEMBLPROT"  "ENSEMBLTRANS" "ENTREZID"
+    #  [7] "ENZYME"       "EVIDENCE"     "EVIDENCEALL"  "GENENAME"     "GO"           "GOALL"
+    # [13] "IPI"          "MAP"          "OMIM"         "ONTOLOGY"     "ONTOLOGYALL"  "PATH"
+    # [19] "PFAM"         "PMID"         "PROSITE"      "REFSEQ"       "SYMBOL"       "UCSCKG"
+    # [25] "UNIGENE"      "UNIPROT"
+    geneSyms.chrom2 <- select(org.Hs.eg.db, keys=genes.chrom2, keytype="ENTREZID", columns="SYMBOL")$SYMBOL  # 4245
+    length(geneSyms.chrom2)
+    x <- bplapply(geneSyms.chrom2, getAllEnhancers)
+    tbl.enhancers.chr2 <- do.call(rbind, x)
+    dim(tbl.enhancers.chr2)
+    length(unique(tbl.enhancers.chr2$geneSymbol))
+    save(tbl.enhancers.chr2, file="tbl.enhancer.chr2.RData")
+
+
+*------------------------------------------------------------------------------------------------
+* select tips, mappedkeys, get genes on a chromosome, org.Hs.eg.db
+
+   keytypes(org.Hs.eg.db)  # doesn't help here
+
+   entrez.ids <- head(mappedkeys(org.Hs.egCHR))  #  "1"         "10"        "100"       "1000"      "10000"     "100008586"
+   as.list(org.Hs.egCHR[entrez.ids])
+      $`1`
+      [1] "19"
+
+      $`10`
+      [1] "8"
+      ...
+
+    summary(org.Hs.egCHR)
+    CHR map for Human (object of class "AnnDbBimap")
+    |
+    | Lkeyname: gene_id (Ltablename: genes)
+    |    Lkeys: "1", "2", ... (total=60140/mapped=59973)
+    |
+    | Rkeyname: chromosome (Rtablename: chromosomes)
+    |    Rkeys: "19", "12", ... (total=26/mapped=26)
+    |
+    | direction: L --> R
+
+   tbl.chrom <- as.data.frame(org.Hs.egCHR)
+   genes.chrom2 <- subset(tbl.chrom, chromosome=="2")$gene_id
+   length(genes.chrom2)  # [1] 4245
+   geneSyms.chrom2 <- select(org.Hs.eg.db, keys=genes.chrom2, keytype="ENTREZID", columns="SYMBOL")$SYMBOL
+   length(geneSyms.chrom2) # [1] 4245
+
+
+*------------------------------------------------------------------------------------------------
+* use of boxplot to idenitfy outliers,from young eun huh
+
+   outlier <- function(x){
+      qnt <- boxplot.stats(x)$stats
+       y<-x
+       y[x < qnt[1] | x > qnt[5]] <- NA
+      y
+      }
+
+   boxlplot seems to return 5 numbers, like fivenum, but constrains them to a normal distribution.
+   everything beyond boxplot max and min are the outlisers.
+
+*------------------------------------------------------------------------------------------------
+* jared's british mystery tv shows (19 jul 2018)
+
+
+   Foyle’s War
+   Endeavour (prequel to Inspector Morse with excellent production).
+      Note: prequels are typically better than the originals because it means the original was successful
+      and money was poured into the prequel
+   DCI Banks
+   Grantchester
+   Vera
+   Death in Paradise (whimsical set in Bahamas)
+   Father Brown (comedic)
+   Happy Valley
+   Silk
+   Inspector Morse (many are banal but one in particular is sublime -> “A Walk in the Woods”)
+   Inspector Lewis  (sequel to Inspector Morse with often really good plots production; one in particular is a family genomics episode: “The Lions of Nemea")
+   Poirot
+   Mrs. Marple
+   Sherlock (weird but sometimes good)
+
+  --- MINISERIES
+     Place of Execution (one of my favorites)
+     Unforgotten
+     Prime Suspect: Tennison  (this is a prequel to the the Prime Suspect series)
+     Death Comes to Pemberley (sequel to Pride & Prejudice!)
+     The Escape Artist
+     The Bletchley Circle
+    Prime Suspect 7: The Final Act  (and also some of the earlier Prime Suspects)
+
+ And one great American Mystery Series:
+  Monk (with this family genomics episode: "Mr. Monk and the Big Game”)
+
+*------------------------------------------------------------------------------------------------
+* lastpass, web password: ignore sites (18 jul 2018)
+
+  find chrome plugin icon at top right of screen,
+  then choose menu at top right labeled with my email address
+     Vault > Account Settings > Never URLs
+     choose "never do anything"
+     enter url (maybe at the domain name level)
+
+*------------------------------------------------------------------------------------------------
+* motifbreakR on igap gene HLA-DRB1 (16 jul 2018)
+
+  cd ~/github/trenaShinyApps/igap/survey
+  source("hla-drb1.R")
+  with just 3 snps (many more, even high-scoring wrt igap, but not in snplocs, having been
+                    subsequently merged by dbsnp)
+
+  and five hand-picked motifs:
+    pfm.names <- c(sp100="Hsapiens-SwissRegulon-SP100.SwissRegulon",
+                   spi1="Hsapiens-jaspar2018-SPI1-MA0080.4",
+                   tfec="Hsapiens-jaspar2018-TFEC-MA0871.1",
+                   ikzf1="Hsapiens-HOCOMOCOv10-IKZF1_HUMAN.H10MO.C",
+                   elk3="Hsapiens-HOCOMOCOv10-ELK3_HUMAN.H10MO.D")
+
+   snps.known <- c("rs9270839", "rs9271050",  "rs9272561")
+   snps.gr <- snps.from.rsid(rsid = snps.known, dbSNP=SNPlocs.Hsapiens.dbSNP150.GRCh38, search.genome=BSgenome.Hsapiens.UCSC.hg38)
+   motifs <- MotifDb[as.character(pfm.names)]
+   results <- motifbreakR(snpList = snps.gr,
+                          filterp = TRUE,
+                          pwmList = motifs,
+                          show.neutral=TRUE,
+                          method = c("ic", "log", "notrans")[2],
+                          bkg = c(A=0.25, C=0.25, G=0.25, T=0.25),
+                          BPPARAM = BiocParallel::bpparam(),
+                          verbose=TRUE)
+   as.data.frame(mcols(results))
+               REF ALT   snpPos motifPos geneSymbol   dataSource        providerName          providerId                 seqMatch    pctRef    pctAlt    scoreRef    scoreAlt Refpvalue Altpvalue   alleleRef  alleleAlt effect
+   rs9270839     A   C 32602598        7       ELK3  HOCOMOCOv10  ELK3_HUMAN.H10MO.D  ELK3_HUMAN.H10MO.D      tggttAacggac        0.6507731 0.6507731  -0.9699428  -0.9699428        NA        NA 0.000000000 0.00000000   neut
+   rs9272561     G   A 32639364        2       ELK3  HOCOMOCOv10  ELK3_HUMAN.H10MO.D  ELK3_HUMAN.H10MO.D ccatatttttGt             0.6446269 0.6275304  -1.1812519  -1.7690386        NA        NA 0.285714286 0.14285714   neut
+   rs9271050     G   A 32607498       12       ELK3  HOCOMOCOv10  ELK3_HUMAN.H10MO.D  ELK3_HUMAN.H10MO.D           Gtatattcatac   0.6741103 0.5855566  -0.1675963  -3.2121188        NA        NA 0.714285714 0.00000000 strong
+   rs9272561.1   G   A 32639364        3      IKZF1  HOCOMOCOv10 IKZF1_HUMAN.H10MO.C IKZF1_HUMAN.H10MO.C         ttGtggag         0.7720741 0.6881191   0.4544455  -2.4143271        NA        NA 0.950000000 0.05000000 strong
+   rs9270839.1   A   C 32602598        5      IKZF1  HOCOMOCOv10 IKZF1_HUMAN.H10MO.C IKZF1_HUMAN.H10MO.C        gttAacgg          0.5155638 0.6755874  -8.3106000  -2.8425398        NA        NA 0.000000000 0.98333333 strong
+   rs9271050.1   G   A 32607498        6      IKZF1  HOCOMOCOv10 IKZF1_HUMAN.H10MO.C IKZF1_HUMAN.H10MO.C      aaaggGta            0.6798458 0.7299505  -2.6970264  -0.9849344        NA        NA 0.150000000 0.85000000 strong
+   rs9272561.2   G   A 32639364       10      SP100 SwissRegulon  SP100.SwissRegulon  SP100.SwissRegulon       ttttGtggaggaag     0.7307654 0.7301196   1.8428048   1.8183008        NA        NA 0.081493492 0.07951479   neut
+   rs9270839.2   A   C 32602598        5      SP100 SwissRegulon  SP100.SwissRegulon  SP100.SwissRegulon       ggttAacggacagt     0.7705434 0.7728513   3.3520511   3.4396139        NA        NA 0.221418000 0.24170300   neut
+   rs9271050.2   G   A 32607498        9      SP100 SwissRegulon  SP100.SwissRegulon  SP100.SwissRegulon   gataaaggGtatat         0.7283446 0.6787574   1.7509548  -0.1304720        NA        NA 0.590613118 0.08978132   weak
+   rs9272561.3   G   A 32639364        3       SPI1   jaspar2018            MA0080.4            MA0080.4         ttGtggaggaagag   0.7118728 0.7738730 -12.3925638  -5.9680974        NA        NA 0.001570783 0.99214608 strong
+   rs9270839.3   A   C 32602598        4       SPI1   jaspar2018            MA0080.4            MA0080.4        gttAacggacagta    0.6798182 0.5817673 -15.7140671 -25.8741198        NA        NA 0.980750535 0.00000000 strong
+   rs9271050.3   G   A 32607498       10       SPI1   jaspar2018            MA0080.4            MA0080.4  agataaaggGtata          0.6215404 0.7197732 -21.7528241 -11.5739224        NA        NA 0.000000000 0.99941269 strong
+   rs9270839.4   A   C 32602598        1       TFEC   jaspar2018            MA0871.1            MA0871.1  agcatggttA              0.5878825 0.6997170  -9.6078920  -4.2476923        NA        NA 0.000000000 0.33720930   neut
+   rs9272561.4   G   A 32639364        2       TFEC   jaspar2018            MA0871.1            MA0871.1   atatttttGt             0.6078934 0.6312405  -8.6487737  -7.5297525        NA        NA 0.152866242 0.47133758   neut
+   rs9271050.4   G   A 32607498        9       TFEC   jaspar2018            MA0871.1            MA0871.1   gataaaggGt             0.6401700 0.6732814  -7.1017630  -5.5147431        NA        NA 0.140186916 0.69158879   weak
+
+*------------------------------------------------------------------------------------------------
+* genehancer, enhancers, new approach bringing in all of the supplied data (16 jul 2018)
+
+  see ~/github/trenaShinyApps/igap/survey/surveyGenes.R
+   f <- "~/s/data/public/GeneHancer/v4.7/enhancer_gene_scores.txt"
+   tbl.geneScoresAll <- read.table(f, sep="\t", as.is=TRUE, header=TRUE)  #  934287      9
+   f <- "~/s/data/public/GeneHancer/v4.7/enhancer_elite_ids.txt"
+   tbl.locsAll <- read.table(f, sep="\t", as.is=TRUE, header=TRUE)        #  243281      6
+
+getAllEnhancers <- function(geneSymbol) {
+  tbl.geneScores <- subset(tbl.geneScoresAll, symbol==geneSymbol)
+  clusterIDs <- sort(unique(tbl.geneScores$cluster_id))
+  tbl.locs <- subset(tbl.locsAll, cluster_id %in% clusterIDs)
+  tbl.regions <- merge(tbl.locs, tbl.geneScores, by="cluster_id")
+  if(!grepl("chr", tbl.regions$chr[1]))
+      tbl.regions$chr <- paste("chr", tbl.regions$chr, sep="")
+
+  table(tbl.regions$regulatory_element_type) # 4 promoters, 21 enhancers
+
+  coi <- c("chr", "enhancer_start", "enhancer_end", "regulatory_element_type", "combined_score")
+  tbl.promoters <- subset(tbl.regions, regulatory_element_type=="Promoter/Enhancer")[, coi]
+  tbl.enhancers <- subset(tbl.regions, regulatory_element_type=="Enhancer")[, coi]
+
+  #track.p <- DataFrameAnnotationTrack("GH 4.7 promoters", tbl.promoters, color="blue", trackHeight=30)
+  #track.e <- DataFrameAnnotationTrack("GH 4.7 enhancers", tbl.enhancers, color="darkblue", trackHeight=30)
+  #displayTrack(igv, track.p)
+  #displayTrack(igv, track.e)
+  #region("enhancers")
+
+  # list(promoters=tbl.promoters, enhancers=tbl.enhancers)
+  tbl.regions[, coi]
+
+} # getAllEnhancers
+
+
+
+*------------------------------------------------------------------------------------------------
+* motifbreakR on rs7599330
+
+  library(motifbreakR)
+  library(SNPlocs.Hsapiens.dbSNP150.GRCh38)
+  library(BSgenome.Hsapiens.UCSC.hg38)
+
+  tss <- 41163186
+  snp <- "rs7599330"
+  #tbl.snps <- data.frame(chromoosome="chr6", start=41182853, end=41182853, name="rs9357347", score=0, strand="+",
+  #                       stringsAsFactors=FALSE)
+  snps.gr <- snps.from.rsid(rsid = snp,
+                            dbSNP=SNPlocs.Hsapiens.dbSNP150.GRCh38,
+                            search.genome=BSgenome.Hsapiens.UCSC.hg38)
+
+  results <- motifbreakR(snpList = snps.gr, filterp = TRUE,
+                         pwmList = MotifDb["Hsapiens-SwissRegulon-SP100.SwissRegulon"],
+                         threshold = 0,
+                         method = "ic",
+                         bkg = c(A=0.25, C=0.25, G=0.25, T=0.25),
+                         BPPARAM = BiocParallel::bpparam())
+   nothing...
+
+*------------------------------------------------------------------------------------------------
+* survey ad genes for model/tf breaking snps: focus on INPP5D (14 jul 2018)
+
+   the spi1 enhancer/snp/SPI1/MA0080.4 hit at chr2:233,133,429-233,133,445
+      is exactly on the one central but highly variable base.
+
+   --- the nfatc2 snp (chr2 233094561 233094561 rs7423246)
+    subset(tbl.gwas, SNP=="rs7423246")
+             CHR    oldPos        BP       SNP Effect_allele Non_Effect_allele    Beta     SE      P
+     1099084 chr2 233959271 233094561 rs7423246             G                 A -0.0357 0.0172 0.0385
+     igv shows reference base is G, not A
+     con: P 0.0385 is weak
+     pro: mandatory base is now provided:  ttttcCa
+
+   --- better case with rs10933435 & FLI1
+      subset(tbl.gwas, SNP=="rs10933435")
+             CHR    oldPos        BP        SNP Effect_allele Non_Effect_allele    Beta     SE      P
+    1099223 chr2 233998146 233133436 rs10933435             G                 A -0.0322 0.0155 0.0376
+
+                              motif sequence.name     start      stop strand   score  p.value q.value matched.sequence   pScore regionNumber chrom
+ Hsapeiens-jaspar2018-FLI1-MA0475.2       seq0003 233133435 233133444      + 11.4719 5.77e-05   0.969       ACAGGAAGTC 4.238824            3  chr2
+
+    the third base should be a C(mainly) or an (A) but the variant is a G,
+
+   MotifDb[["Hsapiens-jaspar2018-FLI1-MA0475.2"]]
+            1           2           3            4           5            6            7          8          9        10
+    A 0.79738753 0.060129053 0.060367454 1.146973e-04 0.000000000 0.9988312670 0.8733794209 0.43185929 0.01930319 0.2441610
+    C 0.02671009 0.895688628 0.937696313 0.000000e+00 0.000000000 0.0004812430 0.0046087566 0.01272834 0.24043986 0.1770293
+    G 0.09388778 0.038181743 0.001936233 9.998394e-01 0.998625304 0.0004354103 0.0004809137 0.55353590 0.04273817 0.4258248
+    T 0.08201460 0.006000575 0.000000000 4.587893e-05 0.001374696 0.0002520797 0.1215309087 0.00187647 0.69751878 0.1529849
+
+
+  the model:
+   tbl.model[, c(1,2,5:11,13,15)]
+    targetGene.hgnc tf.hgnc  betaLasso  lassoPValue pearsonCoeff  rfScore  betaRidge spearmanCoeff betaSqrtLasso    pcaMax rank
+             INPP5D   SP100 0.11920980 2.652509e-46    0.7403020 34.62539 0.04089388     0.7526676    0.08449175 2.1247620    1
+             INPP5D    SPI1 0.24395194 1.543232e-48    0.7479234 30.94516 0.05766718     0.7515415    0.27506632 2.4015105    2
+             INPP5D    TAL1 0.15693655 3.996137e-42    0.7118481 16.61818 0.04197374     0.6844777    0.15571831 1.6424446    3
+             INPP5D  NFATC2 0.00000000 6.359982e-01    0.6781741 16.24896 0.02811414     0.6974622    0.00000000 0.9375562    4
+             INPP5D    FLI1 0.09253251 2.655324e-36    0.7086498 15.35471 0.03271109     0.7063548    0.07761942 1.3627277    5
+
+   --- pretty good luck with rank 1 tf, SP100
+    motif:    pfms <- MotifDb["Hsapiens-SwissRegulon-SP100.SwissRegulon"]
+    subset(tbl.gwas, SNP=="rs7599330")
+             CHR    oldPos        BP       SNP Effect_allele Non_Effect_allele    Beta     SE        P
+            chr2 233977407 233112697 rs7599330             A                 C -0.0851 0.0223 0.000132
+                                        motif sequence.name     start      stop strand   score  p.value q.value matched.sequence   pScore regionNumber chrom
+192  Hsapiens-SwissRegulon-SP100.SwissRegulon       seq0004 233112689 233112702      + 3.12844 0.007400       1   AAAATACCGCATCT 2.130768            4  chr2
+111  Hsapiens-SwissRegulon-SP100.SwissRegulon       seq0004 233112690 233112703      - 4.19266 0.004650       1   GAGATGCGGTATTT 2.332547            4  chr2
+
+   the mandatory C at position 7 -> A.  seems to be equally damaging in both directions
+
+   --- email to cory
+
+   I worked up INPP5D.  The disruption count came down from 8 to 3 once I reran fimo with curated
+      (hand-picked) and non-redundant motifs.  Two strong disruptions, 1 weaker one.
+
+   It hink this model and these disruptions should make a good-enough shiny app and demo for
+      Chicago.
+
+   The top TF’s motif, Hsapiens-SwissRegulon-SP100.SwissRegulon, is a good match on both strands,
+   only slig htly offset.  A mandatory and motif-central “C” is an “A” in the affected allele, seems
+   to be serio usly harmed (no delta score yet).  FLT1 also appears to lose a binding site.  Should
+   be good enough for a demo.
+
+   This is still a messy and rather ad hoc process.
+
+   The SP100 motif is very nearly strand symmetrical.  Pretty cool.  See the igv display below,
+   with the two motif hits, on opposite strands, offset by just one base.
+
+
+*------------------------------------------------------------------------------------------------
+* survey ad genes for model/tf breaking snps (14 jul 2018)
+
+  cd ~/github/trenaShinyApps/igap/survey
+  surveyGenes.R
+
+  --- cory's reply
+
+   This is fascinating. My first thought on the HLA genes is that everyone knows there is huge
+   variability in this region and no on knows what to do with it, so everyone ignores it. I'm not
+   sure we have enough insight to tackle it.
+
+   This is a great overview of all the IGAP genes. I probably want to sink my teeth into this after
+   Chicago. For now, I like the numbers of INPP5D. It looks promising. But really, we can't go wrong
+   with any of these genes. They're all of high interest to the AD community. As such, I would say
+   to follow your nose.
+
+
+  --- email to cory
+
+This may require a phone call to sort out.  I may be doing something dumb.  Or stumbled upon something already known.
+
+Briefly: though HLA-DRB[1,5] have a pretty normal number of enhancer regions, they have a very large number of tf binding sites disrupted by igap gwas snps.  Most of the igap genes have 1-4 such interesting sites, RIN3 and BIN1 have between 10-20, the HLAs have > 100.
+
+Here’s a count, for each igap AD gene, of the number of igap snps in each gene’s enhancer regions.
+Are these HLA-DRBx numbers credible?  They are an order of magnitude higher than the others. They suggest a huge snp burden in the regulatory regions of those gene.
+
+For context, here are the enhancer counts for each gene - in which the enhancer counts for the HLA genes are well within the normal range.
+
+—— genehancer regions for each of the AD genes
+CR1: 27
+BIN1: 37
+CD2AP: 13
+EPHA1: 34
+CLU: 45
+MS4A6A: 23
+PICALM: 58
+ABCA7: 28
+CD33: 17
+`HLA-DRB5`: 52
+`HLA-DRB1`: 68
+PTK2B: 35
+SORL1: 58
+SLC24A4: 49
+RIN3: 70
+DSG2: 9
+INPP5D: 39
+MEF2C: 44
+NME8: 37
+ZCWPW1: 19
+CELF1: 44
+FERMT2: 28
+CASS4: 16
+APOE: 18
+TOMM40: 9
+
+—— snp count in these enhancer regions, by gene
+13 HLA-DRB1 1907
+14 HLA-DRB5 1868
+3      BIN1  204
+19   PICALM  141
+20    PTK2B  104
+8       CLU   96
+1     ABCA7   89
+2      APOE   88
+22  SLC24A4   86
+24   TOMM40   70
+15   INPP5D   65
+5     CD2AP   61
+17   MS4A6A   59
+7     CELF1   54
+21     RIN3   54
+16    MEF2C   52
+11    EPHA1   48
+12   FERMT2   47
+25   ZCWPW1   47
+18     NME8   42
+9       CR1   40
+23    SORL1   34
+4     CASS4   26
+6      CD33   13
+10     DSG2    1
+
+— snps possibly disrupting binding sites of the top 5 regulators of each AD target gene:
+ABCA7: 1
+APOE: 4
+BIN1: 12
+CASS4: 0
+CD2AP: 0
+CD33: 1
+CELF1: 1
+CLU: 1
+CR1: 2
+EPHA1: 1
+FERMT2: 3
+`HLA-DRB1`: 181
+`HLA-DRB5`: 108
+INPP5D: 8
+MEF2C: 2
+MS4A6A: 15
+PICALM: 1
+PTK2B: 4
+RIN3: 18
+SLC24A4: 2
+SORL1: 0
+TOMM40: 4
+ZCWPW1: 1
+
+*------------------------------------------------------------------------------------------------
+* seward hours
+
+  14 jul 2018: 1 hour, grubbing blackberry roots, andrews bay
+  15 jul 2018: 1 hour photographing ferns, 1.5 hours watering 36 experimental fresn
+  24 jul 2018: same
+
+*------------------------------------------------------------------------------------------------
+* next up for alison, CKAP2L shiny app (19 jun 2018)
+
+  cd ~/github/trenaShinyApps/alison/CKAP2L/dataPrep/
+  write findPerturbedBindingSites.R for the one snp
+
+    load("~/s/data/public/GeneHancer/tbl.enhancers.RData")
+    subset(tbl.enhancers, chrom=="chr2" & start <= 112764177 & end >= 112764177)
+            chrom     start       end            ensg geneSymbol clusterID
+     125831  chr2 112762481 112765802 ENSG00000125630     POLR1B     91695
+     125933  chr2 112762481 112765802 ENSG00000125637       PSD4     91695
+     206268  chr2 112762481 112765802 ENSG00000153107     ANAPC1     91695
+     264739  chr2 112762481 112765802 ENSG00000169629      RGPD8     91695
+     367771  chr2 112762481 112765802 ENSG00000237753   FLJ42351     91695
+
+    note that CKAP2L did not make it into this list.  neither it nor its ensg ENSG00000169607
+    are in the table (which is derived from cory's prior digest)
+    motivating....
+
+   --- create new table from v4.7
+     cd  ~/s/data/public/GeneHancer/v4.7/
+     "CKAP2L" %in% tbl.geneScoresAll$symbol  # [1] TRUE
+
+*------------------------------------------------------------------------------------------------
+* enhancers: create a whole genome dataset  (12 jul 2018)
+
+   --- cory's whole genome list: enh
+     now at ~/github/trenaSGM/inst/batch/cory/AD/
+     cp enhancer.list.RData ~/s/data/public/GeneHancer/
+
+   --- the latest (4.7) enhancers data
+     * GeneHancer v 4.7 (22 may 2018)
+        cd ~/s/data/public/GeneHancer/v4.7
+
+              1737 Apr  9 10:02 README.txt
+          12816146 Apr  9 09:47 enhancer_elite_ids.txt
+          81264460 Apr 10 10:29 enhancer_gene_scores.txt
+         122405223 Apr  9 09:25 enhancer_tfs.txt
+         167718067 Mar 25 10:50 enhancer_tissues.txt
+
+   --- single gene enhancers see below: (16 jun 2018), using
+
+      source("~/github/trenaShinyApps/utils/getEnhancers.R")
+      tbl.enhancers <- getEnhancerRegions(targetGene)
+
+   --- cory's list of data.frames, combined, columns renamed and re-ordered
+       load("~/s/data/public/GeneHancer/tbl.enhancers.RData")
+
+
+*------------------------------------------------------------------------------------------------
+* cory lm m/f ad (10 jul 2018)
+
+   ~/s/work/priceLab/cory/male-female-ad-models
+
+*------------------------------------------------------------------------------------------------
+* invoke a shiny app, trem2 example
+
+  --- from a simple R session on trena
+   cd ~/github/trenaShinyApps/trem2/shinyApp
+   tail app.R:
+     port <- 60030
+     shinyOptions <- list(host="0.0.0.0", port=port, launch.browser=FALSE)
+     app <- shinyApp(ui=ui,server=server, options=shinyOptions)
+   all of runTrem2InBackground:
+      source("app.R")
+      Sys.sleep(3)
+      runApp(app)
+
+  --- build docker base containers
+    cd ~/github/trenaShinyApps/dockerImages/trenaPrereqsData
+      make build:
+        docker build -t pshannon/trenaprereqsdata ./
+      make bash:
+        docker run -ti --rm pshannon/trenaprereqsdata bash
+     pshannon/trenaprereqsdata       latest              c12fd1157d09        24 hours ago        13.4GB
+
+    cd ~/github/trenaShinyApps/dockerImages/trenaBase
+    build:
+        docker build -t pshannon/trenashinybase ./
+    bash:
+        docker run -ti --rm pshannon/trenashinybase bash
+
+    ---- build, run test trem2shinyapp
+    build:
+        docker build -t trem2shinyapp -f Dockerfile .
+          FROM pshannon/trenashinybase
+          USER root
+          COPY Rprofile.site /usr/local/lib/R/etc/   # using /usr/local/bin/R, thus local etc
+          USER trena
+          RUN mkdir -p /home/trena/app/data
+          RUN mkdir -p /home/trena/app/tmp
+          RUN mkdir -p /home/trena/app/png
+          WORKDIR /home/trena/app
+          COPY data/* /home/trena/app/data/
+          COPY png/* /home/trena/app/png/
+          EXPOSE 3838
+          COPY message-handler.js .
+          COPY readme.html .
+          COPY app.R .
+          CMD ["R", "-e", "shiny::runApp('/home/trena/app', port=3838, host='0.0.0.0')"]
+    make bash:
+        docker run -ti --rm -p 60040:3838 trem2shinyapp bash
+        DOCKER:trena.app> cat /usr/local/lib/R/etc/Rprofile.site
+             local({
+               options(shiny.port = 3838, shiny.host = "0.0.0.0")
+               })
+
+        cd /home/trena/app; R
+        shiny::runApp(".", launch.browser=FALSE)  # Listening on http://0.0.0.0:3838
+        docker run -p 60041:3838 trem2shinyapp
+
+     make dockerRun:
+         docker run -p 60041:3838 trem2shinyapp
+           # apparently uses, from Dockerfile,
+           #   CMD ["R", "-e", "shiny::runApp('/home/trena/app', port=3838, host='0.0.0.0')"]
+
+     --- add to  /etc/shinyproxy/application.yml   (see also /etc/shinyproxy/shinyproxy.log)
+
+       - name: trem2
+         display-name: trena trem2
+         docker-cmd: ["/usr/local/bin/R", "-e", "shiny::runApp('/home/trena/app')"]
+         docker-image: trem2shinyapp
+         groups: scientists
+
+
 *------------------------------------------------------------------------------------------------
 * trem2 shiny app (9 jul 2018)
 
@@ -152,6 +849,18 @@ bed format: chrom, start, end, name, score, strand
 *------------------------------------------------------------------------------------------------
 * git tips
 
+  git stash
+  git stash apply # bring the stashed files back
+
+  --- ~/.gitconfig    # fix request for git diff pager
+
+   added this on trena (19 jul 2018)
+
+    [core]
+        editor = emacs
+        pager =
+
+
    https://blog.github.com/2015-06-08-how-to-undo-almost-anything-with-git/
 
    --- check and winnow staged files
@@ -202,7 +911,9 @@ bed format: chrom, start, end, name, score, strand
      For what it's worth the 'old school' join can be replaced by (a sluggish)
 
      tf.geneSymbols <-
-     unique( select(org.Hs.eg.db, "GO:0003700", "SYMBOL", "GOALL")$SYMBOL)
+
+
+unique( select(org.Hs.eg.db, "GO:0003700", "SYMBOL", "GOALL")$SYMBOL)
 
 
    https://support.bioconductor.org/p/110570/
@@ -647,7 +1358,8 @@ for a wasp whose search routine was rigidly controled by a specific cue.
                           one gloss:      a22373 -> a12117
     next up: use these backpointers to idenity
        the translation
-       the tokenized elements (three tiers here) which may each by a single tab-delimited element, or a siblings, one phoneme/morpheme/gloss per element
+       the tokenized elements (three tiers here) which may each by a single tab-delimited element,
+       or a siblings, one phoneme/morpheme/gloss per element
 
 pd.set_option('display.width', 1000)
 >>> x.getTable()
@@ -759,7 +1471,7 @@ pd.set_option('display.width', 1000)
 
 
 *------------------------------------------------------------------------------------------------
-* elpy, an ess-like python environment for emacs (24 jun 2018)
+* elpy tips,  an ess-like python environment for emacs (24 jun 2018)
 
      pip install jedi flake8 autopep8
      esc-x elpy-enable
@@ -828,6 +1540,16 @@ pd.set_option('display.width', 1000)
 
   cd ~/github/trenaShinyApps/alison/CKAP2L/dataPrep/
   write findPerturbedBindingSites.R for the one snp
+
+    load("~/s/data/public/GeneHancer/tbl.enhancers.RData")
+    subset(tbl.enhancers, chrom=="chr2" & start <= 112764177 & end >= 112764177)
+            chrom     start       end            ensg geneSymbol clusterID
+     125831  chr2 112762481 112765802 ENSG00000125630     POLR1B     91695
+     125933  chr2 112762481 112765802 ENSG00000125637       PSD4     91695
+     206268  chr2 112762481 112765802 ENSG00000153107     ANAPC1     91695
+     264739  chr2 112762481 112765802 ENSG00000169629      RGPD8     91695
+     367771  chr2 112762481 112765802 ENSG00000237753   FLJ42351     91695
+
 
 *------------------------------------------------------------------------------------------------
 * RColorBrewer
@@ -13867,7 +14589,8 @@ sick leave: fill in excel spreadsheet:
    https://intranet.systemsbiology.net/Plone/administration/human-resources/hr-forms-frequently-requested/time-sheet-1/view
 
 PTO REQUESTS and PAY STUBS in Paychex Flex
-Go to https://www.paychexflex.com and log in.
+Go to https://www.paychexflex.com and log in.   pshannonSeattle
+
 
 HOW TO VIEW YOUR PAID TIME OFF BALANCES
 	From your dashboard, Select Time Off, View Details
@@ -13963,10 +14686,11 @@ score6     NA                                   NA                              
 
    Error in startServer(host, port, app) : Failed to create server
 
+   --- ubuntu
+   netstat -nlp | grep <port number>
+
    --- rather than netstat, use lsof
       brew install lsof  -> /usr/local/bin/lsof
-
-
 
     lsof -i -n -P | grep TCP
 
