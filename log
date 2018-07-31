@@ -101,7 +101,66 @@ bed format: chrom, start, end, name, score, strand
 *------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------
 *------------------------------------------------------------------------------------------------
+* igv testing (31 jul 2018)
+
+   github issue: [igvteam/igv.js] grunt unittest task does not work (#699)
+   
+   grunt uses PhantomJS to run qunit tests. Sadly, PhantomJS does not
+   support newer browser features, like support for 'const' and 'let'
+   keywords. That causes files not to parse, which quietly causes chunks
+   of igv object missing there is no Promise support within PhantomJS
+
+   PhantomJS seems to no longer be actively developed - people are
+   switching to Puppeteer
+
+   So it looks like the entire unit test setup is basically impossible
+   to run headlessly, which leads to tests breaking without anyone
+   noticing.
+ 
+   The least invasive way of fixing this is likely to switch to
+   puppeteer (?) otherwise you would probably have to change setup of
+   your unit tests
+
+
 *------------------------------------------------------------------------------------------------
+* shinyprowy 10 minute timeout, grayout (31 jul 2018)
+
+
+This from https://support.openanalytics.eu/t/shiny-apps-time-out-grey-out-after-10-minutes/212/3 might provide a lead:
+   "problem ws not shinyproxy.   i used nginx with config from https://www.shinyproxy.io/security
+   responsible parameters: 
+       proxy_read_timeout 600s
+   matt will sent to an hour: 3600s
+*------------------------------------------------------------------------------------------------
+* shinyproxy broken on trena (31 jul 2018)
+
+  [resolution: new docker version, lost old configuration to listen on port 2375.  matt fixed this]
+  
+   Caused by: javax.ws.rs.ProcessingException: org.apache.http.conn.HttpHostConnectException:
+     Connect to localhost:2375 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1]
+   failed: Connection refused (Connection refused)
+
+   --- see (15 jun 2018) note below, about configuring port on which shinyproxy talks to docker
+
+      cat /etc/shinyproxy/application.yml 
+
+         docker:
+           cert-path: /home/none
+           url: http://localhost:2375
+           port-range-start: 20000
+
+   --- matt's earlier note
+      shinyproxy needs to be able to communicate with the docker daemon in order to function
+      correctly. By default, it attempts to do this on port 2375. Be default, docker itself is not
+      configured to allow this. I changed the docker daemon config to listen on port 2375, and
+      restarted it. Now it is listening:
+
+    tcp        0      0 127.0.0.1:2375          0.0.0.0:*               LISTEN      133286/dockerd
+
+    I logged into the shinyproxy page after making this changed, clicked on the first demo link, and
+    it works. See the attached screenshot.
+
+
 *------------------------------------------------------------------------------------------------
 * shinyproxy
 
@@ -109,6 +168,61 @@ bed format: chrom, start, end, name, score, strand
      /etc/shinyproxy/shinyproxy.log
 
 *------------------------------------------------------------------------------------------------
+* shiny, docker, shinyProxy: the euler example (8 jul 2018)
+
+  context: having lost code in a github kerfuffle, i am recreating it today
+  trena, cd ~/github/trenaShinyApps/shinyProxyDemo/eulerMeAlternateInstallDirectory
+
+  #----------------------------------------------------------
+  # first, run from the shell, no docker, no shinyProxy
+  #----------------------------------------------------------
+
+   runFromShellNoDocker.R:
+     source("euler/app.R")
+     Sys.sleep(3)
+     runApp(app)   # app is defined in euler/app.R
+   where euler/app.R concludes with
+      launchBrowser <- TRUE
+      port <- 60030
+      if(Sys.info()[["nodename"]] == "trena.systemsbiology.net"){
+         printf("running on trena, using port %d", port)
+         launchBrowser <- FALSE
+         }
+      shinyOptions <- list(host="0.0.0.0", port=port, launch.browser=launchBrowser)
+      app <- shinyApp(ui=ui,server=server, options=shinyOptions)
+
+    and includes these lines
+       ui <- fluidPage(...
+       server <- function(input, output, session){...
+
+  #----------------------------------------------------------
+  # second, create a docker image, run app for that
+  #----------------------------------------------------------
+  cd ~/github/trenaShinyApps/shinyProxyDemo/eulerMeAlternateInstallDirectory/
+  make build # docker build -t eulershiny3 ./
+  make bash  #  start R, shiny::runApp('/root/euler', launch.browser=FALSE)
+  make runContainer
+  	docker run -ti --rm -p 60021:3838 eulershiny3
+  runContainerDetached:
+	docker run -ti --rm -d -p 60021:3838 eulershiny3
+           # docker ps to find the containerID
+           # docker kill containerID
+
+  #-------------------------------------------------------------
+  # after all of that works, add it to the shinyProwy yaml file
+  #-------------------------------------------------------------
+
+  sudo /usr/bin/vi /etc/shinyproxy/application.yml   # old animal
+  
+
+  - name: new_euler
+      display-name: new_euler
+      docker-cmd: ["/usr/bin/R", "-e", "shiny::runApp('/root/euler/app.R')"]
+      docker-image: eulershiny3
+      groups: scientists
+
+
+*------------------------------------------------------------------------------------------------------------------------
 *  animate omar's interaction networ, over time (26 jul 2018)
 
   cd ~/github/interactionNetworks/analysis-viz/networkAnimation/
