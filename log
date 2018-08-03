@@ -125,10 +125,91 @@ bed format: chrom, start, end, name, score, strand
 
 
 *------------------------------------------------------------------------------------------------
+* slightly polished cors flask app
+
+   cd /local/httpd/vhosts/trena/
+   flask code: /local/httpd/vhosts/trena/serveStaticGenomeFiles.py
+      from flask import Flask
+      from flask_cors import CORS
+      app = Flask(__name__, static_url_path='/static')
+      CORS(app)
+      @app.route('/')
+      def serveStaticFiles():
+         return 'CORS and byte-range request flask webserver for igvR and igvShiny'
+
+   --- start with
+   bash runFlaskWebServerForStaticGenomeFiles.sh 
+     export FLASK_APP=serveStaticGenomeFiles.py
+     nohup flask run -p 60051 --host=0.0.0.0 &> flask.log &
+
+   --- follow with
+      tail -f flask.log
+
+   --- one test
+     see ~/github/igvShiny/inst/unitTests/minimalDemoApp.R for testing this with
+        mm10, tari10, rhos
+
+   http://trena:60051/   ->  CORS and byte-range request flask webserver for igvR and igvShiny
+     
+
+
+
+
+    
+*------------------------------------------------------------------------------------------------
 * igv, byte ranges and cors
 
+  [on trena]
+  
   https://github.com/igvteam/igv.js/wiki/Data-Server-Requirements
   https://github.com/igvteam/igv.js-flask
+
+  --- install and test flask on trena
+    git clone https://github.com/igvteam/igv.js-flask.git
+    cd ~/github/igv.js-flask
+    pip install --upgrade pip
+    pip install -r requirements.txt
+    export FLASK_APP=test_IGV.py
+    flask run -p 60051 --host=0.0.0.0
+
+  --- try now to serve up data, using the simple shiny app started yesterday on trena:60050
+
+     cd ~/github/igvShiny/inst/unitTests/
+     DESCRIPTION igvShiny, 0.99.23, 2018-08-02
+
+     currently, grep mm10 ../htmlwidgets/igvShiny.js
+        http://trena.systemsbiology.net/mm10/cytoBand.txt
+     shows that /local/httpd/vhosts/trena is the http server's root
+     so:
+        cd /local/httpd/vhosts/trena
+        flask run -p 60051 --host=0.0.0.0
+
+
+   --- does not yet work because cross-origin is NOT set by default:
+      curl -H "Access-Control-Request-Method: GET" -H "Origin: http://riptide.systemsbiology.net" --head http://trena:60051/static/tair10/chromosomeAliases.txt
+
+      HTTP/1.0 200 OK
+      Content-Length: 119
+      Content-Type: text/plain; charset=utf-8
+      Last-Modified: Wed, 21 Feb 2018 20:00:45 GMT
+      Cache-Control: public, max-age=43200
+      Expires: Sat, 04 Aug 2018 06:57:58 GMT
+      ETag: "1519243245.0-119-3452639071"
+      Date: Fri, 03 Aug 2018 18:57:58 GMT
+      Accept-Ranges: bytes
+      Server: Werkzeug/0.12.2 Python/3.6.3
+
+   --- flask program now reads like this:
+     from flask import Flask
+     from flask_cors import CORS
+     app = Flask(__name__, static_url_path='/static')
+     CORS(app)
+     @app.route('/')
+     def hello_world():
+        return 'Hello, World!'
+
+   
+    
 *------------------------------------------------------------------------------------------------
 * cors, by example: examine the header returned by igv.broadinstitute.org on amazon s3 (3 aug 2018)
 
