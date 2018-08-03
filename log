@@ -96,15 +96,121 @@ bed format: chrom, start, end, name, score, strand
 
 * -top-
 *------------------------------------------------------------------------------------------------
+* igvR failed build on devel (3 aug 2018)
+
+  bioc 3.8, igvR 1.1.7
+  http://bioconductor.org/checkResults/devel/bioc-LATEST/igvR/
+
+   displayTrack,igvR: no visible binding for global variable ‘igv’
+   Undocumented arguments in documentation object 'displayTrack,igvR-method':   ‘deleteTracksOfSameName’
+   Running examples in ‘igvR-Ex.R’ failed
+   base.loc <- 88883100
+     tbl <- data.frame(chrom=rep("chr5", 3),
+                       start=c(base.loc, base.loc+100, base.loc + 250),
+                       end=c(base.loc + 50, base.loc+120, base.loc+290),
+                       name=c("a", "b", "c"),
+                       score=runif(3),
+                       strand=rep("*", 3),
+                       stringsAsFactors=FALSE)
+
+     track <- DataFrameQuantitativeTrack("dataframeTest", tbl)
+     Error in DataFrameQuantitativeTrack("dataframeTest", tbl): is.numeric(quantitativeData[, 4])
+
+  --- cd ~/github/igvR
+     Version: 1.1.7,  Date: 2018-07-13
+     git branch -v
+         RELEASE_3_7 4c763f0 igvBrowserFile path discerned at load time, not when package is built
+       * master      f14e9ba column classes now checked in DataFrameQuantitativeTrack ctor
+
+
+
 *------------------------------------------------------------------------------------------------
+* igv, byte ranges and cors
+
+  https://github.com/igvteam/igv.js/wiki/Data-Server-Requirements
+  https://github.com/igvteam/igv.js-flask
 *------------------------------------------------------------------------------------------------
+* cors, by example: examine the header returned by igv.broadinstitute.org on amazon s3 (3 aug 2018)
+
+   from https://en.wikipedia.org/wiki/Cross-origin_resource_sharing
+
+   An Access-Control-Allow-Origin (ACAO) header with a wildcard that allows all domains:
+
+     Access-Control-Allow-Origin: *
+
+   A wildcard same-origin policy is appropriate when a page or API
+   response is considered completely public content and it is intended
+   to be accessible to everyone, including any code on any site. For
+   example, a freely-available web font on a public hosting service
+   like Google Fonts.
+
+
+   curl -H "Access-Control-Request-Method: GET" -H "Origin: http://trena.systemsbiology.net" --head https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/cytoBandIdeo.txt
+
+HTTP/1.1 200 OK
+x-amz-id-2: 6ZOaF3Lf4WDP8tAXfo3gv6hCv5fU5XH0etjEfER4ARuArihsQrZjp8y1jALChy0YC8Hp61MaLVU=
+x-amz-request-id: D577685FCA8169FA
+Date: Fri, 03 Aug 2018 13:40:57 GMT
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, HEAD
+Access-Control-Expose-Headers: Content-Length, Content-Type
+Access-Control-Max-Age: 3000
+Vary: Origin, Access-Control-Request-Headers, Access-Control-Request-Method
+Last-Modified: Fri, 05 May 2017 16:46:34 GMT
+ETag: "ae7a56394fa67d64d08fae17b4828524"
+Accept-Ranges: bytes
+Content-Type: text/plain
+Content-Length: 44666
+Server: AmazonS3
+
 *------------------------------------------------------------------------------------------------
+* seward sword fern restoration experiment proposals, verdant, lisa (2 aug 2018)
+
+   ~/Documents/swordFern-dieOff/proposals/
+
+    30394 Jul  3 12:51 Five-year Nursery-Sourced Sword Fern Survival_VCG_LC.docx
+   161836 Jul  3 12:51 Project Proposal Paul_S_Restoration_Planting_VCG_LC.docx
+    30394 Jul  6 17:33 fiveYearSurvival-verdant.docx
+   161836 Jul  6 17:33 restorationPlanting-verdant.docx
+
+
 *------------------------------------------------------------------------------------------------
+* testcafe for trena portal (1 aug 2018)
+
+  ~/s/examples/webapps/testcafe/testTrenaShinyProxy.js
+   testcafe safari testTrenaShinyProxy.js
+
+    import {Selector} from 'testcafe';
+    fixture `Getting Started`
+        .page `http://trena.systemsbiology.net`;
+    test('My first test', async (t) => {
+        await t
+            .typeText('#username', 'tesla')
+            .typeText('#password', 'password')
+            .click('.form-signin > button')
+            .expect(Selector("#applist > ul > li:nth-child(7) > a"));
+       });
+    test('My second test', async function foo(t){
+        await t
+            .typeText('#username', 'tesla')
+            .typeText('#password', 'password')
+            .click('.form-signin > button')
+            .expect(Selector("a").withText("trena INPP5D"));
+        });
+
+
+*------------------------------------------------------------------------------------------------
+* liftover & findOverlaps demo for cory, methylation data & enhancers (31 jul 2018)
+
+  cd ~/github/genomescale_scripts/examples/liftover/
+  demo.R
+  produced not-yet-fully-verified tbl.methylationMarksInEnhancers.RData
+
 *------------------------------------------------------------------------------------------------
 * igv testing (31 jul 2018)
 
    github issue: [igvteam/igv.js] grunt unittest task does not work (#699)
-   
+
    grunt uses PhantomJS to run qunit tests. Sadly, PhantomJS does not
    support newer browser features, like support for 'const' and 'let'
    keywords. That causes files not to parse, which quietly causes chunks
@@ -116,7 +222,7 @@ bed format: chrom, start, end, name, score, strand
    So it looks like the entire unit test setup is basically impossible
    to run headlessly, which leads to tests breaking without anyone
    noticing.
- 
+
    The least invasive way of fixing this is likely to switch to
    puppeteer (?) otherwise you would probably have to change setup of
    your unit tests
@@ -128,21 +234,21 @@ bed format: chrom, start, end, name, score, strand
 
 This from https://support.openanalytics.eu/t/shiny-apps-time-out-grey-out-after-10-minutes/212/3 might provide a lead:
    "problem ws not shinyproxy.   i used nginx with config from https://www.shinyproxy.io/security
-   responsible parameters: 
+   responsible parameters:
        proxy_read_timeout 600s
    matt will sent to an hour: 3600s
 *------------------------------------------------------------------------------------------------
 * shinyproxy broken on trena (31 jul 2018)
 
   [resolution: new docker version, lost old configuration to listen on port 2375.  matt fixed this]
-  
+
    Caused by: javax.ws.rs.ProcessingException: org.apache.http.conn.HttpHostConnectException:
      Connect to localhost:2375 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1]
    failed: Connection refused (Connection refused)
 
    --- see (15 jun 2018) note below, about configuring port on which shinyproxy talks to docker
 
-      cat /etc/shinyproxy/application.yml 
+      cat /etc/shinyproxy/application.yml
 
          docker:
            cert-path: /home/none
@@ -213,7 +319,7 @@ This from https://support.openanalytics.eu/t/shiny-apps-time-out-grey-out-after-
   #-------------------------------------------------------------
 
   sudo /usr/bin/vi /etc/shinyproxy/application.yml   # old animal
-  
+
 
   - name: new_euler
       display-name: new_euler
@@ -380,6 +486,22 @@ rank                                                 6                          
 
   copied to riptide:
   load("~/github/trenaSGM/inst/batch/cory/AD/tbl.models.all.RData")
+
+
+*------------------------------------------------------------------------------------------------
+* create single geneHancer data.frame for all chromsomes, 45k genes, for keeps (31 jul 2018)
+
+  performed on khaleesi with bplapply in a few minutes only
+
+  cd  ~/github/genomescale_scripts/geneHancer/v4.7
+  script: buildAllGeneTable.R
+  colnames(tbl.enhancers) <- c("chrom", "start", "end", "type", "combinedScore", "geneSymbol")
+
+  results copied to riptide and trena
+
+   ~/github/genomescale_scripts/geneHancer/v4.7/tbl.enhancers.allGenes.RData
+
+     9,354,443 Jul 31 13:13
 
 
 *------------------------------------------------------------------------------------------------
@@ -8386,6 +8508,7 @@ conda upgrade nglview --force
 
   Mark Tomkiewicz, Seattle Native Plants LLC, www.seattlenativeplants.com, (206) 953-7313
   12007 8th ave s, 98160, white center, right off of hwy 509
+
 *------------------------------------------------------------------------------------------------------------------------
 * contact for seward park sidewalk painted directional arrows (3 jan 2018)
 
