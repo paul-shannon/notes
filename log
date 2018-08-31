@@ -95,6 +95,367 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 bed format: chrom, start, end, name, score, strand
 
 * -top-
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* sorl1 shiny app: motifbreakR binding site disagrees with my fimo (30 aug 2018)
+
+    "Hsapiens-jaspar2018-CEBPA-MA0102.3"
+   as.data.frame(t(subset(tbl.broken, geneSymbol=="CEBPA")[4,]))
+                                           10
+     REF                                    G
+     ALT                                    C
+     snpPos                         121574102
+     motifPos                               5
+     geneSymbol                         CEBPA
+     dataSource                    jaspar2018
+     providerId                      MA0102.3
+     seqMatch     tcttctGtaag
+     pctRef                          0.835848
+     pctAlt                         0.7269836
+     effect                            strong
+     delta                          0.1088643
+     rsid                          rs17125473
+
+   can we match ma0102.3 to chr11:121574090-121574110
+   chrom <- "chr11"
+   start <- 121574102 - 8
+   end   <- 121574102 + 8
+   seqs <- as.list(as.character(getSeq(BSgenome.Hsapiens.UCSC.hg38, chrom, start, end)))
+   requestMatch(fimo, seqs, 10e-3)
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* pm2.5, particle size, air sampling, cleveland high school, linn gould, erik saganic, airbeam (30 aug 2018)
+
+
+   airbeam1 vs airbeam2 ($249.00)
+
+   AirBeam2 has all the functionality of AirBeam1 and includes many improvements. AirBeam2 is
+   slimmer, lighter, more accurate, can measure PM1 and PM10 in addition to PM2.5, has a higher
+   upper detection limit, is weather resistant to accommodate outdoor installations, and is capable
+   of communicating over 2G GSM and WiFi 2.4GHz in addition to Bluetooth 2.0. An Android device is
+   required to configure the AirBeam2.
+
+
+   nyc college student use of airbeam2, uses raspberry pi to record long-term data, its wifi
+   to download:   http://www.takingspace.org/   pm1, pm2.5, pm10
+
+   also see http://www.takingspace.org/aircasting/airbeam:
+
+   PM2.5, describes the size of the particles measured, particles
+   smaller than 2.5 microns in diameter. These tiny particles, 30 of
+   which could fit across the width of a human hair, are a huge
+   problem all around the world. Sources of PM2.5 include diesel cars
+   and trucks, coal burning power plants, forest fires, and
+   construction activities. Because PM2.5 particles are so small, they
+   are able to penetrate deep into our lungs and even pass into our
+   bloodstream causing both short-term affects, like asthma attacks,
+   and long-term affects, like cancer and heart disease.
+
+   The AirBeam2 uses a light scattering method to measure PM2.5. Air
+   is drawn through a sensing chamber wherein light from a laser
+   scatters off particles in the airstream. This light scatter is
+   registered by a detector and converted into a measurement that
+   estimates the number of particles in the air. Via WiFi or cellular,
+   these measurements are transmitted to the AirCasting server every
+   minute where they are mapped and graphed. Via Bluetooth, these
+   measurements are communicated every second to the AirCasting
+   Android app, which maps and graphs the data in real time on your
+   smartphone before sending it on the the AirCasting website.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* variant transcripts, inpp5d (27 aug 2018)
+
+  developed in ~/github/trenaShinyApps/igap/inpp5d/dataPrep/buildModels.R
+  also archived in ~/github/genomescale_scripts/transcriptSpecificModels/inpp5d/buildModels.R
+*-----------------------------------------------------------------------------------------------------------------------
+* scott parris, knowledge modeling (27 aug 2018)
+*-----------------------------------------------------------------------------------------------------------------------
+* igap survey: compare all-dna, jaspar2018, hocomoco human motifs for vgf, compare to footprint model
+*-----------------------------------------------------------------------------------------------------------------------
+* grok testcafe example page model (21 aug 2018)
+
+   https://github.com/DevExpress/testcafe/blob/master/examples/basic/page-model.js
+   http://devexpress.github.io/testcafe/documentation/recipes/using-page-model.html
+
+   tests https://devexpress.github.io/testcafe/example/
+*-----------------------------------------------------------------------------------------------------------------------
+* testcafe trena shiny apps cron jobs (21 aug 2018)
+
+    */5 * * * * /usr/local/bin/R -f /Users/paul/github/fimoService/client-R/FimoClient/inst/unitTests/test_FimoClient.R  > /Users/paul/crontabs/logs/ms.log 2>&1
+
+*-----------------------------------------------------------------------------------------------------------------------
+* for trena shiny apps, mouse and tair genome files, enable https for flask server (20 aug 2018)
+
+   curl -H "Access-Control-Request-Method: GET" -H "Origin: http://riptide.systemsbiology.net" --head http://trena:60050/static/tair10/chromosomeAliases.txt
+      Content-Length: 119
+      Content-Type: text/plain; charset=utf-8
+      Last-Modified: Wed, 21 Feb 2018 20:00:45 GMT
+      Cache-Control: public, max-age=43200
+      Expires: Tue, 21 Aug 2018 05:26:18 GMT
+      ETag: "1519243245.0-119-3452639071"
+      Date: Mon, 20 Aug 2018 17:26:18 GMT
+      Accept-Ranges: bytes
+      Access-Control-Allow-Origin: http://riptide.systemsbiology.net
+      Vary: Origin
+      Server: Werkzeug/0.12.2 Python/3.6.3
+
+   curl -H "Origin: http://riptide.systemsbiology.net" --head https://trena:60050/static/tair10/chromosomeAliases.txt
+        curl: (35) error:140770FC:SSL routines:SSL23_GET_SERVER_HELLO:unknown protocol
+
+
+   --- modestly modify the shell commands, and python script, to run flask
+
+     trena:/local/httpd/vhosts/trena/runFlaskWebServerForStaticGenomeFiles.sh
+       export FLASK_APP=serveStaticGenomeFiles.py
+       nohup flask run -p 60050 --host=0.0.0.0 &> flask.log &
+
+     trena:/local/httpd/vhosts/trena/serveStaticGenomeFiles.py
+       from flask import Flask
+       from flask_cors import CORS
+       app = Flask(__name__, static_url_path='/static')
+       CORS(app)
+       @app.route('/')
+       def serveStaticFiles():
+           return 'CORS and byte-range request flask webserver for igvR and igvShiny'
+
+
+
+
+
+*------------------------------------------------------------------------------------------------
+* time-lapse video from photos (18 aug 2018)
+
+  from https://ffmpeg.zeranoe.com/builds/
+   ffmpeg-20180817-c2eec17-macos64-static
+
+   --- in use with fern photos
+    cd ~/s/fernPhotos/experimentalPlanting2018/activeDieOff/fern12/
+    cat makefile
+      create:
+          ~/apps/ffmpeg/bin/ffmpeg  -r 1 -f image2 -pattern_type glob -i '*.jpg' fern12.mp4 -y
+      play:
+          open -a "quicktime player" fern12.mp4
+
+
+*------------------------------------------------------------------------------------------------
+* R debugging techiques, from winston chang (15 aug 2018)
+
+    debug(loadBedGraphTrack)
+    browser()
+    options(shiny.error=recover)
+
+* winston change on later, recommending async instead
+
+   Oh, that makes sense if you're using later() to call a function that uses the
+   default reactive domain. In general, I'd say that using later() in a Shiny
+   app is probably not a good idea. I don't know what you're doing with it, but
+   it's possible that using async would work better for your situation. It also
+   has the benefit of preserving the the default reactive domain.
+
+      https://blog.rstudio.com/2018/06/26/shiny-1-1-0/
+      https://shiny.rstudio.com/articles/async.html    promises, video, ....
+
+
+*------------------------------------------------------------------------------------------------
+* max's proposed lassoPValue fix for pcamax(14 aug 2018)
+
+  khaleesi
+    ~/github/trenaSGM/inst/batch/cory/AD/
+     library(BiocParallel)
+     print(load("tbl.models.all.RData")) #  [1] "tbl.models"
+     tgs <- unique(tbl.models$targetGene.hgnc);
+     pval.smalls <- bplapply(tgs, function(tg) min(subset(tbl.models, targetGene.hgnc==tg)$lassoPValue))
+     pval.as.scores <- -log10(unlist(pval.smalls))
+     fivenum(pval.as.scores)  #  [1]   3.006157  20.130110  29.854468  42.656657 151.145569
+
+
+  to see the effect of various clamping constants:
+  source("test_PCAMax.R")
+  trena:::.normalize_pval(tbl.mef2c$lassoPValue, normalizing.max=desired.max)
+
+  trena:::.normalize_pval(tbl.mef2c$lassoPValue, normalizing.max=desired.max)
+ [1]  9.50756744  8.02791697 10.00000000  9.47016834  5.42909194  9.08764969  3.98581753  4.67043033
+ [9]  2.99067210  1.86020859  7.19667702  0.10013038  0.35293478  0.00648851  0.01821826  1.17603372
+[17]  0.02540984  0.02240364  0.01676403  0.01540437
+
+
+  trena:::.normalize_pval(tbl.mef2c$lassoPValue + 10e-10, normalizing.max=desired.max)
+ [1] 10.00000000 10.00000000 10.00000000 10.00000000 10.00000000 10.00000000 10.00000000 10.00000000
+ [9] 10.00000000  9.99989768 10.00000000  0.75798250  2.67170030  0.04911773  0.13791140  8.85527505
+[17]  0.19235136  0.16959456  0.12690296  0.11661036
+
+
+*------------------------------------------------------------------------------------------------
+* use a static resource path to solve the igvShiny loadTrack problem?  (14 aug 2018)
+
+   ~/s/examples/R/shiny/registerDataObj
+       useImage.R
+       www/IMG_1674.JPG
+
+    library(shiny)
+    addResourcePath("www", "www");
+    ui <- shinyUI(fluidPage(
+       h1("hi!"),
+       tags$img(src="www/IMG_1674.JPG", width="300px", height="300px")
+       ))
+    server <- function(input, output, session){
+      }
+    app <- shinyApp(ui, server)
+
+
+
+
+*------------------------------------------------------------------------------------------------
+* joe cheng explains how to use the rook server within shiny (13 aug 2018)
+
+   --- my question
+
+     https://community.rstudio.com/t/using-shiny-apps-webserver-to-serve-data-files-for-my-widgets-javascript-code/12351
+
+   --- joe's reply
+
+     Take a look at
+     session$registerDataObj. https://shiny.rstudio.com/reference/shiny/latest/session.html That
+     function returns a URL that you'll need to tell your JS widget about somehow (maybe a custom
+     message). I'm rushing to get ready for a trip but that should give you some clues to get
+     started and I can help you later if you need it.
+
+   --- https://shiny.rstudio.com/reference/shiny/latest/session.html
+
+   registerDataObj(name, data, filterFunc)
+
+   Publishes any R object as a URL endpoint that is unique to this session. name must be a single
+   element character vector; it will be used to form part of the URL. filterFunc must be a function
+   that takes two arguments: data (the value that was passed into registerDataObj) and req (an
+   environment that implements the Rook specification for HTTP requests). filterFunc will be called
+   with these values whenever an HTTP request is made to the URL endpoint. The return value of
+   filterFunc should be a Rook-style response.
+
+*------------------------------------------------------------------------------------------------
+* added pvalThreshold to FimoServer, FimoClient (13 aug 2018)
+
+   see sample use in ~/github/fimoService/client-R/FimoClient/inst/unitTests/test_FimoClient.py
+   cd ~/github/fimoService/server/
+   make -f makefile.pshannon start     # loads pfms as specified in the makefile
+   make -f makefile.pshannon unitTest  # needs a bit more variety, and expanded tests
+
+   library(FimoClient)
+   FIMO_HOST <- "localhost"
+    FIMO_PORT <- 5558
+
+   fc <- FimoClient(FIMO_HOST, FIMO_PORT, quiet=TRUE)
+   sequences <- list(tert_wt1="CCCGGAGGGGG", tert_wt2="CCCGGGAGGGG", tert_mut= "CCCCTTCCGGG")
+
+   tbl <- requestMatch(fc, sequences, pvalThreshold=0.1)
+   dim(tbl)
+   tbl <- requestMatch(fc, sequences, pvalThreshold=0.001)
+   dim(tbl)   # will be far fewer
+
+*------------------------------------------------------------------------------------------------
+* jim robinson offers load track from  features - from data direct in javascript (11 aug 2018)
+
+   https://github.com/igvteam/igv.js/issues/705
+   jim's seg examples is here:
+       https://github.com/igvteam/igv.js/blob/master/examples/embedFeatures.html
+
+   ~/github/igvShiny/inst/htmlwidgets/igvShiny.js
+
+   does not quite work except with seg files:
+
+   Shiny.addCustomMessageHandler("loadBedTrack",
+
+      function(message){
+         console.log("=== loadBedTrack");
+         console.log(message);
+
+          var segFeatures = [{"chr": "1",  "start": 7432951,  "end": 7438000, "value": -0.2239, "sampleId": "TCGA-OR-A5J2-01"},
+                             {"chr": "1",  "start": 7438000,  "end": 7440000, "value": -0.8391, "sampleId": "TCGA-OR-A5J2-01"}];
+          var bedFeatures = [{"chr": "1",  "start": 7432951,  "end": 7438000, "name": "feature 1"},
+                             {"chr": "1",  "start": 7438000,  "end": 7440000, "name": "feature 2"}];
+
+          var config = {format: "bed",
+                        name: "feature test",
+                        //type: "seg",
+                        //features: segFeatures,
+                        type: "annotation",
+                        features: bedFeatures,
+                        indexed: false,
+                        displayMode: "EXPANDED",
+                        //sourceType: "file",
+                        color: "red",
+   		     height: 50
+                        };
+         window.igvBrowser.loadTrack(config);
+         }
+
+
+*------------------------------------------------------------------------------------------------
+* resuscitate old galFiltered network for omar to use in cyjShiny demo (9 aug 2018)
+
+   cd ~/s/data/public/yeast/galFiltered/
+   forOmar.R
+   style.js
+   print(load("yeastGalactose.RData"))  # "tbl.sif"  "orfNames" "tbl.mrna" "tbl.pval"
+
+*------------------------------------------------------------------------------------------------
+* max robinson, pcaMax, prcomp, all applied to trena models
+
+  cd ~/github/trena/inst/unitTests
+  x <- PCAMax(tbl.mef2c)
+  mtx <- normalizeModel(x, normalizing.max=10)
+
+  pca <- prcomp(mtx)
+  names(pca) # [1] "sdev"     "rotation" "center"   "scale"    "x"
+  mtx.pca <- pca$x
+  apply(mtx.pca, 2, sd)   # same as pca$sdev, shows first to components has 16/22 of the sd
+   #        PC1        PC2        PC3        PC4        PC5        PC6        PC7
+   # 83.2806519 50.1189245  5.0591840  2.1953343  0.7232164  0.4557043  0.0168079
+  mean <- apply(mtx, 1, function(row) mean(abs(row)))
+  mtx.2 <- cbind(mtx, mean)
+  rms <- apply(mtx, 1, function(row) sqrt(mean(row * row)))
+  pcaMax <- as.numeric(apply(mtx.pca, 1, function(row) sqrt((row[1] * row[1]) + (row[2] * row[2]))))
+  mtx.3 <- cbind(mtx.2, rms)
+  mtx.4 <- cbind(mtx.3, mtx.pca[, 1:2])
+  mtx.5 <- cbind(mtx.4, pcaMax)
+
+  use coefficient of variation to desribe the dispersion (agreement) of the data
+  covar <- apply(mtx, 1, function(row) sd(abs(row))/mean(abs(row)))
+  mtx.6 <- cbind(mtx.5, covar)
+  mtx.6[order(mtx.6[, "pcaMax"], decreasing=TRUE),]
+
+*------------------------------------------------------------------------------------------------
+* bourdieu
+  transfuge: defector, apostate, traitor: transfuge fils de transfuge
+  his boarding school: he describes it with recourse to goffman's notation of "total institutions"
+  habitus:
+    aquinas: a mediator between the possible and the real because it partakes of both potency and action
+      in b's words: a principle that regulates the act. (peirce, panofsky and the Gothic, p 448)
+      b uses the term only for acquired habits, created by social processes
+*------------------------------------------------------------------------------------------------
+* whole genome trena models, genomescale, tbl.models.all.RData from khaleesi, improve pcaMax
+
+   cd ~/github/trena/inst/unitTests
+
+   scp pshannon@khaleesi:github/trenaSGM/inst/batch/cory/AD/tbl.models.all.RData .
+
+*------------------------------------------------------------------------------------------------
+* fern microscopy (5 aug 2018)
+
+  https://www.apsnet.org/edcenter/intropp/topics/Pages/PlantDiseaseDiagnosis.aspx
+  2002: Plant Disease Diagnosis
+    Melissa B. Riley1, Margaret R. Williamson1, and Otis Maloy2
+    1Department of Plant Pathology and Physiology, Clemson University, Clemson, SC
+    2Department of Plant Pathology, Washington State University, Pullman, WA
+
 *------------------------------------------------------------------------------------------------
 * igvR failed build on devel (3 aug 2018)
 
@@ -138,7 +499,7 @@ bed format: chrom, start, end, name, score, strand
          return 'CORS and byte-range request flask webserver for igvR and igvShiny'
 
    --- start with
-   bash runFlaskWebServerForStaticGenomeFiles.sh 
+   bash runFlaskWebServerForStaticGenomeFiles.sh
      export FLASK_APP=serveStaticGenomeFiles.py
      nohup flask run -p 60051 --host=0.0.0.0 &> flask.log &
 
@@ -150,17 +511,17 @@ bed format: chrom, start, end, name, score, strand
         mm10, tari10, rhos
 
    http://trena:60051/   ->  CORS and byte-range request flask webserver for igvR and igvShiny
-     
 
 
 
 
-    
+
+
 *------------------------------------------------------------------------------------------------
 * igv, byte ranges and cors
 
   [on trena]
-  
+
   https://github.com/igvteam/igv.js/wiki/Data-Server-Requirements
   https://github.com/igvteam/igv.js-flask
 
@@ -208,8 +569,8 @@ bed format: chrom, start, end, name, score, strand
      def hello_world():
         return 'Hello, World!'
 
-   
-    
+
+
 *------------------------------------------------------------------------------------------------
 * cors, by example: examine the header returned by igv.broadinstitute.org on amazon s3 (3 aug 2018)
 
@@ -580,9 +941,20 @@ rank                                                 6                          
 
   results copied to riptide and trena
 
-   ~/github/genomescale_scripts/geneHancer/v4.7/tbl.enhancers.allGenes.RData
 
-     9,354,443 Jul 31 13:13
+   9.3M Jul 31 2018
+   print(load("~/github/genomescale_scripts/geneHancer/v4.7/tbl.enhancers.allGenes.RData"))
+   dim(tbl.enhancers) #  716477      6
+   head(tbl.enhancers)
+     chrom    start      end              type combinedScore geneSymbol
+   1 chr19 58330336 58331198          Enhancer    13.4799258       A1BG
+   2 chr19 58361346 58363463 Promoter/Enhancer     9.2256618       A1BG
+   3 chr19 58400379 58402529 Promoter/Enhancer     6.1593449       A1BG
+   4 chr19 58355787 58358617          Enhancer     0.7714079       A1BG
+   5 chr19 58498069 58500260 Promoter/Enhancer     7.5296868       A1BG
+   6 chr19 58325078 58328663 Promoter/Enhancer    12.2297451       A1BG
+
+
 
 
 *------------------------------------------------------------------------------------------------
@@ -662,7 +1034,7 @@ rank                                                 6                          
 * jared's british mystery tv shows (19 jul 2018)
 
 
-   Foyle’s War
+   Foyle's War
    Endeavour (prequel to Inspector Morse with excellent production).
       Note: prequels are typically better than the originals because it means the original was successful
       and money was poured into the prequel
@@ -673,8 +1045,8 @@ rank                                                 6                          
    Father Brown (comedic)
    Happy Valley
    Silk
-   Inspector Morse (many are banal but one in particular is sublime -> “A Walk in the Woods”)
-   Inspector Lewis  (sequel to Inspector Morse with often really good plots production; one in particular is a family genomics episode: “The Lions of Nemea")
+   Inspector Morse (many are banal but one in particular is sublime -> A Walk in the Woods)
+   Inspector Lewis  (sequel to Inspector Morse with often really good plots production; one in particular is a family genomics episode: The Lions of Nemea")
    Poirot
    Mrs. Marple
    Sherlock (weird but sometimes good)
@@ -986,8 +1358,12 @@ ZCWPW1: 1
 * seward hours
 
   14 jul 2018: 1 hour, grubbing blackberry roots, andrews bay
-  15 jul 2018: 1 hour photographing ferns, 1.5 hours watering 36 experimental fresn
+  15 jul 2018: 1 hour photographing ferns, 1.5 hours watering 36 experimental ferns
   24 jul 2018: same
+   5 aug 2018: 1 hour photography, 2.5 hours watering ferns & etc.
+  12 aug 2018: 2 hours photography and watering
+  19 aug 2018: 2 hours photography and watering
+  27 aug 2018: 2 hours photography and watering
 
 *------------------------------------------------------------------------------------------------
 * next up for alison, CKAP2L shiny app (19 jun 2018)
@@ -1162,6 +1538,16 @@ ZCWPW1: 1
      (18 feb 2018 - 2 jun 2018)
 
    rebirth
+
+   --- from phone to cloud to ~/s/fernPhotos/experimentalPlanting2018
+     ( 7 jul 2018)
+     (18 aug 2018)
+
+   --- photo sessions
+     8 jul 2018       3281 - 3318
+    15 jul 2018   IMG_3334.JPG - IMG_3431.JPG
+    24 jul 2018   IMG_3454.JPG - IMG_3617.JPG
+    05 aug 2018   IMG_3638.JPG - IMG_3724.JPG
 
 *------------------------------------------------------------------------------------------------
 * git tips
@@ -35453,7 +35839,8 @@ vizmap =  [
        "style":{"line-color":"rgb(0,0,128)",
        "line-style":"solid",
        "width":"1px",
-       "curve-style": "bezier"}},
+       "curve-style": "bezier"
+       }},
 
     {selector: "edge[edgeType='mutation']", css: {
         "line-color": "black",
