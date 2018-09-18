@@ -1,4 +1,3 @@
-
 options(error=recover)  # debugging aid
 
 --- kickoff the mongo daemon:
@@ -100,9 +99,690 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* new whole genome trena model for brain, using SAGE-normalized expression data (18 sep 2018)
+
+   whovian:/proj/price4/cory/SAGE_AD_RNA_SEQ
 *-----------------------------------------------------------------------------------------------------------------------
+* bob rostomily twist1 and hmbox1 (18 sep 2018)
+
+   library(RSQLite)
+   db <- dbConnect(dbDriver("SQLite"), "~/s/data/public/human/remap-2018/remap-all.sqlite")
+   tbl.hmbox1 <- dbGetQuery(db, "select * from chipseq where tf='HMBOX1'")
+   tbl.twist1 <- dbGetQuery(db, "select * from chipseq where tf='TWIST1'")
+   dim(tbl.hmbox1); dim(tbl.twist1)
+    [1] 47030     7
+    [1] 104779      7
+   library(GenomicRanges)
+   gr.twist1 <- GRanges(tbl.twist1)
+   gr.hmbox1 <- GRanges(tbl.hmbox1)
+   tbl.ov <- as.data.frame(findOverlaps(gr.twist1, gr.hmbox1))
+   dim(tbl.ov) # [1] 10150     2
+   colnames(tbl.ov) <- c("twist", "hmbox1")
+   length(unique(tbl.ov$twist)) # [1] 9060
+   length(unique(tbl.ov$hmbox1)) # [1] 6055
+
+
 *-----------------------------------------------------------------------------------------------------------------------
+* chipseq chip-seq quick search
+
+   library(RSQLite)
+   db <- dbConnect(dbDriver("SQLite"), "~/s/data/public/human/remap-2018/remap-all.sqlite")
+
+   dbGetQuery(db, "select * from chipseq limit 5")
+      chr   start     end   tf                  name peakStart peakEnd
+   1 chr1 1002062 1002357 ADNP ENCSR440VKE.ADNP.K562   1002179 1002180
+   2 chr1 1124275 1124570 ADNP ENCSR440VKE.ADNP.K562   1124417 1124418
+   3 chr1 1282026 1282335 ADNP ENCSR440VKE.ADNP.K562   1282204 1282205
+   4 chr1 2541062 2541472 ADNP ENCSR440VKE.ADNP.K562   2541223 2541224
+   5 chr1 2541742 2542250 ADNP ENCSR440VKE.ADNP.K562   2541972 2541973
+
+    dbGetQuery(db, "select * from chipseq where tf='TWIST1' limit 5")
+
+
 *-----------------------------------------------------------------------------------------------------------------------
+* cyjs tips
+
+  ~/github/projects/examples/js/cyjs/basic/tiny.html
+
+     $(document).ready(function() {
+        console.log("document ready");
+        var cyDiv = $("#cyDiv");
+        window.cy = cytoscape({
+           container: document.getElementById('cyDiv'),
+           elements: {"nodes":[{"data":{"id":"a"}}, {"data":{"id":"b"}}],
+                      "edges":[{"data":{"source":'a', "target":'b'}}]},
+           layout: { name: 'cose'},
+           style: [{selector: 'node', style: {'content': 'data(id)'}},
+                   {selector: ':parent', style: {'background-opacity': 0.6}}
+                  ]
+           }); // cytoscape
+         }); // document ready
+
+    --- in the javascript console
+      x = cy.json().elements   // {nodes: Array(2), edges: Array(1)}
+      cy.elements().length     // 3
+      cy.elements().remove()
+      cy.elements().length     // 0
+      cy.add(x)
+      cy.elements().length     // 3
+      cy.elements().remove()
+      cy.elements().length     // 0
+
+      y = {"elements":{"nodes":[{"data":{"id":"BBB"}}]}}
+      cy.json(y)
+      cy.reset()
+      cy.fit()
+
+      cy.elements().remove()
+      nodes = [{"data":{"id":"CCC"}}, {"data":{"id":"FFF"}}]
+      edges = [{"data":{"id": "CCC->FFF", "source":'CCC', "target":'FFF'}}]
+
+      g2n1e = {"elements":{nodes, edges}}
+      cy.json(g2n1e)
+      cy.reset(); cy.fit()
+      cy.layout({name: "cose"}).run()
+
+      ---- generate
+         g.json <- dataFramesToJSON(tbl.edges)
+         cat(g.json)  # avoid backslashes, copy then paste into javascript console
+         x = {"elements": {"nodes": [ {"data":  {"id":"A"} }, {"data":  {"id":"B"} }] , "edges": [ {"data":  {"id":"A-(eats)-B","source":"A","target":"B"} }] } }
+
+         cy.elements().remove()
+         cy.json(x)
+         cy.reset(); cy.fit()
+         cy.layout({name: "cose"}).run()
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* create "dimer rows" for expression matrix for cory (16 sep 2018)
+
+   ~/s/examples/R/matrices/matrixExpansion.R
+
+   set.seed(17)
+   mtx <- matrix(as.integer(runif(15,1,20)), ncol=5, dimnames=list(letters[1:3], LETTERS[1:5]))
+
+   expand.row <- function(i){
+      mtx.out <- sweep(mtx, MARGIN=2, mtx[i,], "*")
+      new.rownames <- paste(rownames(mtx)[i], rownames(mtx), sep="")
+      rownames(mtx.out) <- new.rownames
+      mtx.out
+      }
+
+   list.of.matrices <- lapply(seq_len(nrow(mtx)), function(i) expand.row(i))
+   mtx.all <- do.call(rbind, list.of.matrices)
+   mtx.all
+
+   self.self.rownames <- unlist(lapply(rownames(mtx), function(rowname) paste(rowname, rowname, sep="")))
+
+   rows.to.delete <- match(self.self.rownames, rownames(mtx.all))
+   if(length(rows.to.delete) > 0)
+      mtx.all <- mtx.all[-rows.to.delete,]
+
+   mtx.final <- rbind(mtx, mtx.all)
+   mtx.final
+
+        A   B  C  D   E
+   a    3  15  4  4  16
+   b   19   8  4  9  16
+   c    9  11 15  1  19
+   ab  57 120 16 36 256
+   ac  27 165 60  4 304
+   ba  57 120 16 36 256
+   bc 171  88 60  9 304
+   ca  27 165 60  4 304
+   cb 171  88 60  9 304
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* use ChIP-seq data to comprehend motif matching fidelities (16 sep 2018)
+
+  cd ~/github/tfBindingSites/inst/unitTests
+  use two tf CREM chip-seq hits
+
+  leftmost: best fimo and bioc match coincide
+     chr1 167517807 167517817  3.121478      + Hsapiens-HOCOMOCOv10-CREM_HUMAN.H10MO.C     region.01      CCATGAGGTGG
+     chr1 167517806 167517816      +   5.933333          0.7035573 CCATGAGGTGG  167517647 167517897 CREM ENCSR077DKV.CREM.K562 CREM_HUMAN.H10MO.C
+
+   fimo                                CCATGAGGTGG
+   bioc                                CCATGAGGTGG
+   consensusString(pfms[[1]])   # [1]  C??TGACGTCA
+
+  rightmost:
+
+    chr1 167524809 167524819  2.804100      + Hsapiens-HOCOMOCOv10-CREM_HUMAN.H10MO.C     region.02      CGCTGACTTCC
+    chr1 167524808 167524818      +   6.800000          0.8063241 CGCTGACTTCC  167524738 167524876 CREM ENCSR077DKV.CREM.K562 CREM_HUMAN.H10MO.C
+
+   providing the weak heuristic: fimo >= 2.5, bioc >=
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* plotMotifs, motifStack, select pfms for fimo (14 sep 2018)
+
+  source("~/github/trenaShinyApps/utils/plotMotifs.R")
+  plotMotifs(query(MotifDb, c("crem", "sapiens")))
+  names(query(MotifDb, c("crem", "sapiens")))
+
+  export(MotifDb["Hsapiens-HOCOMOCOv10-CREM_HUMAN.H10MO.C"], con="~/github/fimoService/pfms/crem.human.meme", format="meme")
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trena whole genome results
+
+    /Users/paul/github/trenaSGM/inst/batch/cory/AD/tbl.models.all.RData   191,829,284 Jul 20 2018
+    /Users/paul/github/trena/inst/extdata/tbl.models.all.RData            191,829,284 Aug 14 2018
+
+*-----------------------------------------------------------------------------------------------------------------------
+* dhs, wgEncodeRegDnaseClustered, fast and simple (14 sep 2018)
+
+   ~/github/trena/inst/unitTests/test_HumanDHSFilter.R
+
+    library(trena)
+    test_getOpenChromatinFastAndSimple <- function(){
+       printf("--- test_getOpenChromatinFastAndSimple")
+
+       hdf <- HumanDHSFilter("hg38", "wgEncodeRegDnaseClustered", pwmMatchPercentageThreshold=0,
+                             geneInfoDatabase.uri="bogus", regions=data.frame(), pfms=list())
+       chrom <- "chr14"
+       start <- 91654248
+       end <-   93010778
+       tbl.dhs <- getRegulatoryRegions(hdf, "wgEncodeRegDnaseClustered", chrom, start, end)
+       checkEquals(colnames(tbl.dhs), c("chrom", "chromStart", "chromEnd", "count", "score"))
+       }
+
+*-----------------------------------------------------------------------------------------------------------------------
+* uw liz blue family genetics, tyler day, ellen wijsman (12 sep 2018)
+
+
+  --- email from tyler, forwarded by cory
+
+   In the fam_based directory, you'll find two directories (ext/disc) that contain the annotation
+   results per family. These also contain the p-values, but aren't necessarily inclusive of the
+   overall results due to missing variants in the annotation. Unfortunately, these are not .vcf's,
+   just simple lists since these are just the results themselves.
+
+   A few side notes: The discovery variants are on Hg37, and the extension variants are on Hg38. The
+   extension annotation was done by hand for only the snps with rsID's. I was hoping that we'd have
+   the new annotation, but I can re-do the annotation using chr:position if needed. Just let me know
+   and I'll get that done ASAP.
+
+   As a reminder, we will be focusing on the results from UM0463F chr1, LD0949F chr18, and UP0005F
+   chr16. I'll try to see what I can do with GTEx and GeneHancer. Liz, if you'd like to try out
+   another kind of annotation, that'd be great!
+
+   Sorry for the long e-mail! Let me know if you have any questions. Let's hope for some more
+   progress this month!
+
+   Tyler Day, Laboratory Manager, Division of Medical Genetics, University of Washington
+
+
+   --- first look: rs189833910 (dbSNP merges this into rs61811609, at 1:163785631  (~31k further upstream)
+      ~/github/trenaShinyApps/uw/survey/UM0463F-chr1/read.R
+      as.data.frame(t(tbl[3,]))
+                                   3
+      BP                   163754868
+      CHR.x                        1
+      ALT.x                        G
+      VAR1           1:163754868:A:G
+      VAR2           1:163754868_A/G
+      GENE                         -
+      GENE.A                       -
+      GENE.B      intergenic_variant
+      CONSEQUENCE           MODIFIER
+      FAMGROUP                 MIAMI
+      FAMID                  UM0463F
+      MRK                1:163754868
+      REF                          A
+      ALT.y                        G
+      CHR.y                        1
+      rsID               rs189833910
+      MAF                  0.1691906
+      PVAL                0.03137157
+      MAF.WHITE           0.02541057
+      PVAL.POP            0.01150645
+
+       1:163785631
+*-----------------------------------------------------------------------------------------------------------------------
+* customize shinyProxy login page (12 sep 2018)
+
+  from https://support.openanalytics.eu/t/login-page-customization/727
+
+  I found the lib/containerproxy.jar, which responsible for this. The good news:
+  if we put the login.html (from that jar) to the template-path directory
+  defined in application.yml (e.g. /etc/shinyproxy/templates/2col), we can
+  customize the login-page “on-the-fly”, without restarting the shinyproxy.
+  Thanks OpenAnalytics, nice feature!
+
+   Plus: If we put the navbar.html one level up (relative to login.html) into
+   the fragments directory (in my example:
+   /etc/shinyproxy/templates/fragments/navbar.html) from the shinyproxy.jar, we
+   can customize that too.  SuperNice feature!
+
+*-----------------------------------------------------------------------------------------------------------------------
+* next up for cyjShiny (13 sep 2018)
+
+  ~/github/cyjShiny/R/graphsToJSON.R
+   dataFramesToJSON <- function(tbl.edges, tbl.nodes=NA), line 121
+   test in ~/github/cyjShiny/inst/unitTests/test_graphsToJSON.R, test_dataFramesToJSON()
+
+*-----------------------------------------------------------------------------------------------------------------------
+* PCAmax revisited, lasso & shrinkage (10 sep 2018)
+
+
+    --- lasso & alpha & lambda:   0 and 1 respectively equivalent to
+        1 --> shrinkage
+        0 --> ridge
+
+   mtx <- matrix(nrow=3, ncol=100, dimnames=list(paste0("g", 1:3), paste0("S", 1:100)))
+   mtx[1,] <- round(runif(100, -3, 3), 2)
+   mtx[2,] <- jitter(mtx[1,], amount=1)
+   mtx[3,] <- jitter(mtx[2,], amount=0.1)
+
+   lasso <- LassoSolver(mtx, "g1", c("g2", "g3"), alpha=1, lambda=1)
+
+     alpha   lambda    g2-beta   g2-intercept  g3-beta g3-intercept
+       0       0       0.58         0.09          0.32      0.09
+       0       1       0.35         0.05          0.35      0.05
+       1       0       0.32         0.09          0.58      0.09
+       1       1       0.05        -0.02          0.31     -0.02
+
+   cor(mtx[1,], mtx[2,])    0.9490414
+   cor(mtx[1,], mtx[3,])    0.949498
+   cor(mtx[2,], mtx[3,])    0.9994896
+   dim(mtx)   #   3 100
+
+
+   run(lasso)
+      #          beta   intercept
+      # g3 0.31330972 -0.01838011
+      # g2 0.05256989 -0.01838011
+
+   lasso <- LassoSolver(mtx, "g1", c("g2", "g3"), alpha=1, lambda=0)
+   run(lasso)
+
+   lasso <- LassoSolver(mtx, "g1", c("g2", "g3"), alpha=0, lambda=1)
+   run(lasso)
+      #            beta  intercept
+      # g2 0.3506069 0.05275319
+      # g3 0.3499144 0.05275319
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* discerning structure in ELAN eaf xml files (8 sep 2018)
+
+  --- david beck says (email 3 sep 2018)
+
+    sentence:translation > words > morphemes:glosses
+
+    monkey & thunder  http://www.americanlinguistics.org/?page_id=2032  omits words - so maybe we need  just four
+    entities?  sentence, translation, 1 or more  morpheme/gloss pairs
+
+              sentence:  Ke jejn makput. Makndüj mbeʹ ii maknhwej maj.
+             morphemes:     que	heM	mak=put	mak=nǝh	meʔ	ʔiː	mak=ŋ•weh	más
+               glosses:     that	there	CMP=exit	CMP=go	DIST	who	CMP=MOUTH•cry	more
+           translation:  ‘He left. He went looking for someone who could shout louder.’
+
+   --- raising the possibility that, with some guidance from the author, we could add an "ijalType" column
+       the table we already produce, one per line, which would then allow for easy html rendering.
+
+   --- call this guidance the "tierMap".  For a representative line from the lokono story
+
+     text = Text("../testData/lokono/LOKONO_IJAL_2.eaf", audioPath=None, grammaticalTermsFile=None)
+     text.getTable(296)
+        ANNOTATION_ID LINGUISTIC_TYPE_REF     START       END                                   TEXT ANNOTATION_REF TIME_SLOT_REF1 TIME_SLOT_REF2                  PARENT_REF                     TIER_ID  TEXT_LENGTH  HAS_TABS  HAS_SPACES
+     0           a328          default-lt  960190.0  962920.0         "Danshika bî damukuthuwa kiba.            NaN          ts593          ts594                         NaN  Orthographic represntation           30     False        True
+     1         a11167         Translation       NaN       NaN  ' "I love you too, my mother-in-law.'           a328            NaN            NaN  Orthographic represntation         English translation           37     False        True
+     2         a13712                word       NaN       NaN                               danshika           a328            NaN            NaN  Orthographic represntation            Word division-cp            8     False       False
+     3         a13713                word       NaN       NaN                                     bî           a328            NaN            NaN  Orthographic represntation            Word division-cp            2     False       False
+     4         a13714                word       NaN       NaN                            damukuthuwa           a328            NaN            NaN  Orthographic represntation            Word division-cp           11     False       False
+     5         a13715                word       NaN       NaN                                   kiba           a328            NaN            NaN  Orthographic represntation            Word division-cp            4     False       False
+     6         a22111            Morpheme       NaN       NaN                              d–aŋʃi–ka         a13712            NaN            NaN            Word division-cp                    morpheme            9     False       False
+     7         a23968            Morpheme       NaN       NaN                         1SG.A–love–PFV         a13712            NaN            NaN            Word division-cp                       gloss           14     False       False
+     8         a22112            Morpheme       NaN       NaN                                    biː         a13713            NaN            NaN            Word division-cp                    morpheme            3     False       False
+     9         a23969            Morpheme       NaN       NaN                                    2SG         a13713            NaN            NaN            Word division-cp                       gloss            3     False       False
+     10        a22113            Morpheme       NaN       NaN                          da–mɨkɨtʰɨ–wa         a13714            NaN            NaN            Word division-cp                    morpheme           13     False       False
+     11        a23970            Morpheme       NaN       NaN            1SG.POSS–mother.in.law–REFL         a13714            NaN            NaN            Word division-cp                       gloss           27     False       False
+     12        a22114            Morpheme       NaN       NaN                                   kiba         a13715            NaN            NaN            Word division-cp                    morpheme            4     False       False
+     13        a23971            Morpheme       NaN       NaN                                    too         a13715            NaN            NaN            Word division-cp                       gloss            3     False       False
+
+     with this tierMap - note that "Word division-cp" tiers are treated (accurately?) as superfluous
+
+                      ijal     author's TIER_ID
+                   ---------   -------------------
+                  sentence: "orthographic representation"
+               translation: "English translation"
+                  morpheme: "morpheme"
+                     gloss: "gloss"
+     morphemeTierStructure: "multiple"    # just one morpheme or gloss per tier
+
+  --- tierMap, monkey and thunder
+    mAndT =  Text("../testData/monkeyAndThunder/AYA1_MonkeyandThunder.eaf", "../testData/monkeyAndThunder/audioPhrases", grammaticalTermsFile="../testData/monkeyAndThunder/grammaticalTerms.txt")
+    mAndT.getTable(7)
+       ANNOTATION_ID LINGUISTIC_TYPE_REF    START      END                                               TEXT ANNOTATION_REF TIME_SLOT_REF1 TIME_SLOT_REF2 PARENT_REF TIER_ID  TEXT_LENGTH  HAS_TABS  HAS_SPACES
+     0            a8          default-lt  35999.0  41058.0  Pero nümidxa jejn ich uno jejn ninyoxyeaj, si ...            NaN           ts15           ts16        NaN     AYA           61     False        True
+     1           a64            phonemic      NaN      NaN  pero\tnǝm–haY–ta\theM\tʔit\tuno\theM\tnǝ=y=yoš...             a8            NaN            NaN        AYA    AYA2           66      True       False
+     2           a98         translation      NaN      NaN  ‘But there is one, they say, there working, wh...             a8            NaN            NaN        AYA     ENG           65     False        True
+     3          a163         translation      NaN      NaN  but\tsay–APPL–PASS\tthere\texist\tone\tthere\t...            a64            NaN            NaN       AYA2      GL           85      True       False
+
+                      ijal     author's TIER_ID
+                   ---------   ----------------
+                    sentence    "AYA"
+                 translation    "ENG"
+                    morpheme    "AYA2"
+               morphemeGloss    "GL"
+       morphemeTierStructure    "single"   # all morphemes, all glosses packed into a single tier each, tab delimited
+
+   ---- tierMap, prayer community one
+
+    text = Text("../testData/prayer/20150717_Prayer_community_one.eaf",
+                "../testData/prayer/audioPhrases",
+                grammaticalTermsFile=None,
+                quiet=False)
+
+    text.getTable(0)
+
+       ANNOTATION_ID LINGUISTIC_TYPE_REF  START     END                          TEXT ANNOTATION_REF TIME_SLOT_REF1 TIME_SLOT_REF2       PARENT_REF                    TIER_ID  TEXT_LENGTH  HAS_TABS  HAS_SPACES
+     0            a1          default-lt    0.0  1911.0  Ndiyo20si14 Sa3nta24 Ay3ma24            NaN            ts1            ts2              NaN                SZC-Chatino           28     False        True
+     1           a10                 pos    NaN     NaN   ndiyo14si0 sa3nta24 ay3ma24             a1            NaN            NaN      SZC-Chatino              SZC-presandhi           27     False        True
+     2          a481                  en    NaN     NaN          ‘God, saint,  soul’.             a1            NaN            NaN      SZC-Chatino  English Translation-cp-cp           20     False        True
+     3          a250                 pos    NaN     NaN                   ndiyo20si14            a10            NaN            NaN    SZC-presandhi            Tokenization-cp           11     False       False
+     4          a251                 pos    NaN     NaN                      sa3nta24            a10            NaN            NaN    SZC-presandhi            Tokenization-cp            8     False       False
+     5          a252                 pos    NaN     NaN                       ay3ma24            a10            NaN            NaN    SZC-presandhi            Tokenization-cp            7     False       False
+     6          a361                 pos    NaN     NaN                           god           a250            NaN            NaN  Tokenization-cp                     POS-cp            3     False       False
+     7          a362                 pos    NaN     NaN                         saint           a251            NaN            NaN  Tokenization-cp                     POS-cp            5     False       False
+     8          a363                 pos    NaN     NaN                          soul           a252            NaN            NaN  Tokenization-cp                     POS-cp            4     False       False
+
+
+                      ijal     author's TIER_ID
+                   ---------   ----------------
+                    sentence    "SZC-Chatino"
+                 translation    "English Translation-cp-cp"
+                    morpheme    "Tokenization-cp"
+               morphemeGloss    "POS-cp"
+       morphemeTierStructure    "single"   # all morphemes, all glosses packed into a single tier each, tab delimited
+
+     Can we at least temporarily get away with ignoring the second tier, "SZC-presandhi"?
+
+   ---- tierMap, plumed serpent
+
+    text = Text("../testData/plumedSerpent/TRS Plumed Serpent Legend 05-15-2017.eaf",
+                "../testData/plumedSerpent/audioPhrases",
+                grammaticalTermsFile=None,
+                quiet=False)
+    text.getTable(line=0)
+
+        ANNOTATION_ID LINGUISTIC_TYPE_REF  START     END                                               TEXT ANNOTATION_REF TIME_SLOT_REF1 TIME_SLOT_REF2       PARENT_REF                TIER_ID  TEXT_LENGTH  HAS_TABS  HAS_SPACES
+    0             a1          default-lt  865.0  2685.0                          Ruhuâ ruˈman hioˈó gatsìi            NaN            ts1            ts2              NaN              TRS-Ortho           25     False        True
+    1             a8           TRS-Broad    NaN     NaN  ruwa<sup>4</sup> ruʔmã<sup>3</sup> joʔo<sup>5<...             a1            NaN            NaN        TRS-Ortho          TRS Broad IPA           70     False        True
+    2            a15    Free Translation    NaN     NaN                         In the Hole of White Dirt.             a1            NaN            NaN        TRS-Ortho       Free Translation           26     False        True
+    3           a374      Tokenization 2    NaN     NaN                                  ruwaː<sup>4</sup>             a1            NaN            NaN        TRS-Ortho        Tokenization-cp           17     False       False
+    4           a375      Tokenization 2    NaN     NaN                                 ruʔmãː<sup>3</sup>             a1            NaN            NaN        TRS-Ortho        Tokenization-cp           18     False       False
+    5           a376      Tokenization 2    NaN     NaN                               jo̰ʔ̰o̰ː<sup>5</sup>                a1            NaN            NaN        TRS-Ortho        Tokenization-cp           20     False       False
+    6           a377      Tokenization 2    NaN     NaN                               ɡat͡siː<sup>13</sup>              a1            NaN            NaN        TRS-Ortho        Tokenization-cp           20     False       False
+    7           a515                 POS    NaN     NaN                                                 in           a374            NaN            NaN  Tokenization-cp  Tokenization-Gloss-cp            2     False       False
+    8           a516                 POS    NaN     NaN                                               hole           a375            NaN            NaN  Tokenization-cp  Tokenization-Gloss-cp            4     False       False
+    9           a620                 POS    NaN     NaN                                               dirt           a376            NaN            NaN  Tokenization-cp  Tokenization-Gloss-cp            4     False       False
+    10          a517                 POS    NaN     NaN                                              white           a377            NaN            NaN  Tokenization-cp  Tokenization-Gloss-cp            5     False       False
+
+
+                      ijal     author's TIER_ID
+                   ---------   ----------------
+                    sentence    "TRS-Ortho"
+                 translation    "Free Translation"
+                    morpheme    "Tokenization-cp"
+               morphemeGloss    "Tokenization-Gloss-cp"
+       morphemeTierStructure    "single"   # all morphemes, all glosses packed into a single tier each, tab delimited
+
+      Safe to exclude the "TRS BROAD IPA" tier?
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* braudel on capitalism, or everything turned upside down, wallenstein (8 sep 2018)
+
+  jstor.   Braudel on Capitalism, or Everything Upside Down
+*-----------------------------------------------------------------------------------------------------------------------
+* sqlite database to remap-all (5 sep 2018)
+
+   ~/s/data/public/human/remap-2018/fillDB.R
+   ~/s/data/public/human/remap-2018/remap-all.sqlite
+
+   library(RSQLite)
+   db.lite <- dbConnect(dbDriver("SQLite"), "remap-all.sqlite")
+   bedFiles <- grep(".bed$", dir(), v=TRUE)
+   length(bedFiles)
+
+   for(filename in bedFiles){
+      tf.name <- strsplit(filename, "_")[[1]][2]
+      tbl <- read.table(filename, sep="\t", nrow=-1, as.is=TRUE)
+      printf("%s: %s  %d", filename, tf.name, nrow(tbl))
+      colnames(tbl) <- c("chr", "start", "end", "name", "score", "strand", "peakStart", "peakEnd", "color")
+      tbl$tf <- tf.name
+      tbl <- tbl[, c("chr", "start", "end", "tf", "name", "peakStart", "peakEnd")]
+      #tbls[[tf.name]] <- tbl
+      dbWriteTable(db.lite, "chipseq", tbl, append=TRUE)
+      } # for filename
+
+   dbDisconnect(db.lite)
+
+   if(exists("test.db")){
+      db.lite <- dbConnect(dbDriver("SQLite"), "remap-all.sqlite")
+      tbl <- dbGetQuery(db.lite, "select * from chipseq limit 5")
+        # 9 seconds, 380 rows, 127 tfs
+      system.time(tbl <- dbGetQuery(db.lite, "select * from chipseq where chr='chr2' and start >= 233059871 and end <= 233061342"))
+      system.time(tbl <- dbGetQuery(db.lite, "select * from chipseq where chr='chr2' and start >= 232850784 and end <= 233458236"))
+      }
+
+   dbDisconnect(db.lite)
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ReMap 2018 (5 sep 2018)
+
+   used for TAL1 in  ~/s/data/public/human/ensemblRegulatoryBuild/regulatoryBuild.R
+   5/10 inpp5d tfs are in their set
+
+*-----------------------------------------------------------------------------------------------------------------------
+* RColorBrewer tips
+
+  colors <- brewer.pal(8, "Dark2")
+  totalColorCount <- length(colors)
+  colorNumber <- 0
+  colorNumber <<- (colorNumber %% totalColorCount) + 1
+  color <- colors[colorNumber]
+  loadBedGraphTrack(session, target.tf, tbl.tfbs, color=color, trackHeight=25, quiet=TRUE)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* celltypes for inpp5d and trem2, brain model
+
+  also clu
+  any immune related cell type:
+     lymphocyte
+     macrophage
+     monocyte
+     microglial
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igap genes
+
+igap.ad.genes <- c("CR1", "BIN1", "CD2AP", "EPHA1", "CLU", "MS4A6A", "PICALM",
+                   "ABCA7", "CD33", "HLA-DRB5", "HLA-DRB1", "PTK2B", "SORL1",
+                   "SLC24A4", "RIN3", "DSG2", "INPP5D", "MEF2C", "NME8", "ZCWPW1",
+                   "CELF1", "FERMT2", "CASS4", "APOE", "TOMM40")
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ensembl webinar, reguation (5 sep 2018)
+
+   histone modifcation from ChIP-seq
+   tf binding               ChIP-seq
+   open/closed chromain     DNase sensitivity
+
+   tf-binding at promoters and enhancers is necessary for transcription
+   combinations of epigenetic marks affect the ability and probability of tf-binding at these sites
+   four pairs of histone monomers: h3, h4, h2a, h2b
+   massive long tails, rich in arginine and lysine, which can be covalently modified, methylation & acetylation
+      lysine 36, K36 on the H3 tail, tri-methylated: H3K36me3
+   histone code
+   clusters of co-modified histones
+
+   --- a subset of cell types in which each has
+       ctcf binding
+       DNase
+       H3K4me3, H3K27me3, H3K36me3
+'   promooters, enhancers, insulators
+
+   --- get ftp data
+     ftp://ftp.ensembl.org/pub/release-93/regulation/homo_sapiens/homo_sapiens.GRCh38.Regulatory_Build.regulatory_features.20161111.gff.gz
+     8M (17 may 2018)  63M gunzipped
+     put into ~/s/data/public/human/ensemblRegulatoryBuild
+     (also put ORegAnno_Combined_2016.01.19.tsv into ~/s/data/public/human/oregano
+*-----------------------------------------------------------------------------------------------------------------------
+* decolonizing methodologies, research and indigenous peoples, by Linda Tuhiwai Smith
+
+   To the colonized, the term 'research' is conflated with European colonialism; the ways in which
+   academic research has been implicated in the throes of imperialism remains a painful memory. This
+   essential volume explores intersections of imperialism and research - specifically, the ways in
+   which imperialism is embedded in disciplines of knowledge and tradition as 'regimes of truth.'
+   Concepts such as 'discovery' and 'claiming' are discussed and an argument presented that the
+   decolonization of research methods will help to reclaim control over indigenous ways of knowing
+   and being.
+
+   Now in its eagerly awaited second edition, this bestselling book has been substantially revised,
+   with new case-studies and examples and important additions on new indigenous literature, the role
+   of research in indigenous struggles for social justice, which brings this essential volume
+   urgently up-to-date.
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* get hg19  wgEncodeRegTfbsClusteredV3 from ucsc public mysql database (4 sep 2018)
+
+   library(RMariaDB)
+   driver <- RMariaDB::MariaDB()
+   host <- "genome-mysql.cse.ucsc.edu"
+   user <- "genome"
+   driver <- RMariaDB::MariaDB()
+   dbname <- "hg19"
+   db <- DBI::dbConnect(driver, user = user, host = host, dbname = dbname)
+   all.tableNames <- DBI::dbListTables(db);  # 11132
+     [1] "wgEncodeRegTfbsClustered"         "wgEncodeRegTfbsClusteredInputs"
+     [3] "wgEncodeRegTfbsClusteredInputsV3" "wgEncodeRegTfbsClusteredV2"
+     [5] "wgEncodeRegTfbsClusteredV3"
+  dbGetQuery(db, "select * from wgEncodeRegTfbsClusteredV3 limit 5")
+  dbGetQuery(db, "select chrom, chromStart, chromEnd, name, score, expCount  from wgEncodeRegTfbsClusteredV3 limit 5")
+  dbGetQuery(db, "select chrom, chromStart, chromEnd, name, score, expCount  from wgEncodeRegTfbsClusteredV3 where chrom='chr2'")
+       chrom chromStart chromEnd   name score expCount
+     1  chr1      10073    10329 ZBTB33   354        2
+     2  chr1      10149    10413  CEBPB   201        1
+     3  chr1      16110    16390   CTCF   227        7
+     4  chr1      29198    29688   TAF1   184        1
+     5  chr1      29275    29591  GABPA   198        1
+   tbl <-  dbGetQuery(db, "select chrom, chromStart, chromEnd, name, score, expCount  from wgEncodeRegTfbsClusteredV3 where chrom='chr2'")
+   dim(tbl)  # 349645      6
+    # inpp5d's hg19 proximal promoter, 7kb
+   # chr2:233,923,356-233,930,491
+   tbl.inpp5d.prox <- subset(tbl, chromStart > 233923356 & chromEnd < 233930491)
+   tbl.xtab <- as.data.frame(table(tbl.inpp5d.prox$name))
+   tbl.xtab <- tbl.xtab[order(tbl.xtab$Freq, decreasing=TRUE),]
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* chip-atlas
+
+   [abandoned for now]
+
+   ~/s/data/public/human/chip-seq/DNS.Neu.50.AllAg.AllCell.bed
+   382481308 Aug 31 06:04 DNS.Neu.50.AllAg.AllCell.bed
+   grep "^chr2\t" DNS.Neu.50.AllAg.AllCell.bed  > DNS.Neu.50.AllAg.AllCell-chr2.bed
+
+      29196396 Sep  4 15:41 DNS.Neu.50.AllAg.AllCell-chr2.bed
+     382481308 Aug 31 06:04 DNS.Neu.50.AllAg.AllCell.bed
+
+   this was a DNSase-seq (open chromatin) dataset, not so useful.
+
+    f <- "~/s/data/public/human/chip-seq/SRX1023790.bw"
+    file.exists(f)
+    buds.gr <- import(f, which=seqinfo(BigWigFile(f))["Chr2"])
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* mentewab: add IREG1 and WBC19 to FRD3 (4 sep 2018)
+
+  --- email (22 aug 2018)
+
+   So IREG1 is known to be involved in iron transport in Arabidopsis and its transcription is
+   probably iron regulated. I am also investigating whether it is regulate by kanamycin with
+   students this semester. Unfortunately I don't have any good quality large scale data where plants
+   are exposed to kanamycin. So we will have to work with the data set that you have been using for
+   FRD3.
+
+   From Genbank/TAIR data we know that there are 8 transcripts for the gene, with 3 different
+   transcription start sites that are not far from each other. For now I will only be doing RT-PCRs
+   with primers that do not distinguish between the 8 transcripts to see if there is any general
+   upregulation of IREG1 transcripts. On your end you might have to have 3 models.
+   https://www.ncbi.nlm.nih.gov/gene/818427
+
+   Another gene that I am very much interested in is WBC19 which I expect to be upregulated when
+   zinc levels are low. I may have more chances of seeing more authentic and meaningful
+   transcription factor binding sites with WBC19 from the current data set. If it's not asking too
+   much I would also love to see what the trena analysis would look like for WBC19. There is only a
+   single transcript for this gene.  https://www.ncbi.nlm.nih.gov/gene/824679
+
+*-----------------------------------------------------------------------------------------------------------------------
+* polish up ijal_interlinear python module (1 sep 2018)
+
+  cd ~/github/IJAL-interlinear/ijal_interlinear/tests/
+
+  1519 Aug 19 13:39 test_Line.py
+  4190 Aug 19 13:38 test_WordsAsElementsLine.py
+  2193 Aug 19 13:24 test_DegenerateLine.py
+  4107 Aug 19 13:20 test_CanonicalLine.py
+  7085 Aug 19 12:40 test_MorphemeGloss.py
+
+   637 Sep  1 11:46 test_text_MonkeyAndThunder.py
+  1199 Sep  1 12:46 test_text_HowDaylightWasStolen.py
+  2116 Sep  1 13:57 test_AudioExtractor.py
+
+
+   --- encountered (again) scipy.io.wavfile's dislike of 24-bit wav files
+     ValueError: Unsupported bit depth: the wav file has 24-bit data.
+     figured this out once before, but failed to take notes:
+
+     ~/github/IJAL-interlinear/testData/monkeyAndThunder
+       46499336 Jul 27 10:37 AYA1_MonkeyandThunder-32bit.wav    <<<---
+       37958636 Aug 27  2016 AYA1_MonkeyandThunder.wav
+          46574 Jul 25 12:08 AYA1_MonkeyandThunder.eaf
+
+*-----------------------------------------------------------------------------------------------------------------------
+* dante and the medieval (popular imaginations of) other world
+
+  alison morgan
+
+  A major study of the Divine Comedy, this book offers an interesting perspective on Dante's
+  representation of the afterlife. Alison Morgan departs from the conventional critical emphasis on
+  Dante's place in relation to learned traditions by undertaking a thorough examination of the poem
+  in the context of popular beliefs. Her principal sources are thus not the highly literary texts
+  (such as Virgil's Aeneid or Thomas Aquinas's Summa Theologiae) which have become a familiar
+  context for the poem, but rather visions of the Other World found in popular writings, painting
+  and sculpture from the centuries leading up to its composition. The book will be of interest to
+  non-specialists in addition to scholars of Dante, since it offers a clear preliminary account of
+  the Other World tradition, a chronology of its principal representations and summaries of the
+  major texts. Fully illustrated throughout, it integrates with the literary and theological aspects
+  of Dante's heritage the important but often neglected dimension of art history.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* dante interlinear (1 sep 2018)
+
+   https://digitaldante.columbia.edu/dante/divine-comedy/inferno/inferno-1/
+
+   ~/Music/dante/robertoBenigni-inferno-canto-01.mp3
+                 canto-01-stanza-01.mp3
+1 Nel mezzo del cammin di nostra vita
+2 mi ritrovai per una selva oscura
+3 ché la diritta via era smarrita.
+
+
 *-----------------------------------------------------------------------------------------------------------------------
 * sorl1 shiny app: motifbreakR binding site disagrees with my fimo (30 aug 2018)
 
@@ -131,6 +811,31 @@ bed format: chrom, start, end, name, score, strand
    requestMatch(fimo, seqs, 10e-3)
 
 
+
+*-----------------------------------------------------------------------------------------------------------------------
+* email to louis sweeney on air sampling (8 sep 2018)
+
+  Thanks for the followup info!
+
+  I hope this seems neither obstructionist nor indicating a lack of interest.  Though I see this as
+  a very promising approach I do not want to proceed without some active interest from the Cleveland
+  teachers and Linn Gould at Just Health Action.  The only way I know to capture (recapture…) the
+  interest of these very busy people is with some preliminary data, collected close to home, and
+  presented in a compelling manner.  All suggesting a practical path to serious student engagement.
+
+  One way to accomplish this is by ginning up an sampling transect from (something like) Rainer
+  Beach, where the air is usually good, to Georgetown, passing by Cleveland High School and over
+  (under?) I5, where the air is likely to be revealed as bad on a day without wind.
+
+  By “gin up” I mean something like coordinated collection of location and PM2.5 at enough spots to
+  expose the relationship between geography and health risk.  With this preliminary data, and a
+  back-of-the-envelope estimate of cost (for 10-20 units?), contrasted to the $250 for AirBeam 2s,
+  we would have a project sketch strong enough for me to cash in some social capital stored up, and
+  engage the teachers and Linn.
+
+  I am asking too much?
+
+  Thanks for you efforts so far, and for the insights you offer!
 
 *-----------------------------------------------------------------------------------------------------------------------
 * pm2.5, particle size, air sampling, cleveland high school, linn gould, erik saganic, airbeam (30 aug 2018)
@@ -181,12 +886,64 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 * igap survey: compare all-dna, jaspar2018, hocomoco human motifs for vgf, compare to footprint model
 *-----------------------------------------------------------------------------------------------------------------------
+* trenaShinyApp testcafe test (31 aug 2018)
+
+   ~/s/examples/webapps/testcafe/trenaShinyApps/frd3.js
+   testcafe chrome frd3.js --assertion-timeout 10000   # 3000 msecs is the default
+
+      import {Selector} from 'testcafe';
+      fixture `Getting Started`
+          .page `http://trena.systemsbiology.net`;
+      test('launch INPP5D app', async function foo(t){
+          const launchAppLink = Selector("a").withText("trena FRD3");
+          const launchingNotification = Selector("span").withText("trena FRD3");
+          const igvPresentInIframe = Selector("h2").withText("FRD3 Trena Models");
+          const igvCurrentGenomeDiv = Selector("#igv-current_genome");
+          await t
+              .typeText('#username', 'paul')
+              .typeText('#password', 'leo.paul')
+              .click('.form-signin > button')
+              .expect(launchAppLink.exists).ok()
+              .click(launchAppLink)
+              .wait(5000)
+              .switchToIframe("#shinyframe")
+              .expect(igvPresentInIframe.exists).ok()
+              .expect(igvCurrentGenomeDiv.exists).ok();
+          });
+
+
+*------------------------------------------------------------------------------------------------------------------------
 * grok testcafe example page model (21 aug 2018)
 
    https://github.com/DevExpress/testcafe/blob/master/examples/basic/page-model.js
    http://devexpress.github.io/testcafe/documentation/recipes/using-page-model.html
 
    tests https://devexpress.github.io/testcafe/example/
+
+   --- test a simple two-page web site (31 aug 2018)
+    cd ~/s/examples/webapps/testcafe/twoPages
+
+     from  https://dev.to/chrisvasqm/e2e-testing-with-testcafe-17jl
+
+        import {Selector} from 'testcafe'
+        fixture('DEV Tests')
+            .page('http://dev.to/');
+
+        test("Check founder's names", async(t) => {
+            const aboutLink = Selector('a').withText('About');
+            const firstFounder = Selector('b').withText('Ben Halpern');
+            const secondFounder = Selector('b').withText('Jess Lee');
+            const thirdFounder = Selector('b').withText('Peter Frank');
+
+            await t
+              .click(aboutLink)
+              .expect(firstFounder.exists).ok()
+              .expect(secondFounder.exists).ok()
+              .expect(thirdFounder.exists).ok();
+               });
+
+
+
 *-----------------------------------------------------------------------------------------------------------------------
 * testcafe trena shiny apps cron jobs (21 aug 2018)
 
@@ -446,6 +1203,9 @@ bed format: chrom, start, end, name, score, strand
    cd ~/github/trena/inst/unitTests
 
    scp pshannon@khaleesi:github/trenaSGM/inst/batch/cory/AD/tbl.models.all.RData .
+
+  print(load("~/github/trena/inst/extdata/tbl.models.all.RData"))   #  191M
+
 
 *------------------------------------------------------------------------------------------------
 * fern microscopy (5 aug 2018)
@@ -1364,6 +2124,8 @@ ZCWPW1: 1
   12 aug 2018: 2 hours photography and watering
   19 aug 2018: 2 hours photography and watering
   27 aug 2018: 2 hours photography and watering
+   2 sep 2018: 2 hours photography and watering (no photos at GZ, too late in the day)
+   9 sep 2018: 2 hours photography and watering, 30 minutes moving logs
 
 *------------------------------------------------------------------------------------------------
 * next up for alison, CKAP2L shiny app (19 jun 2018)
@@ -1506,8 +2268,8 @@ ZCWPW1: 1
 *------------------------------------------------------------------------------------------------
 * youtube -> mp3
 
-   --- clipgraph (8 jul 2018)
-
+   --- clipgrab (8 jul 2018)
+    works well. on riptide.
 
    --- email from johnny (12 nov 2017)
       I use something called MacX Video Converter Pro.
@@ -1548,6 +2310,11 @@ ZCWPW1: 1
     15 jul 2018   IMG_3334.JPG - IMG_3431.JPG
     24 jul 2018   IMG_3454.JPG - IMG_3617.JPG
     05 aug 2018   IMG_3638.JPG - IMG_3724.JPG
+
+   --- ferns in bottles
+     ~/s/fernPhotos/ferns-in-a-bottle/A|B|C
+     collected on (2 sep 2018)
+
 
 *------------------------------------------------------------------------------------------------
 * git tips
@@ -1945,7 +2712,7 @@ for a wasp whose search routine was rigidly controled by a specific cue.
     add to .emacs
 
     (add-to-list 'load-path "~/github/ESS/lisp")
-    (load "ess-site")   ;; finds ~/github/ESS/lisp/ess-site.el
+    (load "ess-site")   ;; finds ~/github/ESv/lisp/ess-site.el
     (ess-toggle-underscore nil)
 
 *------------------------------------------------------------------------------------------------
@@ -2187,7 +2954,7 @@ pd.set_option('display.width', 1000)
       esc-x elpy-config
 
    --- clear python:run buffer
-     esc-x comint-clear-buffer
+     esc-x comint-clear-buffer   C-c esc-o
 
    --- pdb, equivalent of R's browser()
      import pdb  # at top of file
@@ -4905,6 +5672,7 @@ Collect berries and remove seeds; plant seeds in flats of potting soil in fall; 
 * public chip-seq data (urls of server-resident wig files)
 
   https://ccg.vital-it.ch/chipseq/chip_seq_wig.html   (old - 2006)
+
 *------------------------------------------------------------------------------------------------------------------------
 * mef2c-eqtl-shinyApp (21 mar 2019)
 
@@ -5202,6 +5970,7 @@ Thank you.
 * liftover with rtracklayer
 
    https://www.bioconductor.org/help/workflows/liftOver/
+
 *------------------------------------------------------------------------------------------------------------------------
 * liftover vcf (12 mar 2018)
 
@@ -18247,7 +19016,7 @@ was recorded in 1970 by Cliff Endress
 
 
 *-----------------------------------------------------------------------------------------------------------------------
-* TReNA, comparing biostrings matchPWM with FootprintFinder/brain/hint, with pre-calculated fimo (17 apr 2017)
+* TReNA, comparing biostring matchPWM with FootprintFinder/brain/hint, with pre-calculated fimo (17 apr 2017)
 
    ~/github/TReNA/inst/unitTests
 
