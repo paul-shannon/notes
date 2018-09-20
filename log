@@ -4873,8 +4873,20 @@ robertianum) is another threatening invasive for this association.
 *------------------------------------------------------------------------------------------------
 * run chia container on trena server (3 may 2018)
 
+  ---- (19 sep 2018) overview, summary
+    ssh pshannon@trena
+    docker images | grep chia #   chia_complete latest 9b04707a8eb7  4 months ago  860MB
+    docker ps
+       CONTAINER ID        IMAGE               COMMAND                 CREATED             STATUS              PORTS                    NAMES
+       5d1c003539d4        chia_complete       "R -f runCleveland.R"   4 months ago        Up 3 weeks          0.0.0.0:8001->7001/tcp   vibrant_blackwell
+
+
+
+
+    docker ps
+
   ---- (4 may 2018)
-    matt installs on trena.systembiology.net, apped to chia.systemsbiology.net:8001
+    matt installs on trena.systembiology.net, mapped to chia.systemsbiology.net:8001
     I slightly changed the command used to launch the docker instance to:
 
         docker run --restart=always -ti -p 8001:7001 chia_complete R -f runCleveland.R
@@ -4888,8 +4900,6 @@ robertianum) is another threatening invasive for this association.
      the internal ISB network. Erik just started a Nessus scan on trena. Once that comes back clean,
      or we address any issues that it finds, we can punch it through the firewall and allow external
      access. Thanks!
-
-
 
 
   riptide, cd ~/github/clevelandHighSchool/webapps/current/docker/
