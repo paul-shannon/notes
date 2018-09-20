@@ -98,10 +98,138 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
-*-----------------------------------------------------------------------------------------------------------------------
-* new whole genome trena model for brain, using SAGE-normalized expression data (18 sep 2018)
+* flask web server on trena:  ssl certification, restart, general info (19 sep 2018)
 
-   whovian:/proj/price4/cory/SAGE_AD_RNA_SEQ
+  cd /local/httpd/vhosts/trena
+
+  ps x | grep serveStaticGenomeFiles.py
+  kill `that pid`
+  cp -p /etc/ssl/STAR_systemsbiology_net.crt cert/
+  dir cert
+     1708 Aug 20 11:30 ssl-cert-snakeoil.key
+     2454 Sep 17 13:01 STAR_systemsbiology_net.crt
+     1675 Aug 20 11:56 systemsbiology.net.key
+
+  python serveStaticGenomeFiles.py &
+  tail -f flask.log
+
+  on riptide (or somewhere remote):
+    curl -H "Access-Control-Request-Method: GET" -H "Origin: http://riptide.systemsbiology.net" --head http://trena:60050/static/tair10/chromosomeAliases.txt
+    HTTP/1.0 200 OK
+    Content-Length: 119
+    Content-Type: text/plain; charset=utf-8
+    Last-Modified: Wed, 21 Feb 2018 20:00:45 GMT
+    Cache-Control: public, max-age=43200
+    Expires: Thu, 20 Sep 2018 06:54:23 GMT
+    ETag: "1519243245.0-119-3452639071"
+    Date: Wed, 19 Sep 2018 18:54:23 GMT
+    Accept-Ranges: bytes
+    Access-Control-Allow-Origin: http://riptide.systemsbiology.net
+    Vary: Origin
+    Server: Werkzeug/0.12.2 Python/3.6.3
+
+  --- explicit use of https does not work
+    curl -H "Access-Control-Request-Method: GET" -H "Origin: https://riptide.systemsbiology.net" --head https://trena:60050/static/tair10/chromosomeAliases.txt
+    curl: (35) error:140770FC:SSL routines:SSL23_GET_SERVER_HELLO:unknown protocol
+
+  --- but the certificate is surely invoked by the arabidopsis shiny app at https://trena.systemsbiology.net/app/ireg1
+
+*-----------------------------------------------------------------------------------------------------------------------
+* new whole genome trena model for brain, using SAGE-normalized expression data (18 sep 2018): logCPM
+
+   copied from whovian:/proj/price4/cory/SAGE_AD_RNA_SEQ
+
+   khaleesi: ~/data/brainAD/sage-10sep2018/incomingData
+   created ~/data/brainAD/sage-10sep2018/matrices.cpm.tcx.cer.RData
+     f <- "MAYO_CBE_TCX_logCPM.tsv"
+     tbl.cpm <- read.table(f, header=TRUE, as.is=TRUE, nrows=-1, row.names="ensembl_gene_id")
+     dim(tbl.cpm)
+     tcx.cols <- grep("TCX", colnames(tbl.cpm))
+     cer.cols <- grep("CER", colnames(tbl.cpm))
+     ncol(tbl.cpm) == length(tcx.cols) + length(cer.cols)
+     tbl.tcx <- tbl.cpm[, tcx.cols]
+     tbl.cer <- tbl.cpm[, cer.cols]
+     mtx.tcx <- as.matrix(tbl.cpm[, tcx.cols])
+     mtx.cer <- as.matrix(tbl.cpm[, cer.cols])
+
+
+    dim(mtx.cer); [1] 17011   263
+    dim(mtx.tcx)  [1] 17011   266
+    mtx.cer
+    fivenum(mtx.tcx); fivenum(mtx.cer)
+     -6.498058  2.119232  4.053790  5.542808 17.758971
+     -6.282801  2.140702  4.162371  5.725359 17.222797
+
+    ---- first a single gene model with cpm matrix mtx.tcx
+       cd ~/data/brainAD/sage-10sep2018/tcx.cpm.wgt  ("whole genome trena")
+       edit fastRun.R
+         if(!exists("mtx")){   # specify the tcx matrix
+            load("~/data/brainAD/sage-10sep2018/matrices.cpm.tcx.cer.RData")
+            mtx <- mtx.tcx
+           dim(mtx)
+           }
+       goi <- "ENSG00000168918" # "INPP5D"
+       source("fastRun.R")       
+       printf("starting run of %d goi to %s", length(goi), OUTPUTDIR)
+       do.runStagedSGM.footprints()
+       do.runStagedSGM.associateTFs()
+       do.runStagedSGM.buildModels()
+
+       cd ..   # same as cd ~/data/brainAD/sage-10sep2018/
+       edit addGeneSymbolsAndAggregateAllModels.R
+       source("addGeneSymbolsAndAggregateAllModels.R")
+       
+> load("tcx.cpm.wgt/tbl.models.all.RData"); head(tbl.models, n=10)
+   targetGene.hgnc tf.hgnc targetGene.ensembl      tf.ensembl  betaLasso  lassoPValue pearsonCoeff    rfScore    betaRidge spearmanCoeff betaSqrtLasso concordance    pcaMax bindingSites rank
+1           INPP5D    TAL1    ENSG00000168918 ENSG00000162367 0.22106011 6.999988e-76    0.8515062 22.3181564  0.041716081     0.8432705    0.20066833   0.5398747 1.8651912           NA    1
+2           INPP5D   SP100    ENSG00000168918 ENSG00000067066 0.08911018 4.683034e-77    0.8544773 25.7456395  0.025225440     0.8508227    0.01908774   0.5899700 1.8636651           NA    2
+3           INPP5D  NFATC2    ENSG00000168918 ENSG00000101096 0.00000000 2.867067e-61    0.8345678 19.1217556  0.026000395     0.8225768    0.00000000   0.5284071 1.4650435           NA    3
+4           INPP5D    IRF5    ENSG00000168918 ENSG00000128604 0.10232604 3.981683e-57    0.8113374  7.7629620  0.063518157     0.8097057    0.12796804   0.4660569 1.2579463           NA    4
+5           INPP5D   THAP7    ENSG00000168918 ENSG00000184436 0.00000000 2.536109e-05   -0.4195059  0.2024338 -0.062664861    -0.4447873   -0.08423684   0.3901924 1.1975302           NA    5
+6           INPP5D    SPI1    ENSG00000168918 ENSG00000066336 0.13069915 1.877180e-56    0.8095193  7.9109747  0.040126587     0.7935198    0.15018200   0.4400404 1.1376833           NA    6
+7           INPP5D   RREB1    ENSG00000168918 ENSG00000124782 0.08428715 2.619953e-53    0.8142611  4.1511668  0.025937404     0.7917537    0.03186846   0.4259744 0.9098210           NA    7
+8           INPP5D NEUROD2    ENSG00000168918 ENSG00000171532 0.00000000 9.572855e-01   -0.4235830  0.2888587 -0.011231752    -0.4670826    0.00000000   0.3193716 0.8728956           NA    8
+9           INPP5D    ELF4    ENSG00000168918 ENSG00000102034 0.06449739 7.085396e-45    0.8071964  4.8810720  0.032960573     0.7951827    0.06079143   0.3917998 0.8613065           NA    9
+10          INPP5D     MSC    ENSG00000168918 ENSG00000178860 0.00000000 9.463203e-01   -0.3871319  0.1254028 -0.007735756    -0.4930753    0.00000000   0.3205153 0.8582520           NA   10
+> load("tcx.counts.asinh.wgt/tbl.models.all.RData"); head(tbl.models, n=10)
+   targetGene.hgnc tf.hgnc targetGene.ensembl      tf.ensembl  betaLasso  lassoPValue pearsonCoeff     rfScore    betaRidge spearmanCoeff betaSqrtLasso concordance    pcaMax bindingSites rank
+1           INPP5D   SP100    ENSG00000168918 ENSG00000067066 0.06562516 3.075940e-74    0.8499069 12.68529271  0.025976386     0.8533950    0.00000000   0.6062673 2.3773537           NA    1
+2           INPP5D    TAL1    ENSG00000168918 ENSG00000162367 0.21951636 7.059990e-75    0.8515484  9.89457031  0.038870537     0.8508828    0.20986387   0.5844950 2.2946307           NA    2
+3           INPP5D  NFATC2    ENSG00000168918 ENSG00000101096 0.00000000 3.868716e-59    0.8313748  6.82692519  0.026624677     0.8293349    0.00000000   0.4605270 1.5945813           NA    3
+4           INPP5D    IRF5    ENSG00000168918 ENSG00000128604 0.06035328 2.098670e-49    0.8064662  5.61379236  0.061633798     0.8118300    0.08571518   0.4895829 1.5475674           NA    4
+5           INPP5D    SPI1    ENSG00000168918 ENSG00000066336 0.15936717 2.108226e-56    0.8086898  2.87341420  0.041158369     0.8011540    0.16417899   0.5144789 1.4285257           NA    5
+6           INPP5D   RREB1    ENSG00000168918 ENSG00000124782 0.08953507 3.348069e-51    0.8094189  2.12939695  0.030035552     0.7967373    0.05199523   0.4580947 1.1224711           NA    6
+7           INPP5D     MSC    ENSG00000168918 ENSG00000178860 0.00000000 3.567715e-06   -0.3567104  0.08420786 -0.010810660    -0.3667982   -0.02767793   0.4629570 1.0410472           NA    7
+8           INPP5D    FLI1    ENSG00000168918 ENSG00000151702 0.05432091 2.116696e-41    0.8238068  3.00731481  0.026486018     0.8250762    0.05198985   0.4003924 1.0220012           NA    8
+9           INPP5D    ELF4    ENSG00000168918 ENSG00000102034 0.06170212 1.300882e-41    0.8025410  1.98233580  0.034716215     0.8023065    0.06308661   0.4027213 1.0084793           NA    9
+10          INPP5D    EGR4    ENSG00000168918 ENSG00000135625 0.00000000 1.145484e-04   -0.2702950  0.06218162 -0.007295388    -0.3186550   -0.01048252   0.4376709 0.9382177           NA   10
+> load("cer.cpm.wgt/tbl.models.all.RData"); head(tbl.models, n=10)
+   targetGene.hgnc tf.hgnc targetGene.ensembl      tf.ensembl   betaLasso  lassoPValue pearsonCoeff    rfScore    betaRidge spearmanCoeff betaSqrtLasso concordance    pcaMax bindingSites rank
+1           INPP5D    TAL1    ENSG00000168918 ENSG00000162367 0.323005011 5.441918e-53    0.7706309 16.4813538  0.085753925     0.7425373    0.34811155   0.5554584 2.1606068           NA    1
+2           INPP5D   RUNX2    ENSG00000168918 ENSG00000124813 0.094074333 2.237801e-36    0.7013374 13.0836737  0.049704619     0.6769334    0.09388437   0.4604083 1.3962327           NA    2
+3           INPP5D   STAT6    ENSG00000168918 ENSG00000166888 0.049942560 3.009911e-43    0.7276715 10.7839189  0.048716746     0.7178541    0.00000000   0.4752181 1.3759949           NA    3
+4           INPP5D   ZFHX3    ENSG00000168918 ENSG00000140836 0.069154758 1.885085e-35    0.7036778  7.5925720  0.033220895     0.6764459    0.06671927   0.4147497 1.0646639           NA    4
+5           INPP5D NEUROD2    ENSG00000168918 ENSG00000171532 0.000000000 9.521088e-01   -0.4558097  0.2507645 -0.012974000    -0.4660255    0.00000000   0.3435091 1.0420033           NA    5
+6           INPP5D    ELK1    ENSG00000168918 ENSG00000126767 0.000000000 7.310794e-01   -0.4463251  0.1586413 -0.020674180    -0.3935163    0.00000000   0.3323536 1.0079169           NA    6
+7           INPP5D   SP100    ENSG00000168918 ENSG00000067066 0.007675753 2.154253e-31    0.6972362  6.4220289  0.035407512     0.6993157    0.00000000   0.4208905 0.9966347           NA    7
+8           INPP5D NEUROD1    ENSG00000168918 ENSG00000162992 0.000000000 7.670616e-01   -0.3741774  0.2924562 -0.008574882    -0.4474779    0.00000000   0.3396847 0.9740848           NA    8
+9           INPP5D  ZBTB7A    ENSG00000168918 ENSG00000178951 0.000000000 2.011732e-04   -0.2487682  0.1636814 -0.048087580    -0.2267483   -0.09095249   0.3637172 0.9715775           NA    9
+10          INPP5D    VAX2    ENSG00000168918 ENSG00000116035 0.000000000 5.747789e-01   -0.4152561  0.1481741 -0.005437290    -0.3683338    0.00000000   0.3378362 0.9490122           NA   10
+> load("cer.counts.asinh.wgt/tbl.models.all.RData"); head(tbl.models, n=10)
+   targetGene.hgnc tf.hgnc targetGene.ensembl      tf.ensembl   betaLasso  lassoPValue pearsonCoeff   rfScore  betaRidge spearmanCoeff betaSqrtLasso concordance    pcaMax bindingSites rank
+1           INPP5D    TAL1    ENSG00000168918 ENSG00000162367 0.296372106 6.910563e-54    0.7765647 8.8763799 0.08184551     0.7397336   0.327408924   0.5575624 2.7775795           NA    1
+2           INPP5D   STAT6    ENSG00000168918 ENSG00000166888 0.050093281 2.425523e-46    0.7473138 6.1634547 0.04592733     0.7306959   0.009592773   0.4737401 1.8355777           NA    2
+3           INPP5D   RUNX2    ENSG00000168918 ENSG00000124813 0.099245371 1.675573e-35    0.7032500 6.5860342 0.05078339     0.6942857   0.104703053   0.4739267 1.7584233           NA    3
+4           INPP5D   EPAS1    ENSG00000168918 ENSG00000116016 0.051374337 2.741361e-25    0.6732695 4.7691109 0.03175256     0.6947540   0.020387356   0.4073678 1.2746284           NA    4
+5           INPP5D   SP100    ENSG00000168918 ENSG00000067066 0.009799853 6.341433e-32    0.7114510 2.7843797 0.03429025     0.7046611   0.000000000   0.4011893 1.2238949           NA    5
+6           INPP5D    SPI1    ENSG00000168918 ENSG00000066336 0.126771183 1.091043e-19    0.6178276 1.2159207 0.05383327     0.6009647   0.167469395   0.4024521 1.1757043           NA    6
+7           INPP5D   ZFHX3    ENSG00000168918 ENSG00000140836 0.074264097 4.645268e-29    0.7041908 1.9202878 0.03727391     0.6982937   0.089642941   0.3671587 1.1597396           NA    7
+8           INPP5D    LYL1    ENSG00000168918 ENSG00000104903 0.000000000 4.817397e-02    0.6019915 1.0111918 0.06368489     0.5709656   0.000000000   0.3930992 1.0030084           NA    8
+9           INPP5D   TBX19    ENSG00000168918 ENSG00000143178 0.064671964 3.711959e-25    0.6423773 0.5335691 0.03987634     0.6014541   0.087790915   0.3532753 0.9978048           NA    9
+10          INPP5D    TBX3    ENSG00000168918 ENSG00000135111 0.108707490 9.296611e-19    0.6169974 1.1450536 0.03813302     0.5839502   0.152091663   0.3679067 0.9974427           NA   10
+
+
+       
 *-----------------------------------------------------------------------------------------------------------------------
 * bob rostomily twist1 and hmbox1 (18 sep 2018)
 
