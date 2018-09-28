@@ -169,7 +169,7 @@ bed format: chrom, start, end, name, score, strand
            dim(mtx)
            }
        goi <- "ENSG00000168918" # "INPP5D"
-       source("fastRun.R")       
+       source("fastRun.R")
        printf("starting run of %d goi to %s", length(goi), OUTPUTDIR)
        do.runStagedSGM.footprints()
        do.runStagedSGM.associateTFs()
@@ -178,7 +178,7 @@ bed format: chrom, start, end, name, score, strand
        cd ..   # same as cd ~/data/brainAD/sage-10sep2018/
        edit addGeneSymbolsAndAggregateAllModels.R
        source("addGeneSymbolsAndAggregateAllModels.R")
-       
+
 > load("tcx.cpm.wgt/tbl.models.all.RData"); head(tbl.models, n=10)
    targetGene.hgnc tf.hgnc targetGene.ensembl      tf.ensembl  betaLasso  lassoPValue pearsonCoeff    rfScore    betaRidge spearmanCoeff betaSqrtLasso concordance    pcaMax bindingSites rank
 1           INPP5D    TAL1    ENSG00000168918 ENSG00000162367 0.22106011 6.999988e-76    0.8515062 22.3181564  0.041716081     0.8432705    0.20066833   0.5398747 1.8651912           NA    1
@@ -229,7 +229,7 @@ bed format: chrom, start, end, name, score, strand
 10          INPP5D    TBX3    ENSG00000168918 ENSG00000135111 0.108707490 9.296611e-19    0.6169974 1.1450536 0.03813302     0.5839502   0.152091663   0.3679067 0.9974427           NA   10
 
 
-       
+
 *-----------------------------------------------------------------------------------------------------------------------
 * bob rostomily twist1 and hmbox1 (18 sep 2018)
 
@@ -270,6 +270,8 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 * cyjs tips
 
+  cd ~/github/projects/examples/js/cyjs/basic
+
   ~/github/projects/examples/js/cyjs/basic/tiny.html
 
      $(document).ready(function() {
@@ -293,7 +295,9 @@ bed format: chrom, start, end, name, score, strand
       cy.elements().length     // 0
       cy.add(x)
       cy.elements().length     // 3
+
       cy.elements().remove()
+
       cy.elements().length     // 0
 
       y = {"elements":{"nodes":[{"data":{"id":"BBB"}}]}}
@@ -387,6 +391,7 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 * plotMotifs, motifStack, select pfms for fimo (14 sep 2018)
 
+  library(MotifDb)
   source("~/github/trenaShinyApps/utils/plotMotifs.R")
   plotMotifs(query(MotifDb, c("crem", "sapiens")))
   names(query(MotifDb, c("crem", "sapiens")))
@@ -1235,7 +1240,7 @@ igap.ad.genes <- c("CR1", "BIN1", "CD2AP", "EPHA1", "CLU", "MS4A6A", "PICALM",
 
    library(FimoClient)
    FIMO_HOST <- "localhost"
-    FIMO_PORT <- 5558
+   FIMO_PORT <- 5558
 
    fc <- FimoClient(FIMO_HOST, FIMO_PORT, quiet=TRUE)
    sequences <- list(tert_wt1="CCCGGAGGGGG", tert_wt2="CCCGGGAGGGG", tert_mut= "CCCCTTCCGGG")
@@ -8421,6 +8426,16 @@ https://www.trainingpeaks.com/blog/vo2max-estimates-workouts-can-tell-us/
 https://www.firstbeat.com/app/uploads/2015/10/white_paper_vo2_estimation.pdf
 
 *------------------------------------------------------------------------------------------------------------------------
+* american heart association statement 2016, CRF, cardio-respiratory fitness
+
+  https://www.ahajournals.org/doi/abs/10.1161/CIR.0000000000000461
+
+  Importance of Assessing Cardiorespiratory Fitness in Clinical
+  Practice: A Case for Fitness as a Clinical Vital Sign: A Scientific
+  Statement From the American Heart Association
+
+
+*------------------------------------------------------------------------------------------------------------------------
 * move riptide eqtlTrenaNotebooks to newtrena (1 feb 2018)
 
 need source for these packages, as implied by this prep for the trena Dockerfile
@@ -14596,7 +14611,7 @@ git push upstream master
 
 
 *-----------------------------------------------------------------------------------------------------------------------
-* hamid's larget model: create the code he will use (29 sep 2017)
+* hamid's larger model: create the code he will use (29 sep 2017)
 
    cd ~/github/TcellExhaustion/
    source("explore.R")
@@ -65733,6 +65748,11 @@ on hazel
      start XQuartz
      xhost +
      ssh -X pshannon@khaleesi emacs
+     ssh -Y pshannon@khaleesi emacs
+
+      # -Y avoids Warning: untrusted X11 forwarding setup failed: xauth key data not generated
+      # gets this instead: No xauth data; using fake authentication data for X11 forwarding.
+
 
    --- (14 mar 2017)
      install XQuartz, then start it up
