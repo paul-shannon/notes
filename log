@@ -97,6 +97,9 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* ijal david beck "guidedLine" class (29 sep 2018)
+
+
 *-----------------------------------------------------------------------------------------------------------------------
 * flask web server on trena:  ssl certification, restart, general info (19 sep 2018)
 
@@ -3462,6 +3465,16 @@ tbl.round <- roundNumericColumns(tbl.orig, 3,
   tbl.covariates <- read.table(covariates.file, sep=",", as.is=TRUE, header=TRUE)
   table(tbl.covariates$Diagnosis)
 
+
+*------------------------------------------------------------------------------------------------
+* install R 3.5.1 on khaleesi
+
+  cd ~/tmp
+  curl -O https://cran.r-project.org/src/base/R-3/R-3.5.1.tar.gz
+
+  mkdir /users/pshannon/local/R351
+  ./configure --prefix=/users/pshannon/local/R351 --enable-R-shlib --with-readline=no --with-x=yes
+  make && make install
 
 *------------------------------------------------------------------------------------------------
 * install R 3.5.0 on khaleesi
