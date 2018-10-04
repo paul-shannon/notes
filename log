@@ -95,6 +95,96 @@ bed format: chrom, start, end, name, score, strand
 
 * -top-
 *-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* twig models of trem2, part 2 (3 oct 2018)
+
+  khaleesi
+  cd /local/users/pshannon/github/trenaWholeGenomeRuns/trem2-multipleConfigurations
+  change config.R to iterate (manually) over these matrices:
+
+     matrix.files <- c("Scaled_Winsorized_MayoRNAseq_CER.RData",
+                       "Scaled_Winsorized_MayoRNAseq_TCX.RData",
+                       "Scaled_Winsorized_MSSMRNAseq_FP.RData" ,
+                       "Scaled_Winsorized_MSSMRNAseq_IFG.RData",
+                       "Scaled_Winsorized_MSSMRNAseq_PHG.RData",
+                       "Scaled_Winsorized_MSSMRNAseq_STG.RData",
+                       "Scaled_Winsorized_ROSMAPRNAseq.RData",
+                       "vst_MayoRNAseq_CER.RData",
+                       "vst_MayoRNAseq_TCX.RData")
+     matrix.file <- matrix.files[9]   # <<-- 1:9
+     matrix.file.short.name <- sub(".RData", "", matrix.file, fixed=TRUE)
+
+  bash> make # 9 times
+  compareAndCombineModels.R # calls simplified trenaSGM::summarizeModels()
+  produces this matrix, each model individually sorted by rfScore, here sorted by mean
+
+                           sw.Mayo_CER sw.Mayo_TCX sw.MSSM_FP sw.MSSM_IFG sw.MSSM_PHG sw.MSSM_STG sw.ROSMAP vst_Mayo_CER vst_Mayo_TCX rank.sum observed mean
+    ENSG00000185811:IKZF1            2           1          1           1           2           2         3            1            1       14        9    2
+    ENSG00000140968:IRF8            NA           7          3           3           3           3         1           NA            4       24        7    3
+    ENSG00000105967:TFEC             3           6          2           4           1           1        NA            3            6       26        8    3
+    ENSG00000128604:IRF5             5           2          6           2           4           4         7            5            2       37        9    4
+    ENSG00000066336:SPI1             1           4         20           6           9           6         2            2            3       53        9    6
+    ENSG00000245848:CEBPA            7           5          4           5           5           5        10            8            5       54        9    6
+    ENSG00000159216:RUNX1            6          NA         NA          NA          NA          12         4            4           10       36        5    7
+    ENSG00000104903:LYL1             4           3          7           8          12           7         5            6            7       59        9    7
+    ENSG00000124813:RUNX2           14          NA         NA          NA          NA          NA        NA            7           NA       21        2   10
+    ENSG00000101096:NFATC2          NA           8         12           7           6          13        NA           NA           13       59        6   10
+    ENSG00000118689:FOXO3           NA          NA         NA          NA           8          14        11           NA           NA       33        3   11
+    ENSG00000162367:TAL1            16          10         13          15          11          10         6           10           11      102        9   11
+    ENSG00000204103:MAFB            NA          NA          8          NA          NA          NA        NA           11           16       35        3   12
+    ENSG00000111145:ELK3            NA          11         NA          NA          NA          NA         8           NA           18       37        3   12
+    ENSG00000156273:BACH1           NA           9          5          17          19          NA        NA           NA           12       62        5   12
+    ENSG00000151702:FLI1            17          19         10          NA           7           9         9           NA           14       85        7   12
+    ENSG00000152804:HHEX            10          15          9          NA          14          NA        16           13            8       85        7   12
+    ENSG00000131759:RARA             8          NA         NA          NA          NA          NA        20           NA           NA       28        2   14
+    ENSG00000184271:POU6F1          20          NA         NA          NA          NA           8        NA           NA           NA       28        2   14
+
+  
+
+*-----------------------------------------------------------------------------------------------------------------------
+* twig models on trem2 (3 oct 2018)
+
+  khaleesi
+  cd ~/data/brainAD/sage-10sep2018
+  
+   34351956 Oct  2 19:23 Scaled_Winsorized_MayoRNAseq_CER.RData
+   34451922 Oct  2 19:24 Scaled_Winsorized_MayoRNAseq_TCX.RData
+   32601599 Oct  2 19:24 Scaled_Winsorized_MSSMRNAseq_FP.RData
+   28821453 Oct  2 19:24 Scaled_Winsorized_MSSMRNAseq_IFG.RData
+   28169691 Oct  2 19:25 Scaled_Winsorized_MSSMRNAseq_PHG.RData
+   30056609 Oct  2 19:26 Scaled_Winsorized_MSSMRNAseq_STG.RData
+   75486503 Oct  2 19:26 Scaled_Winsorized_ROSMAP_Expression.RData
+
+   19884451 Oct  3 13:24 vst_MayoRNAseq_CER.RData
+   19367283 Oct  3 13:23 vst_MayoRNAseq_TCX.RData
+
+   --- get summary of each of these
+
+    filenames <- grep("RNAseq.*RData", dir(".."), v=TRUE)
+       [1] "Scaled_Winsorized_MayoRNAseq_CER.RData"
+       [2] "Scaled_Winsorized_MayoRNAseq_TCX.RData"
+       [3] "Scaled_Winsorized_MSSMRNAseq_FP.RData" 
+       [4] "Scaled_Winsorized_MSSMRNAseq_IFG.RData"
+       [5] "Scaled_Winsorized_MSSMRNAseq_PHG.RData"
+       [6] "Scaled_Winsorized_MSSMRNAseq_STG.RData"
+       [7] "Scaled_Winsorized_ROSMAPRNAseq.RData"  
+       [8] "vst_MayoRNAseq_CER.RData"              
+       [9] "vst_MayoRNAseq_TCX.RData"              
+
+    summarizeMatrices.R
+      --- loading Scaled_Winsorized_MayoRNAseq_CER.RData: 17003   263, -4.69 -0.66  0.01  0.67  4.55
+      --- loading Scaled_Winsorized_MayoRNAseq_TCX.RData: 17003   264, -5.01 -0.67  0.01  0.68  4.32
+      --- loading Scaled_Winsorized_MSSMRNAseq_FP.RData:  16347   260, -5.92 -0.64  0.01  0.66  5.32
+      --- loading Scaled_Winsorized_MSSMRNAseq_IFG.RData: 16347   230, -4.26 -0.64  0.01  0.66  4.80
+      --- loading Scaled_Winsorized_MSSMRNAseq_PHG.RData: 16347   225, -4.41 -0.65  0.01  0.67  4.40
+      --- loading Scaled_Winsorized_MSSMRNAseq_STG.RData: 16347   240, -4.59 -0.64  0.01  0.65  4.30
+      --- loading Scaled_Winsorized_ROSMAPRNAseq.RData:   15582   632, -4.37 -0.65  0.00  0.66  4.55
+      --- loading vst_MayoRNAseq_CER.RData:               17011   261,  6.14  8.30  9.83 11.24 24.11
+      --- loading vst_MayoRNAseq_TCX.RData:               17011   262,  4.64  7.84  9.54 10.95 24.93
+
+*-----------------------------------------------------------------------------------------------------------------------
 * rna-seq normalization tips (2 oct 2018)
 
   --- good!   https://seqqc.wordpress.com/2015/02/16/should-you-transform-rna-seq-data-log-vst-voom/
@@ -142,7 +232,7 @@ bed format: chrom, start, end, name, score, strand
 
 
 *-----------------------------------------------------------------------------------------------------------------------
-* new, cleaned up approach to running trena wgm (whole genome models) (2 oct 2018)
+* new, cleaned up approach to running trena wgm (whole genome models) (2 oct 2018) twig
 
    cd ~/github/trenaWholeGenomeRuns/cerebellum/
 
