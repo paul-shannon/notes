@@ -98,6 +98,571 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* postgresql tips, postgres tips: create, fill and index the chipseq table all from R (29 oct 2018)
+
+   khaleesi:  ~/s/data/postgres-fill/remap-2018/createAndFill.R
+
+     library(RPostgreSQL)
+     db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="hg38", host="khaleesi")
+     filename <- "remap2018_CARM1_all_macs2_hg38_v1_2.bed.gz"
+     tbl <- read.table(filename, sep="\t")
+     tf.name <- strsplit(filename, "_")[[1]][2]
+     tbl
+     tbl$tf <- tf.name
+     colnames(tbl) <- c("chrom", "start", "endpos", "name", "score", "strand", "peakStart", "peakEnd", "color", "tf")
+     coi <-  c("chrom", "start", "endpos", "tf", "name", "strand", "peakStart", "peakEnd")
+     tbl <- tbl[, coi]
+     dbSendQuery(db, "drop table if exists chipseq")
+     sql.create.statement <- postgresqlBuildTableDefinition(db, "chipseq", tbl, row.names=FALSE)
+     dbGetQuery(db, sql.create.statement)
+     bedFiles <- grep(".bed.gz$", list.files(), value=TRUE)
+     count <- length(bedFiles)
+     printf("bedfile count: %d", count)
+     for(i in seq_len(count)){
+        filename <- bedFiles[i]
+        tf.name <- strsplit(filename, "_")[[1]][2]
+        tbl <- read.table(filename, sep="\t", nrow=-1, as.is=TRUE)
+        printf("%s: %s  %d (%d/%d)", filename, tf.name, nrow(tbl), i, count)
+        colnames(tbl) <- c("chrom", "start", "endpos", "name", "score", "strand", "peakStart", "peakEnd", "color")
+        tbl$tf <- tf.name
+        tbl <- tbl[, coi]
+        dbWriteTable(db, "chipseq", tbl, append=TRUE, row.names=FALSE)
+        } # for filename
+     dbSendQuery(db, "create index on chipseq (chrom)")
+     dbSendQuery(db, "create index on chipseq (start)")
+     dbSendQuery(db, "create index on chipseq (endpos)")
+     dbSendQuery(db, "create index on chipseq (tf)")
+     dbGetQuery(db, "select count(*) from chipseq")   # 80,143,591q
+     sample.query <- "select * from chipseq where tf='LYL1' and chrom='chr2'and start > 233056986 and endpos < 233216341"
+     dbGetQuery(db, sample.query)  # should be 10 rows
+
+     dbDisconnect(db)
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* use ReMap chip-seq data to find sequence match percentages for (allegedly) highly certain TF/motif matches (29 oct 2018)
+
+  cd ~
+*-----------------------------------------------------------------------------------------------------------------------
+* try adding remap ChIP-seq data to postgres, on whovian (28 oct 2018)
+
+   see below: "* sqlite database to remap-all, remap v1.2 (5 sep 2018)
+
+   ~/s/data/public/human/remap-2018/fillDB.R
+   ~/s/data/public/human/remap-2018/remap-all.sqlite
+
+   --- use existing postgres fill directory on whovian:
+     whovian,  cd ~/s/data/postgres-fill/remap-2018
+     psql trena -f create.sql
+
+     create table chipseq(chr varchar,
+                  start int,
+                  endpos int,
+                  tf varchar,
+                  name varchar,
+                  motifscore float,
+                  strand char(1),
+                  peakstart int,
+                  peakend int,
+                  color char[12]
+                  );
+    grant all on table chipseq to trena;
+
+    gunzip *
+
+*-----------------------------------------------------------------------------------------------------------------------
+* motifbreakR assessment: how do pctRef + pctAlt compare to deltaPVal (29 oct 2018)
+
+  cd ~/s/examples/trena/giveMeABreak/inpp5d/
+  combineAllData.R
+  produces tbl.sumHancer
+  pctRef    pctAlt   Refpvalue  Altpvalue deltaPVal
+
+   #----------------------------------------------------------------------------------------------------
+   # can we skip motifbreakR's calculatepvalue step, which is NP hard, using matchDelta instead?
+   #----------------------------------------------------------------------------------------------------
+    cor(tbl.sumHancer$matchDelta, tbl.sumHancer$deltaPVal)  # [1] -0.317424, therefore match delta not a proxy for pval
+
+    # best deltaPVal (1 of 925 all with highest score)
+    #  chrom     start    ID Diagnosis REF.x ALT.x  AC  AN    AF    DP geneSymbol TF.rank      providerName                seqMatch    pctRef    pctAlt    Refpvalue    Altpvalue deltaPVal matchDelta
+    #   chr2 233133436 11456       PSP     A     G 322 698 0.461 11607       FLI1       4 FLI1.SwissRegulon aacAggaagt              0.9909835 0.8817482 2.861023e-06 0.0001363754  3.874472  0.1092353
+
+    # best matchDelta
+    # subset(tbl.sumHancer, matchDelta >0.185352)[1,]
+    #  chrom     start    ID        Diagnosis REF.x ALT.x AC  AN       AF    DP geneSymbol TF.rank providerName                seqMatch    pctRef    pctAlt  Refpvalue Altpvalue deltaPVal matchDelta
+    #   chr2 233414485 11329 Pathologic Aging     G     C  4 698 0.005731 12006       ELK3      10     MA0759.1 gcaGgcactc              0.7506338 0.5652813 0.01255417 0.1575727 0.8385764  0.1853525
+
+    # suggests that matchDelta is probably a poor proxy
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* first assessment of broken motifs, AD, INPP5D model (top 20 TFs) motifbreakR, calculatePval (27 oct 2018)
+
+  khaleesi: ~/motifbreakeR.AD.INPP5D
+    about 22k snps with match above 70%, but can't run them all via bplapply without encountering this error
+
+    ~/motifBreakR.AD.INPP5D/lossOfFunctionSNPs.RData
+                     calculatePvalues-parallel.R
+   [1]   completed 9360
+   Error: 'bplapply' receive data failed:   error reading from connection  Execution halted
+
+  scp pshannon@khaleesi:motifbreakR.AD.INPP5D/lossOfFunctionSNPs.RData  # > 116M
+*-----------------------------------------------------------------------------------------------------------------------
+* motifbreakR tips
+
+  from ~/s/examples/trena/giveMeABreak/inpp5d/break.R, starting with tbl.snps.tsv extracted from vcf (see just below)
+
+  bedFile <- "tbl.snp.tsv"
+  count <- 37
+  write.table(tbl.snp, file=bedFile, sep="\t", col.names=FALSE, row.names=FALSE, quote=FALSE)
+  snps.gr <- snps.from.file(bedFile,
+                            search.genome = BSgenome.Hsapiens.UCSC.hg38,
+                            format = "bed")
+
+  print(load("motifsByTFs20.RData"))
+  length(motifs)       # 20
+  motif.names <- unlist(motifs, use.names=FALSE)
+  length(motif.names)  # 29
+
+  length(snps.gr)  # [1] 5937
+  save(snps.gr, file="snps.gr.inpp5d-enhancer-region-5938total.RData")
+
+  results <- motifbreakR(snpList = snps.gr,
+                            filterp = TRUE,
+                            pwmList = MotifDb[motif.names],
+                            show.neutral=FALSE,
+                            method = c("ic", "log", "notrans")[2],
+                            bkg = c(A=0.25, C=0.25, G=0.25, T=0.25),
+                            BPPARAM = BiocParallel::bpparam(),
+                            verbose=TRUE)
+  tbl.out <- as.data.frame(mcols(results))
+  tbl.out$delta <- tbl.out$pctRef - tbl.out$pctAlt
+  tbl.out <- tbl.out[order(abs(tbl.out$delta), decreasing=TRUE),]
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* vcf tips:  create a pretty good data.frame from a multi-vcf file (26 oct 2018)
+
+  from ~/s/examples/trena/giveMeABreak/inpp5d/look.R
+
+  vcf <- expand(readVcf(file, "hg19", region))
+  dim(vcf)  # [1] 18405 349
+    # only want the locations with non-NA AF (allele frequency), AC (allele count)
+  deleters <- which(is.na(info(vcf)[["AF"]]))
+  keepers <- which(!is.na(info(vcf)[["AF"]]))
+  length(deleters)
+  length(keepers)
+
+   tbl.info <- as.data.frame(info(vcf))
+   dim(tbl.info)
+
+   mtx.geno <- geno(vcf)$GT
+   dim(mtx.geno)
+   mtx.012 <- matrix(0, nrow=nrow(mtx.geno), ncol=ncol(mtx.geno), dimnames=list(rownames(mtx.geno), colnames(mtx.geno)))
+   mtx.012[which(mtx.geno=="0/1")] <- 1
+   mtx.012[which(mtx.geno=="1/1")] <- 2
+   mtx.geno <- mtx.012
+   tbl.geno <- as.data.frame(mtx.geno)
+   dim(tbl.geno)
+   head(lapply(tbl.geno, class))
+
+   tbl.loc <- as.data.frame(rowRanges(vcf))
+   dim(tbl.loc)
+   tbl <- cbind(cbind(tbl.loc, tbl.info), tbl.geno)
+   dim(tbl)  #  18405 383      (349 + 24 + 10)
+
+   tbl <- tbl[-deleters,]
+   dim(tbl) # 8858  383
+   fivenum(tbl$DP) # [1]  1785 10439 11686 12077 16295
+   fivenum(tbl$AF) # [1] 0.001433 0.001433 0.007163 0.108000 1.000000
+
+     # quick test: can we get useful info on visually identified snp in inpp5d first small roi?
+     #  one somewhat random candidate:
+     #   Chr2: 233166189, Name 2:234074835_A/T appears to intersect with elk3 fp
+     #   chr2: start 233166181 end 233166202 nameELK3_HUMAN.H10MO.D, with elk3 #7 tf in trena.model.ipp5d.127kb
+     #   in 1000 score DHS, 15 score genehancer
+
+   subset(tbl, start==234074835) # has 5 alt alleles, extract their sample ids
+   loc <- as.list(subset(tbl, start==234074835))
+     # samples start in this column
+   grep("1000", colnames(tbl))
+   samples.with.alt <- names(which(loc[35:383] == 1))
+   print(load("~/github/trenaProjectIGAP/inst/extdata/covariates/covariates.RData"))
+   samples.with.alt.tcx <- sprintf("%s_TCX", samples.with.alt)
+   subset(tbl.covar, ID %in% samples.with.alt.tcx)
+     # only 4 of the 5
+     #            ID                   Source         Tissue RIN Diagnosis Gender  AgeAtDeath   FLOWCELL
+     # 137  1935_TCX    MayoBrainBank_Dickson TemporalCortex 8.6   Control      F          88 AC5T2GACXX
+     # 153 11321_TCX BannerSunHealth_TomBeach TemporalCortex 6.6   Control      F          88 BC6178ACXX
+     # 199   871_TCX    MayoBrainBank_Dickson TemporalCortex 8.7        AD      F 90_or_above BC47ADACXX
+     # 201  1172_TCX    MayoBrainBank_Dickson TemporalCortex 8.5        AD      F 90_or_above AC6366ACXX
+
+# prepare for liftover, then motifbreakR
+
+   dim(tbl)  # 8858 386   # new chrom, start, end are 384-386
+   tbl <- tbl[, c("chrom", "start", "end", colnames(tbl)[1:383])]
+   save(tbl, file="tbl.vcf.filtered.hg38.8858x386.RData")
+
+   print(load("~/s/examples/trena/giveMeABreak/inpp5d/tbl.vcf.filtered.hg38.8858x386.RData"))
+
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* giveMeABreak: first use of sage/igap vcfs with trena models and motifbreakR (25 oct 2018)   inpp5d and bin1
+
+  /Users/paul/github/trena/inst/extdata/tbl.models.all.RData
+
+  look.R identifies (with visual inspection) motifs for the top 20 tfs
+
+  first go: just get the variants in the small chr2 vcf file:
+
+    vcf <- readVcf("~/github/trenaProjectIGAP/inst/extdata/variants/inpp5d.fragment.vcf")
+
+  one somewhat random candidate:
+   Chr2: 233166189, Name 2:234074835_A/T appears to intersect with elk3 fp
+   chr2: start 233166181 end 233166202 nameELK3_HUMAN.H10MO.D, with elk3 #7 tf in trena.model.ipp5d.127kb
+   in 1000 score DHS, 15 score genehancer
+
+
+  --- create then liftover a chr2 vcf for the full inpp5d enhancers region
+    hg38.roi <- "chr2:232,794,967-233,488,766"   # from igap.R shiny app
+    hg19.roi <- "chr2:233659677-234397412"
+    region <- GRanges(seqnames="2", IRanges(start=233659677, end=234397412))
+    file <- "~/s/examples/R/vcf/files-from-sage/NIA_JG_1898_samples_GRM_WGS_b37_JointAnalysis01_2017-12-08_2.recalibrated_variants.Mayo.vcf.gz"
+    vcf <- readVcf(file, "hg19", region)
+    writeVcf(vcf, filename="~/s/examples/trena/giveMeABreak/inpp5d/inpp5d-fullEnhancersRegion-hg19.vcf") # 130,806,809
+
+    liftover here: https://www.ncbi.nlm.nih.gov/genome/tools/remap#
+
+*------------------------------------------------------------------------------------------------------------------------
+* first use of vcf files with trenaShinyApps (24 oct 2018)
+
+
+  --- prep and exploration
+    cd ~/s/examples/R/vcf/
+    display.R
+    focusing on inpp5d region with steven estus' snp of interest: rs35349669
+    this is a gwas snp, and likely only marks a region of syps correlated to  the inpp5d/AD phenotype
+
+  --- used readVcf(file, "hg19", region) to create a small vcf file
+    liftover,  map to hg38 here: https://www.ncbi.nlm.nih.gov/genome/tools/remap#
+               created inpp5d-fragment-hg38.vcf
+    used display.R above to display this 16kb file
+    [[~/s/examples/R/vcf/inpp5d.16kp.png]]
+
+
+   --- now use this to expand variants data in TrenaProject + TrenaProjectIGAP
+      cd ~/github/trenaProjectIGAP/inst/extdata/variants/
+      cp ~/s/examples/R/vcf/inpp5d-fragment-hg38.vcf inpp5d.fragment.vcf
+
+    --- included successfully in ~/github/trenaShinyApps/tpapp/igap.R
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igap, add chr2 vcf from sage for inpp5d (24 oct 2018)
+
+   cfunk@whovian:/local/Cory/Alzheimers/AMP-AD_VCF
+  ssh pshannon@whovian ls -l /local/Cory/Alzheimers/AMP-AD_VCF/
+   7557613721 Oct 24 13:02 NIA_JG_1898_samples_GRM_WGS_b37_JointAnalysis01_2017-12-08_2.recalibrated_variants.Mayo.vcf.gz
+       229289 Oct 24 13:03 NIA_JG_1898_samples_GRM_WGS_b37_JointAnalysis01_2017-12-08_2.recalibrated_variants.Mayo.vcf.gz.tbi
+
+   scp'd to ~/s/examples/R/vcf/files-from-sage
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trena utils.R parseChromLoc string (24 oct 2018)  by example
+
+   chromLoc <- trena::parseChromLocString(roi)
+      # returns a list of chrom, start, end fields
+
+*-----------------------------------------------------------------------------------------------------------------------
+* DT and igvShiny both in need redraw in tg2, the dashboard shiny app, after toggling visibility (16 oct 2018)
+
+  ---  https://datatables.net/reference/api/draw() says
+
+    When you perform an action such as adding or deleting a row,
+    changing the sorting, filtering or paging characteristics of the
+    table you'll want DataTables to update the display to reflect
+    these changes. This function is provided for that purpose.
+
+    A draw is not performed automatically by most DataTables API
+    actions to allow grouping of actions (for example adding multiple
+    rows is more efficient if you group them. Keep in mind that due to
+    the chaining nature of the DataTables API calling the draw() method
+    is just a case of adding .draw() to your other API method calls, as
+    shown in the examples below.
+
+  --- posted this question to https://github.com/rstudio/DT/issues/609
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* max franz recommends node environment variable to manage devel/production states for cyjShiny (16 oct 2018)
+
+   --- https://github.com/cytoscape/cyjShiny/issues/7
+     const log = function(){
+       if(process.env.NODE_ENV === 'development'){
+         console.log.apply(arguments);
+       } else {
+         // no logging in prod
+       }
+     };
+     log('some debug message');
+
+   ---  I added a hard-coded (but less opaque) method
+
+     var executionMode = "beta";
+     const log = function(msg) {
+        if(executionMode == "devel")
+           console.log(msg);
+        }
+
+
+   --- to which he replied
+
+     process.env.NODE_ENV === 'development' with the webpack env plugin: https://webpack.js.org/plugins/environment-plugin/
+
+     NODE_ENV is the standard environment variable, but you could use
+     something different if that would integrate better with the other
+     things you're building in your Makefile.
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* shiny custom css
+
+  from ~/github/trenaShinyApps/tgapp/ui-examples/igvSizing-dashboard-01.R
+
+   body <- fluidRow(
+      tags$head(tags$style(HTML('
+        .main-header .logo {
+           font-family: "Georgia", Times, "Times New Roman", serif;
+          font-weight: bold;
+          font-size: 24px;
+          }
+        #igvShiny{
+          background: lightYellow;
+          border: 1px solid black;
+          border-radius: 5px;
+          margin: 5px;
+          margin-right: 15px;
+          }
+       '))),
+      igvShinyOutput('igvShiny', height="800px"),
+      actionButton("button2", "mainPanel button")
+      )
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trenaGene tg shinyApp, explore ui and layout (13 oct 2018)
+
+  cd ~/github/trenaShinyApps/tgapp/ui-examples/
+  cd ~/github/trenaShinyApps/tgapp/ui-examples/daattali-basic/
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trenaGene shiny app: psg1 for alison, using new class TrenaGenePlacentaData plugged into TrenaGene
+
+   ~/github/trenaShinyApps/tgapp/tgapp-sidebar.R:  aspires to be a general trenaGene app, customized only via
+      targetGene <- list(hugo="PSG1", ensembl="ENSG00000231924", combined="ENSG00000231924|PSG1")
+      genomeName <- "hg38"
+      dataDirectory <- system.file(package="TrenaGenePlacentaData", "extdata")
+      trenaGene <- TrenaGene(targetGene$hugo, genomeName, expressionDataDirectory=dataDirectory)
+
+   --- two classes accomplish this:  TrenaGene, TrenaGenePlacentaData
+    ~/github/trenaGene/R/TrenaGene.R:
+                  geneSymbol="character",
+                  genome="character",
+                  transcripts="data.frame",
+                  expressionDataDirectory="character",
+      setGeneric('getTranscriptsTable',
+      setGeneric('getExpres
+      setGeneric('loadExpres
+      setGeneric('getEnhancers',
+      setGeneric('getEncodeDHS',
+      setGeneric('getChipSeq',
+
+   ~/github/trenaGenePlacentaData/inst/extdata/
+
+            942 Oct 10 13:40 normalize.R
+             31 Oct 10 13:40 .Rhistory
+        5851575 Oct 10 13:40 FilteredLengthScaledTPM8282018-vsn.RData
+        5849721 Oct 10 13:34 FilteredCountData8282018-vsn.RData
+       22082658 Oct 10 12:51 UnfilteredLengthScaledTPM8282018.RData
+       15368972 Oct 10 12:51 UnfilteredCountData8282018.RData
+       14014162 Oct 10 12:51 FilteredLengthScaledTPM8282018.RData
+       10636753 Oct 10 12:17 FilteredCountData8282018.RData
+            102 Oct 10 08:44 miscellany
+            170 Oct 10 08:37 SRP094910
+       17102708 Oct 10 08:36 SRP094910.RData
+            102 Oct 10 06:58 genomicFeatures
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ensembl to geneSymbol
+
+  tbl.geneNameMapper <- select(org.Hs.eg.db, keys=rownames(mtx), keytype="ENSEMBL", columns="SYMBOL")
+  tbl.geneNameMapper$combined <- with(tbl.geneNameMapper, paste(ENSEMBL, SYMBOL, sep="|"))
+  dim(tbl.geneNameMapper); dim(mtx)
+  [1] 16831     3
+  [1] 16664   112
+  dups <- which(duplicated(tbl.geneNameMapper$ENSEMBL)) # 167
+  if(length(dups) > 0)
+     tbl.geneNameMapper <- tbl.geneNameMapper[-dups,]
+  dim(tbl.geneNameMapper); dim(mtx)
+  rownames(mtx) <- tbl.geneNameMapper$combined
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* expression rna-seq count normalization methods, with some help from jim macdonald (10 oct 2018)
+
+  khaleesi:/local/users/pshannon/data/brainAD/sage-10sep2018/incomingData/prepMAYO_CBE_TCX_Counts.R
+
+  library(limma)  # for voom
+  library(DESeq)  # for varianceStabilizingTransformation
+  library(vsn)    # for meanSdPlot
+  vst <- function(countdata){
+    condition <- factor(rep("AD", ncol(countdata)))
+    countdata <- newCountDataSet(countdata,condition ) # DESseq
+    countdata <- estimateSizeFactors( countdata )
+    cdsBlind <- DESeq::estimateDispersions( countdata, method="blind")
+    vstdata <- varianceStabilizingTransformation( cdsBlind )
+    return(exprs(vstdata))
+    }
+
+  --- for example
+     f <- "MAYO_CBE_TCX_Counts.tsv"
+     tbl.counts <- read.table(f, header=TRUE, as.is=TRUE, nrows=-1, row.names="ensembl_gene_id")
+     dim(tbl.counts)
+     tcx.cols <- grep("TCX", colnames(tbl.counts))
+     cer.cols <- grep("CER", colnames(tbl.counts))
+     ncol(tbl.counts) == length(tcx.cols) + length(cer.cols)
+     tbl.tcx <- tbl.counts[, tcx.cols]
+     tbl.cer <- tbl.counts[, cer.cols]
+     mtx.tcx <- as.matrix(tbl.counts[, tcx.cols])
+     fivenum(mtx.tcx)
+     mtx.cer <- as.matrix(tbl.counts[, cer.cols])
+     fivenum(mtx.cer)
+     mtx.vsn.tcx <- vst(mtx.tcx)
+     mtx.vsn.cer <- vst(mtx.cer)
+
+     mtx <- mtx.vsn.tcx
+     save(mtx, file="../vst_MayoRNAseq_TCX.RData")
+     mtx <- mtx.vsn.cer
+     save(mtx, file="../vst_MayoRNAseq_CER.RData")
+
+
+     par(mfrow=c(3,4))
+     x11()
+     library(ggplot2)
+     msdp.vsn.tcx <- meanSdPlot(mtx.vsn.tcx)
+     msdp.vsn.tcx$gg + ggtitle("mayo cbe tcx counts, vsn") + scale_y_continuous(limits = c(0, 5))
+
+     x11()
+     meanSdPlot(mtx.vsn.cer)   # from library vsn
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* treanGenePlacentaData, for alison (10 oct 2018)
+
+  cd ~/github/trenaGenePlacentaData/
+  dir inst/extdata:
+
+     10636753 Oct 10 12:17 FilteredCountData8282018.RData
+     17102708 Oct 10 08:36 SRP094910.RData
+      inst/extdata/SRP094910:
+         18269056 Apr 23 14:43 SRP094910GeneData.RData
+             5447 Apr 30 14:08 SRPCovariateData.tsv
+      inst/extdata/genomicFeatures:
+          9354409 Jul 31 13:21 geneHancer.v4.7.allGenes.RData  # put this in an hg38 base class?
+      inst/extdata/miscellany:
+             1476 Oct  1 09:50 Top25PlacentalGenes.csv
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+ trenaGeneSkinData, for rich gelinas (10 oct 2018)
+
+  cd ~/github/trenaGeneSkinData/
+  dir inst/extdata
+     38709630 Mar 31  2017 gtex.fibroblast.RData
+     97399842 Mar 31  2017 gtex.primary.RData
+    139556168 Feb 28  2017 mtx.protectedAndExposed.RData
+    64718834 Nov 22  2017 mtx.protectedAndExposedLowVarianceGenesEliminated.RData
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trenaGeneADBrainData: all of our shared data for AD brain models: expression matrices, enhancers, dhs (10 oct 2018)
+
+   ~/github/trenaGeneADBrainData/
+
+   dir /Library/Frameworks/R.framework/Versions/3.5/Resources/library/TrenaGeneADBrainData/extdata
+
+     32601599 Oct 10 06:07 Scaled_Winsorized_MSSMRNAseq_FP.RData
+     28821453 Oct 10 06:07 Scaled_Winsorized_MSSMRNAseq_IFG.RData
+     28169691 Oct 10 06:07 Scaled_Winsorized_MSSMRNAseq_PHG.RData
+     30056609 Oct 10 06:07 Scaled_Winsorized_MSSMRNAseq_STG.RData
+     34351956 Oct 10 06:07 Scaled_Winsorized_MayoRNAseq_CER.RData
+     34451922 Oct 10 06:07 Scaled_Winsorized_MayoRNAseq_TCX.RData
+     75486503 Oct 10 06:07 Scaled_Winsorized_ROSMAPRNAseq.RData
+     75486503 Oct 10 06:07 Scaled_Winsorized_ROSMAP_Expression.RData
+     19884451 Oct 10 06:07 vst_MayoRNAseq_CER.RData
+     19367283 Oct 10 06:07 vst_MayoRNAseq_TCX.RData
+
+   --- enhancers
+     from ~/github/genomescale_scripts/geneHancer/v4.7/tbl.enhancers.allGenes.RData
+     not clear how I built this, but:  length(unique(tbl.enhancers$geneSymbol))  # [1] 45920
+     cp -p ~/github/genomescale_scripts/geneHancer/v4.7/tbl.enhancers.allGenes.RData  \
+          ~/github/trenaGeneADBrainData/inst/extdata/genomicFeatures/
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trena shiny app dashboard experiments (5 oct 2018)
+
+   cd ~/github/trenaShinyApps/dashboard-experiments/igvPlusModels/
+   modelsWithSummary.RData   has footprint models named by the normalization/source/tissue of the expression
+     data from which they were built.
+
+   config.R generates a buildSpec for each of the expression matrices. here are the data paths from
+    khaleesi:/local/users/pshannon/github/trenaWholeGenomeRuns/trem2-multipleConfigurations/config.R
+     matrix.files <- c("Scaled_Winsorized_MayoRNAseq_CER.RData",
+                       "Scaled_Winsorized_MayoRNAseq_TCX.RData",
+                       "Scaled_Winsorized_MSSMRNAseq_FP.RData" ,
+                       "Scaled_Winsorized_MSSMRNAseq_IFG.RData",
+                       "Scaled_Winsorized_MSSMRNAseq_PHG.RData",
+                       "Scaled_Winsorized_MSSMRNAseq_STG.RData",
+                       "Scaled_Winsorized_ROSMAPRNAseq.RData",
+                       "vst_MayoRNAseq_CER.RData",
+                       "vst_MayoRNAseq_TCX.RData")
+     matrix.file <- matrix.files[9]
+     matrix.file.short.name <- sub(".RData", "", matrix.file, fixed=TRUE)
+
+     if(!exists("mtx")){
+        varName <- load(sprintf("~/data/brainAD/sage-10sep2018/%s", matrix.file))
+        printf("using expression matrix %s", matrix.file)
+        stopifnot(varName == "mtx")
+        }
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* htmlwidgets helloWorld (4 oct 2018)
+
+  cd ~/github/htmlwidgets-helloWorld/
+  using version 1.13.6 of devtools
+  https://www.rdocumentation.org/packages/htmlwidgets/versions/1.2/topics/scaffoldWidget
+
+  after cloning newly created github repo: https://github.com/paul-shannon/htmlwidgets-helloWorld.git
+  cd ~/github/htmlwidgets-helloWorld
+  library(devtools)
+  devtools::create("helloWorld")
+  library(htmlwidgets)   # version 1.3
+  scaffoldWidget("helloWorld")
+
+  --- created this inside ~/github/htmlwidgets-helloWorld/helloWorld/inst/htmlwidgets:
+       431 Oct  4 11:09 helloWorld.js
+       115 Oct  4 11:09 helloWorld.yaml
+
+
+*-----------------------------------------------------------------------------------------------------------------------
 * twig models of trem2, part 2 (3 oct 2018)
 
   khaleesi
@@ -141,14 +706,14 @@ bed format: chrom, start, end, name, score, strand
     ENSG00000131759:RARA             8          NA         NA          NA          NA          NA        20           NA           NA       28        2   14
     ENSG00000184271:POU6F1          20          NA         NA          NA          NA           8        NA           NA           NA       28        2   14
 
-  
+
 
 *-----------------------------------------------------------------------------------------------------------------------
 * twig models on trem2 (3 oct 2018)
 
   khaleesi
   cd ~/data/brainAD/sage-10sep2018
-  
+
    34351956 Oct  2 19:23 Scaled_Winsorized_MayoRNAseq_CER.RData
    34451922 Oct  2 19:24 Scaled_Winsorized_MayoRNAseq_TCX.RData
    32601599 Oct  2 19:24 Scaled_Winsorized_MSSMRNAseq_FP.RData
@@ -165,13 +730,13 @@ bed format: chrom, start, end, name, score, strand
     filenames <- grep("RNAseq.*RData", dir(".."), v=TRUE)
        [1] "Scaled_Winsorized_MayoRNAseq_CER.RData"
        [2] "Scaled_Winsorized_MayoRNAseq_TCX.RData"
-       [3] "Scaled_Winsorized_MSSMRNAseq_FP.RData" 
+       [3] "Scaled_Winsorized_MSSMRNAseq_FP.RData"
        [4] "Scaled_Winsorized_MSSMRNAseq_IFG.RData"
        [5] "Scaled_Winsorized_MSSMRNAseq_PHG.RData"
        [6] "Scaled_Winsorized_MSSMRNAseq_STG.RData"
-       [7] "Scaled_Winsorized_ROSMAPRNAseq.RData"  
-       [8] "vst_MayoRNAseq_CER.RData"              
-       [9] "vst_MayoRNAseq_TCX.RData"              
+       [7] "Scaled_Winsorized_ROSMAPRNAseq.RData"
+       [8] "vst_MayoRNAseq_CER.RData"
+       [9] "vst_MayoRNAseq_TCX.RData"
 
     summarizeMatrices.R
       --- loading Scaled_Winsorized_MayoRNAseq_CER.RData: 17003   263, -4.69 -0.66  0.01  0.67  4.55
@@ -188,8 +753,8 @@ bed format: chrom, start, end, name, score, strand
 * rna-seq normalization tips (2 oct 2018)
 
   --- good!   https://seqqc.wordpress.com/2015/02/16/should-you-transform-rna-seq-data-log-vst-voom/
-    "you may want to consider data transformation when building prognostic gene signatures (read Zwiener 
-     et al., 2014 for more details) or when building gene co-regulatory networks especially if using 
+    "you may want to consider data transformation when building prognostic gene signatures (read Zwiener
+     et al., 2014 for more details) or when building gene co-regulatory networks especially if using
      Pearson’s correlation (because PC results are heavily affected by outliers)."
 
   --- email from jim macdonald (24 sep 2018)
@@ -833,7 +1398,7 @@ bed format: chrom, start, end, name, score, strand
 
   jstor.   Braudel on Capitalism, or Everything Upside Down
 *-----------------------------------------------------------------------------------------------------------------------
-* sqlite database to remap-all (5 sep 2018)
+* sqlite database to remap-all, remap v1.2 (5 sep 2018)
 
    ~/s/data/public/human/remap-2018/fillDB.R
    ~/s/data/public/human/remap-2018/remap-all.sqlite
@@ -877,6 +1442,7 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 * RColorBrewer tips
 
+  library(RColorBrewer)
   colors <- brewer.pal(8, "Dark2")
   totalColorCount <- length(colors)
   colorNumber <- 0
@@ -923,7 +1489,7 @@ igap.ad.genes <- c("CR1", "BIN1", "CD2AP", "EPHA1", "CLU", "MS4A6A", "PICALM",
        ctcf binding
        DNase
        H3K4me3, H3K27me3, H3K36me3
-'   promooters, enhancers, insulators
+'   promoters, enhancers, insulators
 
    --- get ftp data
      ftp://ftp.ensembl.org/pub/release-93/regulation/homo_sapiens/homo_sapiens.GRCh38.Regulatory_Build.regulatory_features.20161111.gff.gz
@@ -2418,6 +2984,8 @@ ZCWPW1: 1
   27 aug 2018: 2 hours photography and watering
    2 sep 2018: 2 hours photography and watering (no photos at GZ, too late in the day)
    9 sep 2018: 2 hours photography and watering, 30 minutes moving logs
+  21 oct 2018: 1 hour grubbing blackberry on Andrews Bay, 1 hour herb robert removal, 30 minutes on fern photography
+  28 oct 2018: 3 hours grubbing blackberry on Andrews Bay, 30 minutes on fern photography
 
 *------------------------------------------------------------------------------------------------
 * next up for alison, CKAP2L shiny app (19 jun 2018)
@@ -3627,8 +4195,9 @@ tbl.round <- roundNumericColumns(tbl.orig, 3,
 
   cd ~/tmp
   curl -O https://cran.r-project.org/src/base/R-3/R-3.5.1.tar.gz
-
   mkdir /users/pshannon/local/R351
+  tar zxf R-3.5.1.tar.gz
+  cd  R-3.5.1
   ./configure --prefix=/users/pshannon/local/R351 --enable-R-shlib --with-readline=no --with-x=yes
   make && make install
 
@@ -4246,12 +4815,41 @@ chrom <- "chr6"
 snp.loc <- 41182853
 
 *------------------------------------------------------------------------------------------------
-* GO: “DNA binding transcription factor activity”
+* GO: DNA binding transcription factor activity  "allKnownTFs", "getTranscriptionFactors"
 
     library(org.Hs.eg.db)
     x <- mget("GO:0003700", env = org.Hs.egGO2ALLEGS)
     entrezIDs <- unique(unlist(x[[1]], use.names=FALSE))
     length(entrezIDs)   # [1] 1551
+
+  --- and that terms's children
+    # F GO:0004874    aryl hydrocarbon receptor activity	(is_a)
+    # P GO:0051091    positive regulation of DNA-binding transcription factor activity	(positively_regulates)
+    # F GO:0001199    transcription factor activity, metal ion regulated sequence-specific DNA binding	(is_a)
+    # F GO:0034246    mitochondrial sequence-specific DNA-binding transcription factor activity	(is_a)
+    # P GO:0043433    negative regulation of DNA-binding transcription factor activity	(negatively_regulates)
+    # F GO:0098531    transcription factor activity, direct ligand regulated sequence-specific DNA binding	(is_a)
+    # C GO:0005667    transcription factor complex	(capable_of)
+    # P GO:0051090    regulation of DNA-binding transcription factor activity	(regulates)
+    # F GO:0000981    DNA-binding transcription factor activity, RNA polymerase II-specific	(is_a)
+    # F GO:0001130    bacterial-type RNA polymerase transcription factor activity, sequence-specific DNA binding	(is_a)
+    #------------------------------------------------------------------------------------------------------------------------
+    library(org.Hs.eg.db)
+    x.0981  <- mget("GO:0000981", env = org.Hs.egGO2ALLEGS)
+    x.0981 <- unique(unlist(x.0981, use.names=FALSE))
+    length(x.0981)  # 1108
+    geneSymbols.0981 <- select(org.Hs.eg.db, keys=x.0981, keytype="ENTREZID", columns="SYMBOL")$SYMBOL
+
+
+    x.5667  <- mget("GO:0005667", env = org.Hs.egGO2ALLEGS)
+    x.5667 <- unique(unlist(x.5667, use.names=FALSE))  # 345
+    length(x.5667) # 345
+    geneSymbols.5667 <- unique(select(org.Hs.eg.db, keys=x.5667, keytype="ENTREZID", columns="SYMBOL")$SYMBOL)
+    length(geneSymbols.5667) # 345
+
+  --- trenaSGM::allKnownTFs
+
+    ~/github/trenaSGM/R/trenaSGM.R::allKnownTFs
 
 *------------------------------------------------------------------------------------------------
 * trem2 snps variants reviewed, reprised (24 may 2018)
@@ -11349,7 +11947,33 @@ function playMp3(id)
 
 
 *------------------------------------------------------------------------------------------------------------------------
+* vcf tips, as applied to an AD chr2 vcf, looking at INPP5D
+
+  hg38 full enhancer region: chr2:232,794,967-233,488,766
+  hg19                       chr2:233,659,677-234,397,412   via https://genome.ucsc.edu/cgi-bin/hgLiftOver
+
+  55kb hg38 proximal promoter: chr2:233,048,464-233,103,788
+       hg19                  : chr2:233913174-233968498
+
+  f <- "~/s/examples/R/vcf/files-from-sage/NIA_JG_1898_samples_GRM_WGS_b37_JointAnalysis01_2017-12-08_2.recalibrated_variants.Mayo.vcf.gz"
+  file.exists(f)
+  roi <- getGenomicRegion(igv)
+  chrom <- roi$chrom
+  start <- roi$start
+  end   <- roi$end
+  rng <- GRanges(seqnames="2", ranges=IRanges(start=start, end=end))
+   # names=c("gene_79087", "gene_644186")))
+  vcf.sub <- readVcf(f, "hg38", param=rng)
+
+  samples(header(vcf.sub)) # 349 integer strings, eg, "18238"
+  print(load("~/github/trenaProjectIGAP/inst/extdata/covariates/covariates.RData")) #    [1] "tbl.covar"
+  dim(tbl.covar) # [1] 278   8
+  length(intersect(sample.ids, samples(header(vcf.sub))))  # [1] 263
+
+*------------------------------------------------------------------------------------------------------------------------
 * vcf tips
+
+   https://bioinformatics-core-shared-training.github.io/cruk-summer-school-2017/Day2/exploring-vcf.nb.html
 
   library(VariantAnnotation)
   library(synapseClient)
@@ -39866,7 +40490,6 @@ setMethod('displayVcfRegion', 'igvR',
       params <- ScanVcfParam(which=gr, samples=sampleIDs)
       vcf <- readVcf(TabixFile(gz.path), "hg38", params)
       tempFile <- tempfile(fileext=".vcf")
-      writeVcf(vcf, tempFile)
       tempFile.gz <- sprintf("%s.gz", tempFile)
       bgzip(tempFile, dest=tempFile.gz, overwrite=TRUE)
       tempFile.gz.tbi <- indexTabix(tempFile.gz, format="vcf")
@@ -41279,7 +41902,7 @@ Any advice?   Thanks - and thanks for this very promising software!
      # at github, create new repo, maybe initialize with license
   git remote add origin https://github.com/PriceLab/metnetsViz
   git remote -v
-  git push origin master    # git push --force origin master any files were added to new repo (e.g., license)
+  git push -u origin master    # git push --force origin master any files were added to new repo (e.g., license)
 
    -- if trouble, especially "refspec master does not match any"
      do a round trip on the new github repo's .gitignore or README.md: pull, change, add, commit, push
