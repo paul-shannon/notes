@@ -98,6 +98,607 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* python dash, first look (19 nov 2018)
+
+  cd ~/s/examples/python/dash/firstLook/
+  pip install --upgrade pip
+
+  pip install dash==0.30.0  # The core dash backend
+  pip install dash-html-components==0.13.2  # HTML components
+  pip install dash-core-components==0.38.0  # Supercharged components
+  pip install dash-table==3.1.6  # Interactive DataTable component (new!)
+
+  https://dash.plot.ly/datatable
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igv.js navbar overflow, minimal demo (16 nov 2018)
+
+  ~/github/projects/examples/js/igvBareBones/hg38-navbar-bug.html
+  https://github.com/igvteam/igv.js/issues/752
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trenaViz demo, mef2c promoter snp: chr5:88,884,591
+
+  seems to intersect with fp for TBR1 and EGR3, tf 4 and 6 respectively in a trena model
+
+  see khaleesi:/local/users/pshannon/github/TrenaProjectIGAP/inst/scripts/extractSnpsFromVCFs/oneSnp.R
+  for plotMB, and breaking results, most of the above is also in ~/github/trenaProjectIGAP/inst/scripts/motifbreakR/
+
+   library(MotifDb)
+   library(motifbreakR)
+   library(BSgenome.Hsapiens.UCSC.hg38)
+
+   loc <- 88884592
+   snp.name <- sprintf("%s:%d:%s:%s", "chr5", loc, "A", "C")
+   tbl.snp <- data.frame(chrom="chr5", start=loc-1, end=loc, name=snp.name, score=0, strand="+",
+                         stringsAsFactors=FALSE)
+
+   bedFile <- "snp.bed"
+   write.table(tbl.snp, file=bedFile, sep="\t", col.names=FALSE, row.names=FALSE, quote=FALSE)
+   getSeq(BSgenome.Hsapiens.UCSC.hg38, "chr5", loc, loc)
+   snps.gr <- snps.from.file(bedFile,
+                             search.genome = BSgenome.Hsapiens.UCSC.hg38,
+                             format = "bed")
+
+   motifs <- query(MotifDb, c("sapiens", "TBR1"))
+   motifs <- query(MotifDb, c("sapiens", "jaspar2018"), c("EGR3", "TBR1"))
+   results <- motifbreakR(snpList = snps.gr,
+                             filterp = TRUE,
+                             pwmList = motifs,
+                             show.neutral=FALSE,
+                             method = c("ic", "log", "notrans")[2],
+                             bkg = c(A=0.25, C=0.25, G=0.25, T=0.25),
+                             BPPARAM = BiocParallel::bpparam(),
+                             verbose=TRUE)
+   plotMB(results, rsid=snp.name, effect=c("weak", "strong")) # takes a minute or two
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* shinyproxy tips
+
+    sudo emacs /etc/shinyproxy/application.yml
+    sudo /bin/systemctl restart shinyproxy
+
+    turn on per-container-session logging
+      in application.yml (allegedly - not yet tested)
+          container-log-path: ./container-logs
+
+*-----------------------------------------------------------------------------------------------------------------------
+* docker shiny tips, useful for trenaViz containers
+
+  the first parameter to shiny's runApp function is "appDir", which is polymorphic:
+
+     1) A directory containing server.R, plus, either ui.R or a www directory that contains the file index.html.
+     2) A directory containing app.R.
+     3) An .R file containing a Shiny application, ending with an expression that produces a Shiny app object.
+     4) A list with ui and server components.
+     5) A Shiny app object created by shinyApp.
+
+   A docker image can be constructed, via a Dockerfile, to execute a command as its concluding action.
+   using ~/github/trenaShinyApps/trenaViz/docker/skin/Dockerfile for example:
+
+     FROM pshannon/trenavizbase
+     USER root
+     COPY Rprofile.site /usr/local/lib/R/etc/
+     USER trena
+     WORKDIR /home/trena/app
+     COPY packages/*gz ./
+     RUN R CMD INSTALL -l ~/library TrenaProjectSkin_0.99.1.tar.gz
+     EXPOSE 3838
+     COPY trenaViz.R .
+     CMD ["R", "-e", "shiny::runApp('/home/trena/app/trenaViz.R', port=3838, host='0.0.0.0')"]
+
+   thus this invocation of runApp used option 3 above.
+
+   this supports this command (target) in ~/github/trenaShinyApps/trenaViz/docker/skin/makefile:
+
+     dockerRun:
+        docker run -p 60042:3838 trenaskin
+
+    and this very closely related configuration for shinyproxy:
+
+     - name: trenaskin
+       display-name: trenaskin
+       docker-cmd: ["/usr/local/bin/R", "-e", "shiny::runApp('/home/trena/app/trenaViz.R')"]
+       docker-image: trenaskin
+       groups: [biologists, rich, admin]
+
+
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* software diagram, uml, maybe for aisha (6 nov 2018)
+
+  https://www.smartdraw.com/uml-diagram/software-design-diagram-templates.htm
+
+*-----------------------------------------------------------------------------------------------------------------------
+* docker tips: copy image to trena from riptide (6 nov 2018)
+
+  --- a real example
+   cd  ~/github/trenaShinyApps/trenaViz/docker/skin/o
+   docker save trena_skin:latest > dockerSkin.save      # 13G, 5 min 30 seconds
+   time scp dockerSkin.save pshannon@trena:/local/tmp/  #
+
+  --- on trena
+    cd /local/tmp
+    time docker load < dockerSkin.save                  # 6 minutes
+    docker images | grep skin
+    trena_skin                      latest              67ae82f58fef        About an hour ago   13GB
+
+
+  --- test it out from riptide
+   cd ~/github/trenaShinyApps/trenaViz/docker/skin/
+   make bash
+      DOCKER:trena.app>  R -f trenaViz.R
+      Listening on http://0.0.0.0:3838
+   browse to localhost:60042
+
+*-----------------------------------------------------------------------------------------------------------------------
+* create bedGraph tracks for all AD and Control snps in enhancer regions of INPP5D (7 nov 2018), cont # 2) couting geno() not AC (7 nov 2018)
+
+   the AC field of the vcf file records the alt allele count across all samples in the geno matrix
+   when i generated bedgraph tables for inpp5d on khaleesi, this produced identical ad/ctl tracks
+   solution: after liftover, extract the ad samples geno matrix, and the ctl version, then count non-zero entries
+             this gives the number of samples in ad,ctl separately.
+
+   khaleesi: ~/github/TrenaProjectIGAP/inst/scripts/extractSnpsFromVCFs/extract.inpp5d.tables.R
+      save(tbl.wgs.ad, file="wgs.variants.AD.inpp5d.RData")
+      save(tbl.wgs.ctl, file="wgs.variants.CTL.inpp5d.RData")
+
+   back on riptide, cd ~/github/trenaProjectIGAP/inst/extdata/variants
+     scp pshannon@khaleesi:github/TrenaProjectIGAP/inst/scripts/extractSnpsFromVCFs/wgs.variants*inpp5d.RData .
+
+
+   --- now look for variants around INPP5D which are non-zero in AD, and with a signficicant count
+       differnece with Control
+     khaleesi
+     cd ~/github/TrenaProjectIGAP/inst/scripts/extractSnpsFromVCFs/
+     extract.inpp5d.tables.R
+       this loose code creates 3 files:
+            43260 Nov  7 07:24 wgs.variants.AD.inpp5d.RData
+            43179 Nov  7 07:24 wgs.variants.CTL.inpp5d.RData
+            42800 Nov  7 07:59 wgs.variants.DELTA.inpp5d.RData  # AD counts - Control counts
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* create bedGraph tracks for all AD and Control snps in enhancer regions of the 21 AD genes (6 nov 2018), cont.
+
+  on khaleesi
+    cd ~/github/TrenaProjectIGAP/inst/scripts/extractSnpsFromVCFs/
+    script: extractByDiagnosis.R, function getAllTables.
+       creates a big data.frame for AD, for Control.  gene & hg38.chromloc column added, the latter for liftover
+       cd ~/github/TrenaProjectIGAP/inst/scripts/extractSnpsFromVCFs/liftover; wc -l
+
+    332460 hg19.ad.chromLoc.txt
+    331726 hg38.ad.chromLoc.bed
+      1468 hg38.ad.chromLoc.err   # half are comment lines, in just two forms:
+                                  #Deleted in new
+                                  #Partially deleted in new
+
+   strategy:
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* create bedGraph tracks for all AD and Control snps in enhancer regions of the 21 AD genes (6 nov 2018)
+
+  1) see ~/github/trenaProjectIGAP/inst/unitTests/test_TrenaProjectIGAP.R::test_getEnhancerRegionsAllGenes
+     writes out regions.txt,    https://genome.ucsc.edu/cgi-bin/hgLiftOver creates regions-hg19.txt
+        hg38                          hg19
+ABCA7   chr19:600613-1847928        chr19:600613-1847927
+APOE    chr19:44683184-45442155     chr19:45186456-45945413
+BIN1    chr2:126994030-127663637    chr2:127751606-128421211
+CASS4   chr20:56339964-57452538     chr20:54915020-56027594
+CD2AP   chr6:46694333-47566557      chr6:46662070-47534293
+CD33    chr19:51092217-51696151     chr19:51595474-52199404
+CELF1   chr11:46519461-48093705     chr11:46541011-48115257
+CLU     chr8:27274199-28227841      chr8:27131716-28085358
+CR1     chr1:207007800-207894086    chr1:207181145-208067431
+DSG2    chr18:31183956-31585755     chr18:28763919-29165718
+EPHA1   chr7:143242804-143526261    chr7:142939897-143223354
+FERMT2  chr14:52808892-53586056     chr14:53275610-54052774
+HLA-DRB1chr6:31536063-33150325      chr6:31503840-33118102
+HLA-DRB5chr6:31594043-33100902      chr6:31561820-33068679
+INPP5D  chr2:232823876-233459857    chr2:233688586-234368503
+MEF2C   chr5:88350353-89362010      chr5:87646170-88657827
+MS4A6A  chr11:59514776-60408986     chr11:59282249-60176459
+NME8    chr7:37625460-38021420      chr7:37665063-38061022
+PICALM  chr11:85792243-86251341     chr11:85503286-85962383
+PTK2B   chr8:26827601-27563535      chr8:26685118-27421052
+RIN3    chr14:91586421-93078605     chr14:92052765-93544950
+SLC24A4 chr14:91939114-92827180     chr14:92405458-93293525
+SORL1   chr11:121265693-121648485   chr11:121136402-121519194
+TOMM40  chr19:44853435-44909901     chr19:45356692-45413158
+ZCWPW1  chr7:99892814-101231552     chr7:99490437-100874833
+
+
+)
+*-----------------------------------------------------------------------------------------------------------------------
+* DEMOBILIZING IMMUNOLOGY: AUTOPOIESIS AND AUTONOMY IN FRANCISCO VARELA’S THEORY OF IMMUNITY
+
+  ~/Documents/demobilizingImmunology.pdf
+
+*-----------------------------------------------------------------------------------------------------------------------
+* git tips: unstage staged (added) files (4 nov 2018)
+
+   -- from http://andrewberls.com/blog/post/git-tricks-unstaging-files#alias
+
+     git config --global alias.unstage 'reset --'
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trenaBatch: home for whole genome trena runs, bplapply, alison's placental analysis (4 nov 2018)
+
+  khaleesi:
+     ~/github/trenaBatch/placenta/footprints/run.R, combineModels.R
+     ~/github/trenaBatch/placenta/motifMatching/run.R, combineModels.R
+     ~/github/trenaBatch/AD/footprints/combineModelsAllGenesAddGeneSymbols.R
+     ~/github/trenaBatch/AD/footprints/stagedRun.R   # find footprints, map to TFs, build model
+
+
+  -- july 20 2018, whole genome model:
+    results here:  riptide, ~/github/trenaSGM/inst/batch/cory/AD/tbl.models.all.RData
+     ~/github/trenaWholeGenomeRuns/
+    apparently created from july 6-7 run:
+     dir ~/github/trenaWholeGenomeRuns/june2018-experiments/cory/AD/OUTPUT.all | wc -l  # 16960
+     used post-processing script to  combine all per-gene models, uses ensembl:geneSymbol names
+       khaleesi: ~/github/trenaWholeGenomeRuns/combineModelsAllGenesAddGeneSymbols.R
+
+   -- poach this combine script for alison's models, which use onnly geneSymbols
+
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* filterVariants: separate igap vcf files into 4 parts, one for each diagnosis (3 nov 2018), filter by sample id
+
+  cd ~/s/data/sage/ad-mayo/
+  try this with 207kb INPP5d region:
+     hg38: chr2:233,030,380-233,237,490
+     hg19:
+
+  ~/s/data/sage/ad-mayo/filter.R
+
+  consulting https://www.bioconductor.org/packages/3.3/bioc/vignettes/VariantAnnotation/inst/doc/filterVcf.pdf
+
+  --- is diagnosis (Control, AD, PSP, Pathologic Aging) in the vcf file?
+   tbl.info <- as.data.frame(info(vcf)); [1] 5162   24
+   colnames(tbl.info)
+     [1] "AC"                  "AF"                  "AN"                  "BaseQRankSum"
+     [5] "DP"                  "DS"                  "END"                 "ExcessHet"
+     [9] "FS"                  "HaplotypeScore"      "InbreedingCoeff"     "MLEAC"
+    [13] "MLEAF"               "MQ"                  "MQ0"                 "MQRankSum"
+    [17] "NEGATIVE_TRAIN_SITE" "POSITIVE_TRAIN_SITE" "QD"                  "ReadPosRankSum"
+    [21] "SOR"                 "VQSLOD"              "VariantType"         "culprit"
+
+   --- val answers this identical question in 2016:    https://support.bioconductor.org/p/79389/
+    ScanVcfParam(samples=c("samp1", "samp2", "samp45"))
+    head(samples(scanVcfHeader(f))) # [1] "1000" "1005" "1010" "1015" "1019" "1027"
+
+*-----------------------------------------------------------------------------------------------------------------------
+* caltech ellen rothenberg, feynman prize, lee hood's 80th birthday colloquium, gene regulation (2 nov 2018)
+
+  http://www.caltech.edu/news/rothenberg-wins-feynman-prize-50107
+
+*-----------------------------------------------------------------------------------------------------------------------
+* placental psg1, trenaSGM, possibly bad footprint data, build trenaSGM noDNA, fp, motifs matched (1 nov 2018)
+
+  cd ~/github/trenaProjectPlacenta/inst/docker/demoScripts
+  http://www.jbc.org/content/early/2018/05/09/jbc.RA117.001384
+  New insights into the regulation of placental growth factor gene expression by the
+    transcription factors GCM1 and DLX3 in human placenta
+  that is: PGF regulated by GCM1 and DLX3
+
+   ~/github/trenaProjectPlacenta/inst/docker/demoScripts/pgf.R
+   loaded up fimo with all of jaspar2018 and hocomoco
+   used genehancer data, first just the promoter, and then all enhncers
+
+   this suggests that enhancers.all should be used:
+
+     match(tbl.model.enhancers.all$gene[1:20], tbl.model.enhancer.only$gene)
+         [1] NA NA NA NA  1 NA  2 NA NA  3 NA NA NA  4 NA NA NA NA  5 NA
+     match(tbl.model.enhancer.only$gene[1:20], tbl.model.enhancers.all$gene)
+         [1]  5  7 10 14 19 22 29 31 40 42 43 44 48 50 51 52 53 56 57 63
+
+  > tbl.model.enhancer.only
+        gene    betaLasso  lassoPValue pearsonCoeff   rfScore     betaRidge spearmanCoeff bindingSites
+   34 TWIST1  0.181332756 9.052670e-11    0.5644724 4.1785400  0.0711888418     0.5748027           NA
+   7   ESRRA  0.264666137 1.778223e-09    0.5409253 1.7011842  0.1077190920     0.5008457           NA
+   3    E2F6  0.000000000 9.120390e-02    0.4969451 1.5129585  0.1189657328     0.4565125           NA
+   33  THAP1  0.000000000 8.342794e-01    0.4806666 0.6341850  0.0730779316     0.3944203           NA
+   37 ZNF263  0.000000000 7.959139e-01    0.4371748 0.6491596  0.0459328368     0.3649674           NA
+   32  TGIF1  0.000000000 2.122930e-01    0.3755973 0.6290870  0.0685963713     0.2701678           NA
+   15  KLF15  0.000000000 7.216600e-01    0.3346570 0.4299713  0.0044715213     0.1174275           NA
+   4    EGR3  0.002565688 7.987464e-03    0.3305681 0.6582933  0.0210242620     0.2280726           NA
+   20  NR2C2  0.000000000 6.713229e-01   -0.3052090 0.4477000 -0.0811771510    -0.2554413           NA
+   13   HSF4  0.000000000 8.118169e-01   -0.3111622 0.4656479 -0.0030212064    -0.3297229           NA
+   14  KLF12  0.000000000 6.305455e-01   -0.3112297 0.4715801 -0.0033171421    -0.3120238           NA
+   25   PURA  0.000000000 7.566333e-01   -0.3125331 0.3563450 -0.0003091626    -0.2027881           NA
+   35 ZBTB7A  0.000000000 4.570582e-01   -0.3193220 0.7460552  0.0267777974    -0.3310469           NA
+   28   RFX1  0.000000000 4.968556e-01   -0.3272681 0.3507820  0.0244102140    -0.2698432           NA
+   11   HIC1  0.000000000 7.416187e-01   -0.3277186 0.3566224 -0.0265251450    -0.2501196           NA
+   19  NFKB2  0.000000000 1.820939e-01   -0.3288246 0.3975039 -0.0726482540    -0.3095124           NA
+   21  NR2F2  0.000000000 7.433648e-01   -0.3289711 0.2473567 -0.0055439869    -0.3195920           NA
+   16   KLF3  0.000000000 7.620753e-01   -0.3320689 0.5524388 -0.0553818658    -0.3054720           NA
+   10   GLI2  0.000000000 8.660766e-01   -0.3347824 0.3796913 -0.0211514649    -0.2930348           NA
+   29  SMAD3  0.000000000 7.801634e-01   -0.3508040 0.6716694 -0.0478864314    -0.3661547           NA
+
+   > tbl.model.enhancers.all[1:20, ]
+          gene   betaLasso  lassoPValue pearsonCoeff    rfScore     betaRidge spearmanCoeff bindingSites
+   64    NR1H2  0.35430110 9.482752e-14    0.6303891 2.82500104  3.838034e-02     0.6154286           NA
+   102    XBP1  0.03888743 9.571637e-12    0.6219548 1.02553384  2.312524e-02     0.5840110           NA
+   108  ZNF410  0.00000000 7.436913e-01    0.5822614 0.63007292  2.285742e-02     0.5389432           NA
+   61     NFYB  0.33440121 2.536686e-10    0.5742181 0.74654182  1.169249e-01     0.5340230           NA
+   100  TWIST1  0.04838966 5.093637e-07    0.5644724 2.19269895  3.459339e-02     0.5748027           NA
+   9     CREB3  0.00000000 9.872958e-01    0.5486784 0.70236121  5.481123e-03     0.5122493           NA
+   21    ESRRA  0.00000000 9.079263e-01    0.5409253 0.47356866  3.256110e-02     0.5008457           NA
+   34     HBP1  0.00000000 9.053863e-01    0.5358049 0.28064468  2.805295e-02     0.4613985           NA
+   35     HES1  0.00000000 8.783104e-01    0.5059228 0.28913738  2.069315e-02     0.4321420           NA
+   13     E2F6  0.00000000 7.617177e-01    0.4969451 0.32052402  3.433428e-02     0.4565125           NA
+   48     MAFF  0.00000000 5.751908e-03    0.4942533 0.52308423  5.047588e-02     0.4431869           NA
+   67    NR2F6  0.00000000 8.103500e-01    0.4918240 0.08590030 -8.498795e-05     0.4325947           NA
+   6     CEBPB  0.00000000 6.579582e-01    0.4830248 0.21846014  2.653512e-02     0.4397530           NA
+   99    THAP1  0.00000000 8.258915e-01    0.4806666 0.28585621  1.061408e-02     0.3944203           NA
+   11    DDIT3  0.00000000 5.941799e-01    0.4747509 0.10133395 -6.009731e-03     0.4010490           NA
+   42     JUND  0.00000000 5.817809e-01    0.4596009 0.15603209  2.929411e-02     0.3882188           NA
+   2      ATF4  0.00000000 5.314676e-01    0.4498322 0.23548848 -2.473803e-02     0.3658557           NA
+   12     E2F4  0.00000000 8.471915e-01    0.4396983 0.20316756  3.434532e-02     0.3831790           NA
+   107  ZNF263  0.00000000 4.954660e-01    0.4371748 0.25297491 -2.144322e-02     0.3649674           NA
+   57     NFE2  0.00000000 2.619332e-02    0.4353519 0.29008314  5.135323e-02     0.4215926           NA
+
+
+22  NR3C1 -0.091844697 4.365068e-04   -0.3671222 0.8811586 -0.1296047095    -0.3306113           NA
+12  HNF4A  0.000000000 9.118114e-01   -0.3695679 0.3289047 -0.0364083454    -0.3338145           NA
+36   ZEB1  0.000000000 2.144634e-01   -0.3778199 0.4077236 -0.0486624187    -0.3423395           NA
+1    BCL6 -0.101504201 2.166441e-05   -0.3860446 0.8530273 -0.0660520454    -0.3539823           NA
+23   PBX3 -0.176955604 7.676275e-05   -0.3866393 2.2596209 -0.1384845602    -0.3615335           NA
+26   RARA  0.000000000 7.760820e-01   -0.3926935 0.6821806 -0.0658602732    -0.3800270           NA
+30  SOX13  0.000000000 9.832456e-01   -0.4065769 0.4493374 -0.0301204052    -0.3254604           NA
+27   REST  0.000000000 8.828735e-01   -0.4141616 0.5927451 -0.0539712698    -0.3276472           NA
+6    ESR2  0.000000000 9.364999e-01   -0.4313427 0.5336265 -0.0373229603    -0.4321505           NA
+5    ELK4 -0.034459640 8.342186e-04   -0.4386683 0.4263505 -0.0661935786    -0.3475672           NA
+9    ETV6 -0.051955320 1.397512e-03   -0.4400975 0.6220172 -0.0885235089    -0.3905252           NA
+31  TFAP4  0.000000000 4.744093e-02   -0.4508575 0.7291824 -0.0863818573    -0.4374979           NA
+8    ETV1 -0.057476929 6.722373e-05   -0.4609279 1.0207078 -0.0888068863    -0.4422729           NA
+2   CTCFL  0.000000000 7.890448e-01   -0.4775900 1.1371811 -0.0390197813    -0.4742116           NA
+17    MNT  0.000000000 7.631699e-01   -0.4999951 2.0877080 -0.0347404735    -0.4459801           NA
+18   NFIA  0.000000000 2.863282e-05   -0.5028240 0.7841087 -0.0375257632    -0.4523183           NA
+24  PPARA -0.231997698 1.322665e-09   -0.5456162 1.9932088 -0.1222659958    -0.5260959           NA
+> tbl.model.enhancers.all
+       gene   betaLasso  lassoPValue pearsonCoeff    rfScore     betaRidge spearmanCoeff bindingSites
+64    NR1H2  0.35430110 9.482752e-14    0.6303891 2.82500104  3.838034e-02     0.6154286           NA
+102    XBP1  0.03888743 9.571637e-12    0.6219548 1.02553384  2.312524e-02     0.5840110           NA
+108  ZNF410  0.00000000 7.436913e-01    0.5822614 0.63007292  2.285742e-02     0.5389432           NA
+61     NFYB  0.33440121 2.536686e-10    0.5742181 0.74654182  1.169249e-01     0.5340230           NA
+100  TWIST1  0.04838966 5.093637e-07    0.5644724 2.19269895  3.459339e-02     0.5748027           NA
+9     CREB3  0.00000000 9.872958e-01    0.5486784 0.70236121  5.481123e-03     0.5122493           NA
+21    ESRRA  0.00000000 9.079263e-01    0.5409253 0.47356866  3.256110e-02     0.5008457           NA
+34     HBP1  0.00000000 9.053863e-01    0.5358049 0.28064468  2.805295e-02     0.4613985           NA
+35     HES1  0.00000000 8.783104e-01    0.5059228 0.28913738  2.069315e-02     0.4321420           NA
+13     E2F6  0.00000000 7.617177e-01    0.4969451 0.32052402  3.433428e-02     0.4565125           NA
+48     MAFF  0.00000000 5.751908e-03    0.4942533 0.52308423  5.047588e-02     0.4431869           NA
+67    NR2F6  0.00000000 8.103500e-01    0.4918240 0.08590030 -8.498795e-05     0.4325947           NA
+6     CEBPB  0.00000000 6.579582e-01    0.4830248 0.21846014  2.653512e-02     0.4397530           NA
+99    THAP1  0.00000000 8.258915e-01    0.4806666 0.28585621  1.061408e-02     0.3944203           NA
+11    DDIT3  0.00000000 5.941799e-01    0.4747509 0.10133395 -6.009731e-03     0.4010490           NA
+42     JUND  0.00000000 5.817809e-01    0.4596009 0.15603209  2.929411e-02     0.3882188           NA
+2      ATF4  0.00000000 5.314676e-01    0.4498322 0.23548848 -2.473803e-02     0.3658557           NA
+12     E2F4  0.00000000 8.471915e-01    0.4396983 0.20316756  3.434532e-02     0.3831790           NA
+107  ZNF263  0.00000000 4.954660e-01    0.4371748 0.25297491 -2.144322e-02     0.3649674           NA
+57     NFE2  0.00000000 2.619332e-02    0.4353519 0.29008314  5.135323e-02     0.4215926           NA
+106   ZFHX3  0.00000000 8.332762e-01    0.3935350 0.07489985  7.700045e-04     0.2939915           NA
+97    TGIF1  0.00000000 9.400372e-01    0.3755973 0.20880861  2.579649e-02     0.2701678           NA
+62     NFYC  0.02861216 6.982416e-04    0.3609347 0.28830450  1.258123e-01     0.3278009           NA
+25    FOXF2  0.00000000 9.787782e-02    0.3592712 0.16714865  1.650560e-02     0.2256552           NA
+15     ELF3  0.00000000 9.035792e-01    0.3447546 0.09752030  1.180285e-02     0.3409130           NA
+101    USF1  0.00000000 3.671690e-01    0.3422503 0.21710085 -4.246955e-02     0.2554071           NA
+16     ELK1  0.00000000 1.023672e-01    0.3380100 0.34774836  3.121584e-02     0.3679485           NA
+7     CEBPG  0.00000000 8.602688e-01    0.3364879 0.04978793 -9.510266e-03     0.2902416           NA
+44    KLF15  0.00000000 8.298197e-01    0.3346570 0.17308195 -7.381926e-03     0.1174275           NA
+95   TFAP2B  0.00000000 9.440844e-01    0.3338710 0.19610941  5.293329e-02     0.2468736           NA
+14     EGR3  0.00000000 2.648146e-02    0.3305681 0.14025848  1.814550e-02     0.2280726           NA
+5     CEBPA  0.00000000 5.599099e-01    0.3220516 0.10429737  2.031335e-02     0.2694929           NA
+33    GMEB2  0.00000000 1.966540e-03    0.3053271 0.42762896  1.221694e-01     0.3651382           NA
+49     MAFK  0.00000000 2.311845e-03    0.3034234 0.97285519  8.507792e-02     0.3502921           NA
+41     JUNB  0.00000000 8.440754e-01    0.3033973 0.07295562  1.529951e-02     0.2240664           NA
+88     TAL1  0.00000000 3.850254e-01   -0.3001422 0.07699340  1.656004e-02    -0.3157737           NA
+37    HINFP  0.00000000 5.548805e-01   -0.3004627 0.09150004 -3.090563e-02    -0.3404005           NA
+55     MZF1  0.00000000 6.955360e-01   -0.3005128 0.07460653  6.793333e-04    -0.2060426           NA
+30    FOXO3  0.00000000 7.006388e-01   -0.3006732 0.41109984 -1.548670e-02    -0.2893788           NA
+65    NR2C2  0.00000000 9.141651e-01   -0.3052090 0.10940258 -5.422046e-02    -0.2554413           NA
+3     BACH2  0.00000000 7.055447e-01   -0.3084515 0.12946920 -1.699521e-02    -0.2831602           NA
+40     HSF4  0.00000000 7.711881e-01   -0.3111622 0.12107457  1.061037e-02    -0.3297229           NA
+43    KLF12  0.00000000 5.320496e-01   -0.3112297 0.13377621  2.076152e-02    -0.3120238           NA
+76     PURA  0.00000000 8.528877e-01   -0.3125331 0.07091550  5.437682e-04    -0.2027881           NA
+19      ERG  0.00000000 8.940411e-01   -0.3129128 0.12105269 -8.516990e-04    -0.2980063           NA
+90     TBX4  0.00000000 8.039497e-01   -0.3162310 0.11906669 -4.174677e-03    -0.2697577           NA
+47     LEF1  0.00000000 6.215550e-01   -0.3164357 0.12354666 -9.016026e-03    -0.3045837           NA
+104  ZBTB7A  0.00000000 8.040863e-01   -0.3193220 0.27938616 -4.090047e-04    -0.3310469           NA
+52    MEIS1  0.00000000 7.011563e-01   -0.3271218 0.06689849 -3.451283e-03    -0.3173626           NA
+80     RFX1  0.00000000 8.081699e-01   -0.3272681 0.07064584  1.485878e-02    -0.2698432           NA
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* synapse sage download mayo AD vcf files, 1 per chromosome, working version (1 nov 2018)
+
+  cd ~/s/data/sage/ad-mayo/
+  run download.R, getting large files and their tbis, synids scraped manually from
+     https://www.synapse.org/#!Synapse:syn11707308   (AMP-AD Knowledge Portal)
+
+    library(synapser)
+    synLogin ("pshannon@fhcrc.org", "tril0byt")
+    synids <- c("syn11714433", "syn11714443", "syn11714449",
+                "syn11714425", "syn11714444", "syn11714426", "syn11714437",
+                "syn11714414", "syn11714416", "syn11714439", "syn11714400",
+                "syn11714402", "syn11714428", "syn11714417", "syn11714432",
+                "syn11714411", "syn11714424", "syn11714401", "syn11714431",
+                "syn11714435", "syn11714438", "syn11714421", "syn11714403",
+                "syn11714415", "syn11714419", "syn11714413", "syn11714405",
+                "syn11714412", "syn11714427", "syn11714441", "syn11714447",
+                "syn11714429", "syn11714445", "syn11714406", "syn11714423",
+                "syn11714410", "syn11714440", "syn11714407", "syn11714436",
+                "syn11714408", "syn11714446", "syn11714404", "syn11714430",
+                "syn11714409", "syn11714422", "syn11714418", "syn11714434",
+                "syn11714420", "syn11714448", "syn11714442")
+    for(synid in synids[3:50]){
+       printf("--- get %s", synid)
+       synGet(synid, downloadLocation="~/s/data/sage/ad-mayo/")
+       }
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* synapse sage download mayo AD vcf files, 1 per chromosome, initial exploration
+
+   paul-shannon@fhcrc.org
+   https://www.synapse.org/#!Synapse:syn11707308
+   synapse get -r syn11707308
+   synLogin ("pshannon@fhcrc.org", oldAnimal)
+   synGet("syn11707308", downloadLocation="/tmp")
+      Folder: JointStudyAnalysis (syn11707308)
+      properties:
+        accessControlList=/repo/v1/entity/syn11707308/acl
+        annotations=/repo/v1/entity/syn11707308/annotations
+        concreteType=org.sagebionetworks.repo.model.Folder
+        createdBy=273995
+        createdOn=2018-01-24T20:50:15.380Z
+        entityType=org.sagebionetworks.repo.model.Folder
+        etag=947fab9a-95ea-40e3-b587-f8618ff0fc56
+        id=syn11707308
+        modifiedBy=273995
+        modifiedOn=2018-01-30T22:17:57.405Z
+        name=JointStudyAnalysis
+        parentId=syn10901601
+        uri=/repo/v1/entity/syn11707308
+      annotations:
+
+    synGet("syn11714443", downloadLocation="/tmp")
+      Downloading  [####################]100.00%   212.2kB/212.2kB (730.6kB/s)
+      NIA_JG_1898_samples_GRM_WGS_b37_JointAnalysis01_2017-12-08_1.recalibrated_variants.Mayo.vcf.gz.tbi
+      Done...    File: NIA_JG_1898_samples_GRM_WGS_b37_JointAnalysis01_2017-12-08_1.recalibrated_variants.Mayo.vcf.gz.tbi (syn11714443)
+     217291 Nov  1 11:26 /tmp/NIA_JG_1898_samples_GRM_WGS_b37_JointAnalysis01_2017-12-08_1.recalibrated_variants.Mayo.vcf.gz.tbi
+
+*-----------------------------------------------------------------------------------------------------------------------
+* do AD samples (n=79) have more novel motifbreakR snps than Control (n=73)
+
+  cd ~/s/examples/trena/chipseqMatchPercentageSurvey
+   dim(subset(tbl.sumHancer, TF.rank <= 2 & AF < 0.005 & Diagnosis=="AD" & deltaPVal >1)); dim(subset(tbl.sumHancer, TF.rank <= 2 & AF < 0.005 & Diagnosis=="Control" & deltaPVal >1))
+          AD:    24
+     Control:    16
+         PSP:    38
+  Path Aging:     8
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igraph adjacency matrix from whole genome trns for cory (30 oct 2018)
+
+  cd ~/s/data/cory/igraphAdjacencyMatrix/
+
+*-----------------------------------------------------------------------------------------------------------------------
+* eset, pdata, expressionSet, phenoData, vince carey's GGtools for eqtl analysis, snpStats, snpMatrix, tcx AD (30 oct 2018)
+
+  cd ~/s/examples/trena/giveMeABreak/inpp5d/
+  makeSmlSet.R
+
+  library(VariantAnnotation)
+  library(Biobase)
+  vcf.file <- "inpp5d-fullEnhancersRegion-hg19.vcf"
+  expr.file <- "~/github/trenaProjectIGAP/inst/extdata/expression/temporalCortex.15167x264.RData"
+  cov.file <- "~/github/trenaProjectIGAP/inst/extdata/covariates/covariates.RData"
+
+  #vcf <- readVcf(vcf.file)
+  print(load(expr.file))
+  print(load(cov.file))
+  head(rownames(mtx))      # "LOC102723897" "LINC01128"    "LINC00115"    "NOC2L"        "KLHL17"       "HES4"
+  head(colnames(mtx))      # "11492_TCX" "6810_TCX"  "1046_TCX"  "1924_TCX"  "1926_TCX"  "6913_TCX"
+
+  dim(mtx)
+  dim(tbl.covar)
+
+  colnames(mtx) <- gsub("_TCX", "", colnames(mtx))
+  tbl.covar$ID <- gsub("_TCX", "", tbl.covar$ID)
+  shared.samples <- intersect(colnames(mtx), tbl.covar$ID)
+  length(shared.samples)   # 264
+     # trim the covariates; all mtx colnames are good
+  tbl.covar <- subset(tbl.covar, ID %in% shared.samples)
+
+  all(sort(colnames(mtx)) == sort(tbl.covar$ID))  # TRUE
+  sample.order <- match(colnames(mtx), tbl.covar$ID)
+  tbl.covar <- tbl.covar[sample.order,]
+  rownames(tbl.covar) <- tbl.covar$ID
+  tbl.covar <- tbl.covar[, -1]
+  head(colnames(mtx))
+  all(colnames(mtx) == rownames(tbl.covar))
+
+  covar.metadata <-  data.frame(
+     labelDescription=c("Source", "Tissue", "RNA integrity number", "Diagnosis", "Gender", "Age at death", "FLOWCELL"),
+     row.names=c("Source", "Tissue", "RIN", "Diagnosis", "Gender", "AgeAtDeath", "FLOWCELL"))
+
+  phenoData <- new("AnnotatedDataFrame", data=tbl.covar, varMetadata=covar.metadata)
+
+  eset <- ExpressionSet(assayData=mtx, phenoData=phenoData)
+
+  vcf <- readVcf(vcf.file, "hg19")
+
+  gg = GenomicRanges::GRanges(seqnames="2", ranges(vcf))
+
+  library(Rsamtools)
+  file.gz <- sprintf("%s.gz", vcf.file)
+  bgzip(vcf.file, file.gz, overwrite=TRUE)
+  print(indexTabix(file.gz, format="vcf"))
+
+  tabixFile <- TabixFile(file.gz)
+
+  x <- vcf2sm(tabixFile, gr=gg, nmetacol=9L)
+  x <- vcf2sm(Rsamtools::TabixFile(vcf.file), gr=gg, nmetacol=9L)
+
+  x <- vcf2sm(vcf)
+  biocGet("GGtools")
+  library(GGtools)
+  library(snpStats)
+
+  sml <- make_smlSet(eset, list(chr2=x), organism="Homo sapiens", harmonizeSamples=TRUE)
+  save(sml, file="sml.RData")
+
+    # next call fails:
+  gwSnpTests(genesym("INPP5D")~AD, sml, chrnum("2"))
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* children and air pollution, who report (30 oct 2018)
+
+  http://www.who.int/news-room/detail/29-10-2018-more-than-90-of-the-world%E2%80%99s-children-breathe-toxic-air-every-day
+*-----------------------------------------------------------------------------------------------------------------------
+* AD eqtl, from cory and sage, chr2 (29 oct 2018)
+
+   cd ~/s/examples/trena/giveMeABreak/eqtl/
+   scp pshannon@whovian:/tmp/chomp_chr_2.zip .
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* remap chipseq ChIP-seq database postgres on khaleesi (30 oct 2018)
+
+  --- sample use: get full count
+    library(RPostgreSQL)
+    db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="hg38", host="khaleesi")
+    dbGetQuery(db, "select count(*) from chipseq")  # 80,143,591
+    colnames(dbGetQuery(db, "select * from chipseq limit 3")
+      # "chrom"     "start"     "endpos"    "tf"        "name"      "strand"    "peakStart" "peakEnd"
+
+  --- xtab of hits in INPP5D promoter
+   roi <- "chr2:233,058,942-233,064,773"
+   tbl <- dbGetQuery(db, "select * from chipseq where chrom='chr2' and start >= 233058942 and endpos <= 233064773")
+   tbl.freq <- as.data.frame(table(tbl$tf))
+   colnames(tbl.freq) <- c("tf", "count")
+   tbl.freq <- tbl.freq[order(tbl.freq$count, decreasing=TRUE),]
+
+   see ~/s/examples/trena/chipseqMatchPercentageSurvey/chipseqSurvey.R
+
+*-----------------------------------------------------------------------------------------------------------------------
 * postgresql tips, postgres tips: create, fill and index the chipseq table all from R (29 oct 2018)
 
    khaleesi:  ~/s/data/postgres-fill/remap-2018/createAndFill.R
@@ -137,6 +738,22 @@ bed format: chrom, start, end, name, score, strand
      dbGetQuery(db, sample.query)  # should be 10 rows
 
      dbDisconnect(db)
+
+    --- test from psql on riptide
+      psql -h khaleesi -U trena hg38
+        select * from chipseq where tf='LYL1' and chrom='chr2' and start > 233056986 and endpos < 233216341;
+        chrom |   start   |  endpos   |  tf  |          name           | strand | peakStart |  peakEnd
+     -------+-----------+-----------+------+-------------------------+--------+-----------+-----------
+      chr2  | 233060244 | 233060409 | LYL1 | GSE63484.LYL1.KASUMI1   | .      | 233060301 | 233060302
+      chr2  | 233076788 | 233076989 | LYL1 | GSE63484.LYL1.KASUMI1   | .      | 233076868 | 233076869
+      chr2  | 233084487 | 233084873 | LYL1 | GSE60477.LYL1.TSU1621MT | .      | 233084685 | 233084686
+      chr2  | 233084500 | 233084844 | LYL1 | GSE63484.LYL1.KASUMI1   | .      | 233084667 | 233084668
+      chr2  | 233084529 | 233084829 | LYL1 | GSE63484.LYL1.NB4       | .      | 233084675 | 233084676
+      chr2  | 233084535 | 233084779 | LYL1 | GSE63484.LYL1.THP1      | .      | 233084646 | 233084647
+      chr2  | 233165903 | 233166135 | LYL1 | GSE63484.LYL1.KASUMI1   | .      | 233166011 | 233166012
+      chr2  | 233165926 | 233166214 | LYL1 | GSE60477.LYL1.TSU1621MT | .      | 233166037 | 233166038
+      chr2  | 233165939 | 233166138 | LYL1 | GSE63484.LYL1.NB4       | .      | 233166038 | 233166039
+      chr2  | 233179322 | 233179504 | LYL1 | GSE60477.LYL1.TSU1621MT | .      | 233179362 | 233179363
 
 
 
@@ -244,7 +861,7 @@ bed format: chrom, start, end, name, score, strand
 
 
 *-----------------------------------------------------------------------------------------------------------------------
-* vcf tips:  create a pretty good data.frame from a multi-vcf file (26 oct 2018)
+* vcf tips:  create a pretty good data.frame from a multi-vcf file (26 oct 2018)  vcf to data.frame, vcf2df
 
   from ~/s/examples/trena/giveMeABreak/inpp5d/look.R
 
@@ -307,9 +924,6 @@ bed format: chrom, start, end, name, score, strand
    save(tbl, file="tbl.vcf.filtered.hg38.8858x386.RData")
 
    print(load("~/s/examples/trena/giveMeABreak/inpp5d/tbl.vcf.filtered.hg38.8858x386.RData"))
-
-
-
 
 
 *-----------------------------------------------------------------------------------------------------------------------
@@ -2291,12 +2905,12 @@ Server: AmazonS3
 *------------------------------------------------------------------------------------------------
 * shinyprowy 10 minute timeout, grayout (31 jul 2018)
 
-
-This from https://support.openanalytics.eu/t/shiny-apps-time-out-grey-out-after-10-minutes/212/3 might provide a lead:
+   This from https://support.openanalytics.eu/t/shiny-apps-time-out-grey-out-after-10-minutes/212/3 might provide a lead:
    "problem ws not shinyproxy.   i used nginx with config from https://www.shinyproxy.io/security
    responsible parameters:
        proxy_read_timeout 600s
    matt will sent to an hour: 3600s
+
 *------------------------------------------------------------------------------------------------
 * shinyproxy broken on trena (31 jul 2018)
 
@@ -4057,6 +4671,10 @@ tbl.round <- roundNumericColumns(tbl.orig, 3,
 
 *------------------------------------------------------------------------------------------------
 * shiny docker tips
+
+  --- cleanup
+  docker rm $(docker ps -q -f 'status=exited')
+  docker rmi $(docker images -q -f "dangling=true")
 
   --- minimal demo
      docker run --rm -p 3838:3838 rocker/shiny
@@ -6763,7 +7381,7 @@ Thank you.
    start.loc <- 1000000
    end.loc   <- 5000000
    gr <- GRanges("22", IRanges(start.loc, end.loc))
-   params <- ScanVcfParam(which=gr)
+   params <- ScanVcfParam(which=gr, samples=)
 
    vcf <- readVcf(tabixFile, "hg19", params)
    vcf <- readVcf(f, "hg19")
@@ -18834,12 +19452,13 @@ print(fromJSON(getURL(url2)))
   http://www.greenseattle.org/amending-soil-through-hugelkultur/
 
 *-----------------------------------------------------------------------------------------------------------------------
-* sword fern info
+* sword fern info, photos jordan jackson 2011, before and after  2011/2017, sent to paul talbert (18 nov 2018)
 
   --- june 2011 hatchery trail photos, jordan jackson
     http://metropolitangardens.blogspot.com/2011/11/seward-park.html
     http://3.bp.blogspot.com/-vTGQx6jJB4Y/TooXF2SrtxI/AAAAAAAATrM/wt7FpggKfLY/s640/Fallen+tree+0611.JPG
     http://1.bp.blogspot.com/-CkVIBfzU74I/TooXIpvuJ9I/AAAAAAAATrk/k7q9uqsf3Xo/s1600/Seward+Park+valley+0611.JPG
+
 
   --- bill gardner, ParaLogics Water Sciences
     Name: Bill Gardner
@@ -40761,7 +41380,6 @@ ssh pshannon@whovian ls -l /local/bdds/data/ADNI/test/*_list
 * VariantAnnotation, filter on sample id, for igvR (8 mar 2016)
 
   consulting https://www.bioconductor.org/packages/3.3/bioc/vignettes/VariantAnnotation/inst/doc/filterVcf.pdf
-  operating on igvR::displayVcfRegion vcf object
 
   GT <- geno(vcf)$GT
 
