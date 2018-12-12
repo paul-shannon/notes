@@ -98,6 +98,731 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* explore, discover, invent:  deploy for good health  (good lives)
+
+   explore to discover. invent & deploy.  good health for all
+
+*------------------------------------------------------------------------------------------------------------------------
+* cytof shiny app, for marjorie brand, jeff ranish animate Rphenograph clustering with time course protein counts  (12 dec 2018)
+
+   --- fcs and analysis results data here:
+
+      ~/github/cytofViz/inst/extdata/fcs
+
+   --- initial exploratory shiny app
+      ~/github/cytofViz/inst/explore/cytofViz.R
+
+   --- the tsne/Rphenograph layout
+     is in ~/github/cytofViz/inst/explore/tsnePlot.RData
+     dim(tbl.tsne) # 48076 8
+     head(tbl.tsne)
+        cluster day number     tsne1     tsne2                         sampleName   color phenographCluster
+      1       1   0      1 18.932996 11.170587 export_c01_sample_01_0_Day0_live_1 #D0E5A2                 1
+      2       1   0      2  6.301791 12.065454 export_c01_sample_01_0_Day0_live_2 #DBB15D                 4
+      3       1   0      3  5.930183 15.145040 export_c01_sample_01_0_Day0_live_3 #DBB15D                 4
+      4       1   0      4  9.334115  8.528194 export_c01_sample_01_0_Day0_live_4 #DBB15D                 4
+      5       1   0      5  6.425696 -8.455811 export_c01_sample_01_0_Day0_live_5 #8568CA                11
+      6       1   0      6  7.110587  8.610645 export_c01_sample_01_0_Day0_live_6 #DBB15D                 4
+    48k points  rendered in R,shiny: plot(tbl$tsne1 , tbl$tsne2, col=tbl$color)
+
+   --- challenge: how to color a tf or marker (eg, GATA1)
+
+    ~/github/cytofViz/inst/extdata/fcs/combine.R:
+       builds tbl.ids, mapping our 27 proteins to names used in
+
+    the 13 fcs files
+
+> x <- read.FCS(fcs.files[i], transformation=TRUE, alter.names=TRUE)
+> tbl.fcs <- pData(parameters(x))
+> dim(tbl.fcs)
+[1] 63  5
+> mtx <- exprs(x)  # [1] 3740   57
+> dim(mtx)
+[1] 3740   63
+> mtx[1:10, 1:10]
+      BCKG190Di    Ba138Di   Ce140Di   Ce142Di  Center Cs133Di   Dy161Di    Dy162Di    Dy163Di  Dy164Di
+ [1,] 0.0000000 170.782806 4.8437548 2.5617590 616.798       0 0.0000000  0.0000000   0.000000 0.000000
+ [2,] 0.0000000  39.149891 0.0000000 0.2049142 607.757       0 2.9613020 20.1739998  20.797239 1.157687
+ [3,] 0.0000000 119.225998 0.0000000 0.0000000 445.670       0 5.9741321 13.0303602  23.048201 2.434309
+ [4,] 0.3233002   5.966503 0.0000000 0.0000000 580.863       0 3.5999501  4.2533150  50.439602 8.685626
+
+   /Users/paul/github/cytofViz/inst/extdata/fcs:
+
+  -rw-------@  1 paul  staff   952420 Jun 16 15:21 cytofkit_export_c01_sample_01_0_Day0_live.fcs
+  -rw-------@  1 paul  staff  1269970 Jun 16 15:21 cytofkit_export_c02_sample_01_0_Day2_live.fcs
+  -rw-------@  1 paul  staff  1269968 Jun 16 15:21 cytofkit_export_c03_sample_01_0_Day4_live.fcs
+  -rw-------@  1 paul  staff  1269971 Jun 16 15:21 cytofkit_export_c04_sample_01_0_Day6_live.fcs
+  -rw-------@  1 paul  staff  1269980 Jun 16 15:21 cytofkit_export_c05_sample_01_0_Day8_live.fcs
+  -rw-------@  1 paul  staff  1269984 Jun 16 15:21 cytofkit_export_c07_sample_01_0_Day10_live.fcs
+  -rw-------@  1 paul  staff  1269987 Jun 16 15:21 cytofkit_export_c08_sample_01_0_Day11_live.fcs
+  -rw-------@  1 paul  staff  1269997 Jun 16 15:21 cytofkit_export_c09_sample_01_0_Day12_live.fcs
+  -rw-------@  1 paul  staff   934314 Jun 16 15:21 cytofkit_export_c10_sample_01_0_Day14_live.fcs
+  -rw-------@  1 paul  staff  1230415 Jun 16 15:21 cytofkit_export_c11_sample_01_0_Day16_live.fcs
+  -rw-------@  1 paul  staff   146520 Jun 16 15:21 cytofkit_export_c12_sample_01_0_Day18_live.fcs
+  -rw-------@  1 paul  staff    60579 Jun 16 15:21 cytofkit_export_c13_sample_01_0_Day20_live.fcs
+  -rw-------@  1 paul  staff    30566 Jun 16 15:21 cytofkit_export_c14_sample_01_0_Day22_live.fcs
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cory cannot run trenaBatch (11 dec 2018)  [now fixed]
+
+  problems appears to be undefined geneSymbol
+  failed to test this, at bottom of ~/github/trenaBatch/AD/footprints/stagedRun.R:
+    stopifnot(all(goi %in% tbl.geneInfo$ensg))
+
+  --- counter-intuitively, dim(tbl.geneInfo) [1] 16942    12 has
+     subset(tbl.geneInfo, ensg=="ENSG00000227232")
+                  ensg chrom start   end   tss strand geneSymbol entrez    appris   tsl      transcript                   type
+    14373 ENSG00000227232  chr1 14404 29570 29570     -1     WASH7P 653635 C_missing tslNA ENST00000488147 unprocessed_pseudogene
+    but the newer 28k row tbl.geneInfo does not
+      (this 28k list camme from org.Hs.eg.db:
+         ens.genes <- x <- select(org.Hs.eg.db, keys=keys(org.Hs.egENSEMBL), keytype="ENTREZID", columns="ENSEMBL")$ENSEMBL
+         wash7p.unprocessed_pseudogene <- "ENSG00000227232"
+         wash7p.unprocessed_pseudogene <- "ENSG00000227232"  # FALSE
+
+   --- cory's suggestion: use ensembl gtf to get full list of ensgs
+     ftp://ftp.ensembl.org/pub/current_gtf/homo_sapiens/Homo_sapiens.GRCh38.94.gtf.gz
+     gr.gtf <- import("Homo_sapiens.GRCh38.94.gtf.gz")
+     ensg.all <- gr.gtf$gene_id
+     length(ensg.all); length(unique(ensg.all))  # [1] 2737559   [1] 58735
+     ensg.all <- unique(ensg.all)
+     save(ensg.all, file="ensg.all.RData")  # 200k
+
+     wash7p.unprocessed_pseudogene %in% ensg.all
+
+   --- dim(tbl.geneInfo) [1] 58735    12
+
+     github/TrenaProject/inst/extdata/geneInfoTable.RData 1531864 Dec 11 12:58
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* per-usage logging of trenaViz shinyProxy (11 dec 2018)
+
+   make some changes to trena:/etc/shinyproxy/application.yml
+
+   https://www.shinyproxy.io/configuration/#logging
+
+      In addition, ShinyProxy can store log files of running
+      containers. These log files contain the stdout and stderr output
+      of the R process running the Shiny app. To enable the storing of
+      container log files, use the following configuration:
+
+   proxy:
+      container-log-path: ./container-logs
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* "report issue" configuration for shinyproxy (11 dec 2018)
+
+  --- additions to trena:/etc/shinyproxy/application.yml
+      proxy:
+        title: TRENA transcriptional regulatory network analysis
+          # added next two lines
+        support:
+          mail-to-address: pshannon@systemsbiology.org
+        logo-url: http://www.openanalytics.eu/sites/www.openanalytics.eu/themes/oa/logo.png
+
+      # added this entire section
+    spring:
+      mail:
+          host: smtp.gmail.com
+          port: 587
+          username: paul.thurmond.shannon@gmail.com
+          password: (oldAnimalPlainAndSimple)
+          properties:
+              mail.smtp.starttls.enable: true
+
+    --- google "lesssecureapps"  https://support.openanalytics.eu/t/configuring-issues-mail-feature/277
+
+        Indeed, you must make some changes to the spring: mail: settings.
+        To allow Shinyproxy to send out mails, it must have credentials so it can access an SMTP server.
+
+        It is possible to use your gmail account for this. Then you have 2 options:
+
+        Configure your gmail username and password in the settings. You must also set port: 587 and mail.smtp.starttls.enable: true
+        This is a less secure approach, and Google will require you to allow this via the ‘less secure apps’ setting:
+        https://myaccount.google.com/lesssecureapps 2
+
+        Use OAuth. This is a more secure approach (no passwords are needed anywhere), but requires quite a bit of setup. See http://chariotsolutions.com/blog/post/sending-mail-via-gmail-javamail/ 4
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cosequin: s a veterinary drug for dogs, cats, and horses that contains glucosamine and chondroitin.
+
+   It is used to treat arthritis and other joint conditions similar to those in humans.
+   for rocket.  on amazon.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* netflix etc recommendations
+
+  borgen (danish) 30 episodes, 2010-13
+    This engrossing jewel of Danish TV vividly details the life of a left-leaning female prime minister as she
+    struggles to reconcile the demands of power and personal need.
+
+   recommended by davis: making a murderer
+
+*------------------------------------------------------------------------------------------------------------------------
+* reproduce cytofkit results, marjorie brand, jeff ranish (10 dec 2018)  Rphenotype clustering (10 dec 2018)
+
+  cd ~/s/data/jeffRanish/fromMarjorieBrand/finalAnalysis/results-10dec2018/
+  explore.R: reads 2 files, merges them, creates scatter plot with nicely-separated cells
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* reproduce cytofkit results, marjorie brand, jeff ranish (10 dec 2018)
+
+ --- email from marjorie (sunday, 9 dec 2018)
+   Thanks for your email. I am glad to hear you are making progress. I’ve actually never looked at
+   the data using FLowCore. Your GATA1/GATA2 switch observation is cool (and is consistent with the
+   literature). I should look a little more into using FLowCore.
+
+   To answer your specific questions:
+
+   me: There are 13 fcs files, from day 0-22 at 2-day intervals, with day 11 added.
+   mb: Yes this is correct.
+
+   me: In the first file I find 3740 rows and 57 columns.  Those columns include 17 TFs and 11 CD markers.
+       Maybe one of the TFs is actually a marker: your paper describes 16 TFs and 12 markers.
+        What are the other 29 columns?  Spiked-in controls perhaps?
+
+   mb: For analysis of the data, we do not distinguish between TFs and cell surface markers, they
+       are all used together for clustering. Specifically, we use 11 CD markers
+          CD34, CD36, CD71, CD38, CD45RA, CD123, CD49f, CD90, CD44, CD41, CD235ab
+       and 16 TFs
+         GATA1, PU1, ATRX, c-Myc, KLF1, FLI1, TAL1, GATA2, RUNX1, NFE2p45, BACH1, IKZF1, MAFG, c-JUN, KAT3B/p300 and CEBPa
+      Thus, a total of 27 markers. I think the confusion comes from the fact that in the actual experiment,
+      we have used an additional antibody (against the TF BCL11A), but it gave no signal in our positive control (or in
+      any other cell type), so we decided to ignore it for further analysis. (I will correct the info in
+      the paper).  So the column corresponding to BCL11A should be ignored.
+
+      The other 29 columns correspond to various measurements for different types of quality control
+      in additional channels (e.g. cisplatin as a live/dead stain in the 194, 196 Pt channel; DNA
+      intercalator in 191, 193 Ir to allow selection of cell singlets; some calibration beads (EQ
+      beads) to calibrate the mass cytometer etc…). Some other columns correspond to channels in
+      which nothing specific was measured, and just represent noise. Please see the attached excel
+      file to give you an idea of the different columns/channels.  These additional 29 columns
+      should be ignored.
+
+  me:  Each file has metadata and a numerical matrix: one row per cell, one column for each protein,
+       plus those mysterious other columns.
+  mb: Correct.
+
+  me: Question: as a sanity check, and to get more intimate with the data, I could extract average
+   GATA1 and GATA2 levels at each time point — averaged over all the single cell measurements - and
+   see them change over the 22-day time course, maybe reproducing the “GATA factor switching” claims
+   of this paper: "A regulatory network governing Gata1 and Gata2 gene transcription orchestrates
+   erythroid lineage differentiation.”
+
+  mb: It’s great that you are able to see the GATA1/GATA2 switch. We’ve actually never looked at
+    average expression per time point (as we focused on cell clusters/populations instead) but
+    indeed this is the best way to compare the Cytof data with the SRM measurements. By SRM, we see
+    the GATA1/GATA2 changes with time, but there is a lot more GATA1 than GATA2 protein in absolute
+    amounts, so not really a switch (see Fig. attached). Your finding makes for an interesting
+    Cytof/SRM comparison.
+
+  mb:  to reproduce the clusters previously generated by Cytofkit, I should probably give you a bit more information.
+    The code to write in R studio is as follow:
+    library(cytofkit)
+    cytofkit_GUI()
+    require(cytofkit)
+    cytofkitShinyAPP()
+
+  And then, we used the following parameters:
+    Select all FSC files
+    Select all markers except BCL11A (also ignore the other channels with no markers indicated)
+    Choose “ceil” with up to 5,000 cells per sample
+    Choose arcsinh for data transformation
+    Choose Phenograph for clustering
+    Choose tSNE for data represention
+    Everything else, we kept the default parameters.
+
+   Using these parameters, cytofkit generated the matrices that are in Dropbox in the folder
+   “Results”. I think there is a data file with all the transformed numbers for each marker in each
+   cell, as well as one datafile with the tSNE parameters.
+
+   Finally, I wanted to ask about the hosting of a website that would provide access to our SRM and
+   Cytof data. Does the ISB have any potential for hosting such a site? Our Institute webpages are
+   hidden behind a Hospital firewall, so I am not sure how good this is for access data pages.
+
+#------------------------------------------------------------------------------------------------------------------------
+* read FCS files from marjorie brand (ranish collaborator) (7 dec 2018)
+
+  cd  ~/s/data/jeffRanish/fromMarjorieBrand/finalAnalysis/cytofkit-without-Bcl11a-June-2018-USED-FOR-PAPER/
+  see quickLook.R
+
+  --- email to marjorie brand:
+
+   I think I now have a pretty good start on acquiring a sense of your data, and of the project as a whole.  FCS data and mass cytometry are both brand new to me, so I have been reading up and talking to Jeff.  I have run the cytofkit shiny app, and looked at the raw fcs data using the bioconductor flowCore package.  Lots more for me to learn but I have a start.
+
+    Here is what I think I understand so far:
+
+    1) There are 13 fcs files, from day 0-22 at 2-day intervals, with day 11 added.
+
+   2) In the first file I find 3740 rows and 57 columns.  Those columns include 17 TFs and 11 CD markers.
+       Maybe one of the TFs is actually a marker: your paper describes 16 TFs and 12 markers.
+       What are the other 29 columns?  Spiked-in controls perhaps?
+
+   3) Each file has metadata and a numerical matrix: one row per cell, one column for each protein,
+      plus those mysterious other columns.
+
+   4) Question: as a sanity check, and to get more intimate with the data, I could extract average GATA1
+      and GATA2 levels at each time point — averaged over all the single cell measurements - and see
+      them change over the 22-day time course, maybe reproducing the “GATA factor switching” claims
+      of this paper: "A regulatory network governing Gata1 and  Gata2 gene transcription orchestrates
+      erythroid lineage differentiation.”
+
+   This is a very cool project!
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* flowCore: read FCS files (7 dec 2018)
+
+   library(flowCore)
+   file.name <- system.file(package="flowCore", "extdata","0877408774.B08")
+   x <- read.FCS(file.name, transformation=FALSE, alter.names=TRUE)
+   summary(x)
+                 FSC.H     SSC.H    FL1.H     FL2.H    FL3.H     FL1.A     FL4.H   Time
+     Min.      85.0000   11.0000   0.0000    0.0000   0.0000    0.0000    0.0000   1.00
+     1st Qu.  385.0000  141.0000 233.0000  277.0000  90.0000    0.0000  210.0000 122.00
+     Median   441.0000  189.0000 545.5000  346.0000 193.0000   26.0000  279.0000 288.00
+     Mean     491.9644  277.9105 439.1023  366.1567 179.7122   34.0766  323.5306 294.77
+     3rd Qu.  518.0000  270.0000 610.0000  437.0000 264.0000   51.0000  390.0000 457.50
+     Max.    1023.0000 1023.0000 912.0000 1023.0000 900.0000 1023.0000 1022.0000 626.00
+
+   x
+     flowFrame object '0877408774.B08'
+     with 10000 cells and 8 observables:
+          name              desc range minRange maxRange
+     $P1 FSC.H             FSC-H  1024        0     1023
+     $P2 SSC.H             SSC-H  1024        0     1023
+     $P3 FL1.H              <NA>  1024        0     1023
+     $P4 FL2.H              <NA>  1024        0     1023
+     $P5 FL3.H              <NA>  1024        0     1023
+     $P6 FL1.A              <NA>  1024        0     1023
+     $P7 FL4.H              <NA>  1024        0     1023
+     $P8  Time Time (51.20 sec.)  1024        0     1023
+     147 keywords are stored in the 'description' slot
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* marjorie brand, jeff ranish collaboration (7 dec 2018)
+
+  mb used cytof to measure 16 tfs and 12 cell surface markers in n single cells at 13 timepoints during erythropoiesis
+  jr used SRM to get (average) tf protein counts, across the full population, at each time point
+  cytof does not produce counts
+
+  wikipedia: Mass cytometry data is recorded in tables that list, for each cell, the signal detected
+    per channel, which is proportional to the number of antibodies tagged with the corresponding
+    channel's isotope bound to that cell. These data are formatted as FCS files, which are compatible
+    with traditional flow cytometry software. Due to the high-dimensional nature of mass cytometry
+    data, novel data analysis tools have been developed as well.
+
+  FCS: flow cytometry standard
+
+   - every 2 days between the formation of early hematopoietic progenitors (HSPCs) and terminally differentiated
+     erythroid cells (22 days in total: seq(0,22,2)  0  2  4  6  8 10 12 14 16 18 20 22  # looks like 12 timepoints to me!
+        (they also have day 11)
+     cord blood-derived human CD34+ hematopoietic stem progenitor cells
+
+   - cells barcoded with palladium isotopes, stained wit a cocktail of 28 antibodies to cover a broad range
+     of hematopoietic and erythropoietic markers.
+
+   - 5000 single celss for each timepoint
+   - 18 subpopulations
+  https://www.dropbox.com/home/FINAL-ANALYSIS
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cytofkit - first look (7 dec 2018)
+
+  cd ~/github/cytofkit
+  library(cytofkit)
+  browseVignettes("cytofkit")
+  cytofkitShinyAPP()
+  print(load("~/github/cytofkit/inst/extdata/demo_fcs.RData"))  # analysis_results
+  names(analysis_results)
+    [1] "expressionData"       "dimReductionMethod"   "visualizationMethods" "dimReducedRes"
+    [5] "clusterRes"           "progressionRes"       "projectName"          "rawFCSdir"
+    [9] "resultDir"            "dimRedMarkers"
+  x <- analysis_results
+  dim(x$expressionData) # 1000 52
+  x$expressionData[1:10, 1:10]
+  x$expressionData[1:10, 1:5]
+                              Cell_length<NA> (Rh103)Di<BC103> (Pd104)Di<BC104> (Pd105)Di<Pd105> (Pd106)Di<BC106>
+   130515_C2_stim_CD19-_4585         4.411864        4.0790640         3.734478         3.816456        3.8027368
+   130515_C2_stim_CD19-_12567        4.400869        1.1110401         3.592924         3.614986        3.3627946
+   130515_C2_stim_CD19-_6520         4.411864        0.7456488         3.817471         4.018693        3.6273241
+   130515_C2_stim_CD19-_14075        4.353872        4.4013173         3.901801         2.799427        2.7121750
+   130515_C2_stim_CD19-_14990        4.453257        0.5118779         4.152724         3.726624        4.0437856
+   130515_C2_stim_CD19-_727          4.314954        0.3105216         4.056958         3.874641        3.7281683
+   130515_C2_stim_CD19-_8416         4.314954        4.0755148         4.061307         4.095015        2.9222636
+   130515_C2_stim_CD19-_14221        4.366106        4.1337671         3.627147         3.956367        2.8903913
+   130515_C2_stim_CD19-_8787         4.256962        0.2473010         3.947304         3.887555        3.4150715
+   130515_C2_stim_CD19-_7276         4.353872        0.7456488         3.876910         3.628223        0.2020507
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* github tips:  clear the "add" list, useful especially if there are really big files queued up (7 dec 2018)
+
+  git reset --soft HEAD^
+  git reset --soft HEAD^
+  git reset --soft HEAD^
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* single cell symposium, isb (7 dec 2018)
+
+  pseudo time: monocle   http://cole-trapnell-lab.github.io/monocle-release/
+  tabula muris:  pca, cluster in pca space, by eucldian, t-sne visualization, cell types assigned to tissue clusters
+                 via known marker genes
+    used highly-variable genes (only?) (2-3000 total?)
+    found transcription factors and celltypes, arranged as two trees, had best (lowest) (10%) entanglement
+    varSelRF: Variable Selection using Random Forests
+      Variable selection from random forests using both backwards variable elimination
+      (for the selection of small sets of non-redundant variables) and selection based
+      on the importance spectrum (somewhat similar to scree plots; for the selection of
+      large, potentially highly-correlated variables). Main applications in high-dimensional
+      data (e.g., microarray data, and other genomics and proteomics applications).
+      "interatively eliminates a fraction of the least important variables used in previous
+       iteration and chooses the random forest model that has the smallest number of genes
+       for a given classification error"
+    "From transcription factors to reprogramming protocols":
+         https://ds.czbiohub.org/blog/random-forest-reprogramming:
+   pca, neighbors, louvain clustering umap1, umap2 axes
+
+     wikipedia: In the Louvain Method of community detection, first small communities are found by
+       optimizing modularity locally on all nodes, then each small community is grouped into one
+       node and the first step is repeated. The method is similar to the earlier method by Clauset,
+       Newman and Moore[2] that connects communities whose amalgamation produces the largest
+       increase in modularity.
+
+       The method is a greedy optimization method that appears to run in time {\displaystyle O(n\log n)} O(n\log n).
+
+     https://tabula-muris.ds.czbiohub.org/
+     code https://github.com/czbiohub.
+
+     10/2018 paper: Single-cell transcriptomics of 20 mouse organs creates a Tabula Muris
+
+    cellexalvr: virutal reality platoform for visulzing and analysing single-cell gene data
+      shamit some.last.name from lund university
+      angela oliveria pisco
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ensembl gene I failed to retrieve transcript info from biomart (30 nov 2018)
+
+  ~/github/trenaBatch/AD/footprints/config.R  (which sets mtx and goi)
+  fails to find 61 mtx genes (rownames) in load(system.file(package="TrenaProjectIGAP", "extdata", "geneInfoTable.RData"))
+  here are six:
+    "ENSG00000182109" "ENSG00000069712" "ENSG00000280316" "ENSG00000260766" "ENSG00000272579" "ENSG00000116957"
+
+*-----------------------------------------------------------------------------------------------------------------------
+* use hamid's t-cell exhaustion network to complete cyjShiny widget (30 nov 2018)
+
+  cd ~/github/TcellExhaustion/
+  cyjView.R is the shiny app
+
+  showModal does not work.  see
+     https://stackoverflow.com/questions/25757968/bootstrap-modal-is-not-a-function/25758000
+     may need to sneak up on this problem.   maybe bootstrap/jquery order is specified
+       incorrectly in the bundle built in cyjShiny/browserCode/
+     move cyjShiny/browserCode back to inst
+
+  work on these things:
+     specify graphs, styles in some preamble code
+     give thought to what is unchanging, what is customized in each future use
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* emacs tips: ibuffer, search across all open buffers
+
+   https://mytechrants.wordpress.com/2010/03/25/emacs-tip-of-the-day-start-using-ibuffer-asap/
+
+   initialize emacs with:
+(require 'ibuffer)
+(global-set-key (kbd "C-x C-b") 'ibuffer-other-window)
+(setq ibuffer-default-sorting-mode 'major-mode) ;; I like to see my buffers sorted by major-mode, so I add this bit too:
+
+  'O' - ibuffer-do-occur: – Do an occur (a search) on the selected buffers.
+
+  This does a regex search on all the selected buffers and displays the result in an *occur*
+  window. It is unbelievably useful when browsing through code. It becomes truly awesome when you
+  combine it with the ‘filter’ powers of ibuffer (coming up ahead). Eg: Do C-x C-b, mark all files
+  using (say) Perl major-mode, do occur to find out all places where a certain function is mentioned
+  in these files. Navigate to the point at will through the Occur window.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* emacs tips: search all open buffers (29 nov 2018)
+
+(defun my-multi-occur-in-matching-buffers (regexp &optional allbufs)
+  "Show lines matching REGEXP in all file-visiting buffers.
+
+Given a prefix argument, search in ALL buffers."
+  (interactive (occur-read-primary-args))
+  (multi-occur-in-matching-buffers "." regexp allbufs))
+
+(global-set-key (kbd "M-s /") 'my-multi-occur-in-matching-buffers)
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* amp-ad eqtl files (29 nov 2018)
+
+  https://www.synapse.org/#!Synapse:syn7450308
+   Files »  ROSMAP »  Data »  Genotypes » HRC
+   Synapse ID: syn7450308
+   Batch 1: Solveig Sieberts (sieberts), 11/10/2017 1:18 PM, syn11423048
+   Batch 2: Solveig Sieberts (sieberts), 11/10/2017 5:06 PM, syn11423098
+   CHOP_Illumina: Solveig Sieberts (sieberts), 01/15/2018 5:46 PM, syn11426155
+
+*-----------------------------------------------------------------------------------------------------------------------
+* finding tss for cory's twig run: ensembl's appris and tsl scores (28 nov 2018)
+
+  cd ~/github/trenaBatch/AD/footprints/
+  config.R
+  dim(mtx)   # [1] 17003   264
+
+  ensembl.hg38 <- useMart("ensembl", dataset="hsapiens_gene_ensembl")
+  coi <- c("ensembl_gene_id", "entrezgene", "chromosome_name", "transcription_start_site",
+           "strand", "hgnc_symbol", "transcript_biotype", "gene_biotype", "ensembl_transcript_id", "transcript_appris", "transcript_tsl", "transcript_gencode_basic")
+  key <- "ensembl_gene_id"
+  tbl.geneInfo <- getBM(attributes=coi, filters=key, values=rownames(mtx), mart=ensembl.hg38)
+
+  length(unique(tbl.geneInfo$ensembl_gene_id)) # [1] 16942
+  length(unique(subset(tbl.geneInfo, transcript_appris != "")$ensembl_gene_id)) # 14324
+  length(unique(subset(tbl.geneInfo, transcript_tsl != "")$ensembl_gene_id)) # [1] 16941
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igap TrenaProjectIGAP missing gene NME8 ENSG00000086288 (28 nov 2018)
+
+   igap <- TrenaProjectIGAP()
+   getExpressionMatrixNames(igap)
+   mtx <- getExpressionMatrix(igap, "Scaled_Winsorized_MayoRNAseq_TCX-ENSG")
+
+    "ENSG00000086288" %in% rownames(mtx)  # FALSE
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trenaViz tips: build trenaViz docker image (27 nov 2018)
+
+  docker rm $(docker ps -q -f 'status=exited')
+  docker rmi $(docker images -q -f "dangling=true")
+
+
+  ---- cd ~/github/trenaShinyApps/dockerImages
+     trenaPreqsData:   pshannon/trenaprereqsdata
+     treanBase:        pshannon/trenashinybase
+     trenaVizBase:     pshannon/trenavizbase
+
+  --- ~/github/trenaShinyApps/trenaViz/docker/igap/
+     FROM pshannon/trenavizbase
+     trenaigap:27nov2018
+     make build dockerRun  # browse to localhost:60051
+
+*-----------------------------------------------------------------------------------------------------------------------
+* puppeteer simple demo (27 nov 2018)
+
+
+  --- early version
+
+   const puppeteer = require('puppeteer');
+
+   (async () => {
+       const browser = await puppeteer.launch({headless: false, slowMo: 250});
+       const page = await browser.newPage();
+       await page.goto('https://trena.systemsbiology.net');
+       await page.waitForSelector("#username");
+       await page.type("#username", "igap")
+       await page.waitForSelector("#password");
+       await page.type("#password", "igap")
+       const signInButtonSelector = "body > div.container > div > form > button"
+       page.click(signInButtonSelector)
+       await page.waitForNavigation()
+       igapApp_xpath = '//*[@id="applist"]/ul/li/a'
+       igapApp_xpathWithText = await page.$x("//a[contains(text(), 'trena IGAP (16 nov 2018)']");
+       console.log("xpath with text count: " + igapApp_xpathWithText.length)
+       const linkHandlers = await page.$x(igapApp_xpath)
+       if(linkHandlers.length > 0){
+          console.log("link count: " + linkHandlers.length)
+          linkHandlers[0].click()
+          await page.waitForNavigation()
+          }
+       await browser.close();
+      })();
+
+
+   ---- all the way to a running trena shiny app version
+
+   const puppeteer = require('puppeteer');
+
+   (async () => {
+       const options = {headless: false,
+                        slowMo: 5};
+                        //devtools: true}
+       const browser = await puppeteer.launch(options);
+       const page = await browser.newPage();
+       await page.goto('https://trena.systemsbiology.net');
+       await page.waitForSelector("#username");
+       await page.type("#username", "paul")
+       await page.waitForSelector("#password");
+       await page.type("#password", "leo.paul")
+       const signInButtonSelector = "body > div.container > div > form > button"
+       page.click(signInButtonSelector)
+       await page.waitForNavigation()
+
+       const links = await page.evaluate(() => document.querySelector('a').textContent)
+       console.log("a link count: " + links.length)
+       console.log(links)
+       let xx = await page.$$('a')
+         //  await xx[5].click()
+         //  await page.waitForNavigation()
+
+
+       let urls = await page.evaluate(() => {  // scrape all the 'a' elements from the page
+           let results = [];
+           let items = document.querySelectorAll('a');
+           items.forEach((item) => {
+               results.push({
+                   url:  item.getAttribute('href'),
+                   text: item.innerText,
+               });
+           });
+           return results;
+         })
+       console.log("url count: " + urls.length)
+       console.log(urls)
+
+       igapApp_xpath = '//*[@id="applist"]/ul/li/a'
+       const linkHandlers = await page.$x(igapApp_xpath)
+
+       if(linkHandlers.length > 0){
+          console.log("link count: " + linkHandlers.length)
+          const linkText = linkHandlers[5].innerText;
+           console.log(" link 5: " + linkHandlers[5])
+          await linkHandlers[5].click()
+          await page.waitForNavigation()
+          }
+      await page.waitFor(5000);
+      await browser.close();
+      })();
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* puppeteer, headless chrome, jest, minimal landing page test (26 nov 2018)
+
+  cd ~/s/examples/js/puppeteer/loadLandingPage/
+
+  https://jestjs.io
+
+  npm init
+  npm i jest --save-dev
+
+  --- add this to package.json
+    "jest": {
+       "testMatch": ["**/*.jest.js"]
+        },
+    "scripts": {
+      "test": "jest"
+       },
+
+  --- run the test
+     npm test   # runs landing-page.jest.js
+     PASS ./landing-page.jest.js
+       css-tricks.com
+         Landing page
+           Page title
+             ✓ equals CSS-Tricks (3165ms)
+
+     Test Suites: 1 passed, 1 total
+     Tests:       1 passed, 1 total
+     Snapshots:   0 total
+     Time:        4.405s
+     Ran all test suites.
+
+
+   --- landing-page.jest.js
+     const puppeteer = require("puppeteer");
+     let browser, page;
+
+     describe("css-tricks.com", () => {
+       beforeEach(async () => {
+         browser = await puppeteer.launch();
+         page = await browser.newPage();
+         });
+       afterEach(async () => {
+         browser.close();
+         });
+       describe("Landing page", () => {
+         beforeEach(async () => {
+           await page.goto("https://css-tricks.com", { waitUntil: "networkidle2" });
+           });
+         describe("Page title", () => {
+           it("equals CSS-Tricks", async () => {
+             const title = await page.title();
+             expect(title).toEqual("CSS-Tricks");
+             }); // it
+           }); // describe page title
+
+         }); // describe landing page
+       }); // describe css-tricks.com
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* puppeteer, headless chrome, qunit, first look (26 nov 2018)
+
+   https://dtaylor.uk/blog/2017/08/chrome-qunit/
+   cd ~/s/examples/js/puppeteer
+   https://nodejs.org/en/download/current/
+   node -v  # v11.2.0
+   npm i puppeteer
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* R CMD check errors, messages, notes
+
+  NOTE: Namespace in Imports field not imported from: ‘RMariaDB’  All declared Imports should be used.
+  explanation:
+     DESCRIPTION.Imports: listed RMariaDB
+     but no @import nor @importFrom in TrenaProject.R
+     so no import() or importFrom() in the auto-generated NAMESPACE file
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* add travis to ~/github/trenaProject (26 nov 2018)
+
+  cd ~/github/trenaProject/
+  library(devtools)
+  usethis::use_travis()
+
+  --- .travis.yml added
+    # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
+    language: R
+    sudo: false
+    cache: packages
+
+  --- .Rbuildignore extended (actually created)
+  ^\.travis\.yml$
+
+*-----------------------------------------------------------------------------------------------------------------------
+* python tips inspect signature args parameters
+
+import inspect
+inspect.getargspec(html.Button)
+
+*-----------------------------------------------------------------------------------------------------------------------
 * python dash, first look (19 nov 2018)
 
   cd ~/s/examples/python/dash/firstLook/
@@ -1369,7 +2094,7 @@ ZCWPW1  chr7:99892814-101231552     chr7:99490437-100874833
   --- good!   https://seqqc.wordpress.com/2015/02/16/should-you-transform-rna-seq-data-log-vst-voom/
     "you may want to consider data transformation when building prognostic gene signatures (read Zwiener
      et al., 2014 for more details) or when building gene co-regulatory networks especially if using
-     Pearson’s correlation (because PC results are heavily affected by outliers)."
+     Pearson's correlation (because PC results are heavily affected by outliers)."
 
   --- email from jim macdonald (24 sep 2018)
 
@@ -1878,7 +2603,9 @@ ZCWPW1  chr7:99892814-101231552     chr7:99490437-100874833
 
 
 *-----------------------------------------------------------------------------------------------------------------------
-* discerning structure in ELAN eaf xml files (8 sep 2018)
+* discerning structure in ELAN eaf xml files (8 sep 2018)  sxml schema xsd
+
+  schema: http://www.mpi.nl/tools/elan/EAFv3.0.xsd
 
   --- david beck says (email 3 sep 2018)
 
@@ -2063,6 +2790,14 @@ ZCWPW1  chr7:99892814-101231552     chr7:99490437-100874833
   colorNumber <<- (colorNumber %% totalColorCount) + 1
   color <- colors[colorNumber]
   loadBedGraphTrack(session, target.tf, tbl.tfbs, color=color, trackHeight=25, quiet=TRUE)
+
+  --- an alternate approach, providing a palette with any number of colors
+   library(randomcoloR)
+   clusterCount <- length(unique(tbl$phenographCluster))
+   palette <- distinctColorPalette(clusterCount)
+   tbl$color <- palette[tbl$phenographCluster]
+   plot(tbl$tsne1 , tbl$tsne2, col=tbl$color)
+
 
 *-----------------------------------------------------------------------------------------------------------------------
 * celltypes for inpp5d and trem2, brain model
@@ -2883,6 +3618,9 @@ Server: AmazonS3
 *------------------------------------------------------------------------------------------------
 * igv testing (31 jul 2018)
 
+   https://github.com/igvteam/igv.js/issues/674: long discussion of ci and ES6 modules
+
+
    github issue: [igvteam/igv.js] grunt unittest task does not work (#699)
 
    grunt uses PhantomJS to run qunit tests. Sadly, PhantomJS does not
@@ -3600,6 +4338,11 @@ ZCWPW1: 1
    9 sep 2018: 2 hours photography and watering, 30 minutes moving logs
   21 oct 2018: 1 hour grubbing blackberry on Andrews Bay, 1 hour herb robert removal, 30 minutes on fern photography
   28 oct 2018: 3 hours grubbing blackberry on Andrews Bay, 30 minutes on fern photography
+  16 nov 2018: 3 hours sword fern meeting
+  25 nov 2018: 1.5 hours blackberry removal
+   1 dec 2018: 2 hours die-off visit with rodrigo valverde
+   1 dec 2018: suzanne, 3 hours removing herb robert
+   2 dec 2018: 1 hour blackberry removal
 
 *------------------------------------------------------------------------------------------------
 * next up for alison, CKAP2L shiny app (19 jun 2018)
@@ -5489,7 +6232,7 @@ snp.loc <- 41182853
   alison's FLT1 demo: ~/github/projects/priceLab/alison/flt1/shinyDocker/app.R   (09 may 2018)
   cory's TREM2 demo:  ~/github/trenaShinyApps/trem2/shinyApp/app.R               (24 may 2018)
 *------------------------------------------------------------------------------------------------
-* bash for loop  bash loop
+* bash tips bash for loop  bash loop
 
   for x in inst/unitTests/test_*.R; do echo $x; R -f $x; done
 
@@ -8149,7 +8892,7 @@ phone call with animal control:
 
    after digging into the GitHub two-factor authentication blog post on GitHub, I came across this
      https://eric.blog/2014/05/16/github-two-factor-authentication-failed-https/
-       "If you are using SSH for Git authentication, rest easy: you don’t need to do anything."
+       "If you are using SSH for Git authentication, rest easy: you don't need to do anything."
 
    first use of this strategy:
    ~/github/eqtlTrenaNotebooks/.git/config   # a PriceLab repo
@@ -13887,7 +14630,6 @@ options = {
 * hearing aids, audiogram, audiometric results, from Melanie Hecker, audiologist
 
   ~/Documents/audiometricResults-13nov2017-audiogram.pdf
-
 
 *------------------------------------------------------------------------------------------------------------------------
 * hearing aids: tyler 866-581-9464 x 1205  tyler.n@truhearing.com
@@ -70748,7 +71490,7 @@ listFilters (human.mart)      # show values to search (filter) on
 
 
 --- map ensembl gene ids to entrez & symbol
-bm <<- useMart("ensembl")
+bm <- useMart("ensembl")
 listDatasets(bm)
 bm <<- useDataset("hsapiens_gene_ensembl", mart=bm)
 select.by <- "ensembl_gene_id"
