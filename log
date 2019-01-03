@@ -101,12 +101,1106 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* build trena docker images
+
+  cd ~/github/trenaDockerBuilds/biocWithGenomeData; make build
+     pshannon/biocwithgenomicdata   latest              0426830c89c4        2 minutes ago       8.93GB
+
+  cd ~/github/trenaDockerBuilds/trenaBase; make build
+     pshannon/trenabase             latest              eabaa308ea80        15 minutes ago      9.07GB
+
+  cd ~/github/trenaDockerBuilds/trenaCurrent; make build
+    pshannon/trenacurrent           latest              8469bac00572        About a minute ago  9.29GB
+
+  cd ~/github/trenaDockerBuilds/trenaUser
+     pshannon/trenauser             latest              226949fef808        53 seconds ago      9.29GB
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* harry moses and the ethnography of the north cascades (2 jan 2019)
+
+   http://www.npshistory.com/publications/noca/ethnography/skagit.htm
+
+   The ethnographic information compiled in this chapter has been drawn primarily from June
+   McCormick Collins' (1974a) field study of the Upper Skagit carried out in the 1940s. These data
+   are especially full in the areas of religious and social life, less complete in describing the
+   traditional subsistence base and material culture of the tribe, doubtless because these latter
+   segments of the old ways were both less sharp in the minds of her informants and of a lesser
+   interest to Collins herself.
+
+   These data are supplemented by information fragments culled from published ethnographic and
+   ethnohistorical sources. This is particularly the case for those subject areas not dealt with by
+   Collins or considered only cursorily by her.
+
+   --- the only mention of harry moses:
+
+     (b) A trail evidently went up the Suiattle River and over Ross or Suiattle Pass or one or more
+     other passes in the area to the headwaters of streams that flowed northeastward to the Stehekin
+     River or eastward to the west side of Chelan Lake. "Harry Moses, whose father was from Entiat
+     . . . made the trip overland by foot three times during his life" (Collins 1974a:13). Access to
+     the upper Wenatchee drainage from the Suiattle may well have been via Buck Creek or High Pass
+     or some other mountain break in their vicinity.
+
+    --- Valley of the Spirits: The Upper Skagit Indians of Western Washington
+      Collins, June M.
+      Format: Book  Year: 1974  Availability: In-library use only
+
+    --- related to collins work
+
+   Coming Full Circle: Spirituality and Wellness Among Native Communities in the Pacific Northwest
+   Suzanne Crawford O'Brien
+   U of Nebraska Press, Nov 1, 2013 - Social Science - 520 pages
+
+   an interdisciplinary exploration of the relationships between spirituality and health in several
+   contemporary Coast Salish and Chinook communities in western Washington from 1805 to
+   2005. Suzanne Crawford O?Brien examines how these communities define what it means to be healthy,
+   and how recent tribal community-based health programs have applied this understanding to their
+   missions and activities. She also explores how contemporary definitions, goals, and activities
+   relating to health and healing are informed by Coast Salish history and also by indigenous
+   spiritual views of the body, which are based on an understanding of the relationship between
+   self, ecology, and community.  øComing Full Circle draws on a historical framework in reflecting
+   on contemporary tribal health-care efforts and the ways in which they engage indigenous healing
+   traditions alongside twenty-first-century biomedicine. The book makes a strong case for the
+   current shift toward tribally controlled care, arguing that local, culturally distinct ways of
+   healing and understanding illness must be a part of contemporary Native healthcare. øCombining
+   in-depth archival research, extensive ethnographic participant-based field work, and skillful
+   scholarship on theories of religion and embodiment, Crawford O?Brien offers an original and
+   masterful analysis of contemporary Native Americans and their worldviews.  ø More »
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* update igv.js, igvShiny, igvR
+
+  --- igv.js (2 jan 2019)
+     git pull
+     grunt
+        Local Npm module "babel-core" not found. Is it installed?
+        Running "babel:dist" (babel) task
+        Warning: Requires Babel "^7.0.0-0", but was loaded with "6.26.3". If you are sure you have a compatible version of @babel/core, it is likely that something in your build process is loading the wrong version. Inspect the stack trace of this error to look for the first entry that doesn't mention "@babel/core" or "babel-core" to see what is calling Babel. (While processing preset: "/Users/paul/github/igv.js/node_modules/@babel/preset-env/lib/index.js") Use --force to continue.
+
+     npm install --save-dev @babel/core
+        + @babel/core@7.2.2
+          added 38 packages from 70 contributors, removed 415 packages, updated 99 packages and audited 3024 packages in 15.726s
+
+     grunt # again
+       1206799 Jan  2 10:42 igv.esm.min.js.map
+       1761307 Jan  2 10:42 igv.esm.min.js
+       2661894 Jan  2 10:42 igv.esm.js
+       1226942 Jan  2 10:42 igv.min.js.map
+       1801371 Jan  2 10:42 igv.min.js
+       2556123 Jan  2 10:41 igv.js
+
+    --- igvShiny (2 jan 2019)
+      old: dir ~/github/igvShiny/inst/htmlwidgets/lib/igv.js  # 2385008 Nov 27 12:44
+      cp -p ~/github/igv.js/dist/igv.js ~/github/igvShiny/inst/htmlwidgets/lib/
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ijal, some success with displaying static files, html + audio, in an iframe within a flask/dash app (1 jan 2019)
+
+   directory structure:
+     ~/github/ijaliframedisplaywithsound/
+          simpleWithButtonAndIFrame.py
+          fubar/
+            text.html
+            audio/
+              a1.wav a2.wav a3.wav a4.wav
+    in dash app:
+      app.layout = html.Div([
+         html.Button('Display IJAL Text', id='displayIJALTextButton', style={"margin": "20px"}),
+         html.Br(),
+         html.Iframe(id="storyIFrame", width=1200, height=800)
+         ])
+      @app.callback(
+          Output('storyIFrame', 'src'),
+          [Input('displayIJALTextButton', 'n_clicks')])
+      def displayText(n_clicks):
+         if n_clicks is None:
+            return("")
+         return('/fubar/test.html')
+
+     --- define a flask route to pick up the audio
+      @app.server.route('/fubar/<path:urlpath>')
+      def serve_static_file(urlpath):
+         print("--- serve_static_file")
+         print("urlpath:  %s" % urlpath)
+         #pdb.set_trace()
+         fullPath = os.path.join("fubar", urlpath)
+         dirname = os.path.dirname(fullPath)
+         filename = os.path.basename(fullPath)
+         print("about to send %s, %s" % (dirname, filename))
+         return flask.send_from_directory(dirname, filename)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* python dash webbrowser.open tips
+
+   if __name__ == "__main__":
+     webbrowser.open('http://127.0.0.1:8068/', new=0, autoraise=True)
+     app.run_server(host='0.0.0.0', port=8068)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ijal, current status (31 dec 2018)
+
+  ~/github/ijalupload2/webapp.py
+  tabbed app
+  has iframe into which fubar/test.html (a static creation, with nested sounds) is displayed
+  dynamically created html & sounds is written to PROJECTS/<projecTitleAsEnteredInFirstTab>
+
+  --- next up
+    generalize these flask routes so that they point to dynamically created html & sounds:
+    @app.server.route('/fubar/<resource>')
+    def serve_static_html(resource):
+       print("--- serve_static_fubar")
+       print("resource:  %s" % resource)
+       return flask.send_from_directory(STATIC_PATH_fubar, resource)
+
+    @app.server.route('/fubar/audio/<resource>')
+    def serve_static_audio(resource):
+       print("--- serve_static_fubar_audio")
+       print("resource:  %s" % resource)
+       return flask.send_from_directory(STATIC_PATH_fubar_audio, resource)
+
+   for instance, see http://www.compjour.org/lessons/flask-single-page/multiple-dynamic-routes-in-flask/
+
+   maybe have app issue this code, and put text.html AND audio in this dynamically
+     created directory, using this dynamically create route:
+
+      @app.server.route('daylight/<resource>')
+      def serve_static_html(resource):
+         return flask.send_from_directory('daylight', resource)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* heroku dash: test static paths, app.server.route on heroku
+
+   created empty repo at https://github.com/paul-shannon/ijaliframedisplaywithsound
+   cd ~/github/ijaliframedisplaywithsound
+
+   --- build and run locally before trying heroku
+      cp ~/s/examples/python/dash/link/simpleWithButtonAndIFrame.py .
+      cp -prv ~/s/examples/python/dash/link/fubar .
+      virtualenv venv
+      source venv/bin/activate
+      pip install -r requirements.txt
+      python simpleWithButtonAndIFrame.py
+
+   --- now heroku
+     make sure variable 'server' is defined in simpleWithButtonAndIFrame.py
+
+     heroku create ijal-static-audio
+     Creating ijal-static-audio... done
+       https://ijal-static-audio.herokuapp.com/ | https://git.heroku.com/ijal-static-audio.git
+
+    Procfile:
+       web: gunicorn simpleWithButtonAndIFrame:server
+
+     git add .
+     git commit -m 'Initial app boilerplate'
+     git push heroku master # deploy code to heroku
+     heroku ps:scale web=1  # run the app with a 1 heroku "dyno"
+
+     open https://ijal-static-audio.herokuapp.com/
+
+   --- failed with http/https conflict, due to ijal.css & ijalUtils.js loaded via http from pshannon.net
+      using flask server on tren instead
+      changed two urls in fubar/test.html:
+         https://igv-data.systemsbiology.net/static/ijal/ijal.css
+         https://igv-data.systemsbiology.net/static/ijal/ijalUtils.js
+
+*-----------------------------------------------------------------------------------------------------------------------
+* dash: load ijal text from nested (/fubar/test.html, /fubar/audio/a[1-4].wav) into an iframe, with app.server.route
+    (30 dec 2018)
+
+   ~/s/examples/python/dash/link/simpleWithButtonAndIFrame.py
+
+     import dash
+     import dash_core_components as dcc
+     import dash_html_components as html
+     from dash.dependencies import Input, Output, Event, State
+     from flask import Flask
+     import flask
+     import webbrowser
+     import os
+
+     #------------------------------------------------------------------------------------------------------------------------
+     external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+     STATIC_PATH_fubar = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fubar')
+     STATIC_PATH_fubar_audio = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fubar', 'audio')
+     #------------------------------------------------------------------------------------------------------------------------
+     app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+
+     @app.server.route('/fubar/<resource>')
+     def serve_static(resource):
+        return flask.send_from_directory(STATIC_PATH_fubar, resource)
+
+     @app.server.route('/fubar/audio/<resource>')
+     def serve_static_audio(resource):
+        return flask.send_from_directory(STATIC_PATH_fubar_audio, resource)
+     #------------------------------------------------------------------------------------------------------------------------
+     app.scripts.config.serve_locally = True
+
+     app.layout = html.Div([
+        html.Button('Display IJAL Text', id='displayIJALTextButton', style={"margin": "20px"}),
+        html.Br(),
+        html.Iframe(id="storyIFrame", width=1200, height=800)
+        ])
+
+     #------------------------------------------------------------------------------------------------------------------------
+     @app.callback(
+         Output('storyIFrame', 'src'),
+         [Input('displayIJALTextButton', 'n_clicks')])
+     def displayText(n_clicks):
+        if n_clicks is None:
+           return("")
+        return('/fubar/test.html')
+
+     #------------------------------------------------------------------------------------------------------------------------
+     if __name__ == "__main__":
+        webbrowser.open('http://127.0.0.1:8058/', new=0, autoraise=True)
+        app.run_server(host='0.0.0.0', port=8058)
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* dash: load nested static file (30 dec 2018): an html file generated by ijalUpload webapp.py
+
+   --- failed version: follow the link, reload the app
+     ~/s/examples/python/dash/link/simpleFails.py
+      import dash
+      from dash.dependencies import Input, Output, State
+      import dash_core_components as dcc
+      import dash_html_components as html
+      external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+      app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+      app.scripts.config.serve_locally = True
+      app.layout = html.Div([
+         html.A('Navigate to google.com', href='http://google.com'),
+         html.Br(),
+         html.A('Navigate to nested web page', href='/fubar/test.html'),
+         ])
+      if __name__ == "__main__":
+         app.run_server(host='0.0.0.0', port=8051)
+
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* dash: load nested static files (30 dec 2018): a jpg with html.Img(src='/static/hazelnutBranch.jpg')
+
+  --- add app.server.route (so that default 'swallowing' route does not apply?)
+    from https://community.plot.ly/t/how-can-i-use-my-html-file-in-dash/7740/2
+        "How can i use my html file in dash?
+
+    ~/s/examples/python/dash/link/staticJPG.py
+
+      import dash
+      import dash_core_components as dcc
+      import dash_html_components as html
+      from dash.dependencies import Input, Output, Event, State
+      from flask import Flask
+      import flask
+      import webbrowser
+      import os
+
+      STATIC_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
+      server = Flask(__name__)
+      app = dash.Dash(name = __name__, server = server)
+      app.layout = html.Div(html.Img(src='/static/hazelnutBranch.jpg'))
+      @app.server.route('/static/<resource>')
+      def serve_static(resource):
+         return flask.send_from_directory(STATIC_PATH, resource)
+      if __name__ == '__main__':
+         webbrowser.open('http://127.0.0.1:8050/', new=0, autoraise=True)
+         app.run_server(debug=True, use_reloader=False)
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* heroku tips
+
+   heroku apps:destroy ijalupload2     # will prompt for name to be repeated
+
+*-----------------------------------------------------------------------------------------------------------------------
+* deploy ijalupload2 app using heroku (29 dec 2018)
+
+  based on:  https://dash.plot.ly/deployment
+
+  see successful demo below
+  cd ~/github/ijalupload2/
+  created requirements.txt from Dockerfile
+  cp webapp.py ijalupload.py  # for a distinct name
+
+
+  virtualenv venv
+  source venv/bin/activate
+    (venv) book.heroku-dash-demo>
+  pip install -r requirements.txt
+     dash
+     dash-renderer
+     dash-core-components
+     dash-html-components
+     plotly
+     gunicorn
+
+  Procfile:
+     web: gunicorn paul-shannon-demo:server
+
+  make sure app runs from the local command line:
+    python paul-shannon-demo.py
+    browse to localhost:8050
+  make sure it runs with gunicorn
+    gunicorn ijalupload2:server
+
+  heroku create paul-shannon-demo
+  Creating paul-shannon-demo... done
+     https://paul-shannon-demo.herokuapp.com/ | https://git.heroku.com/paul-shannon-demo.git
+
+  git add .
+  git commit -m 'Initial app boilerplate'
+  git push heroku master # deploy code to heroku
+  heroku ps:scale web=1  # run the app with a 1 heroku "dyno"
+
+  open  https://paul-shannon-demo.herokuapp.com/
+*-----------------------------------------------------------------------------------------------------------------------
+* deploy demo dash app using heroku (29 dec 2018)
+
+  https://dash.plot.ly/deployment
+  cd ~/github
+  git clone https://github.com/paul-shannon/heroku-dash-demo.git
+  cd heroku-dash-demo
+  virtualenv venv
+  source venv/bin/activate
+    (venv) book.heroku-dash-demo>
+  pip install -r requirements.txt
+     dash
+     dash-renderer
+     dash-core-components
+     dash-html-components
+     plotly
+     gunicorn
+
+  Procfile:
+     web: gunicorn paul-shannon-demo:server
+
+  make sure app runs from the local command line:
+    python paul-shannon-demo.py
+    browser to localhost:8050
+
+  heroku create paul-shannon-demo
+  Creating paul-shannon-demo... done
+     https://paul-shannon-demo.herokuapp.com/ | https://git.heroku.com/paul-shannon-demo.git
+
+  git add .
+  git commit -m 'Initial app boilerplate'
+  git push heroku master # deploy code to heroku
+  heroku ps:scale web=1  # run the app with a 1 heroku "dyno"
+
+  open  https://paul-shannon-demo.herokuapp.com/
+
+*-----------------------------------------------------------------------------------------------------------------------
+* deploy ijal dash webapp (28 dec 2018)
+
+   see gunicorn https://github.com/TahaSolutions/dash/blob/master/Dash3/Dockerfile
+
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* gunicorn, first look (29 dec 2018)
+
+  cd ~/s/examples/python/gunicorn/
+
+*-----------------------------------------------------------------------------------------------------------------------
+* shiny display image, displayImage, png, renderImage, renderPlot, conditionalPanel (28 dec 2018)
+
+   ~/s/examples/R/shiny/displayImage/displayImage.R
+
+   library(shiny)
+   ui <- pageWithSidebar(
+     headerPanel("renderImage or renderPlot dmeo"),
+     sidebarPanel(
+       selectInput("plotType", "Plot Type", c("PLOT", "IMAGE"))
+       ),
+     mainPanel(
+       conditionalPanel('input.plotType!="IMAGE"', plotOutput("plot")),
+       conditionalPanel('input.plotType=="IMAGE"', imageOutput("image"))
+       )
+     ) # ui
+   server <- function(input, output, session) {
+      output$plot <- renderPlot({
+          plot(1:10, (1:10)^2)
+         })
+     output$image <- renderImage({
+       list(src = "phenograph.png", contentType = 'image/png', width = 800, height = 800, alt = "This is alternate text")
+       }, deleteFile = FALSE)
+     } # server
+   app <- shinyApp(ui, server)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* python tips: create a proper pip-installable package for ijaltexts (27 dec 2018)
+
+  cd ~/github
+  git clone https://github.com/kragniz/cookiecutter-pypackage-minimal.git
+  cookiecutter cookiecutter-pypackage-minimal/
+
+  cd ~/github/ijaltexts/
+  mv README.rst ijaltexts
+  cd ijaltexts
+  python setup.py sdist bdist_wheel
+
+  pip install --user --upgrade twine
+  from: https://packaging.python.org/guides/using-testpypi/
+
+  ~/.local/bin/twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+       paul-shannon
+       njx3KZabDh2RAh9
+
+  --- view the installation
+     https://test.pypi.org/project/ijaltexts/
+     https://test.pypi.org/manage/project/ijaltexts/release/0.1.0/
+             ijaltexts-0.1.0-py3-none-any.whl (2.7 kB)
+             ijaltexts-0.1.0.tar.gz (1.6 kB)
+
+    [
+
+  --- ~/github/ijaltexts/ijaltexts/setup.py problem?
+
+    install_requires=['xmlschema',
+                      'scipy',
+                      'dash',
+                      'pandas',
+                      'dash_table',
+                      'pyyaml',
+                      'dash_core_components',
+                      'dash_html_components',
+                      ],
+
+
+  --- test it out
+    python3 -m venv ijaltexts-venv
+    source ijaltexts-venv/bin/activate
+    pip install --index-url https://test.pypi.org/simple/ ijaltexts
+    failed:  most likely because of improper [use of] setup.py
+       Collecting dash (from ijaltexts)
+         Could not find a version that satisfies the requirement dash (from ijaltexts) (from versions: )
+       No matching distribution found for dash (from ijaltexts)
+    tried this next (a lengthy install):
+       (ijaltexts-venv) book.ijaltexts-venv> pip install dash
+       many packages installed in ~/tmp/ijaltexts-venv/lib/python3.6/site-packages/
+
+*-----------------------------------------------------------------------------------------------------------------------
+* plotly dash iframe  (27 dec 2018)
+
+  ~/s/examples/python/dash/iframe/
+*-----------------------------------------------------------------------------------------------------------------------
+* trenaViz track upload, brain epigenetic data (24 dec 2018)
+
+    cd ~/s/data/cory/brainEpigenomics/
+
+   1361725 Dec 24 17:18 H3K9acDomains.csv
+   4893743 Dec 24 17:18 INT-16_HiC_EP_linkages.csv
+
+   transform-h3k9.R produces ~/s/data/cory/brainEpigenomics/h3k9-hg38.bed
+   losing < 30 lines along the way
+
+*-----------------------------------------------------------------------------------------------------------------------
+* shiny plot tips: resize plot to a constant percentage of browser window (23 dec 2018) css3
+
+   ~/s/examples/R/shiny/resizePlot/tutorialDemo.R
+   solution suggested he
+       re: https://stackoverflow.com/questions/26782041/scaling-shiny-plots-to-window-height
+
+   library(shiny)
+   ui <- basicPage(
+     tags$head(tags$style("#plot1{height:90vh !important;}")),
+     plotOutput("plot1", click = "plot_click"),
+     verbatimTextOutput("info")
+     )
+   server <- function(input, output) {
+     output$plot1 <- renderPlot({
+       plot(mtcars$wt, mtcars$mpg)
+       })
+     output$info <- renderText({
+       paste0("x=", input$plot_click$x, "\ny=", input$plot_click$y)
+     })
+   }
+   runApp(shinyApp(ui, server))
+
+   --- use with a dashboard app: place tags$header in the dashboardSidebar (23 dec 2018)
+      see: ~/github/cytofViz/inst/docker/cytofViz.R
+      .createSidebar <- function(){
+         dashboardSidebar(
+           tags$head(tags$style("#plot1{height:82vh !important;}")),
+           selectInput("chooseProteinFromList", "Choose Protein From List:", conditions,
+                       selectize=FALSE, size=length(conditions))
+           ) # dashboardSidebar
+         } # .createSidebar
+
+
+   --- also see
+     ~/s/examples/R/shiny/resizePlot/
+      -rw-r--r--   1 paul  staff  319 Dec 23 09:16 fromJoeCheng.R
+      -rw-r--r--   1 paul  staff  339 Dec 23 09:17 tutorialDemo.R
+
+*------------------------------------------------------------------------------------------------------------------------
+* ggplot tips, tsne plot
+
+   if(!exists("tbl")){
+      tbl.all <- get(load(file="~/github/cytofViz/inst/docker/tbl.allDays.allProteins.transformed.RData"))
+      }
+
+   tbl <- tbl.all[, c("tsne1", "tsne2", "KLF1")]
+   #ggplot(mtcars, aes(x=wt, y=mpg)) + geom_point(size=2, shape=23)
+   #ggplot(tbl, aes(x=tsne1, y=tsne2)) + geom_point(size=2, shape=23)
+   #ev <- "ScaledExpression"
+   quartz()
+   poi <- "KLF1"   # note use of aes_string;  aes unadorned is like subset in dispensing with colname quotations
+   myPalette <- colorRampPalette(c("#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4",
+                                   "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61",
+                                   "#F46D43", "#D53E4F", "#9E0142"))
+   ggplot(tbl, aes_string(x="tsne1", y="tsne2", color=poi)) +
+          geom_point(size=1) + #, shape=23) +
+          scale_colour_gradientn(limits = NULL, name = "KLF1", colours = myPalette(nrow(tbl) * 2))
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* hartford instrument insurance (21 dec 2018)
+
+  --- email rec'd today:
+     Bill Account Number: 14566073
+           Bill Due Date: 01/13/19
+      Minimum Amount Due: $250.00
+         Account Balance: $250.00
+
+*-----------------------------------------------------------------------------------------------------------------------
+* see http://adult.psychencode.org/  (20 dec 2018)
+
+   for grns and enhancers.  liftover the latter to hg38
+
+*-----------------------------------------------------------------------------------------------------------------------
+* DeepBlueR, first look (20 dec 2018)
+
+   ~/github/trenaDimers/explorations/deepblueFirstLook/deepBlueFirstLook.R
+
+   https://github.com/inutano/chip-atlas/issues/5
+
+   @felipealbrecht Just taking my first look at DeepBlueR, read the
+   man pages and the vignette, ran through some of the examples. Good
+   stuff here - but I am a little confused about formulating my
+   typical queries.
+
+   For example, in naive pseudo-code, to obtain all the ChIP-seq hits in a small region of the hg38 genome:
+
+     tbl.hits <- query(deepblue, project="ChIP-atlas", genome="hg38",
+                       region="chr2:233,054,878-233,112,822")
+
+   Could you point me in the right direction?
+
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* new advice from marjorie brand, to reproduce tsne/spectral1 plot of klf1 (19 dec 2018)
+
+  --- email 8:39a today
+
+   cd ~/s/data/jeffRanish/fromMarjorieBrand/finalAnalysis/cytofkit-without-Bcl11a-June-2018-USED-FOR-PAPER/Results.orig/
+   start R
+   To reproduce the tSNE plot, the best is probably to do the following:
+   Open the 'cytofkit-without-Bcl11a.RData'  file (from dropbox) in Shiny app using the command:
+   library(cytofkit)
+   cytofkitShinyAPP()
+
+   Then, submit
+   Then, click on Marker Panel, Expression Level Plot
+   Choose Plot Marker Ho165Di<165Ho_KLF1_1_> for KLF1   (or Tm169Di<169Tm_FLI1> for FLI1)
+   Choose Color Palette spectral1
+
+    --- found and extracted code and data which cytofkit_shinyApp uses, reproducing marjorie's preferred plot
+      from:  ~/github/cytofkit/R/cytofkit_shinyAPP.R
+      to: ~/github/cytofViz/inst/explore/
+      loading: load("../extdata/klf1.plotting.data.RData")
+      using ggplot2 and reshape2
+
+   --- (21 dec 2018):  ~/github/cytofViz/inst/explore/reproduceScatterPlot.R
+     grabbed a few long functions from ~/github/cytofkit/R/cytofkit_shinyAPP.R
+     worked them through in reproduceScatterPlot.R
+     found that my data, as used in my webapp, does not have the same KLF1 distribution as that recovered
+     via a browser statement inserted into cytofkit_shinyAPP.R
+
+     --- how did I build tbl.allDays.allProteins.RData?
+        6253227 Dec 14 18:58 tbl.allDays.allProteins.RData
+        produced by ~/github/cytofViz/inst/explore/noShinyExplore.R:
+
+          directory <- "~/s/data/jeffRanish/fromMarjorieBrand/finalAnalysis/cytofkit-without-Bcl11a-June-2018-USED-FOR-PAPER/Results.orig"
+          full.path <- file.path(directory, "cytofkit-without-Bcl11a_tsne_dimension_reduced_data.csv")
+          stopifnot(file.exists(full.path))
+          tbl <- read.table(full.path, sep=",",  header=TRUE, stringsAsFactors=FALSE)
+          colnames(tbl) <- c("sampleName", "tsne1", "tsne2")
+          tbl <- tbl[, c("tsne1", "tsne2", "sampleName")]
+          sampleInfo <-  strsplit(tbl$sampleName, "_", fixed=TRUE)
+          tbl.sampleInfo <- data.frame(t(sapply(sampleInfo,c)), stringsAsFactors=FALSE)
+          colnames(tbl.sampleInfo) <- c("export", "cluster", "ignore", "sample", "day", "dayN", "status", "number")
+          coi <- c("cluster", "dayN", "number")
+          tbl.sampleInfo <- tbl.sampleInfo[, coi]
+          tbl.sampleInfo$cluster <- as.integer(sub("^c", "", tbl.sampleInfo$cluster))
+          tbl.sampleInfo$dayN <- as.integer(sub("^Day", "", tbl.sampleInfo$dayN))
+          tbl.sampleInfo$number <- as.integer(tbl.sampleInfo$number)
+          colnames(tbl.sampleInfo) <- c("cluster", "day", "number")
+          tbl <- cbind(tbl.sampleInfo, tbl)
+          f2 <- file.path(directory, "cytofkit-without-Bcl11a_Rphenograph_clusters.csv")
+          stopifnot(file.exists(f2))
+          tbl.2 <- read.table(f2, sep=",",  header=TRUE, stringsAsFactors=FALSE)
+          colnames(tbl.2) <- c("name", "phenographCluster")
+          tbl$phenographCluster <- tbl.2$phenographCluster
+          clusterCount <- length(unique(tbl$phenographCluster))
+          printf("clusterCount: %d", clusterCount)
+          set.seed(17)
+          palette <- distinctColorPalette(clusterCount)
+          tbl$color <- palette[tbl$phenographCluster]
+          save(tbl, file="tsnePlot-allClusters.RData")
+
+          fcs.directory <- "~/s/data/jeffRanish/fromMarjorieBrand/finalAnalysis/cytofkit-without-Bcl11a-June-2018-USED-FOR-PAPER"
+          fcs.files <- grep(".fcs$", list.files(fcs.directory), v=TRUE)
+
+          tbls.days <- list()
+          for(r in seq_len(nrow(tbl.files))){
+             filename <- tbl.files$file[r]
+             dayNumber <- tbl.files$day[r]
+             x <- read.FCS(file.path(fcs.directory, filename), transformation=FALSE, alter.names=TRUE)
+             tbl.fcs <- pData(parameters(x))  # 57 5
+             mtx <- exprs(x)
+             colnames(mtx) <- as.character(colnames(mtx))  # they are, weirdly, a list of lists
+             if(nrow(mtx) > 5000)
+                mtx <- mtx[1:5000,]
+             printf("%s matrix entries: %d", filename, nrow(mtx))
+             total.rows <- total.rows + nrow(mtx)
+             tbl.geom.day <- subset(tbl, day==dayNumber)
+             #browser()
+             printf("day %d", dayNumber)
+             mtx <- mtx[, tbl.ids$name] # just the markers and tfs
+             colnames(mtx) <- rownames(tbl.ids)
+             tbl.day <- cbind(tbl.geom.day, mtx)
+             tbls.days[[r]] <- tbl.day
+             } # for filename
+
+          printf("grand total: %d", total.rows)
+          tbl.all <- do.call(rbind, tbls.days)
+          save(tbl.all, file="tbl.allDays.allProteins.RData")
+          dim(tbl.all)  48076    35
+          tbl.all[1:5, 1:10]
+            cluster day number     tsne1     tsne2                         sampleName   color phenographCluster       CD34     CD36
+          1       1   0      1 18.932996 11.170587 export_c01_sample_01_0_Day0_live_1 #D0E5A2                 1   5.335217  0.00000
+          2       1   0      2  6.301791 12.065454 export_c01_sample_01_0_Day0_live_2 #DBB15D                 4  43.673382 39.54310
+          3       1   0      3  5.930183 15.145040 export_c01_sample_01_0_Day0_live_3 #DBB15D                 4 144.613297  0.00000
+          4       1   0      4  9.334115  8.528194 export_c01_sample_01_0_Day0_live_4 #DBB15D                 4  27.220060 15.33765
+          5       1   0      5  6.425696 -8.455811 export_c01_sample_01_0_Day0_live_5 #8568CA                11   4.075445 33.28407
+
+    --- solution #1 [not!]  get the expression values of tfs and markers from the RData file produced by cytofkit_GUI()
+      ~/s/data/jeffRanish/fromMarjorieBrand/finalAnalysis/cytofkit-without-Bcl11a-June-2018-USED-FOR-PAPER/Results.orig/cytofkit-without-Bcl11a.RData
+       13,336,526 Jun 16  2018
+       the klf1 expression data found here has the same distribution as that read from the fcs files
+       --> leading me to believe that the cytofkit shinyApp transforms the data
+
+    --- solution #2 use the expression data captured via browser() inserted into the shiny app
+       saved as ~/github/cytofViz/inst/extdata/klf1.plotting.data.RData
+       klf1.colname <- "Ho165Di<165Ho_KLF1_1_>"
+       x.stolen <- get(load("~/github/cytofViz/inst/extdata/klf1.plotting.data.RData"))
+       dim(x.stolen$obj$expressionData) # 48076    27
+       quartz(); hist(x.stolen$obj$expressionData[, klf1.colname], main="klf1 stolen")
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* find frequently associated tfs in whole genome model (20 dec 2018)
+
+  ~/github/genomescale_scripts/dimerSearch/dimerHeatmap.R   # "possible dimers" would be a better name
+
+    library(RUnit)
+    library(gplots)
+    # extract all models which have <tf> at or below rank.max
+    # determine which tfs accompany <tf> at or below that rank
+    # return a data.frame with those counts.  for example
+    #
+    # head(tf.partner.distribution(tbl.models, "TAL1", 2))
+    #    tf.1  tf.2 count
+    #  1 TAL1  TAL1    21    # 21 models in which TAL1 ranks <= 2
+    #  2 TAL1  IRF5     4    # there are 4 models in which TAL1 and IRF5 both rank <= 2
+    #  3 TAL1 THAP1     3
+    #  4 TAL1  JDP2     2
+    #  5 TAL1  ATF1     1
+    #  6 TAL1  FOSB     1
+    #
+    tf.partner.distribution <- function(tbl.models, tf, rank.max)
+    {
+       tbl.tf.top <- subset(tbl.models, tf.hgnc==tf & rank <= rank.max)
+       tf.targets <- tbl.tf.top$targetGene.hgnc
+       tbl.targets <- subset(tbl.models, targetGene.hgnc %in% tf.targets & rank <= rank.max)
+       tbl.partners.dist <- as.data.frame(table(tbl.targets$tf.hgnc), stringsAsFactors=FALSE)
+       tbl.out <- tbl.partners.dist[order(tbl.partners.dist$Freq, decreasing=TRUE),]
+       tbl.out$tf.1 <- tf
+       colnames(tbl.out) <- c("tf.2", "count", "tf.1")
+       rownames(tbl.out) <- NULL
+       tbl.out[, c("tf.1", "tf.2", "count")]
+
+    } # tf.partner.distribution
+    #------------------------------------------------------------------------------------------------------------------------
+    test_tf.partner.distritubion <- function()
+    {
+       printf("--- test_tf.partner.distritubtion")
+       tbl.dist <- head(tf.partner.distribution(tbl.models, "TAL1", 2))
+       checkTrue(all(c("TAL1", "IRF5",  "LYL1") %in% tbl.dist$tf.2))
+       checkEquals(tbl.dist$count[1:3], c(22, 5, 2))
+
+    } # test_tf.partner.distribution
+    #------------------------------------------------------------------------------------------------------------------------
+    # collect about ten tfs, then
+
+    seed.tf <- "TAL1"
+    min.rank <- 5
+    partner.tf.must.have.count.of.at.least <- 5
+    goi <- subset(tf.partner.distribution(tbl.models, seed.tf, min.rank), count >= partner.tf.must.have.count.of.at.least)$tf.2
+    length(goi)
+
+    tbls <- lapply(goi, function(tf) tf.partner.distribution(tbl.models, tf, min.rank))
+    length(tbls)
+    tbl <- do.call(rbind, tbls)
+    tbl <- subset(tbl, count > 12)
+    dim(tbl)
+
+    tfs.all <- sort(unique(c(tbl$tf.1, tbl$tf.2)))
+    tf.count <- length(tfs.all)  # 192
+    tf.count
+
+    mtx <- matrix(0, nrow=tf.count, ncol=tf.count, dimnames=list(tfs.all, tfs.all))
+
+    for(i in seq_len(tf.count)){
+       tf.1 <- tbl[i, "tf.1"]
+       tf.2 <- tbl[i, "tf.2"]
+       count <- tbl[i, "count"]
+       mtx[tf.1, tf.2] <- count
+       mtx[tf.1, tf.1] <- count
+       }
+
+    diag(mtx) <- 0
+    heatmap.2(mtx, trace='none', col=c("#000000", rev(heat.colors(20))))
+
+
+#------------------------------------------------------------------------------------------------------------------------
+* dimerization project for cory (18 dec 2018)(
+
+   cd ~/github/trenaDimers/explorations/tal1
+   searchForDimers.R
+
+  choose a tf (e.g., TAL1)
+  find all target genes for which the tf in top ranked ( <= n)
+  search for enrichment of partner tfs: some of them, the super enriched, may be dimer partners
+  look for psicquic evidence of dimerization
+
+     psiq <- PSICQUIC()
+     providers <- c("BioGrid", "IMEx", "IntAct", "Reactome")
+     providers <- "Reactome"
+     interactionType <- "direct interaction"
+     method <- c("pull down", "footprinting", "cross-linking study", "polymerization")
+     # method <- "biochemical"
+     tbl.tal <- interactions(psicquic, id="TAL1", species="9606", speciesExclusive=TRUE,  quiet=FALSE,
+                             #provider=providers,
+                             type=interactionType
+                             #detectionMethod=method
+                             )
+     dim(tbl.tal)
+     tbl.tal.genes <- addGeneInfo(mapper, tbl.tal)
+     all.partners <- sort(unique(c(tbl.tal.genes$A.name, tbl.tal.genes$B.name)))
+     all.partners
+     all.partners.tfs <- intersect(all.partners, allKnownTFs())
+     all.partners.tfs  #  "CBFA2T3" "EP300"   "LMO2"    "SIN3A"   "SP1"     "TAL1"    "TCF3"    "TCF4"
+     table(tbl.tal.genes$provider)
+
+     subset(tbl.tal.genes, A.name %in% all.partners.tfs & B.name %in% all.partners.tfs)[, c("A.name", "B.name", "type", "detectionMethod", "confidenceScore", "provider", "firstAuthor")]
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* marjorie brand, rectify shiny plot against cytofkit plot (18 dec 2018)
+
+  cytofkit uses the spectral1 spectrum.
+  source("~/github/cytofkit/R/cytof_postProcess.R")
+  spectra.1.5 <-  spectral1(5)  # [1] "#5E4FA2" "#88CFA4" "#FFFFBF" "#F88D52" "#9E0142"
+
+  --- run their shinyApp, reproduce the display marjorie wants (from email 8 dec 2018)
+
+    cd ~/github/cytofViz/inst/extdata/fcs/
+
+    5) If you are trying to reproduce the clusters previously generated by Cytofkit, I should probably give
+       you a bit more information.
+
+     The code to write in R studio is as follow:
+       library(cytofkit)
+       cytofkit_GUI()
+       require(cytofkit)
+       cytofkitShinyAPP()
+
+     And then, we used the following parameters:
+        Select all FSC files
+        Select all markers except BCL11A (also ignore the other channels with no markers indicated)
+        Choose “ceil” with up to 5,000 cells per sample
+        Choose arcsinh for data transformation
+        Choose Phenograph for clustering
+        Choose tSNE for data represention
+        Everything else, we kept the default parameters.
+
+     Using these parameters, cytofkit generated the matrices that are in Dropbox in the folder
+     “Results”. I think there is a data file with all the transformed numbers for each marker in
+     each cell, as well as one datafile with the tSNE parameters.
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* plotMotifs(motifs, group.size=5)   library(motifStack)
+
+   source("~/github/trenaShinyApps/utils/plotMotifs.R")
+
+*-----------------------------------------------------------------------------------------------------------------------
+* exploring trena dimers, with a focus on TAL1 (18 dec 2018)
+
+  --- MotifDb reports
+     unique(grep("TAL1", grep("::", mcols(query(MotifDb,  "hsapi"))$geneSymbol, v=TRUE, fixed=TRUE), v=TRUE))
+      [1] "TAL1::TCF3"  "TAL1::GATA1" "GATA1::TAL1"
+
+    query(MotifDb, "TAL1::TCF3")
+       Hsapiens-jaspar2018-TAL1::TCF3-MA0091.1
+    query(MotifDb, "TAL1::GATA1")
+       Hsapiens-JASPAR_2014-TAL1::GATA1-MA0140.2
+       Mmusculus-jaspar2018-Tal1::Gata1-MA0140.1
+    query(MotifDb, "GATA1::TAL1")
+       Hsapiens-jaspar2018-GATA1::TAL1-MA0140.2
+
+
+     source("~/github/trenaShinyApps/utils/plotMotifs.R")
+     plotMotifs(query(MotifDb, "TAL1::TCF3"))
+     quartz()
+     plotMotifs(query(MotifDb, "GATA1::TAL1"))
+     quartz();
+     plotMotifs(query(MotifDb, "TAL1"))
+
+     quartz();
+     plotMotifs(query(MotifDb, "TCF3"))
+
+  --- http://emboj.embopress.org/content/16/11/3145
+
+   The LIM‐only protein Lmo2, activated by chromosomal translocations in T‐cell leukaemias, is
+   normally expressed in haematopoiesis. It interacts with TAL1 and GATA‐1 proteins, but the
+   function of the interaction is unexplained. We now show that in erythroid cells Lmo2 forms a
+   novel DNA‐binding complex, with GATA‐1, TAL1 and E2A, and the recently identified LIM‐binding
+   protein Ldb1/NLI. This oligomeric complex binds to a unique, bipartite DNA motif comprising an
+   E‐box, CAGGTG, followed ∼9 bp downstream by a GATA site. In vivo assembly of the DNA‐binding
+   complex requires interaction of all five proteins and establishes a transcriptional
+   transactivating complex. These data demonstrate one function for the LIM‐binding protein Ldb1 and
+   establish a function for the LIM‐only protein Lmo2 as an obligatory component of an oligomeric,
+   DNA‐binding complex which may play a role in haematopoiesis.
+
+  ---
+
+*-----------------------------------------------------------------------------------------------------------------------
+* vesteinn's wiring diagram for his grant proposal (17 dec 2018)
+
+   cd ~/s/examples/trena/vesteinn/wiringDiagram
+   search.R
+
+library(MotifDb)
+library(trena)
+library(TrenaProjectIGAP)
+
+pfms <- query(MotifDb, "jaspar2018", "hsapiens") # 537
+mm <- MotifMatcher("hg38", as.list(pfms), quiet=TRUE)
+
+
+tp <- TrenaProjectIGAP()
+
+genes <- c("ADORA2A", "ARG1", "BTLA")
+tbl.enhancers <- getEnhancers(tp, genes[1])
+tbl.regions <- subset(tbl.enhancers, combinedScore > 500 & type=="Promoter/Enhancer")
+
+tbl.matches <- findMatchesByChromosomalRegion(mm, tbl.regions, pwmMatchMinimumAsPercentage=90)
+tbl.matches$tf <- mcols(MotifDb[(tbl.matches$motifName)])$geneSymbol
+tbl.tfs <- as.data.frame(table(tbl.matches$tf))
+colnames(tbl.tfs) <- c("tf", "count")
+tbl.tfs <- tbl.tfs[order(tbl.tfs$count, decreasing=TRUE),]
+
+indices <- match(tbl.matches$tf, tbl.tfs$tf)
+tbl.matches$count <- tbl.tfs$count[indices]
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* stanford postdoc candidate, python expression normalization method GLS which dissolves implicit correlation (17 dec 2018)
+
+    cd ~/s/examples/python/numpy/gls/
+
+    Here's a brief code snippet for correlating all pairs of rows from a matrix using GLS.  In your
+    case, the rows would be genes and columns would be samples.
+
+    import numpy as np, statsmodels.api as sm
+    def GLS(matrix):
+        """
+        Run generalized least squares on all pairs of rows from a matrix,
+        using the empirical covariance matrix of the columns.
+        """
+           # Get covariance matrix among all pairs of columns
+        covariance = np.cov(matrix.T)
+           # Pre-processing step: Cholesky decomposition of inverse covariance matrix
+        cholsigmainv = np.linalg.cholesky(np.linalg.pinv(covariance)).T
+           # Allocate output matrix
+        GLS_ps = np.empty((len(matrix), len(matrix)))
+        for i, row_i in enumerate(matrix):
+            for j, row_j in enumerate(matrix):
+                # Transform rows i and j (and the intercept) by this cholsigmainv
+                # matrix, then run linear regression
+                GLS_ps[i, j] = sm.OLS(
+                    cholsigmainv.dot(row_j),
+                    cholsigmainv.dot(sm.add_constant(row_i))).fit().pvalues[1]
+        return GLS_ps
+
+   This copies the code from statsmodels.GLS, with the modification that I only preprocess the
+   covariance matrix once to save time (which sped things up by a factor of 100 for me).  Aside from
+   that preprocessing step, it should run about as fast as regular Pearson correlation.
+
+   By the way, here's that paper I mentioned: http://www.nature.com/articles/s41588-018-0196-7
+
+   --- using reticulate (calling python from R)
+library(TrenaProjectIGAP)
+proj <- TrenaProjectIGAP()
+getExpressionMatrixNames(proj)
+# [1] "cerebellum.15167x263"                  "rosmap.14235x632"
+# [3] "Scaled_Winsorized_MayoRNAseq_TCX-ENSG" "temporalCortex.15167x264"
+mtx <- getExpressionMatrix(proj, "Scaled_Winsorized_MayoRNAseq_TCX-ENSG")
+
+library(reticulate)
+np <- import("numpy", as="np")
+
+source_python("glsDemo.py")
+
+set.seed(37)
+gene.count <- 10
+sample.count <- 10
+
+mtx <- matrix(100 * abs(rnorm(sample.count * gene.count)), sample.count, gene.count)
+colnames(mtx) <- sprintf("gene.%02d", 1:ncol(mtx))
+rownames(mtx) <- sprintf("samp.%02d", 1:nrow(mtx))
+mtx <- t(mtx)
+
+   # arbitrarily designate 10 of the genes as transcription factors
+TF.genes <- sort(sprintf("gene.%02d", sample(1:gene.count, 2)))
+target.genes <- setdiff(rownames(mtx), TF.genes)
+TF.1 <- TF.genes[1]
+TF.2 <- TF.genes[2]
+target.gene <- target.genes[1]
+
+mtx[target.gene, ] <- jitter((mtx[TF.1, ])) # +mtx[TF.2,]), amount=20)
+mtx[TF.2,] <- (mtx[TF.1,] - mtx[target.gene,])
+
+mtx.py <- np$array(mtx)
+x <- GLS(mtx.py)
+
+
+# Error in py_call_impl(callable, dots$args, dots$keywords) :
+#   LinAlgError: Matrix is not positive definite
+#
+# Detailed traceback:
+#   File "<string>", line 14, in GLS
+#   File "/Users/paul/anaconda/lib/python3.6/site-packages/numpy/linalg/linalg.py", line 733, in cholesky
+#     r = gufunc(a, signature=signature, extobj=extobj)
+#   File "/Users/paul/anaconda/lib/python3.6/site-packages/numpy/linalg/linalg.py", line 92, in _raise_linalgerror_nonposdef
+#     raise LinAlgError("Matrix is not positive definite")
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* hamids t-cell exhaustion network, cyjShiny (17 dec 2018)
+
+   ~/github/TcellExhaustion/
+      shinyApp/cyjView.R
+
+   uses cyjShiny v 0.99.32, 2018-12-16, added function setEdgeAttributes
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* deploy and invoke shinyProxy apps:
+
+  --- ~/github/cytofViz/inst/docker/cytofViz.R
+    concludes with:  app <- shinyApp(ui, server)
+
+  - name: cytof_01
+    display-name: cytof erythropoiesis (15 dec 2018)
+    docker-cmd: ["/usr/local/bin/R", "-e", "shiny::runApp('/home/trena/app/cytofViz.R', port=3838, host='0.0.0.0')"]
+    docker-image: cytof:latest
+    groups: [cytof, admin]
+
+
+  - name: trenaigap5   # uses refactored TrenaViz package & class
+    display-name: trena IGAP (07 dec 2018)
+    docker-cmd: ["/usr/local/bin/R", "-f", "igap.R"]
+    docker-image: trenaigap:08dec2018
+    groups: [igap, admin]
+
+   library(TrenaViz)
+   tv <- TrenaViz("TrenaProjectIGAP")
+   createApp(tv, port=3838)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* create tbl.all from tsne1, tsne2, by day, 11 markers, 16 tfs (14 dec 2018)
+
+  cd ~/github/cytofViz/inst/explore/
+  file: nonShinyExplore.R
+  pretty crufty.  at conclusion writes out
+
+     load("~/github/cytofViz/inst/explore/tbl.allDays.allProteins.Rdata")
+
+  defines draft function:
+
+    assignColor <- function(values, min, max, colors) {
+       numberOfBins <- length(colors) - 1
+       bin.size <- (max-min)/numberOfBins
+       bin.assignments <- 1 + as.numeric(lapply(values, function(value) floor(value/bin.size)))
+       colors[bin.assignments]
+       } # assignColor
+
+  --- nonShinyDisplay.R
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* james yurkovich, isb translational research fellow, e coli trns, email (14 dec 2018)
+
+   --- email sent (14 dec 2018) 840am "modeling transcriptional networks"
+
+Hi Paul,
+
+I just wanted to follow up on our conversation over dinner last night.
+
+I am attaching some papers that detail my personal experience in looking at modeling transcriptional networks.
+
+Gao et al. describes the discovery platform I described last night. Using an array of machine learning methods (actually used 5 individually then combined the output to get a single ensembel model with a consensus prediction), we predicted whether a given unannotated E. coli "y-gene" is a TF based purely on sequence. We rank ordered our predictions, and 16 were chosen for experimental validation based on our recommendations, as well as expert knowledge regarding the E. coli network. We then performed ChIP-exo to determine whether these proteins were in fact TFs; we were able to confirm that 11/16 did in fact bind and performed further targeted analysis on 3. We were unable to confirm that the remaining 5 proteins were or were not TFs, only that we were unable to determine the right experimental conditions under which the protein would bind to the motif.
+
+Fang et al. describes the most recent iteration of the global E. coli TRN. This was a purely top-down approach that uses ChIP data across multiple experimental conditions and a few KOs to define regulatory modules.
+
+...I was going to send you the most recent work out of the Palsson lab, but unfortunately that manuscript is still dragging behind and cannot be shared yet.
+
+I'd be happy to meet to talk with you guys if you would like to discuss TRENA and integration with metabolic networks (my expertise) in more detail.
+
+Cheers,
+
+
+
+James
+
+—
+James T. Yurkovich, Ph.D.
+Translational Research Fellow
+Institute for Systems Biology
+Rm 462 | Personal page
+Seattle, WA +12067321335
+
+
 *-----------------------------------------------------------------------------------------------------------------------
 * explore, discover, invent:  deploy for good health  (good lives)
 
-   explore to discover. invent & deploy.  good health for all
+   explore to discover. invent & deploy.  better health for all
 
 *------------------------------------------------------------------------------------------------------------------------
 * cytof shiny app, for marjorie brand, jeff ranish animate Rphenograph clustering with time course protein counts  (12 dec 2018)
@@ -167,6 +1261,32 @@ bed format: chrom, start, end, name, score, strand
   -rw-------@  1 paul  staff   146520 Jun 16 15:21 cytofkit_export_c12_sample_01_0_Day18_live.fcs
   -rw-------@  1 paul  staff    60579 Jun 16 15:21 cytofkit_export_c13_sample_01_0_Day20_live.fcs
   -rw-------@  1 paul  staff    30566 Jun 16 15:21 cytofkit_export_c14_sample_01_0_Day22_live.fcs
+
+
+   --- get protein expression of CD34 on day 1.  initial work done on gata1/gata2 switch
+       found here ~/github/cytofViz/inst/extdata/fcs/combine.R
+
+   gata1 <- vector("numeric", count)
+   gata2 <- vector("numeric", count)
+
+   for(i in seq_len(count)){
+      x <- read.FCS(fcs.files[i], transformation=TRUE, alter.names=TRUE)
+      tbl <- pData(parameters(x))
+      mtx <- exprs(x)  # [1] 3740   57
+      gata1.rowname <-  as.character(tbl$name[grep("GATA1", tbl$desc)]) # [1] "Dy163Di"
+      gata2.rowname <-  as.character(tbl$name[grep("GATA2", tbl$desc)]) # [1] "Dy163Di"
+      #gata1[i] <- fivenum(asinh(mtx[, gata1.rowname]))[3]
+      #gata2[i] <- fivenum(asinh(mtx[, gata2.rowname]))[3]
+      #gata1[i] <- mean(asinh(mtx[, gata1.rowname]))
+      #gata2[i] <- mean(asinh(mtx[, gata2.rowname]))
+      gata1[i] <- sd(asinh(mtx[, gata1.rowname]))
+      gata2[i] <- sd(asinh(mtx[, gata2.rowname]))
+      }
+
+   plot(gata1, type="b", ylim=c(0,max(c(gata1, gata2)) * 1.1), col="blue", main="sd asinh count")
+   lines(gata2, type="b", col="red")
+   legend(10, 0.99 * max(c(gata1, gata2)), c("GATA1", "GATA2"), c("blue", "red"))
+
 
 
 *-----------------------------------------------------------------------------------------------------------------------
@@ -338,7 +1458,7 @@ bed format: chrom, start, end, name, score, strand
     cytofkitShinyAPP()
 
   And then, we used the following parameters:
-    Select all FSC files
+   Select all FSC files
     Select all markers except BCL11A (also ignore the other channels with no markers indicated)
     Choose “ceil” with up to 5,000 cells per sample
     Choose arcsinh for data transformation
@@ -479,7 +1599,7 @@ bed format: chrom, start, end, name, score, strand
 
 
 *-----------------------------------------------------------------------------------------------------------------------
-* single cell symposium, isb (7 dec 2018)
+* single cell symposium, isb (7 dec 2018)   chan/zuckerberg biohub
 
   pseudo time: monocle   http://cole-trapnell-lab.github.io/monocle-release/
   tabula muris:  pca, cluster in pca space, by eucldian, t-sne visualization, cell types assigned to tissue clusters
@@ -1050,6 +2170,9 @@ ZCWPW1  chr7:99892814-101231552     chr7:99490437-100874833
    -- from http://andrewberls.com/blog/post/git-tricks-unstaging-files#alias
 
      git config --global alias.unstage 'reset --'
+
+    git reset --
+    git rm --cached -r .
 
 *-----------------------------------------------------------------------------------------------------------------------
 * trenaBatch: home for whole genome trena runs, bplapply, alison's placental analysis (4 nov 2018)
@@ -2783,8 +3906,44 @@ ZCWPW1  chr7:99892814-101231552     chr7:99490437-100874833
 *-----------------------------------------------------------------------------------------------------------------------
 * RColorBrewer tips
 
+   There are 3 types of palettes, sequential, diverging, and qualitative.
+
+   1. Sequential palettes are suited to ordered data that progress from low to high. Lightness steps
+      dominate the look of these schemes, with light colors for low data values to dark colors for high
+      data values.
+
+        Blues BuGn BuPu GnBu Greens Greys Oranges OrRd PuBu PuBuGn PuRd Purples RdPu Reds YlGn
+        YlGnBu YlOrBr YlOrRd
+
+        All the sequential palettes are available in variations from 3 different values up to 9 different
+        values.
+
+   2. Diverging palettes put equal emphasis on mid-range critical values and extremes at both ends
+      of the data range. The critical class or break in the middle of the legend is emphasized with
+      light colors and low and high extremes are emphasized with dark colors that have contrasting
+      hues.
+
+      BrBG PiYG PRGn PuOr RdBu RdGy RdYlBu RdYlGn Spectral
+      All the diverging palettes are available in variations from 3 different values up to 11 different
+     values.
+
+   3. Qualitative palettes do not imply magnitude differences between legend classes, and hues are
+      used to create the primary visual differences between classes. Qualitative schemes are best
+      suited to representing nominal or categorical data.
+
+      The lowest number of distinct values available always is 3, but
+      the largest number is different for different palettes. It is given together with the palette
+      names in the following table. lr{ Accent 8 Dark2 8 Paired 12 Pastel1 9 Pastel2 8 Set1 9 Set2 8
+       Set3 12 }
+
+
+* RColorBrewer tips
+
   library(RColorBrewer)
-  colors <- brewer.pal(8, "Dark2")
+  rownames(brewer.pal.info)
+  display.brewer.all()
+
+  colors <- c("#FFFFFF", brewer.pal(9, "Reds"))
   totalColorCount <- length(colors)
   colorNumber <- 0
   colorNumber <<- (colorNumber %% totalColorCount) + 1
@@ -4339,10 +5498,13 @@ ZCWPW1: 1
   21 oct 2018: 1 hour grubbing blackberry on Andrews Bay, 1 hour herb robert removal, 30 minutes on fern photography
   28 oct 2018: 3 hours grubbing blackberry on Andrews Bay, 30 minutes on fern photography
   16 nov 2018: 3 hours sword fern meeting
+  19 nov 2018: 1 hour photographing ferns
   25 nov 2018: 1.5 hours blackberry removal
    1 dec 2018: 2 hours die-off visit with rodrigo valverde
    1 dec 2018: suzanne, 3 hours removing herb robert
    2 dec 2018: 1 hour blackberry removal
+   9 dec 2018: 2 hours blackberry removal
+  30 dec 2018: 4 hours planting just ne of cistern, alder and indian plum, with omar
 
 *------------------------------------------------------------------------------------------------
 * next up for alison, CKAP2L shiny app (19 jun 2018)
@@ -5187,6 +6349,8 @@ pd.set_option('display.width', 1000)
 
          alias ll u;;d;;l
 
+*------------------------------------------------------------------------------------------------
+* python tips, moral equivalent of R's source:  exec(open("filename").read())
 *------------------------------------------------------------------------------------------------
 * ijal python (23 jun 2018)
 
@@ -8189,7 +9353,7 @@ Thank you.
 
    --- a button observer in server:
 
-    observeEvent(input$randomRoiButton, {
+    observeEvent(input$randomRoiButton, ignoreInit=TRUE {
       input$randomRoiButton
       tss <- 88883200
       shoulder <- as.integer(runif(1, 0, 10000))
@@ -18368,7 +19532,7 @@ sick leave: fill in excel spreadsheet:
    https://intranet.systemsbiology.net/Plone/administration/human-resources/hr-forms-frequently-requested/time-sheet-1/view
 
 PTO REQUESTS and PAY STUBS in Paychex Flex
-Go to https://www.paychexflex.com and log in.   pshannonSeattle
+Go to https://www.paychexflex.com and log in.   pshannonSeattle    NancyCartwright88@
 
 
 HOW TO VIEW YOUR PAID TIME OFF BALANCES
