@@ -96,14 +96,994 @@ bed format: chrom, start, end, name, score, strand
 * -top-
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
-* mm10 coordinates for abca1 enhancers, mark gillespie, trena viz with BindingSitesManager (1 feb 2019)
+*-----------------------------------------------------------------------------------------------------------------------
+* abline tips, lm tips plot tips
+
+   tbl.tmp <- data.frame(gata1=mtx["GATA1",], gata2=mtx["GATA2",], day=1:28)
+   model.gata1 <- lm(gata1 ~ day, data=tbl.tmp)
+   model.gata2 <- lm(gata2 ~ day, data=tbl.tmp)
+   plot(mtx["GATA1",], col="blue", pch=16, main="GATA1")
+   abline(model.gata1, col="blue")
+
+   x11()
+   plot(mtx["GATA2",], col="red", pch=16, main="GATA2")
+   abline(model.gata2, col="red")
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* marjorie's understanding of the colnames in the 2016 Nat Gen paper
+
+       from Corces MR, Buenrostro JD, Wu B, Greenside PG et al. Lineage-specific
+       and single-cell chromatin accessibility charts human hematopoiesis and
+       leukemia evolution. Nat Genet 2016 Oct;48(10):1193-203. PMID: 27526324
+
+   I think I could figure out their samples, at least the healthy ones.
+
+   They have 13 different hematopoietic cell types from 9 healthy donors along the hematopoietic
+   hierarchical tree, all purified by FACS.
+
+   The donors IDs and corresponding cell types can be found in the excel file “Normal Donor Information”.
+
+   I also made another excel file with the sample names that you sent in the email,
+   “samples-ATAC-seq”. I copied the hematopoietic tree next to the sample names, so you can see
+   which ones we are the most interested in (i.e. the ones related to erythropoiesis, which
+   correspond to our in vitro differentiation system).
+
+   Also, I noticed there should be more samples than the ones you sent by email.
+
+   Finally, I am attaching another excel file with the leukemia patients samples IDs from the paper,
+   but I don't think they are going to be very useful, except maybe for some comparison. But these
+   samples are quite heterogenous.
+
+   ---  HSC: hematopoietic stem cell
+    1   Donor2596.HSC.1A.150303
+        Donor2596.HSC.1B.150303
+
+   ---  MPP: multipotent progenitors
+    2   Donor2596.MPP.2B.150303
+        Donor2596.MPP.2B.150304
+
+   ---  CMP: common myeloid pogenitor
+    4   Donor2596.CMP.4B.150303
+        Donor2596.CMP.4B.150304
+
+   ---  MEP: megakaryocytes erythroid progenitors)
+    6   Donor2596.MEP.6A.150303
+
+   ---  Ery: erythroblast (immature erythrocyte, has a nucleaus)
+    15  Donor2596.Erythroblast.15C.150303
+        Donor2596.Erythroblast.15C.150304
+        Donor2596.Erythroblast.15C.150305
+        Donor2596.Erythroblast.15C.150306
+        Donor2596.Erythroblast.15C.150307
+        Donor2596.Erythroblast.15C.150308
+        Donor2596.Erythroblast.15C.150309
+        Donor2596.Erythroblast.15C.150310
+
+     # noquote(grep("Erythroblast", colnames(tbl), v=TRUE))
+        Donor2596.Erythroblast.15A.150303
+        Donor2596.Erythroblast.15B.150303
+        Donor2596.Erythroblast.15C.150303
+        Donor5483.Erythroblast.15A.150305
+        Donor5483.Erythroblast.15B.150305
+        Donor5483.Erythroblast.15C.150305
+        Donor6926.Erythroblast.15A.150318
+        Donor6926.Erythroblast.15B.150318
+
+    eryCols <- grep("Erythroblast", colnames(tbl), v=TRUE)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* erythroid time series, marjorie brand (19 feb 2019)  "Transcriptional Control During Erythopoiesis"
+
+
+  --- atac-seq data from buerrostro 2016
+    see below: hematopoietic + leukemic cell types: 13 normal and 3 AML, 132 samples
+
+  --- rna-seq from the cell stem cell paper's timecourse:
+
+     For our own data, we have already deposited the data in GEO so I thought this may be the
+     easiest way for you to access the data. The data is private until publication.
+
+      https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE118537
+      username: jd_mb_lab
+      password: ohrilab2012
+
+   --- grok the data protected on GEO
+
+    Text file contains number of read counts per gene as tabulated by featureCounts of the Rsubread package.
+
+    WIG files represent the scaled mapped reads coverage of the RNA-Seq across the genome. The files were
+    generated using the BEDTools suite and UCSC genome browser standalone tools for Unix from the aligned
+    reads output of HISAT. Replicates from the same sample were merged together.
+
+    cd ~/github/TrenaProjectErythropoiesis/prep/import/tmp/
+    cat  GSE118537_DESeq_Read_Counts.txt | tr '\r' '\n' > GSE118537_DESeq_Read_Counts.tsv
+    tbl.readCounts <- read.table("GSE118537_DESeq_Read_Counts.tsv", sep="\t", as.is=TRUE, header=TRUE, nrow=-1)
+
+
+   > sort(noquote(colnames(tbl.readCounts)))
+    [1] GeneName       R1.G0Day0RC    R1.G1Day10.5RC R1.G1Day10RC   R1.G1Day11RC   R1.G1Day2RC
+    [7] R1.G1Day4RC    R1.G1Day6RC    R1.G1Day7.5RC  R1.G1Day8.5RC  R1.G1Day8RC    R1.G2Day11.5RC
+   [13] R1.G2Day12RC   R1.G3Day14RC   R1.G3Day16RC   R2.G0Day0RC    R2.G1Day10.5RC R2.G1Day10RC
+   [19] R2.G1Day11RC   R2.G1Day2RC    R2.G1Day4RC    R2.G1Day6RC    R2.G1Day7.5RC  R2.G1Day8.5RC
+   [25] R2.G1Day8RC    R2.G2Day11.5RC R2.G2Day12RC   R2.G3Day14RC   R2.G3Day16RC
+
+   --- renamed the rna colunames, saved as RData
+
+    explored in  ~/github/TrenaProjectErythropoiesis/prep/import/tmp
+    saved result in ~/github/TrenaProjectErythropoiesis/inst/extdata/expression/brandLabDifferentiationTimeCourseRNA.RData
+    dim(mtx) # 27171    28
+
+    do some quick QC:
+      tbl.tmp <- data.frame(gata1=mtx["GATA1",], gata2=mtx["GATA2",], day=1:28)
+      model.gata1 <- lm(gata1 ~ day, data=tbl.tmp)
+      model.gata2 <- lm(gata2 ~ day, data=tbl.tmp)
+      plot(mtx["GATA1",], col="blue", pch=16, main="GATA1")
+      abline(model.gata1, col="blue")
+      x11()
+      plot(mtx["GATA2",], col="red", pch=16, main="GATA2")
+      abline(model.gata2, col="red")
+
+
+  --- now get corresponding atac-seq
+   msrjorie says:
+
+     The data corresponding to the time series of differentiation for which we have SRM data is the following:
+        ATAC_Cord_day_replicate
+        We have the following days: d4, d8, d10, d11, d12, d16.
+        We have 2 replicates for each day, except day8 for which we have only one replicate.
+
+        The other ATACseq data are from peripheral blood (the samples labelled JH) and the CD samples are from
+        patients, so you can just ignore them, for now at least.
+
+     on khaleesi
+     cd ~/s/data/priceLab/erythropoiesis/marjorieBrand/
+
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d4mb_rep1_R1.fastq.gz
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d4mb_rep1_R2.fastq.gz
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d4mb_rep2_R1.fastq.gz
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d4mb_rep2_R2.fastq.gz
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d8mb_rep1_R1.fastq.gz
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d8mb_rep1_R2.fastq.gz
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d10mb_rep1_R1.fastq.gz
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d10mb_rep1_R2.fastq.gz
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d10mb_rep2_R1.fastq.gz
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d10mb_rep2_R2.fastq.gz
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d11mb_rep1_R1.fastq.gz
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d11mb_rep1_R2.fastq.gz
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d11mb_rep2_R1.fastq.gz
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d11mb_rep2_R2.fastq.gz
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d12mb_rep1_R1.fastq.gz
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d12mb_rep1_R2.fastq.gz
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d12mb_rep2_R1.fastq.gz
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d12mb_rep2_R2.fastq.gz
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d16mb_rep1_R1.fastq.gz
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d16mb_rep1_R2.fastq.gz
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d16mb_rep2_R1.fastq.gz
+     http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d16mb_rep2_R2.fastq.gz
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* hematopoietic + leukemic cell types: 13 normal and 3 AML, 132 samples
+
+   --- from Corces MR, Buenrostro JD, Wu B, Greenside PG et al. Lineage-specific
+       and single-cell chromatin accessibility charts human hematopoiesis and
+       leukemia evolution. Nat Genet 2016 Oct;48(10):1193-203. PMID: 27526324
+
+    ATAC-seq profiles of hematopoietic and leukemic cell types, across 13 normal
+    hematopoietic cell types and 3 acute myeloid leukemia cell types. The
+    complete data set contains a total of 132 samples.
+
+  sort(colnames(tbl)[4:135])
+
+                     HSC
+                     MPP
+               LMPP        CMP
+               CLP      GMP    MEP
+          CD4   CD8   B   NK   Mono Gran  Ery Mega
+
+  pHSC: immunophenotype HSCs
+
+    BM.CD34.1                         BM.CD34.2                         CB102.CD34.150627
+    Donor1022.Bcell.13.150120         Donor1022.CD4.9.150120            Donor1022.CD8.10.150120
+    Donor1022.Nkcell.11.150120        Donor2596.CD4.9A.150303           Donor2596.CD8.10B.150303
+    Donor2596.CLP.14A.150303          Donor2596.CLP.14B.150303          Donor2596.CMP.4A.150303
+    Donor2596.CMP.4B.150303           Donor2596.Erythroblast.15A.150303 Donor2596.Erythroblast.15B.150303
+    Donor2596.Erythroblast.15C.150303 Donor2596.GMP.5A.150303           Donor2596.HSC.1A.150303
+    Donor2596.HSC.1B.150303           Donor2596.MEP.6A.150303           Donor2596.MPP.2A.150303
+    Donor2596.MPP.2B.150303           Donor2596.NK.11B.150303           Donor2596.Nkcell.11A.150303
+    Donor4983.Bcell.13A.150120        Donor4983.CD4.9A.150120           Donor4983.CD8.10A.150120
+    Donor4983.Nkcell.11A.150120       Donor5483.Bcell.13A.150305        Donor5483.Bcell.13B.150305
+    Donor5483.CD4.9A.150305           Donor5483.CD4.9B.150305           Donor5483.CD8.10A.150305
+    Donor5483.CD8.10B.150305          Donor5483.CLP.14A.150305          Donor5483.Erythroblast.15A.150305
+    Donor5483.Erythroblast.15B.150305 Donor5483.Erythroblast.15C.150305 Donor5483.NK.11A.150305
+    Donor5483.Nkcell.11B.150305       Donor6926.CLP.14A.150318          Donor6926.CLP.14B.150318
+    Donor6926.Erythroblast.15A.150318 Donor6926.Erythroblast.15B.150318 Donor7256.1A.110614
+    Donor7256.1B.110614               Donor7256.2A.110614               Donor7256.2B.110614
+    Donor7256.3A.141106               Donor7256.4A.110614               Donor7256.4B.141106
+    Donor7256.5A.141106               Donor7256.5B.141106               Donor7256.6A.141106
+    Donor7256.6B.141106               Donor7256.7A.141106               Donor7256.7B.141106
+    SU048.Leuk                        SU048.Leuk.Rep1.140813            SU048.Leuk.Rep1.150212
+    SU048.Leuk.Rep2.140813            SU048.Leuk.Rep2.150212            SU048.Leuk.Rep3.140813
+    SU048.pHSC                        SU070.Leuk.140603                 SU070.Leuk.Rep2.140805
+    SU070.LSC.140603                  SU070.pHSC.140603                 SU070.pHSC.Rep2.140805
+    SU072.Leuk.Rep1.150212            SU072.Leuk.Rep2.150212            SU209.Leuk.140911
+    SU209.LSC.012015                  SU209.pHSC.140911                 SU209.pHSC.A.150627
+    SU209.pHSC.B.150627               SU306.Leuk.141121                 SU306.pHSC.141121
+    SU336.Leuk.141119                 SU336.pHSC.141119                 SU351.Leuk.140814
+    SU351.pHSC.140814                 SU353.Leuk.140923                 SU353.LSC.150120
+    SU353.pHSC.140923                 SU444.Leuk.141118                 SU444.LSC.012015
+    SU444.pHSC.141118                 SU484.Leuk.140812                 SU484.pHSC.140812
+    SU496.Leuk.140814                 SU496.LSC.012015                  SU496.pHSC.140814
+    SU501.Leuk.141118                 SU501.pHSC.141118                 SU575.Leuk
+    SU575.LSC.150120                  SU575.pHSC                        SU583.Leuk.141115
+    SU583.LSC.150120                  SU583.pHSC.141115                 SU583.pHSC.150627
+    SU623.Leuk                        SU623.Leuk.Rep1.150212            SU623.Leuk.Rep2.150212
+    SU623.pHSC                        SU654.Leuk.141115                 SU654.LSC.150120
+    SU654.pHSC.141115                 X4983.1A                          X4983.2A
+    X4983.3A                          X4983.4A                          X4983.4B
+    X4983.5A                          X4983.5B                          X4983.6A
+    X4983.6B                          X4983.7A                          X4983.7B
+    X6792.1A                          X6792.1B                          X6792.2A
+    X6792.3A                          X6792.4A                          X6792.4B
+    X6792.5A                          X6792.5B                          X6792.6A
+    X6792.6B                          X6792.7A                          X6792.7B
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* marjorie brand and RNAseq erythropoiesis data from GEO (15 feb 2019) (originally 16 jan 2019)
+
+  For our own data, we have already deposited the data in GEO so I thought this may be the easiest
+  way for you to access the data. The data is private until publication.
+
+    https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE118537
+    username: jd_mb_lab
+    password: ohrilab2012
+
+        CD34+ cells were subjected to ex vivo erythropoiesis according to the
+        protocol described in Palii et al. (doi: 10.3791/2813. J Vis Exp. 53,
+        2011). Samples were harvested at different time points and analyzed by
+        RNAseq.
+
+        CD34 is a transmembrane phosphoglycoprotein protein encoded by the CD34
+        gene in humans, mice, rats and other species.
+
+        CD34 derives its name from the cluster of differentiation protocol that
+        identifies cell surface antigens. CD34 was first described on
+        hematopoietic stem cells independently by Civin et al. and Tindle et
+        al. as a cell surface glycoprotein and functions as a
+        cell-cell adhesion factor. It may also mediate the attachment of
+        hematopoietic stem cells to bone marrow extracellular matrix or directly
+        to stromal cells. Clinically, it is associated with the selection and
+        enrichment of hematopoietic stem cells for bone marrow transplants. Due
+        to these historical and clinical associations, CD34 expression is almost
+        ubiquitously related to hematopoietic cells however it is actually found
+        on many other cell types as well.
+
+   There are duplicate experiments for each of these time points: Days 0, 2, 4, 6, 7.5, 8, 8.5, 10,
+   10.5, 11, 12, 14, and 16.
+
+   I am also attaching the GEO submission info in case you need info about the format.
+    (in an attached excel spreadsheet)
+
+   In terms of published data on FACS purified cells, there is the Blueprint database I was
+   mentioning. However, you need to do some paperwork to get access, and when I looked at the
+   publicly accessible GEO database, I found more recent datasets that are available without special
+   permission. I have assembled the links for these different datasets on the attached document
+   “RNAseq data”.
+
+   --- from the attached file "RNA-seq.data
+     Order of cells during differentiation:
+     HSC (or CD34)  MPP  CMP  MEP  BFU-e  CFU-e  proEB  e-basoE  l-basoE, polyE, orthoE
+
+   Early human hematopoiesis (RNAseq and ATACseq):  https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE75384
+
+      GSE74246: Unstranded RNA sequencing data
+      GSE74310: Single-cell chromatin accessibility data using scATAC-seq
+      GSE74912: ATAC-seq data
+        Samples of interest for hemato/erythropoiesis (in this order) – several replicates for each:
+        HSC; MPP; CMP; MEP; Ery (CD71+; GPA+)*
+        *Ery: this cell population includes e-basoE; l-baso-E; polyE; orthoE
+
+   Late stages of human erythroid differentiation (RNA seq): https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE53635
+     In this order – several replicates for each:
+               proE; e-basoE; l-baso-E; polyE; orthoE
+               (e-basoE; l-baso-E; polyE; orthoE taken together should be the same as Ery above)
+
+
+   Late stages of Erythroid differentiation (FACS sorted cells): https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE107218
+      peripheral blood; cord blood – 3 replicates each
+      (CD34; BFU, CFU, proEB, e-basoE, l-basoE, polyE, orthoE)
+
+    Human CFU-E (RNAseq): https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE61566
+      We are only interested in CFU-E
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* BrowserViz and igvR with m4 instead of webpack (14 feb 2019)
+
+   --- next up: at travis ci
+       library(devtools)
+       usethis::use_travis()
+
+      --- .travis.yml added
+        # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
+        language: R
+        sudo: false
+        cache: packages
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* shedding webpack and npm for m4_include browser code construction (13 feb 2019)
+
+   webpack appears to have gone through a non-compatible upgrade between summer of 2018 and january 2019
+   i faced painful confusion trying to work with es6, require, import, npm github sites.
+   now hoping to use my old-school m4 explicit construction of a webpage.
+   will consider a return to modern javascript methods once es6 is supported everywhere and well documented
+     for me, then non-expert.
+
+   see   ~/github/igvR/inst/browserCode/testImmediate/testImmediate.pre
+
+     <head>
+       <meta charset="utf-8">
+       <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+       <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+       <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+     <script type="text/javascript">
+     m4_changequote(,)
+     m4_include(../lib/igv.min.js)
+     m4_include(../lib/browserviz.js)
+     </script>
+     <script type="text/javascript">
+
+         document.addEventListener("DOMContentLoaded", function () {
+             console.log("DOMContentLoaded");
+             var div = document.getElementById("igv-div");
+             const options = {
+               showNavigation: true,
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+*  illustrate trena model building on PSG1 for yeon mi (13 feb 2019)
+
+   ~/github/TrenaProjectPlacenta/inst/footprinting/yeonsExplorations/
+   createPSG1model.R
+   pearson scores are very poor.  many possibly binding TFs not in expression matrix
+     print(load(system.file(package="TrenaProjectPlacenta", "extdata", "expression", "FilteredCountData8282018-vsn-geneSymbols.RData"))) # mtx
+
+*-----------------------------------------------------------------------------------------------------------------------
+* update and simplify BrowserViz packages: igvR, RCyjs, embedded demo scatter plot in BrowserViz package (13 feb 2019)
+
+   see below: d3 v5 es6 scatterPlot.js:  work out an update to BrowserVizDemo (16 jan 2019)
+   cd ~/s/examples/js/d3/scatterPlot-d3v5/
+   scatterPlot.html loads ScatterPlot.js
+
+   --- need a bundler, try rollup:  https://rollupjs.org/guide/en
+   npm install --global rollup
+      /usr/local/bin/rollup -> /usr/local/lib/node_modules/rollup/bin/rollup
+      + rollup@1.1.2
+     added 4 packages from 39 contributors in 1.695s
+
+   --- es6 classes: syntactical sugar provides a simple and clear syntax to create objects,
+
+   --- now return to npm and webpack
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cory & gtex matrix: cleanup mapping between matrix colnames and the provided metadata (13 feb 2019)
+
+  cd ~/s/data/cory/gtex/
+
+*-----------------------------------------------------------------------------------------------------------------------
+* slexil version 0.99.0 (12 feb 2019)
+
+  ~/github/slexil
+       2768 Sep  1 14:06 audioExtractor.py
+      11724 Oct  8 13:32 ijalLine.py
+        691 Oct  8 11:55 learnTierIDs.py
+       3664 Feb 11 14:00 morphemeGloss.py
+       4567 Feb 11 16:38 text.py
+      37163 Feb 11 16:36 webapp.py
+
+   --- testData
+  drwxr-xr-x   6 paul  staff  192 Oct  8 13:32 aktzini
+  drwxr-xr-x   7 paul  staff  224 Dec 27 08:11 harryMosesDaylight
+  drwxr-xr-x   7 paul  staff  224 Feb 11 17:00 inferno-threeLines
+  drwxr-xr-x   4 paul  staff  128 Sep 29 11:41 lokono
+  drwxr-xr-x   9 paul  staff  288 Oct  1 05:54 monkeyAndThunder
+  drwxr-xr-x   7 paul  staff  224 Oct  1 05:56 plumedSerpent
+  drwxr-xr-x   7 paul  staff  224 Oct  1 05:56 prayer
+
+   --- tests
+  -rw-r--r--  1 paul  staff    417 Oct  8 13:32 learnTierStructure.py
+  -rw-r--r--  1 paul  staff   3491 Oct 13 05:55 test_AudioExtractor.py
+  -rw-r--r--  1 paul  staff  14711 Oct  8 13:39 test_IjalLine.py
+  -rw-r--r--  1 paul  staff   8598 Feb 11 16:31 test_MorphemeGloss.py
+  -rw-r--r--  1 paul  staff   2939 Dec  1 09:54 test_Text.py
+  -rw-r--r--  1 paul  staff   1496 Feb 11 17:15 test_text_HowDaylightWasStolen.py
+  -rw-r--r--  1 paul  staff   1509 Dec  2 08:00 test_text_MonkeyAndThunder.py
+  -rw-r--r--  1 paul  staff   1567 Dec  2 08:01 test_text_PlumedSerpent.py
+  -rw-r--r--  1 paul  staff   1162 Dec  2 07:39 test_text_aktzini.py
+  -rw-r--r--  1 paul  staff   1541 Feb 11 13:34 test_text_inferno.py
+  -rw-r--r--  1 paul  staff   1633 Dec  2 08:02 test_text_lokono.py
+  -rw-r--r--  1 paul  staff   1497 Dec  2 08:07 test_text_prayer.py
+
+
+   --- demo
+    -rw-r--r--   1 paul  staff       54 Feb 11 16:21 grammaticalTerms.txt
+    -rw-r--r--   1 paul  staff     5812 Feb 11 17:00 inferno-threeLines.eaf
+    -rw-r--r--   1 paul  staff  1420124 Feb 11 07:43 inferno-threeLines.wav
+
+   --- PROJECTS
+     placeholder only
+
+  --- requirements.txt:
+    # plotly                             3.6.1
+    # dash                               0.36.0
+    # dash-core-components               0.43.0
+    # dash-dangerously-set-inner-html    0.0.2
+    # dash-html-components               0.13.5
+    # dash-renderer                      0.17.0
+    # dash-table                         3.4.0
+
+    gunicorn
+    xmlschema
+    scipy
+    dash
+    pandas
+    dash_table
+    pyyaml
+    dash_core_components
+    dash_html_components
+    dash-dangerously-set-inner-html
+    yattag
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* plotly dash ijal file management (10 feb 2018)
+
+   https://community.plot.ly/t/splitting-callback-definitions-in-multiple-files/10583/3
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ijal: get the tier guide ui right (9-10 feb 2019)
+
+  cd ~/github/ijalupload2/explore/
+    tierGUI-2.py
+    tierGUI-3.py
+
+  maybe the infinite loop, as a button leads to the installation of the table of pulldowns, is solved by updating libraries
+
+     /Users/paul/anaconda/bin/pip install plotly --upgrade
+     /Users/paul/anaconda/bin/pip install dash --upgrade
+     /Users/paul/anaconda/bin/pip install dash-renderer --upgrade
+     /Users/paul/anaconda/bin/pip install dash-html-components --upgrade
+     /Users/paul/anaconda/bin/pip install dash-core-components --upgrade
+     /Users/paul/anaconda/bin/pip install dash_table --upgrade
+
+
+   /Users/paul/anaconda/bin/pip list | grep plotly
+   /Users/paul/anaconda/bin/pip list | grep dash
+      plotly                             3.6.1
+      dash                               0.36.0
+      dash-core-components               0.43.0
+      dash-dangerously-set-inner-html    0.0.2
+      dash-html-components               0.13.5
+      dash-renderer                      0.17.0
+      dash-table                         3.4.0
+
+*-----------------------------------------------------------------------------------------------------------------------
+* installed bedtools on trena
+
+  cd ~/github
+  git clone https://github.com/arq5x/bedtools2.git
+  cd bedtools2
+  make
+  mkdir ~/tools
+  make prefix=/users/pshannon/tools install
+  dir ~/tools/bin/bamToBed
+
+  cd /local/httpd/vhosts/trena/static/placenta/yeonsExplorations/
+  ~/tools/bin/bedtools bamtobed -i LN54305_chr19.bam > LN54305_chr19.bed
+     79265777 Jan 30 12:04 LN54305_chr19.bam
+        65576 Jan 30 12:05 LN54305_chr19.bam.bai
+    130494456 Feb  8 15:40 LN54305_chr19.bed
+
+   head -10 LN54305_chr19.bed
+
+     chr19	63293	63335	K00314:110:H355NBBXY:3:2128:31284:37273/2	16	+
+     chr19	63293	63335	K00314:110:H355NBBXY:3:2128:31284:37273/1	16	-
+     chr19	70966	71042	K00314:110:H355NBBXY:3:2111:9151:18652/2	16	+
+     chr19	70982	71058	K00314:110:H355NBBXY:3:2225:18223:40491/1	17	+
+     chr19	70982	71058	K00314:110:H355NBBXY:3:2225:18223:40491/2	17	-
+     chr19	70988	71064	K00314:110:H355NBBXY:3:2111:9151:18652/1	17	-
+     chr19	70992	71058	K00314:110:H355NBBXY:3:1107:29894:35075/1	17	+
+     chr19	70992	71058	K00314:110:H355NBBXY:3:1107:29894:35075/2	17	-
+     chr19	70995	71071	K00314:110:H355NBBXY:3:2202:25154:40649/2	34	+
+     chr19	71000	71055	K00314:110:H355NBBXY:3:2208:21684:42935/1	17	+
+
+
+  --- back on riptide
+   cd   ~/github/TrenaProjectPlacenta/inst/footprinting/yeonsExplorations/
+   scp pshannon@trena:/local/httpd/vhosts/trena/static/placenta/yeonsExplorations/LN54305_chr19.bed .  # 7 minutes
+
+   ./fseq -v -of bed -t 3.5 ~/github/TrenaProjectPlacenta/inst/footprinting/yeonsExplorations/LN54305_chr19.bed
+     F-Seq Version 1.85
+     Settings:
+     	window=2860
+     	bandwidth=100
+     	threshold = 0.67812896
+     	est. fragment size = 75
+     	sequence length = 42
+     chr19: first=63293, last=58606936
+     ....................
+     .....................
+     chr19: Completed in 16.236 seconds.
+     chr19: Found 10433 peaks.
+     -----------------------
+   head chr19.bed
+    chr19	246379	247605	chr19.1	19.943691
+    chr19	267190	267717	chr19.2	2.399444
+    chr19	277266	277267	chr19.3	0.71211547
+    chr19	277272	277301	chr19.4	0.75579077
+    chr19	283388	283389	chr19.5	0.67969626
+    chr19	283393	283748	chr19.6	2.132616
+
+   ./fseq -v -of bed -t 2 ~/github/TrenaProjectPlacenta/inst/footprinting/yeonsExplorations/LN54305_chr19.bed
+
+    F-Seq Version 1.85
+    Settings:
+    	window=2860
+    	bandwidth=100
+    	threshold = 0.53130317
+    	est. fragment size = 75
+    	sequence length = 42
+    chr19: first=63293, last=58606936
+    ....................
+    .....................
+    chr19: Completed in 18.435 seconds.
+    chr19: Found 14239 peaks.
+    head chr19.bed
+        chr19	246379	247605	chr19.1	19.943691
+        chr19	267190	267717	chr19.2	2.399444
+        chr19	277266	277267	chr19.3	0.71211547
+        chr19	277272	277301	chr19.4	0.75579077
+        chr19	283388	283389	chr19.5	0.67969626
+        chr19	283393	283748	chr19.6	2.132616
+
+
+   --- now try this on a transformed mouse macrophage bedGraph file
+    cd ~/github/TrenaProjectMouseMacrophage/inst/import/atac-seq/
+      use GSM2559684_WT_dmso1_chr4.bedGraph
+
+    ~/github/TrenaProjectMouseMacrophage/inst/import/atac-seq/bedGraphToFseqCompatibleBed.R
+
+     head -1000 ~/github/TrenaProjectMouseMacrophage/inst/import/atac-seq/GSM2559684_WT_dmso1_chr4.bed > junk.bed
+     head -1000 ~/github/TrenaProjectMouseMacrophage/inst/import/atac-seq/GSM2559684_WT_dmso1_chr4.bed > junk.bed
+     ./fseq -v -of bed -t 4 junk.bed
+     ./fseq -v -of bed -t 4 junk.bed
+       F-Seq Version 1.85
+          Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException: 0
+         at edu.duke.igsp.gkde.Main.wgShiftCalc(Main.java:417)
+         at edu.duke.igsp.gkde.Main.main(Main.java:193)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* call peaks on mouse macrophage bedGraph file (7 feb 2019)
+
+   ~/github/TrenaProjectMouseMacrophage/inst/import/atac-seq/
+   macs2 allegedly calls peaks from a bedGraph file
+   how to install using pip described here, python 2.7, use virtualenv, install numpy first
+       https://github.com/taoliu/MACS/wiki/Install-macs2
+
+   cd ~/github/TrenaProjectMouseMacrophage/inst/import/atac-seq/
+   virtualenv --python=/usr/bin/python ./vMACS
+   source vMACS/bin/activate
+   pip install numpy
+   pip install MACS2
+
+*-----------------------------------------------------------------------------------------------------------------------
+* shinytest, first use - with tvAD.R (7 feb 2019)
+
+   library(shinytest)
+      shinytest requires a headless web browser (PhantomJS) to record and run tests.
+   shinytest::installDependencies()
+      phantomjs has been installed to /Users/paul/Library/Application Support/PhantomJS
+
+   --- does not work yet
+    created ~/github/TrenaProjectAD/inst/unitTests/app.R:
+      library(TrenaViz)
+      tv <- TrenaViz("TrenaProjectAD")
+      createApp(tv, port=6099)
+
+
+    library(shinytest)
+    recordTest(shinyOptions=list(port=6099))
+      # opening browser at localhost:6099, before the R prompt returns, delivers a working tvAD app
+    the R prompt returns.
+    not sure where the testing ui is...
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ijal slexil, interlinear markup morphemes for dante's inferno lines 1-3, from david beck (7 feb 2019)
+
+Nel mezzo del cammin di nostra vita
+en=il	mezzo	de=il	cammin	di	nostr–a	vita
+in=def:masc:sg	middlemasc	of=def:masc:sg	journeymasc	of	our–fem:sg	lifefem
+‘Midway upon the journey of our life.’
+
+mi ritrovai per una selva oscura
+mi	ritrov–ai	per	una	selva	oscur–a
+I:dat	found–1sg:ind:rem.past	for	indef:fem:sg	forestfem	dark–fem:sg
+‘I found myself in a forest dark,’
+
+ché la diritta via era smarrita.
+ché	la	diritt–a	via	era	smarr–it–a
+that	def:fem:sg	straight–fem:sg	pathfem	be:3sg:impf	lose–partic–fem:sg
+‘For the straightforward pathway had been lost.’
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* try bioc package BayesPeak for calling peaks in atac-seq (7 feb 2019)
+
+   http://bioconductor.org/packages/release/bioc/html/BayesPeak.html
+   in bioc 9 years, rank 468/1649
+
+   cd ~/github/TrenaProjectMouseMacrophage/inst/import/atac-seq/
+
+   library(BayesPeak)
+   f1 <- system.file(package="BayesPeak", "extdata", "H3K4me3reduced.bed")
+   f2 <- system.file(package="BayesPeak", "extdata", "Inputreduced.bed")
+   raw.output <- bayespeak(f1, f2, chr = "chr16", start = 9.2E7, end = 9.5E7, job.size = 6E6)
+   gr.output <- summarize.peaks(raw.output, method = "lowerbound")
+   head(as.data.frame(gr.output))
+      space    start      end width        PP
+    1 chr16 92057850 92059600  1751 1.0000000
+    2 chr16 92158500 92159150   651 1.0000000
+    3 chr16 92300850 92302350  1501 1.0000000
+    4 chr16 92341500 92341650   151 0.9999000
+    5 chr16 92398900 92399150   251 0.9999994
+    6 chr16 92399500 92400700  1201 1.0000000
+
+  --- will this work without a contrast, with just one file? yes
+
+   raw.output <- bayespeak(f1, NULL, chr = "chr16", start = 9.2E7, end = 9.5E7, job.size = 6E6)
+   head(as.data.frame(summarize.peaks(raw.output, method = "lowerbound")))
+      space    start      end width        PP
+    1 chr16 92057850 92059600  1751 1.0000000
+    2 chr16 92158500 92159150   651 1.0000000
+    3 chr16 92300850 92302350  1501 1.0000000
+    4 chr16 92341500 92341650   151 0.9999000
+    5 chr16 92398900 92399150   251 0.9999998
+    6 chr16 92399550 92400400   851 1.0000000
+
+  --- will this work with atac-seq bedGraph files from mouse macrophage?
+   tbl.f1 <- read.table(f1, sep=" ", as.is=TRUE, nrow=-1)
+   colnames(tbl.f1) <- c("chrom", "start", "end", "name", "score", "strand", "dash.1", "dash.2", "rgb")
+      chrom    start      end                                    name score strand dash.1 dash.2     rgb
+    1 chr16 91002531 91002566 080229-TC1-H3K4me3s_4_sorted.txt1734705     0      +      -      - 0,0,255
+    2 chr16 91003251 91003286 080229-TC1-H3K4me3s_4_sorted.txt1734706     0      +      -      - 0,0,255
+    3 chr16 91005991 91006026 080229-TC1-H3K4me3s_4_sorted.txt1734707     0      +      -      - 0,0,255
+    4 chr16 91007360 91007395 080229-TC1-H3K4me3s_4_sorted.txt1734708     0      -      -      - 255,0,0
+    5 chr16 91007976 91008011 080229-TC1-H3K4me3s_4_sorted.txt1734709     0      +      -      - 0,0,255
+    6 chr16 91009029 91009064 080229-TC1-H3K4me3s_4_sorted.txt1734710     0      +      -      - 0,0,255
+
+
+   f3 <- "~/github/TrenaProjectMouseMacrophage/inst/import/atac-seq/GSM2559684_WT_dmso1_chr4.bedGraph"
+   tbl.f3 <- read.table(f3, sep="\t", as.is=TRUE, nrow=-1)
+   colnames(tbl.f3) <- c("chrom", "start", "end", "score")
+   tbl.f3$name <- with(tbl.f3, sprintf("%s:%d:%d", chrom, start, end))
+   tbl.f3$strand <- "+"
+   tbl.f3$dash.1 <- "-"
+   tbl.f3$dash.2 <- "-"
+   tbl.f3$rgb <- "0,0,255"
+   tbl.f3 <- tbl.f3[, c("chrom", "start", "end", "name", "score", "strand", "dash.1", "dash.2", "rgb")]
+   write.table(tbl.f3, file="GSM2559684_WT_dmso1_chr4.bed", sep="\t", row.names=FALSE, col.names=FALSE, quote=FALSE)
+   raw.output <- bayespeak("GSM2559684_WT_dmso1_chr4.bed", NULL, chr = "chr4", start = 9.2E7, end = 9.5E7, job.size = 6E6)
+       Read 733295 records
+   tbl.out <- as.data.frame(summarize.peaks(raw.output, method = "lowerbound"))
+   head(tbl.out)
+      space    start      end width        PP
+    1  chr4 92067050 92067200   151 0.9941803
+    2  chr4 92492250 92492350   101 0.9048882
+    3  chr4 92644150 92644300   151 0.9995507
+    4  chr4 92875250 92875400   151 0.9999000
+    5  chr4 92890100 92890250   151 0.9994566
+    6  chr4 92974350 92974500   151 0.9999000
+
+   write.table(tbl.out, file="GSM2559684_WT_dmso1_chr4_peaks.bed", row.names=FALSE, col.names=FALSE, quote=FALSE)
+
+     # request smaller bin size (40), and do the whole chromosome.  takes hours to complete!
+   raw.output <- bayespeak("GSM2559684_WT_dmso1_chr4.bed", NULL, chr = "chr4", bin.size=40, job.size = 6E6)
+   tbl.out2 <- as.data.frame(summarize.peaks(raw.output, method = "lowerbound"))
+   dim(tbl.out2) # [1] 10861     5
+   head(tbl.out2)
+      space   start     end width        PP
+    1  chr4 3006464 3006564   101 0.9986743
+    2  chr4 3008024 3008124   101 0.9874257
+    3  chr4 3008204 3008264    61 0.9628458
+    4  chr4 3009544 3009644   101 0.9996242
+    5  chr4 3010344 3010444   101 0.9779541
+    6  chr4 3013444 3013484    41 0.7630439
+   save(tbl.out2, file="bayesPeaksChr4-binsize40.RData")
+
+   --- next up: find peaks in regions of mark's gene of interest (abca1), identify all motifs, build model
+
+     cd ~/github/TrenaProjectMouseMacrophage/inst/import/atac-seq
+     determined from shiny app an expansive gene region, made bedGraph table, displayed in mouse macrophage shinyApp
+         createAbca1Model.R
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* Practical II - Footprint calling & Transcription factor prediction: good 2017 tutorial
+
+  https://epigenomicstutorial-ismb2017.readthedocs.io/en/latest/Practical2.html
+
+*-----------------------------------------------------------------------------------------------------------------------
+* genome hints: create fasta from BSgenome (6 feb 2019)  hg19.fa, hg38.fa
+
+  library(BSgenome.Hsapiens.UCSC.hg19)
+  export(Hsapiens, "hg19.fasta")
+
+  library(BSgenome.Hsapiens.UCSC.hg38)
+  export(Hsapiens, "hg38.fasta")
+
+  --- also: .fa.gz or .fasta.gz
+   export(Hsapiens, "hg38.fasta.gz", compress=TRUE)
+
+   dir ~/s/data/public/genomes
+       3176377203 Feb  6 14:40 hg19.fasta
+       3249411512 Feb  6 14:42 hg38.fasta
+
+*-----------------------------------------------------------------------------------------------------------------------
+* run hint on mouse macrophage atac-seq (6 feb 2019)
+*-----------------------------------------------------------------------------------------------------------------------
+* hint setup and configuration (6 feb 2019)
+
+   http://www.regulatory-genomics.org/rgt/rgt-data-folder/
+
+   brew install wget
+   mkdir ~/rgtdata
+   cd ~/rgtdata
+   python setupGenomicData.py --hg19
+      created 3157608038 Feb  6 15:13 /Users/paul/rgtdata/hg19/genome_hg19.fa
+
+*-----------------------------------------------------------------------------------------------------------------------
+* hint.  this installation and demo depends upon the use of a python 2.7 virtual environment (6 feb 2019)
+
+   type -a python
+      python is /Users/paul/anaconda/bin/python    # Python 3.6.3 :: Anaconda custom (64-bit)
+      python is /usr/bin/python                    # Python 2.7.10
+
+   virtualenv --python=/usr/bin/python ./vHint
+   source vHint/bin/activate
+   cd vHint
+   python --version  # Python 2.7.10
+   pip install numpy
+   pip install rgt
+
+   (vHint) book.vHint> make
+      rgt-hint footprinting --dnase-seq HINT_DNaseTest/DNase.bam HINT_DNaseTest/DNasePeaks.bed
+   (vHint) book.vHint> cat footprints.info
+       Number of reads: 740211
+       Number of peaks: 397
+       Number of tag counts within peaks: 482365.0
+       Number of footprints: 348
+
+  try out on ATAC-seq data: https://costalab.ukaachen.de/open_data/hint/tutorial/HINT_ATACTest.tar.gz
+  export RGTDATA=/Users/paul/s/data/public/genomes/
+
+  (vHint) book.HINT_ATACTest> make
+   rgt-hint footprinting --atac-seq ATAC.bam ATACPeaks.bed  # finds  ~/rgtdata/hg19/genome_hg19.fa (see above for installation)
+
+   produces footprints.bed
+   cat footprints.info
+     Number of reads: 11615830
+     Number of peaks: 1000
+     Number of tag counts within peaks: 383921.0
+     Number of footprints: 6762
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* run fseq on mouse macrophage bedGraph atac-seq files?  (8 feb 2019)
+
+   conda config --add channels bioconda
+   conda install -c bioconda fseq
+
+  --- via github
+   git clone https://github.com/aboyle/F-seq.git
+   cd F-seq/
+   brew install ant
+   export JAVA_HOME=/Library/Java/Home
+   changed 1.5 -> 1.6 in build.xml
+   ant
+   cd dist~/
+   tar -xvf fseq.tgz
+   cd ~/github/F-seq/dist~/fseq/bin/
+  ./fseq -v -of bed -t 3.5 demo.bed
+
+  JAVAOPTS="-Xmx32g"
+   F-Seq Version 1.85
+   Exception in thread "main" java.io.IOException: Bad '.bed' format for file /Users/paul/github/F-seq/dist~/fseq/bin/demo.bed
+	at edu.duke.igsp.gkde.format.BedReader.badFile(BedReader.java:127)
+	at edu.duke.igsp.gkde.format.BedReader.read(BedReader.java:71)
+	at edu.duke.igsp.gkde.Main.main(Main.java:188)
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* hotspot: try it on mouse macrophage atac-seq data (6 feb 2019)
+
+   [status: abandonded.  probably use fseq instead]
+
+   https://github.com/StamLab/hotspot/releases/tag/v4.1.1
+   ~/github/TrenaProjectMouseMacrophage/inst/import/atac-seq/
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* GenomicRanges tips, GRanges tips: elimnate overlaps with reduce, preserve metadata (5 feb 2019)
+
+  [status: not actually needed.  problem arose when liftover from mm9 to hg18.  mm9-mm10 works better!]
+
+  gr <- GRanges(seqnames=rep("chr1", 10), ranges=IRanges(start=c(10,20,30,40,50,60,70,80,90,100),
+                                                         end=  c(19,29,42,49,59,69,79,89,99,105)))
+  mcols(gr) <- list(score=100 * seq(1,10, 1))
+
+  gr
+  reduce(gr, min.gapwidth=0L)
+  signature <- sprintf("%s:%d", as.character(seqnames(gr)), start(gr))
+  scores <- gr$score
+  names(scores) <- signature
+  gr2 <- reduce(gr, min.gapwidth=0L)
+
+  signature2 <- sprintf("%s:%d", as.character(seqnames(gr2)), start(gr2))
+  scores[signature2]
+  mcols(gr2) <- list(score=scores[signature2])
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* bedGraphToBigWig - needed for atac-seq mm10 files suggested by mark gillespie (5 feb 2019)
+
+    process explained here:
+      https://www.biostars.org/p/42844/
+
+    got macos executable from http://hgdownload.cse.ucsc.edu/admin/exe/macOSX.x86_64/
+    mv ~/Downloads/bedGraphToBigWig ~/bin
+    (cd ~/bin; curl -O http://hgdownload.cse.ucsc.edu/admin/exe/macOSX.x86_64/fetchChromSizes)
+    chmod 755 ~/bin/fetchChromSizes
+
+    --- try out with a bedGraph.gz file
+    cd ~/github/TrenaProjectMouseMacrophage/inst/import/
+    fetchChromSizes hg38 > hg38.chromSizes.txt
+    bedGraphToBigWig GSM2559685_WT_dmso2.bedGraph.gz hg38.chromSizes.txt out.bw
+       GSM2559685_WT_dmso2.bedGraph.gz is not case-sensitive sorted at line 5184073.
+       export LC_COLLATE=C
+       Please use "sort -k1,1 -k2,2n" with LC_COLLATE=C,  or bedSort and try again.
+    gunzip GSM2559685_WT_dmso2.bedGraph
+    sort -k1,1 -k2,2n  GSM2559685_WT_dmso2.bedGraph > GSM2559685_WT_dmso2-sorted.bedGraph
+    bedGraphToBigWig GSM2559685_WT_dmso2-sorted.bedGraph.gz hg38.chromSizes.txt GSM2559685_WT_dmso2.bw
+      fatal error: End coordinate 114364648 bigger than chr13 size of 114364328
+                   line 2587207 of GSM2559685_WT_dmso2-sorted.bedGraph
+    actually hg19?  apparently so
+    fetchChromSizes hg19 > hg19.chromSizes.txt
+    grep chr13 hg38.chromSizes.txt  #  chr13	114364328
+    grep chr13 hg19.chromSizes.txt   # chr13	115169878
+
+    -- to liftover
+      library(rtracklayer)
+      library(liftOver)
+      http://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz
+      system("curl -O http://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz")
+      system("gunzip hg19ToHg38.over.chain.gz")
+
+      chain <- import.chain("hg19ToHg38.over.chain")
+         # track type in last line, which import does not like
+         # bash:  head -9379440 GSM2559685_WT_dmso2-sorted.bedGraph > GSM2559685_WT_dmso2-sorted-trimmed.bedGraph
+
+   stopifnot(seqlevelsStyle(x) == "UCSC")
+   x.hg38.list <- liftOver(x, chain)
+   x.hg38 <- unlist(x.hg38.list)
+   genome(x.hg38) <- "hg38"
+   export(x.hg38, format="bedGraph", con="GSM2559685_WT_dmso2-sorted-trimmed-hg38.bedGraph")
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* fungal mutualists in doug-fir needles (2 feb 2019)
+
+   In the “Hidden Forest” the author tells a story of how doug firs solve the life span problem:
+   their pests live short lives, evolve rapidly; individual firs live for a long time, have no
+   immune system, cannot evolve responses quickly.  Mutualism with short life span organisms seems
+   to be the answer:
+
+
+   Another fascinating discovery was finding fungi living inside apparently healthy conifer
+   needles. Why didn’t the fungi harm the needles, and just what were the fungi doing there? Well,
+   trees have a problem with defoliating insects. Unlike short-lived plants, trees live too long to
+   react to evolving short-lived insects. It turns out that these fungi have a symbiotic
+   relationship with the needles. In exchange for the energy supplied by the needles, the fungi
+   protect the needles by creating compounds that poison the defoliators. If the defoliators develop
+   a resistance to the poison, the short-lived fungi can quickly change to create new, effective
+   poisons. It’s a constant evolutionary race, not unlike the race between new strains of disease
+   and the pharmaceutical companies that must create new forms of antibiotics, although the fungi
+   don’t make billions of dollars for their services.
+
+    From http://nwconifers.blogspot.com/2018/09/andrews-experimental-forest.html
+
+    Thus we metazoans tend to solve this rates-of-evolution problem with an immune system.  And at
+    least some long-lived plants use mutualism.
+
+    Which leads me to suggest that the cause of the sword fern die-off might include the weakening
+    of the (presumed) sword fern mutualists which have evolved to protect long-lived ferns against
+    short life span, rapidly evolving pathogens.
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* bioc esATAC
+
+  https://bioconductor.org/packages/release/bioc/html/esATAC.html
+
+*-----------------------------------------------------------------------------------------------------------------------
+* peak-calling, footprinting references
+
+   A practical guide for DNase-seq data analysis: from data management to common applications
+      ~/Documents/dnase-seq-practicalGuide.pdf
+   esATAC: an easy-to-use systematic pipeline for ATAC-seq data analysis (bioc)
+   from: HMMRATAC: a Hidden Markov ModeleR for ATAC-seq.
+
+     https://github.com/LiuLabUB/HMMRATAC
+
+     We next sought to compare the performance of HMMRATAC in identifying open chromatin regions to
+     other popular methods for ATAC-seq. We chose MACS2(10) and F-Seq(11), which had previously been
+     shown to be the most accurate peak-callers in identifying open chromatin regions from
+     DNase-seq(38). MACS2, originally designed for ChIP-seq, utilizes a local Poison model wherein
+     enrichment is calculated relative to a local Poisson model. F-Seq invokes a Gaussian
+     kernel-smoothing algorithm and then calculates enrichment based on the resulting Gaussian
+     distribution. Although none of them utilize the intrinsic and unique features in ATAC513 seq
+     data we described before, MACS2 has been used to analyze ATAC-seq data in many published
+     works(7,20,39-43), and MACS2 and F-Seq is part of the ENCODE analysis pipeline for ATAC-seq
+     data (https://github.com/kundajelab/atac_dnase_pipelines). We tested the performance of the
+     four algorithms using the two ATAC-seq datasets in GM12878 cell line(6) as the previous
+     sections.
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* mm10 atac-seq data and coordinates for putative abca1 enhancers, mark gillespie, trena viz with bsm (1 feb 2019)
+
+   cd ~/github/TrenaProjectMouseMacrophage/inst/import/atac-seq/
+
+  --- source for atac-seq (email from mark, 1 feb 2019)
+
+   Here is the link for ATAC-seq data:
+     https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE97207
+   We are only interested in WT samples (WT_dmso1-4, WT_gw1-4)
+     GSM2559684	WT_dmso1
+     GSM2559685	WT_dmso2
+     GSM2559686	WT_dmso3
+     GSM2559687	WT_dmso4
+     GSM2559688	WT_gw1
+     GSM2559689	WT_gw2
+     GSM2559690	WT_gw3
+     GSM2559691	WT_gw4
+
+
+  --- generous enhancers
 
    chr4: 53,217,763 - 53,218,762
    chr4: 53,227,376 - 53,228,375
 
    now archived as ~/github/TrenaProjectMouseMacrophage/inst/extdata/misc/abca1Enhancers.bed
 
-   genes correlated with abca1 in third geo dataset provided by mark
+  --- putative regulators (manually calculated: with binding sites, with abs(cor(expression))
+    genes correlated with abca1 in third geo dataset provided by mark
 
         tf        cor
       Atf3  0.7434202
@@ -127,6 +1107,325 @@ bed format: chrom, start, end, name, score, strand
 
 
 *-----------------------------------------------------------------------------------------------------------------------
+* cory's (mar 2016) code for footprint-based tfbs from bam files (1 feb 2019)
+# Line commands for creating the TFBS database
+# I think I originally did this on CentOS, though I've since moved to Ubuntu. There may be some aspects of installing the programs that is different because of this
+
+# F-seq required a special install package, ant, and my OS didn't have the right java version. This is how I fixed that
+sudo -s
+
+# Get the correct version of jdk (not sure if this is needed for Ubuntu)
+aws s3 cp s3://cory-trena/jdk-7u79-linux-x64.gz .
+tar xvfz jdk-7u79-linux-x64.gz
+
+## modify bashrc to point to jdk
+vi ~/.bashrc
+
+export JAVA_HOME=/mnt/jdk1.7.0_79
+
+## install apt
+
+wget https://archive.apache.org/dist/ant/source/apache-ant-1.9.6-src.tar.bz2
+tar xvfj apache-ant-1.9.6-src.tar.bz2
+rm apache-ant-1.9.6-src.tar.bz2
+
+wget http://anduin.linuxfromscratch.org/BLFS/other/junit-4.11.jar
+wget http://hamcrest.googlecode.com/files/hamcrest-1.3.tgz
+
+tar -xvf hamcrest-1.3.tgz
+rm hamcrest-1.3.tgz
+cd ..
+mkdir /lib/optional
+cd /mnt
+cp -v junit-4.11.jar hamcrest-1.3/hamcrest-core-1.3.jar /lib/optional
+
+cd apache-ant-1.9.6/
+./build.sh -Ddist.dir=/opt/ant-1.9.6 dist &&
+ln -v -sfn ant-1.9.6 /opt/ant
+
+## install fseq
+cd /home
+git clone https://github.com/aboyle/F-seq.git
+cd F-seq/
+# ant is the weird install package needed for F-seq
+ant
+cd dist~/
+tar -xvf fseq.tgz
+echo "export PATH=\$PATH:/mnt/F-seq/dist~/fseq/bin/" >> ~/.bashrc
+
+# increase memory for fseq
+# should be a sed command, I did it manually.
+cd /home/F-seq/dist~/fseq/bin
+JAVAOPTS="-Xmx32g"
+
+### install samtools
+
+cd /home
+sudo wget https://github.com/samtools/samtools/releases/download/1.3/samtools-1.3.tar.bz2
+sudo tar xvfj samtools-1.3.tar.bz2
+cd samtools-1.3
+sudo make
+echo "export PATH=\$PATH:/home/samtools-1.3/" >> ~/.bashrc
+source ~/.bashrc
+
+## install htslib (includes tabix
+wget https://github.com/samtools/htslib/releases/download/1.3/htslib-1.3.tar.bz2
+tar xvfj htslib-1.3.tar.bz2
+cd htslib-1.3
+make
+make prefix=/user/ install
+
+## if bedtools not installed...
+git clone https://github.com/arq5x/bedtools2.git
+cd bedtools2
+make
+make prefix=/usr/ install
+
+## install pyBedTools and pyDNase
+pip install pybedtools
+pip install pyDNase
+
+## install SNAP
+sudo git clone https://github.com/amplab/snap.git
+cd snap
+sudo make
+echo "export PATH=\$PATH:/home/snap/" >> ~/.bashrc
+source ~/.bashrc
+
+## install SRA-toolkit
+### install sra-toolkit
+cd /home
+sudo wget --output-document sratoolkit.tar.gz http://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/current/sratoolkit.current-ubuntu64.tar.gz
+sudo tar -vxzf sratoolkit.tar.gz
+
+echo "export PATH=\$PATH:/home/sratoolkit.2.5.7-ubuntu64/bin/" >> ~/.bashrc
+source ~/.bashrc
+
+
+############################
+
+# Create indices for SNAP
+
+mkdir /scratch/resources
+aws s3 cp s3://snapr-ref-assemblies/human/Homo_sapiens.GRCh38.dna.SORTED.fa /scratch/resources/
+aws s3 cp s3://snapr-ref-assemblies/human/Homo_sapiens.GRCh38.83.gtf.gz /scratch/resources/
+gunzip /scratch/resources/Homo_sapiens.GRCh38.83.gtf.gz
+
+mkdir /scratch/genome
+snap-aligner index /scratch/resources/Homo_sapiens.GRCh38.dna.SORTED.fa /scratch/genome/ -s 16 -locationSize 5 -bSpace
+
+# run SNAP aligner (this is for single reads)
+snap-aligner single /scratch/genome/ /scratch/sra_data/.fastq.gz -o /scratch/snap_out/SRR412463.bam -mrl 26
+
+#######
+
+# Once I had the aligned bam files, I converted them to bed files and merged them prior to running F-seq and Wellington
+
+#!/bin/bash
+
+ls -lt /mnt3/tissue/*bam | rev | cut -f 1 -d "/" | cut -f 2 -d "." | rev > bam_list
+
+for file in `cat bam_list`
+do
+                NAME=`echo $file | cut -f 1 -d "."`
+                echo "$NAME"
+                samtools index /mnt3/tissue/$NAME.bam
+                bedtools bamtobed -i /mnt3/tissue/$NAME.bam > /mnt/tissue/$NAME.bed # notice the switch from mnt3 to mnt
+                mkdir /mnt/tissue
+                mkdir /mnt/tissue/$NAME-fseq
+                cd /mnt
+                fseq -f 0 -o /mnt/tissue/$NAME-fseq -t 2.5 -of bed /mnt/tissue/$NAME.bed
+                cd /mnt/tissue/$NAME-fseq
+				cat *.bed > $NAME.peaks.bed
+				cut -f 1,2,3 $NAME.peaks.bed > $NAME.peaks.std.bed
+                awk '{a=$2-$3;print $0 "\t" a;}' $NAME.peaks.std.bed > $NAME.peaks.dif.bed
+                cat $NAME.peaks.dif.bed | awk '($4 < -400)' | cut -f 1,2,3 > $NAME.peaks.400.bed
+                cd ../
+                mkdir /mnt/tissue/$NAME-well_out
+                wellington_footprints.py /mnt/tissue/$NAME-fseq/$NAME.peaks.400.bed $file /mnt/tissue/$NAME-well_out
+done
+
+
+###################
+
+# FIMO search
+# Not sure if we want to have this as part of the pipeline as we already have run this, but we are thinking of parameter tuning this and changing how it's done.
+# I broke up the genome into groups of chromosomes with the groups being close in size. Here I ran it on hg19, but have since moved to GRCh38. I only ran it on the primary assembly (no additional haplotypes)
+# I need to get you the JASPAR file with that also has some of the MEME TFs that is used for this.
+
+#!/bin/bash
+
+# attempt to run FIMO on each chromosome
+
+# create directory for the work
+cd /mnt
+mkdir fimo
+cd fimo
+
+# download genome file from s3
+aws s3 cp s3://snapr-ref-assemblies/human/Homo_sapiens.GRCh38.dna.SORTED.fa .
+
+# split the genome file into chromosomes. each chromosome will be named like this: 10.fa
+cat Homo_sapiens.GRCh38.dna.SORTED.fa | awk 'BEGIN { CHROM="" } { if ($1~"^>") CHROM=substr($1,2); print $0 > CHROM".fa" }'
+
+# get the size and name of each chromosome
+ls -lt | grep fa | grep -v Homo | rev | cut -f 1,6 -d " " | rev | sort -n > c_list
+
+# combine chromosomes so to make files of comparable size
+cat 13.fa 14.fa > 13-14.fa
+cat 15.fa 16.fa > 15-16.fa
+cat 17.fa 18.fa 20.fa > 17_18_20.fa
+cat 19.fa Y.fa 21.fa 22.fa MT.fa > 19_21_22_Y_MT.fa
+rm 13.fa
+rm 14.fa
+rm 15.fa
+rm 16.fa
+rm 17.fa
+rm 18.fa
+rm 19.fa
+rm 20.fa
+rm 21.fa
+rm 22.fa
+rm Y.fa
+rm MT.fa
+
+# for the non-redundant additional motifs
+nohup fimo --oc /local/Cory/fimo/GRCh37/fimo_dir/fimo_out_nonred/ --thresh 1e-5 /local/Cory/fimo/nonredundant_motifs.meme /local/Cory/fimo/GRCh37/Homo_sapiens.GRCh37.68.genome.fa &
+
+nohup fimo --oc /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_X --thresh 1e-5 /local/Cory/fimo/nonredundant_motifs.meme /local/Cory/fimo/GRCh37/X.fa &
+nohup fimo --oc /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_1 --thresh 1e-5 /local/Cory/fimo/nonredundant_motifs.meme /local/Cory/fimo/GRCh37/1.fa &
+nohup fimo --oc /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_2 --thresh 1e-5 /local/Cory/fimo/nonredundant_motifs.meme /local/Cory/fimo/GRCh37/2.fa &
+nohup fimo --oc /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_3 --thresh 1e-5 /local/Cory/fimo/nonredundant_motifs.meme /local/Cory/fimo/GRCh37/3.fa &
+nohup fimo --oc /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_4 --thresh 1e-5 /local/Cory/fimo/nonredundant_motifs.meme /local/Cory/fimo/GRCh37/4.fa &
+nohup fimo --oc /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_5 --thresh 1e-5 /local/Cory/fimo/nonredundant_motifs.meme /local/Cory/fimo/GRCh37/5.fa &
+nohup fimo --oc /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_6 --thresh 1e-5 /local/Cory/fimo/nonredundant_motifs.meme /local/Cory/fimo/GRCh37/6.fa &
+nohup fimo --oc /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_7 --thresh 1e-5 /local/Cory/fimo/nonredundant_motifs.meme /local/Cory/fimo/GRCh37/7.fa &
+nohup fimo --oc /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_8 --thresh 1e-5 /local/Cory/fimo/nonredundant_motifs.meme /local/Cory/fimo/GRCh37/8.fa &
+nohup fimo --oc /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_9 --thresh 1e-5 /local/Cory/fimo/nonredundant_motifs.meme /local/Cory/fimo/GRCh37/9.fa &
+nohup fimo --oc /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_10 --thresh 1e-5 /local/Cory/fimo/nonredundant_motifs.meme /local/Cory/fimo/GRCh37/10.fa &
+nohup fimo --oc /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_11 --thresh 1e-5 /local/Cory/fimo/nonredundant_motifs.meme /local/Cory/fimo/GRCh37/11.fa &
+nohup fimo --oc /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_12 --thresh 1e-5 /local/Cory/fimo/nonredundant_motifs.meme /local/Cory/fimo/GRCh37/12.fa &
+nohup fimo --oc /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_13-14 --thresh 1e-5 /local/Cory/fimo/nonredundant_motifs.meme /local/Cory/fimo/GRCh37/13-14.fa &
+nohup fimo --oc /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_15-16 --thresh 1e-5 /local/Cory/fimo/nonredundant_motifs.meme /local/Cory/fimo/GRCh37/15-16.fa &
+nohup fimo --oc /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_17-18-20 --thresh 1e-5 /local/Cory/fimo/nonredundant_motifs.meme /local/Cory/fimo/GRCh37/17_18_20.fa &
+nohup fimo --oc /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_19-21-22-Y-MT --thresh 1e-5 /local/Cory/fimo/nonredundant_motifs.meme /local/Cory/fimo/GRCh37/19_21_22_Y_MT.fa &
+
+# concatinate the rest of the fimo outputs
+cat /local/Cory/fimo/alt_pvalue/new_jaspar/fimo_out_1/fimo.gff /local/Cory/fimo/alt_pvalue/new_jaspar/fimo_out_2/fimo.gff /local/Cory/fimo/alt_pvalue/new_jaspar/fimo_out_3/fimo.gff /local/Cory/fimo/alt_pvalue/new_jaspar/fimo_out_4/fimo.gff /local/Cory/fimo/alt_pvalue/new_jaspar/fimo_out_5/fimo.gff /local/Cory/fimo/alt_pvalue/new_jaspar/fimo_out_6/fimo.gff /local/Cory/fimo/alt_pvalue/new_jaspar/fimo_out_7/fimo.gff /local/Cory/fimo/alt_pvalue/new_jaspar/fimo_out_8/fimo.gff /local/Cory/fimo/alt_pvalue/new_jaspar/fimo_out_9/fimo.gff /local/Cory/fimo/alt_pvalue/new_jaspar/fimo_out_10/fimo.gff /local/Cory/fimo/alt_pvalue/new_jaspar/fimo_out_11/fimo.gff /local/Cory/fimo/alt_pvalue/new_jaspar/fimo_out_12/fimo.gff /local/Cory/fimo/alt_pvalue/new_jaspar/fimo_out_13-14/fimo.gff /local/Cory/fimo/alt_pvalue/new_jaspar/fimo_out_15-16/fimo.gff /local/Cory/fimo/alt_pvalue/new_jaspar/fimo_out_17-18-20/fimo.gff /local/Cory/fimo/alt_pvalue/new_jaspar/fimo_out_19-21-22-Y-MT/fimo.gff /local/Cory/fimo/alt_pvalue/new_jaspar/fimo_out_X/fimo.gff > new_nonred_main.gff
+
+##############################
+
+### getting ready to do a bedtools intersect of the fimo output and wellington fp
+
+# concatinate the nonredundant motifs Seth put together
+cat /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_11/fimo.gff /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_12/fimo.gff /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_10/fimo.gff /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_9/fimo.gff /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_X/fimo.gff /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_8/fimo.gff /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_7/fimo.gff /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_5/fimo.gff /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_6/fimo.gff /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_4/fimo.gff /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_15-16/fimo.gff /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_19-21-22-Y-MT/fimo.gff /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_3/fimo.gff /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_17-18-20/fimo.gff /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_2/fimo.gff /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_1/fimo.gff /local/Cory/fimo/GRCh37/fimo_dir/nonred/fimo_out_13-14/fimo.gff > /local/Cory/fimo/GRCh37/fimo_dir/nonred/combined/nonred.gff
+
+# concatinate the rest of the fimo outputs
+cat /local/Cory/fimo/alt_pvalue/fimo_out_1/fimo.gff /local/Cory/fimo/alt_pvalue/fimo_out_2/fimo.gff /local/Cory/fimo/alt_pvalue/fimo_out_3/fimo.gff /local/Cory/fimo/alt_pvalue/fimo_out_4/fimo.gff /local/Cory/fimo/alt_pvalue/fimo_out_5/fimo.gff /local/Cory/fimo/alt_pvalue/fimo_out_6/fimo.gff /local/Cory/fimo/alt_pvalue/fimo_out_7/fimo.gff /local/Cory/fimo/alt_pvalue/fimo_out_8/fimo.gff /local/Cory/fimo/alt_pvalue/fimo_out_9/fimo.gff /local/Cory/fimo/alt_pvalue/fimo_out_10/fimo.gff /local/Cory/fimo/alt_pvalue/fimo_out_11/fimo.gff /local/Cory/fimo/alt_pvalue/fimo_out_12/fimo.gff /local/Cory/fimo/alt_pvalue/fimo_out_13-14/fimo.gff /local/Cory/fimo/alt_pvalue/fimo_out_15-16/fimo.gff /local/Cory/fimo/alt_pvalue/fimo_out_17-18-20/fimo.gff /local/Cory/fimo/alt_pvalue/fimo_out_19-21-22-Y-MT/fimo.gff /local/Cory/fimo/alt_pvalue/fimo_out_X/fimo.gff > /local/Cory/fimo/GRCh37/fimo_dir/nonred/combined/nonred_main.gff
+
+# combine the two files
+cat nonred_main.gff nonred.gff > fimo_all_temp.gff
+
+# get rid of a couple of extraneous columns
+cat fimo_all_temp.gff | cut -f 1,4,5,6,7,8,9 > fimo_all_temp2.gff
+
+# needed for sort to properly work
+export LC_ALL=C
+
+# sort the concatinated bed file
+sort -k1,1 -k2,2n fimo_all_temp2.gff > fimo_all.gff
+
+#### script to modify the wellington files
+
+#!/bin/bash
+
+# download the footprint files from s3 (getting the most liberal call)
+aws s3 ls s3://cory-tfdb/GRCh38-results/ --recursive | grep WellingtonFootprints.-10.bed | rev | cut -f 1-3 -d " " | rev > file_list
+FILES=`cat file_list`
+# because the directory name includes p value cutoff (including spaces) I need to specify to loop over every /n
+IFS=$'\n'
+
+for i in $FILES
+do
+        aws s3 cp s3://cory-tfdb/$i .
+done
+
+files=`ls *.bed`
+IFS=$'\n'
+
+for i in $files
+do
+                prefix=`echo $i | cut -f 1 -d "."`
+                echo "$prefix"i
+                # because the bed file uses chr at the begining, I need to get rid of it so it will match the downstream files that don't include chr
+                cat $i | cut -f 2- -d "r" > $prefix.400.WellingtonFP.temp.-10.bed
+                export LC_ALL=C
+                sort -k1,1 -k2,2n $prefix.400.WellingtonFP.temp.-10.bed > $prefix.400.WellingtonFP.-10.bed
+                rm $i
+                rm $prefix.400.WellingtonFP.temp.-10.bed
+done
+
+#####
+
+# do intersect with bed tools
+bedtools intersect -wo -sorted -a fimo_sort.gff -b well_out/*.bed > fimo_fp.bed
+
+# replace one of the columns with just the TF in preparation to sorting on uniqueness. The sed part fixes the spacing (converts space to tab) which awk messes up.
+cat fimo_fp.bed | cut -f 7 | cut -f 1 -d ";" | cut -f 2 -d "=" > tf_list
+awk 'FNR==NR{a[NR]=$1;next}{$6=a[FNR]}1' tf_list fimo_fp.bed | sed -e 's/ [ ]*/\t/g' > fimo_fp2.bed
+
+
+# for the purpose of comparing to the old tfdb, get a unique list of footprints on motifs
+sort -u -k1,1 -k2,2 -k6,6 fimo_fp2.bed > uniq_fimo_fp.bed
+
+
+#### pulling out the TSS for each gene from the gtf file
+
+# starting with Homo_sapiens.GRCh37.75.gtf because it's the last update for GRCh37
+# now doing it with Homo_sapiens.GRCh38.83.gtf
+# pull out just the "gene" and "protein_coding" fields
+#cat Homo_sapiens.GRCh38.83.gtf | awk '$3 ~ /gene/' | awk /protein_coding/ > GRCh38.83.gene.gtf
+cat Homo_sapiens.GRCh38.83.gtf | awk '$3 ~ /transcript/' > GRCh38.83.transcript.gtf
+
+# create a list of unique gene_ids (not transcripts) by which to do the TSS grouping
+cat GRCh38.83.gene.gtf | cut -f 2 -d "\"" | sort -u > gene_list
+
+
+
+# separate + and - strands
+cat GRCh38.83.transcript.gtf | awk '$7 ~ /\+/' > GRCh38.83.transcript.plus.gtf
+cat GRCh38.83.transcript.gtf | awk '$7 ~ /\-/' > GRCh38.83.transcript.minus.gtf
+
+# create a bed file that has +/- 1mb TSS for each gene
+# sed removes unwanted " and ; transcript is field 14 and gene is field 10
+cat GRCh38.83.transcript.plus.gtf | awk '{ print $1,"\t", $4 - 1000000,"\t", $4 + 1000000,"\t",$14,"\t",$12 }' | sed 's|[";]||g' > GRCh38.83.plus.1mb.bed
+cat GRCh38.83.transcript.minus.gtf | awk '{ print $1,"\t", $5 - 1000000,"\t", $5 + 1000000,"\t",$14,"\t",$12 }' | sed 's|[";]||g' > GRCh38.83.minus.1mb.bed
+
+#### for just getting the TSS of every transcript:
+cat GRCh38.83.transcript.plus.gtf | awk '{ print $1,"\t", $4,"\t",$14,"\t",$10 }' | sed 's|[";]||g' > GRCh38.83.plus.1mb.bed
+cat GRCh38.83.transcript.minus.gtf | awk '{ print $1,"\t", $5,"\t",$14,"\t",$10 }' | sed 's|[";]||g' > GRCh38.83.minus.1mb.bed
+#combine and sort
+cat GRCh38.83.minus.1mb.bed GRCh38.83.plus.1mb.bed > GRCh38.83.full.1mb.bed
+sort -k1,1 -k2,2n GRCh38.83.full.1mb.bed > GRCh38.83.full.sort.1mb.bed
+cat GRCh38.83.full.sort.1mb.bed | awk '{printf ("%s\t%s\t%s\t%s\n", $1,$2,$3,$4,$5)}' > GRCh38.83.tss.1mb.bed
+####
+
+#combine and sort
+cat GRCh38.83.minus.1mb.bed GRCh38.83.plus.1mb.bed > GRCh38.83.full.1mb.bed
+sort -k1,1 -k2,2n GRCh38.83.full.1mb.bed > GRCh38.83.full.sort.1mb.bed
+# get the format right for bed
+cat GRCh38.83.full.sort.1mb.bed | awk '{printf ("%s\t%s\t%s\t%s\n", $1,$2,$3,$4,$5)}' > GRCh38.83.full.sort2.1mb.bed
+
+# get rid of negative numbers (which introduces spaces which need to be replaced with tabs)
+cat GRCh38.83.full.sort2.1mb.bed | awk '$2<0 {$2=0} 1' | sed -e 's/ [ ]*/\t/g' > GRCh38.83.1mb.bed
+
+# money shot
+bedtools intersect -wo -a GRCh38.83.1mb.bed -b uniq_fimo_fp.bed > tfdb_1mb_GRCh38.83.bed
+
+#calc number of unique genes
+sort -u -k1,1 -k2,2n tfdb_1mb_GRCh38.83bed > uniq_tfdb_1mb_GRCh38.83.-20.bed
+
+#------------------------------------------------------------------------------------------------------------------------
 * fseq F-seq: how to run with hg38 reference (1 feb 2019)
 
    https://www.encodeproject.org/software/fseq/
@@ -239,6 +1538,21 @@ Source available: Download
     mv ~/Downloads/files.txt .
     xargs -L 1 curl -O -L < files.txt
 
+         1262100794 Jan 31 13:11 ENCFF447MLK.bam
+         4176862046 Jan 31 13:58 ENCFF586RRO.bam
+         2688314349 Jan 31 14:30 ENCFF608VAX.bam
+         1550918130 Jan 31 12:58 ENCFF659XAK.bam
+
+   samtools view -b -h ENCSR000ENF.bam chr1 > out_chr1.bam
+   samtools index out_chr1.bam
+   samtools idxstats out_chr1.bam
+
+   random alignment retrieval only works for indexed BAM or CRAM files.
+
+   samtools view -b -h ENCFF447MLK.bam chr19 > ENCFF447MLK_chr19.bam
+   samtools view -b -h ENCFF586RRO.bam chr19 > ENCFF586RRO_chr19.bam
+   samtools view -b -h ENCFF608VAX.bam chr19 > ENCFF608VAX_chr19.bam
+   samtools view -b -h ENCFF659XAK.bam chr19 > ENCFF659XAK_chr19.bam
 
 *-----------------------------------------------------------------------------------------------------------------------
 * TrenaProjectMouseMacrophage
@@ -750,6 +2064,60 @@ Source available: Download
 
 
 *-----------------------------------------------------------------------------------------------------------------------
+* trouble with catchitt (23 jan 2019)
+
+    https://github.com/Jstacs/Jstacs/issues/1#issuecomment-463790586
+
+   on khaleesi.
+   my response to project's offer of new code fixing the exception shown below:
+
+     @jgraux I'd be glad to give this a try. If it is not too bold nor forward of me to ask: before
+     investing more time in catchitt, I would be reassured of my ultimate success if you were able
+     to offer a freshly built jar, _and_ a demonstration/tutorial, with real data, which passes your
+     tests, and which I could run and study and learn from.
+
+
+   cd ~/github/TrenaProjectPlacenta/inst/footprinting/catchitt/access/
+
+
+   https://github.com/Jstacs/Jstacs/issues/1
+   While running the "access" stage, and after lots of processing, the exception was thrown with these
+    arguments and this stack trace. Any advice?
+
+    (Perhaps it would be possible to modify the code slightly so that the exception gets caught, and processing continues?)
+
+Parameters of tool "Chromatin accessibility" (access, version: 0.1):
+d - Data source (The format of the input file containing the coversage information, range={BAM/SAM, Bigwig}, default = BAM/SAM)	= Bigwig
+    Parameters for selection "BAM/SAM":
+    	i - Input SAM/BAM (The input file containing the mapped DNase-seq/ATAC-seq reads)	= null
+    Parameters for selection "Bigwig":
+    	i - Input Bigwig (The input file containing the mapped DNase-seq/ATAC-seq reads)	= /proj/price4/apaquett/Placenta_DHS/placental_data/dataSets/LN54270/aggregation-17562/Signal.UniqueMultiple.both.bw
+    	f - FastA index (The genome index)	= hg38.fa.fai
+b - Bin width (The width of the genomic bins considered)	= 50
+outdir - The output directory, defaults to the current working directory (.)	= dnase
+Exception in thread "main" java.lang.NullPointerException
+	at projects.encodedream.Coverage.print(Coverage.java:156)
+	at projects.encodedream.Coverage.coverage(Coverage.java:113)
+	at projects.encodedream.tools.ChromatinAccessibility.run(ChromatinAccessibility.java:121)
+	at de.jstacs.tools.ui.cli.CLI.run(CLI.java:374)
+	at projects.encodedream.tools.Catchitt.main(Catchitt.java:27)
+Which appears to correspond to inner for loop control statement
+
+	private static void print(String chr, double[][] temp, PrintStream out, int bin) {
+		for(int i=0;i<temp.length;i++){
+			out.print(chr);
+			out.print("\t");
+			out.print(i*bin);
+			for(int j=0;j<temp[i].length;j++){   # line 156
+				out.print("\t");
+				out.print(temp[i][j]);
+			}
+			out.println();
+		}
+	}
+
+
+
 * trenaViz BindingSitesManager class, accompanied by MultiMethodMotifMatcher.R (22 jan 2019)
 
   code here:   github/TrenaViz/R/BindingSitesManager.R
@@ -827,7 +2195,33 @@ Source available: Download
       http://jstacs.de/index.php/Catchitt#Derive_labels
       try this with ChIP-seq files provided by sage for the dream challenge
 
-      see getChipSeqCreateLabels.R
+   --- see getChipSeqCreateLabels.R
+   --- Labels stage
+     on khaleesi
+     cd /local/users/pshannon/github/TrenaProjectPlacenta/inst/footprinting/catchitt/labels/
+     cmd <- "/usr/bin/java -jar ~/jars/Catchitt.jar labels c=arid3a.npk r=arid3a.npk f=hg38.fa.fai"
+     system(cmd)
+       Parameters of tool "Derive labels" (labels, version: 0.1):
+       c - Conservative peaks (NarrowPeak file containing the conservative peaks)	= arid3a.npk
+       r - Relaxed peaks (NarrowPeak file containing the relaxed peaks)	= arid3a.npk
+       f - FAI of genome (FastA index file of the genome)	= hg38.fa.fai
+       b - Bin width (The width of the genomic bins considered, valid range = [1, 10000], default = 50)	= 50
+       rw - Region width (The width of the genomic regions considered for overlaps, valid range = [1, 10000], default = 50)	= 50
+       outdir - The output directory, defaults to the current working directory (.)	= .
+
+     creates:
+
+         144637233 Feb 19 11:27 Labels_1.tsv.gz
+               595 Feb 19 11:27 protocol_labels_1.txt
+
+
+     data.directory <- "/proj/price4/apaquett/Placenta_DHS/placental_data/dataSets/LN54270/aggregation-17562"
+
+    /usr/bin/java -jar ~/jars/Catchitt.jar access d='Bigwig' \
+        i=/proj/price4/apaquett/Placenta_DHS/placental_data/dataSets/LN54270/aggregation-17562/Signal.UniqueMultiple.both.bw \
+        f=hg38.fa.fai b=50 outdir=dnase
+
+
 *-----------------------------------------------------------------------------------------------------------------------
 * alison's placental footprint data, copied from big detatched disk to khaleesi (18 jan 2019)
 
@@ -939,6 +2333,8 @@ Nfil3  0.4611102
     library(GEOquery)
 
     getGEO(GEO="GSE98910", destdir=".", AnnotGPL=T)
+     # this sometimes|always leaves a "soft" file in the current directory,
+     # which may provide clues to what files to download
     GSE12946.data <- getGEO(filename="GSE12946_series_matrix.txt.gz")
 
 This would give you an expressionSet object, including annotation, from
@@ -3535,6 +4931,11 @@ inspect.getargspec(html.Button)
 *-----------------------------------------------------------------------------------------------------------------------
 * docker tips: copy image to trena from riptide (6 nov 2018)
 
+  --- cleanup
+    docker rm $(docker ps -q -f 'status=exited')
+    docker rmi $(docker images -q -f "dangling=true")
+
+
   --- a real example
    cd  ~/github/trenaShinyApps/trenaViz/docker/skin/o
    docker save trena_skin:latest > dockerSkin.save      # 13G, 5 min 30 seconds
@@ -5635,9 +7036,14 @@ igap.ad.genes <- c("CR1", "BIN1", "CD2AP", "EPHA1", "CLU", "MS4A6A", "PICALM",
 
    ~/Music/dante/robertoBenigni-inferno-canto-01.mp3
                  canto-01-stanza-01.mp3
-1 Nel mezzo del cammin di nostra vita
-2 mi ritrovai per una selva oscura
-3 ché la diritta via era smarrita.
+00:00:000  1 Nel mezzo del cammin di nostra vita
+00:03:093 2 mi ritrovai per una selva oscura
+00:05:624 ché la diritta via era smarrita.
+ends at 00:08:033
+
+Midway upon the journey of our life
+I found myself within a forest dark,
+For the straightforward pathway had been lost.
 
 
 *-----------------------------------------------------------------------------------------------------------------------
@@ -9716,6 +11122,9 @@ robertianum) is another threatening invasive for this association.
 
 *------------------------------------------------------------------------------------------------
 * git add remote for my projects at https://github.com/PriceLab
+
+   --- once remote is added, to make it the default remote + branch
+      git push -u priceLab master
 
    --- igvR
       create an *EMTPY* repo at https://github.com/PriceLab
@@ -20883,13 +22292,31 @@ DNA coding variants upon 3D protein structure.
 *-----------------------------------------------------------------------------------------------------------------------
 * m4 tips, backticks
 
-   --- backticks: a quick hack
-   some print statements, in i.e. javascript, use backticks so that appear in the printed form
-   cd  ~/s/examples/m4/backticks/
-   cat file-with-backticks.txt
-      util.error('Can not create element with invalid string ID `' + data.id + '`');
-   sed s/\`//g file-with-backticks.txt
-      util.error('Can not create element with invalid string ID ' + data.id + '');
+   name clashes: makeing macro names safe
+      use -P option when invoking m4 so that, eg, include(filename) must be m4_include(filename)
+      substr in particular on javascript files then becomes m4_substr, and that collision is avoided
+
+   --- backticks: a quick hack: better yet, see backquote disabling m4_changequote()
+     some print statements, in i.e. javascript, use backticks so that appear in the printed form
+     cd  ~/s/examples/m4/backticks/
+     cat file-with-backticks.txt
+        util.error('Can not create element with invalid string ID `' + data.id + '`');
+     sed s/\`//g file-with-backticks.txt
+        util.error('Can not create element with invalid string ID ' + data.id + '');
+
+   ---- with javascript, igv.js, backtack quotes should be disabled, as explained
+     http://gnu.ist.utl.pt/software/m4/manual/html_node/Changequote.html
+
+    Changing the quotes to the empty strings will effectively disable the quoting mechanism, leaving no way to quote text.
+
+     define(`foo', `Macro `FOO'.')   =>    changequote(, )
+     =>     foo
+     =>Macro `FOO'.
+     `foo'
+     =>`Macro `FOO'.'
+
+    use this:  m4_changequote(,)
+
 
 *-----------------------------------------------------------------------------------------------------------------------
 * webpack font-awesome (27 aug 2017)
@@ -28916,12 +30343,18 @@ assert(requests.get('https://igv.org/web/beta/igv-beta.min.js').status_code == 2
 
 
 *-----------------------------------------------------------------------------------------------------------------------
+* levis 559 relaxed straight fit 32 x 30
+
+  two pair bought (jan 2019) fred meyers, 2nd pair half-price, 2 for ~$75
+
+*-----------------------------------------------------------------------------------------------------------------------
 * vasque breeze iii low gtx hiking shoes, boots, size 10.5, $150 (11 mar 2017)
 
-  new pair (13 dec 2017) amazon prime, $105
-  returned boots shoes merrell moab size 10 (returned)
+   new pari (05 feb 2019) amazon prime, $104
+   new pair (13 dec 2017) amazon prime, $105
 
    rei: (29 dec 2016):  $140
+
 
 
 *-----------------------------------------------------------------------------------------------------------------------
