@@ -1,13 +1,26 @@
+*------------------------------------------------------------------------------------------------------------------------
+* RColorBrewer tips
+
+library (RColorBrewer)
+display.brewer.all()
+
+totalColorCount <- 12
+colors <- brewer.pal(12, "Paired")
+currentColorNumber <- 0
+
+then in a subsequent loop
+
+   currentColorNumber <<- (currentColorNumber %% totalColorCount) + 1
+   color <- colors[currentColorNumber]
+
+*------------------------------------------------------------------------------------------------------------------------
+* fixReg -> should become part of the FimoClient package -> TODO aka "fixFimoResults" (10 apr 2019)
+
+   ~/github/TrenaProjectErythropoiesis/prep/gata-switch/createModels.R
+
+*------------------------------------------------------------------------------------------------------------------------
 options(error=recover)  # debugging aid
-
---- kickoff the mongo daemon:
-test: mongo
-mongod --dbpath /Users/pshannon/mongo/data/db &
-
-
---- kickoff mysql: sudo /usr/local/mysql/support-files/mysql.server start
-test:
-ps aux | grep -i mysql
+options(error=NULL)     # restore default behavior
 
 #--- assignGeneIDs
 source("~/github/projects/utils/geneIdMapping/symToGeneID.R"); test_assignGeneIDs()
@@ -17,16 +30,8 @@ returns a list of 3 lists: "mapped"    "failures"  "multiples"
 mapped:   a list of all the input geneSymbols, with either geneID, NA, or multiple geneIDs
 failures: that
 
-  devel: svn co https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/<pkgname>
-release: svn co https://hedgehog.fhcrc.org/bioconductor/branches/RELEASE_3_5/madman/Rpacks/<pkgname>
 
-
-onco:
-svn co https://hedgehog.fhcrc.org/hb/devel/hbolouri/dataPackages
-svn co https://hedgehog.fhcrc.org/hb/devel/hbolouri/oncoDev14/Oncoscape/inst/scripts/eric
-
-
-macbook/modem/49th avenue internet connection info: ~/s/notes/internetConfigScreenshot.png
+*------------------------------------------------------------------------------------------------------------------------
 ~/s/notes/medicalBills/records:  keep track of bills here
 ~/s/notes/studies/forest/hemlock: the hemlock/annosus story
 ~/s/data/fosp/forest/archive.html  links to the peninsula maps
@@ -34,47 +39,6 @@ load ('~/s/data/public/mouse/symbolsToGeneIDs.RData', envir=.GlobalEnv)
 load ('~/s/data/public/human/symbolsToGeneIDs.RData', envir=.GlobalEnv)
 source('~/s/data/public/human/names.R')
 http://db.systemsbiology.net:8080/cytoscape/gaggle/test/cy2rpc/     /net/dblocal/tomcat/webapps/cytoscape/gaggle/test/cy2rpc
-
-http://r.research.att.com/#nightly
-sudo /usr/sbin/pkgutil --forget org.r-project.R.Leopard.fw.pkg
-
-rcytoscape web site:
-emacs -nw /net/dblocal/tomcat/webapps/cytoscape/RCytoscape -f shell
-tail -1000 /var/log/httpd/rcytoscape/access_log; tail -f /var/log/httpd/rcytoscape/access_log
-http://db.systemsbiology.net:8080/cytoscape/RCytoscape
-http://rcytoscape.systemsbiology.net/
-cd /net/dblocal/tomcat/webapps/cytoscape/RCytoscape
-tail -f /var/log/httpd/rcytoscape/access_log
-
-;; works well on laptop
-(set-default-font "-adobe-courier-medium-r-normal--13-*")
-(set-default-font "-adobe-courier-medium-r-normal--14-*")
-(set-default-font "-adobe-courier-medium-r-normal--15-*")
-
-;; works well on apple 23 inch monitor
-(set-default-font "-adobe-courier-medium-r-normal--14-*")
-;;(set-default-font "-adobe-courier-medium-r-normal--15-*")
-
-
-;; works very well on dell 30 screen: no boldness
-(set-default-font "-adobe-courier-medium-r-normal--14-*")
-(set-default-font "-adobe-courier-medium-r-normal--15-*")
-(set-default-font "-adobe-courier-medium-r-normal--13-*")
-;; works very well on thunderbolt screen
-(set-default-font "-adobe-courier-medium-r-normal--15-*")
-(set-default-font "-adobe-courier-medium-r-normal--16-*")
-(set-default-font "-adobe-courier-medium-r-normal--17-*")
-;; works well on thunderbolt screen
-(set-default-font "-adobe-courier-medium-r-normal--18-*")
-
-;; works well on thunderbolt screen
-(set-default-font "-adobe-courier-bold-r-normal--10-*")
-;; works well on thunderbolt screen
-(set-default-font "-adobe-courier-bold-r-normal--19-*")
-
-;; works well on thunderbolt screen
-(set-default-font "-adobe-courier-bold-r-normal--20-*")
-
 
 .git/config, git tips, ssh login: 	url = git@github.com:paul-shannon/browservizjs.git
 *------------------------------------------------------------------------------------------------
@@ -93,9 +57,3223 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 
 bed format: chrom, start, end, name, score, strand
 
-* -top-
+* -TOP-
 *-----------------------------------------------------------------------------------------------------------------------
+* org-mode tips org mode tips org tips
+  3 ^U tab: open up all sections, entire buffer visible
 *-----------------------------------------------------------------------------------------------------------------------
+* combineGeneModels.R with cory's tryCatch for bad files (14 may 2019)
+
+    library(trenaSGM)
+    target.dir <- "/tmp/MODELS.cory.liver"
+
+    stopifnot(file.exists(target.dir))
+    files <- grep(".RData$", list.files(target.dir), value=TRUE)[5462:5466]
+    length(files)
+    tbls.all <- list()
+
+    i <- 0
+    for(file in files){
+       i <- i + 1
+       full.path <- file.path(target.dir, file)
+       if(file.size(file.path(target.dir, file)) == 0) next;
+       target.gene <- sub(".RData", "", file)
+       x <- tryCatch({
+            get(load(full.path))
+            }, error=function(e) {
+                 return(list(model=data.frame(), regulatoryRegions=data.frame()))
+                 }
+            )
+       tbl.model <- x$model
+       tbl.reg <- x$regulatoryRegions
+       printf("model rows: %d", nrow(tbl.model))
+       if(nrow(tbl.model) == 0) next
+       tbl.model$targetGene <- target.gene
+       trimmed <- trimModel(tbl.model, tbl.reg, votesNeeded=2)
+       tbl <- trimmed$model
+       if(nrow(tbl) > 10)
+          tbl <- tbl[1:10,]
+       tbl$rank <- seq_len(nrow(tbl))
+       printf("model for %s: %d rows, %d cols", target.gene, nrow(tbl), ncol(tbl))
+       tbls.all[[target.gene]] <- tbl
+       if((i %% 500) == 0){
+          filename <- sprintf("tbls.all.%05d", i)
+          save.path <- file.path(target.dir, filename)
+          printf("incremental save: %s", save.path)
+          save(tbls.all, file=save.path)
+          } # if time to save
+       } # for file
+
+    tbl.models <- do.call(rbind, tbls.all)
+    dim(tbl.models)
+    rownames(tbl.models) <- NULL
+    save(tbl.models, file=file.path(target.dir, "tbl.models.all.RData"))
+
+*-----------------------------------------------------------------------------------------------------------------------
+* background for jocelyn's first gene list (15 may 2019)
+
+   Transcription Factor IRF4 Promotes CD8+T CellExhaustion and Limits the Development of Memory-like T Cells during Chronic Infection
+
+*-----------------------------------------------------------------------------------------------------------------------
+* joceylyn's first gene list (10 may 2019)
+
+   What IRF4 and TET2 regulates would be great!  (downstream)
+   What regulates LAG3, PD1, TIM3 would also be great! (upstream)   (PDCD1, HAVCR2)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* shiny DT demo, to track down joceylyn/lyell bug in which row selection does not work (14 may 2019)
+
+   cd ~/github/TrenaViz/misc/explore/tables/DataTable/docker/
+
+   --- Dockerfile
+     FROM rocker/shiny:3.5.1
+     RUN R -e "install.packages(c('shinydashboard', 'shinyjs', 'V8', 'DT'))"
+     USER root
+     RUN apt-get update
+     RUN apt-get install -y xdg-utils
+     WORKDIR /home/trena/app
+     COPY app.R .
+     EXPOSE 3838
+     CMD ["R", "-e", "shiny::runApp('/home/trena/app/app.R', port=3838, host='0.0.0.0')"]
+
+   --- app.r
+
+      library(shiny)
+      library(DT)
+      printf <- function(...) print(noquote(sprintf(...)))
+      #----------------------------------------------------------------------------------------------------
+      ui <- fluidPage(
+            fluidRow(
+               column(10,
+                      actionButton("displayTableButton", "Display Table, then click on rows",
+                                   style="margin: 20px"),
+                      h3(textOutput("rowCountTextOutput"), style="margin-left: 100px"),
+                      div(DT::dataTableOutput("tableDisplay"), style="margin: 20px")
+                      )
+               ) # fluidRow
+          ) # fluidPage
+
+      #----------------------------------------------------------------------------------------------------
+      server <- function(input, output)
+      {
+         observeEvent(input$tableDisplay_rows_selected, {
+            selectedTableRow <- isolate(input$tableDisplay_rows_selected)
+            output$rowCountTextOutput <- renderText(sprintf("row %d", selectedTableRow))
+            printf("row click!");
+            printf("selectedTableRow: %d", selectedTableRow)
+            }) # observe row selection event
+
+         observeEvent(input$displayTableButton, {
+            output$tableDisplay <- DT::renderDataTable(mtcars[1:8,],
+                                                width="800px",
+                                                class='nowrap display',
+                                                selection="single",
+                                                extensions="FixedColumns",
+                                                options=list(scrollX=TRUE,
+                                                             scrollY="500px",
+                                                             dom='t',
+                                                             paging=FALSE,
+                                                             autoWdth=FALSE,
+                                                             fixedColumns=list(leftColumns=1)
+                                                             ))
+
+            }) # observer button
+      } # server
+      #----------------------------------------------------------------------------------------------------
+      app <- shinyApp(ui, server)
+
+
+
+     make build dockerRun
+     browser to localhost:60054
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* TrenaProjectLymphoctye:  which GTEx matrix has a good balance of =/- correlation? (14 may 2019)
+
+  on khaleesi:
+
+  running ~/github/TrenaProjectLymphocyte/inst/demos/gsm/combineModels.R
+     target.dir <- "/local/gsm/TrenaProjectLymphocyte/2019-may-13-wholeBlood.22330"
+     fivenum(tbl.models$pearsonCoeff) #  [1] -0.7783061  0.4824157  0.7142999  0.8288616  0.9689967
+     with about 4k models built
+
+   models built with config3.R
+
+   now switch to
+
+*-----------------------------------------------------------------------------------------------------------------------
+* lyell meeting (monday 13 may 2019) jocelyn
+
+  blueprint
+*-----------------------------------------------------------------------------------------------------------------------
+* igv.js supported genomes
+
+  http://igv.org/app/resources/genomes.json
+  desktop igv has many more: https://software.broadinstitute.org/software/igv/Genomes
+
+  hg38 hg19 hg18 mm10 panTro4 panPan2 bosTau8 ce11 canFam3 dm6 gorGor4 susScr11 rn6 sacCer3 danRer11 danRer10
+
+
+  {
+    "id": "hg38",
+    "name": "Human (GRCh38/hg38)",
+    "fastaURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa",
+    "indexURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa.fai",
+    "cytobandURL": "https://s3.amazonaws.com/igv.org.genomes/hg38/annotations/cytoBandIdeo.txt.gz",
+    "tracks": [
+      {
+        "name": "Refseq Genes",
+        "format": "refgene",
+        "url": "https://s3.amazonaws.com/igv.org.genomes/hg38/refGene.sorted.txt.gz",
+        "indexURL": "https://s3.amazonaws.com/igv.org.genomes/hg38/refGene.sorted.txt.gz.tbi",
+        "visibilityWindow": -1,
+        "removable": false,
+        "order": 1000000
+      }
+    ]
+  },
+  {
+    "id": "hg19",
+    "name": "Human (CRCh37/hg19)",
+    "fastaURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/hg19.fasta",
+    "indexURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/hg19.fasta.fai",
+    "cytobandURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/cytoBand.txt",
+    "tracks": [
+      {
+        "name": "Refseq Genes",
+        "format": "refgene",
+        "url": "https://s3.amazonaws.com/igv.org.genomes/hg19/refGene.sorted.txt.gz",
+        "indexURL": "https://s3.amazonaws.com/igv.org.genomes/hg19/refGene.sorted.txt.gz.tbi",
+        "visibilityWindow": -1,
+        "removable": false,
+        "order": 1000000
+      }
+    ]
+  },
+  {
+    "id": "hg18",
+    "name": "Human (hg18)",
+    "fastaURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg18/hg18.fasta",
+    "indexURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg18/hg18.fasta.fai",
+    "cytobandURL": "https://s3.amazonaws.com/igv.org.genomes/hg18/cytoBandIdeo.txt.gz",
+    "tracks": [
+      {
+        "name": "Refseq Genes",
+        "format": "refgene",
+        "url": "https://s3.amazonaws.com/igv.org.genomes/hg18/refGene.txt.gz",
+        "indexURL": "https://s3.amazonaws.com/igv.org.genomes/hg18/refGene.txt.gz.tbi",
+        "visibilityWindow": -1,
+        "removable": false,
+        "order": 1000000
+      }
+    ]
+  },
+  {
+    "id": "mm10",
+    "name": "Mouse (GRCm38/mm10)",
+    "fastaURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/mm10/mm10.fa",
+    "indexURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/mm10/mm10.fa.fai",
+    "cytobandURL": "https://s3.amazonaws.com/igv.broadinstitute.org/annotations/mm10/cytoBandIdeo.txt.gz",
+    "order": 1000000,
+    "tracks": [
+      {
+        "name": "Refseq Genes",
+        "url": "https://s3.amazonaws.com/igv.org.genomes/mm10/refGene.txt.gz",
+        "indexURL": "https://s3.amazonaws.com/igv.org.genomes/mm10/refGene.txt.gz.tbi",
+        "order": 1000000,
+        "removable": false,
+        "visibilityWindow": -1,
+        "supportsWholeGenome": false
+      }
+    ]
+  },
+  {
+    "id": "panTro4",
+    "name": " Chimp (SAC 2.1.4/panTro4)",
+    "fastaURL": "https://s3.amazonaws.com/igv.org.genomes/panTro4/panTro4.fa",
+    "indexURL": "https://s3.amazonaws.com/igv.org.genomes/panTro4/panTro4.fa.fai",
+    "cytobandURL": "https://s3.amazonaws.com/igv.org.genomes/panTro4/cytoBandIdeo.txt.gz",
+    "chromosomeOrder": "chr1,chr2A,chr2B,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY",
+    "tracks": [
+      {
+        "name": "Refseq Genes",
+        "format": "refgene",
+        "url": "https://s3.amazonaws.com/igv.org.genomes/panTro4/refGene.sorted.txt.gz",
+        "indexURL": "https://s3.amazonaws.com/igv.org.genomes/panTro4/refGene.sorted.txt.gz.tbi",
+        "removable": false,
+        "order": 1000000,
+        "visibilityWindow": -1
+      }
+    ]
+  },
+  {
+    "id": "panPan2",
+    "name": "Bonobo (MPI-EVA panpan1.1/panPan2)",
+    "fastaURL": "https://s3.amazonaws.com/igv.org.genomes/panPan2/panPan2.fa",
+    "indexURL": "https://s3.amazonaws.com/igv.org.genomes/panPan2/panPan2.fa.fai",
+    "cytobandURL": "https://s3.amazonaws.com/igv.org.genomes/panPan2/cytoBandIdeo.txt.gz",
+    "chromosomeOrder": "chr1,chr2A,chr2B,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX",
+    "tracks": [
+      {
+        "name": "Refseq Genes",
+        "format": "refgene",
+        "url": "https://s3.amazonaws.com/igv.org.genomes/panPan2/refGene.sorted.txt.gz",
+        "indexURL": "https://s3.amazonaws.com/igv.org.genomes/panPan2/refGene.sorted.txt.gz.tbi",
+        "removable": false,
+        "order": 1000000,
+        "visibilityWindow": -1
+      }
+    ]
+  },
+  {
+    "id": "bosTau8",
+    "name": "Cow (UMD_3.1.1/bosTau8)",
+    "fastaURL": "https://s3.amazonaws.com/igv.org.genomes/bosTau8/bosTau8.fa",
+    "indexURL": "https://s3.amazonaws.com/igv.org.genomes/bosTau8/bosTau8.fa.fai",
+    "cytobandURL": "https://s3.amazonaws.com/igv.org.genomes/bosTau8/cytoBandIdeo.txt.gz",
+    "tracks": [
+      {
+        "name": "Refseq Genes",
+        "format": "refgene",
+        "url": "https://s3.amazonaws.com/igv.org.genomes/bosTau8/refGene.sorted.txt.gz",
+        "indexURL": "https://s3.amazonaws.com/igv.org.genomes/bosTau8/refGene.sorted.txt.gz.tbi",
+        "removable": false,
+        "order": 1000000,
+        "visibilityWindow": -1
+      }
+    ]
+  },
+  {
+    "id": "ce11",
+    "name": "C. elegans (ce11)",
+    "fastaURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/ce11/ce11.fa",
+    "indexURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/ce11/ce11.fa.fai",
+    "cytobandURL": "https://s3.amazonaws.com/igv.org.genomes/ce11/cytoBandIdeo.txt.gz",
+    "tracks": [
+      {
+        "name": "Refseq Genes",
+        "url": "https://s3.amazonaws.com/igv.org.genomes/ce11/refGene.txt.gz",
+        "indexURL": "https://s3.amazonaws.com/igv.org.genomes/ce11/refGene.txt.gz.tbi",
+        "order": 1000000,
+        "removable": false,
+        "supportsWholeGenome": false,
+        "visibilityWindow": -1
+      }
+    ]
+  },
+  {
+    "id": "canFam3",
+    "name": "Dog (Broad CanFam3.1/canFam3)",
+    "fastaURL": "https://s3.amazonaws.com/igv.org.genomes/canFam3/canFam3.fa",
+    "indexURL": "https://s3.amazonaws.com/igv.org.genomes/canFam3/canFam3.fa.fai",
+    "cytobandURL": "https://s3.amazonaws.com/igv.org.genomes/canFam3/cytoBandIdeo.txt.gz",
+    "tracks": [
+      {
+        "name": "Refseq Genes",
+        "format": "refgene",
+        "url": "https://s3.amazonaws.com/igv.org.genomes/canFam3/refGene.sorted.txt.gz",
+        "indexURL": "https://s3.amazonaws.com/igv.org.genomes/canFam3/refGene.sorted.txt.gz.tbi",
+        "removable": false,
+        "order": 1000000,
+        "visibilityWindow": -1
+      }
+    ]
+  },
+  {
+    "id": "dm6",
+    "name": "D. melanogaster (dm6)",
+    "fastaURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/dm6/dm6.fa",
+    "indexURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/dm6/dm6.fa.fai",
+    "cytobandURL": "https://s3.amazonaws.com/igv.org.genomes/dm6/cytoBandIdeo.txt.gz",
+    "tracks": [
+      {
+        "name": "Refseq Genes",
+        "url": "https://s3.amazonaws.com/igv.org.genomes/dm6/refGene.txt.gz",
+        "indexURL": "https://s3.amazonaws.com/igv.org.genomes/dm6/refGene.txt.gz.tbi",
+        "order": 1000000,
+        "removable": false,
+        "supportsWholeGenome": false,
+        "visibilityWindow": -1
+      }
+    ]
+  },
+  {
+    "id": "gorGor4",
+    "name": "Gorilla (gorGor4.1/gorGor4)",
+    "fastaURL": "https://s3.amazonaws.com/igv.org.genomes/gorGor4/gorGor4.fa",
+    "indexURL": "https://s3.amazonaws.com/igv.org.genomes/gorGor4/gorGor4.fa.fai",
+    "cytobandURL": "https://s3.amazonaws.com/igv.org.genomes/gorGor4/cytoBandIdeo.txt.gz",
+    "chromosomeOrder": "chr1,chr2A,chr2B,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX",
+    "tracks": [
+      {
+        "name": "Refseq Genes",
+        "format": "refgene",
+        "url": "https://s3.amazonaws.com/igv.org.genomes/gorGor4/refGene.sorted.txt.gz",
+        "indexURL": "https://s3.amazonaws.com/igv.org.genomes/gorGor4/refGene.sorted.txt.gz.tbi",
+        "order": 1000000,
+        "removable": false,
+        "visibilityWindow": -1
+      }
+    ]
+  },
+  {
+    "id": "susScr11",
+    "name": "Pig (SGSC Sscrofa11.1/susScr11)",
+    "fastaURL": "https://s3.amazonaws.com/igv.org.genomes/susScr11/susScr11.fa",
+    "indexURL": "https://s3.amazonaws.com/igv.org.genomes/susScr11/susScr11.fa.fai",
+    "cytobandURL": "https://s3.amazonaws.com/igv.org.genomes/susScr11/cytoBandIdeo.txt.gz",
+    "tracks": [
+      {
+        "name": "Refseq Genes",
+        "format": "refgene",
+        "url": "https://s3.amazonaws.com/igv.org.genomes/susScr11/refGene.sorted.txt.gz",
+        "indexURL": "https://s3.amazonaws.com/igv.org.genomes/susScr11/refGene.sorted.txt.gz.tbi",
+        "removable": false,
+        "order": 1000000,
+        "visibilityWindow": -1
+      }
+    ]
+  },
+  {
+    "id": "rn6",
+    "name": "Rat (RGCS 6.0/rn6)",
+    "fastaURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/rn6/rn6.fa",
+    "indexURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/rn6/rn6.fa.fai",
+    "cytobandURL": "https://s3.amazonaws.com/igv.org.genomes/rn6/cytoBand.txt.gz",
+    "order": 1000000,
+    "tracks": [
+      {
+        "name": "Refseq Genes",
+        "url": "https://s3.amazonaws.com/igv.org.genomes/rn6/refGene.txt.gz",
+        "indexURL": "https://s3.amazonaws.com/igv.org.genomes/rn6/refGene.txt.gz.tbi",
+        "order": 1000000,
+        "removable": false,
+        "supportsWholeGenome": false,
+        "visibilityWindow": -1
+      }
+    ]
+  },
+  {
+    "id": "sacCer3",
+    "name": "S. cerevisiae (sacCer3)",
+    "fastaURL": "https://s3.amazonaws.com/igv.org.genomes/sacCer3/sacCer3.fa",
+    "indexURL": "https://s3.amazonaws.com/igv.org.genomes/sacCer3/sacCer3.fa.fai",
+    "tracks": [
+      {
+        "name": "Ensembl Genes",
+        "type": "annotation",
+        "format": "ensgene",
+        "displayMode": "EXPANDED",
+        "url": "https://s3.amazonaws.com/igv.org.genomes/sacCer3/ensGene.txt.gz",
+        "indexed": false,
+        "supportsWholeGenome": false
+      }
+    ]
+  },
+  {
+    "id": "danRer11",
+    "name": "Zebrafish (GRCZ11/danRer11)",
+    "fastaURL": "https://s3.amazonaws.com/igv.org.genomes/danRer11/danRer11.fa",
+    "indexURL": "https://s3.amazonaws.com/igv.org.genomes/danRer11/danRer11.fa.fai",
+    "cytobandURL": "https://s3.amazonaws.com/igv.org.genomes/danRer11/cytoBandIdeo.txt.gz",
+    "aliasURL": "https://s3.amazonaws.com/igv.org.genomes/danRer11/chromAlias.txt.gz",
+    "tracks": [
+      {
+        "name": "Refseq Genes",
+        "url": "https://s3.amazonaws.com/igv.org.genomes/danRer11/refGene.txt.gz",
+        "indexURL": "https://s3.amazonaws.com/igv.org.genomes/danRer11/refGene.txt.gz.tbi",
+        "order": 1000000,
+        "removable": false,
+        "supportsWholeGenome": false,
+        "visibilityWindow": -1
+      }
+    ]
+  },
+  {
+    "id": "danRer10",
+    "name": "Zebrafish (GRCZ10/danRer10)",
+    "fastaURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/danRer10/danRer10.fa",
+    "indexURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/danRer10/danRer10.fa.fai",
+    "cytobandURL": "https://s3.amazonaws.com/igv.org.genomes/danRer10/cytoBandIdeo.txt.gz",
+    "order": 1000000,
+    "tracks": [
+      {
+        "name": "Refseq Genes",
+        "url": "https://s3.amazonaws.com/igv.org.genomes/danRer10/refGene.txt.gz",
+        "indexURL": "https://s3.amazonaws.com/igv.org.genomes/danRer10/refGene.txt.gz.tbi",
+        "order": 1000000,
+        "removable": false,
+        "supportsWholeGenome": false,
+        "visibilityWindow": -1
+      }
+    ]
+  }
+]
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igv.js-flask:  a CORS range-request webserver from the igv.js team (9 may 2019)
+
+  cd ~/github/igv.js-flask/
+  git pull
+  /Users/paul/anaconda/bin/pip install -r requirements.txt
+  ~/anaconda/bin/python test_IGV.py    # fails in test_get_data_range_header
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igvR: click on motif binding site, see motif logo: how to do this? (7 may 2019)
+
+   --- jim adds igvBrowser.off()  to remove all hand
+
+   --- test_igvR.R
+      x <- list(arguments="track, popoverData", body="{console.log('track click 99')}")
+      setTrackClickFunction(igv, x)
+
+   --- igvR.R
+
+      setMethod('setTrackClickFunction', 'igvR',
+         function (obj, javascriptFunction) {
+           payload <- list(jsFunction=javascriptFunction)
+           send(obj, list(cmd="setTrackClickFunction", callback="handleResponse", status="request", payload=payload))
+           while (!browserResponseReady(obj)){
+              service(100)
+              }
+           invisible(getBrowserResponse(obj));
+           })
+
+    ---- igvApp.js
+      function setTrackClickFunction(msg) {
+         console.log("--- setTrackClickFunction, adding new listener");
+         parts = msg.payload.jsFunction;
+         trackClickFunction = new Function(parts.arguments, parts.body);
+         window.igvBrowser.on("trackclick", trackClickFunction)
+         self.hub.send({cmd: msg.callback, status: "success", callback: "", payload: ""});
+         } // setTrackClickFunction
+
+
+    --- my question to jim robinson
+
+      I wish to include a url in a bed-type track. I have added a
+      custom trackclick handler to popup a link to a url.
+
+      The use case is a track of motifMatches. The url will point to
+      an image of the motif logo. When the user clicks on the track
+      item, the image along with the sequence match score will be
+      displayed in a popup.
+
+      This is rather like custom-track-popover.html. My question: how
+      do I pass the url to the clickhandler? Is the bed name field the
+      only or the best option?
+
+   --- jim's reply:
+      The name field is the only option that comes to mind with bed format.  You
+      could use gff3 which allows arbitrary properties in column 9.
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* database disk image is malformed, BiocParallel (7 may 2019)
+
+   https://support.bioconductor.org/p/110570/
+
+   lookup <- function(geneSymbols, dbfile) {
+       db <- AnnotationDbi::loadDb(dbfile)
+       on.exit(RSQLite::dbDisconnect(dbconn(db)))
+       tbl.map <- AnnotationDbi::select(
+          db, keys=geneSymbols, keytype="SYMBOL", columns="ENSEMBL"
+          )
+      }
+   x <- bplapply(geneSymbols.list, lookup, dbfile(org.Hs.eg.db))
+
+*-----------------------------------------------------------------------------------------------------------------------
+* gsp plant requests for andrews bay restoration (2 may 2019)
+
+
+   Eric suggested these plants for my small restoration site on Andrews Bay.  Could you add them to the list?
+
+     Hardhack:  5
+     Snowberry: 10
+     Nootka rose: 4
+     Slough sedge: 6
+     Small-fruited bulrush:  6
+     Madrone: 3
+     Pacific Willow: 3
+
+   To which I suggest, since they are so hardy, such good pioneer species: Red Alder: 2
+
+*-----------------------------------------------------------------------------------------------------------------------
+* yeast promoter, yeast trena, sgm for CDC19 (2 may 2019)
+
+   SCPD: The Promoter Database of Saccharomyces cerevisiae
+   see http://rulai.cshl.edu/cgi-bin/SCPD/getgene2?CDC19,PYK1
+     suggests  ATG - 500, ATG + 50
+
+   but contradictorily, shows binding sites -851  -551
+
+
+   --- see also: scEPDnew, the Saccharomyces cerevisiae (baking yeast) curated promoter database
+      https://epd.epfl.ch//S_cerevisiae/S_cerevisiae_database.php
+      suggests -499 to 100
+
+*-----------------------------------------------------------------------------------------------------------------------
+* bed6+4 format, narrowPeak
+
+  http://genome.ucsc.edu/FAQ/FAQformat.html#format12
+
+   1) chrom - Name of the chromosome (or contig, scaffold, etc.).
+
+   2) chromStart - The starting position of the feature in the chromosome or scaffold. The
+      first base in a chromosome is numbered 0.
+
+   3) chromEnd - The ending position of the feature in the chromosome or scaffold. The chromEnd base is not
+      included in the display of the feature. For example, the first 100 bases of a chromosome are defined
+      as chromStart=0, chromEnd=100, and span the bases numbered 0-99.
+
+   4) name - Name given to a region (preferably unique). Use "." if no name is assigned.
+
+   5) score - Indicates how dark the peak will be displayed in the browser (0-1000). If all scores were "'0"'
+      when the data were submitted to the DCC, the DCC assigned scores 1-1000 based on signal value. Ideally the
+      average signalValue per base spread is between 100-1000.
+
+   6) strand - +/- to denote strand or orientation (whenever applicable). Use "." if no orientation is assigned.
+
+   7) signalValue - Measurement of overall (usually, average) enrichment for the region.
+
+   8) pValue - Measurement of statistical significance (-log10). Use -1 if no pValue is assigned.
+
+   9) qValue - Measurement of statistical significance using false discovery rate (-log10). Use -1 if no qValue is assigned.
+
+  10) peak - Point-source called for this peak; 0-based offset from chromStart. Use -1 if no point-source called.
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trenaViz todo
+
+   1. load local bed/bedGraph file: make tolerant of chromsome integer only in first column (use colClasses) (29 apr 2019)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* bioc offers pre-digested gtf files in the AnnotationHub (29 apr 2019)
+
+    The ensembl 96 gtf (converted to GRanges on the fly) and fasta (twobit files) been added to AnnotationHub and
+         are currently available in Bioc 3.9
+      library(AnnotationHub)
+      hub = AnnotationHub()
+      snapshotDate(): 2019-04-29
+      length(query(hub, c("ensembl", "gtf", "release-96")))  # [1] 471
+      length(query(hub, c("fasta", "release-96", "twobit"))) # [1] 799
+
+     as.list(query(hub, c("ensembl", "gtf", "cerevisiae", "R64")))
+       # retrieve records with 'object[["AH64833"]]'
+     x <- hub[["AH64833"]]   # length: 41606
+     tbl.x <- as.data.frame(x)
+     dim(tbl.x)  # [1] 41606    18
+
+     dim(subset(tbl.x, type=="gene")) # [1] 7036   18
+     head(subset(tbl.x, type=="gene"))
+        seqnames start   end width strand source type score phase   gene_id gene_source   gene_biotype transcript_id transcript_source transcript_biotype exon_number exon_id protein_id
+     1        IV  1802  2953  1152      +    sgd gene    NA    NA   YDL248W         sgd protein_coding          <NA>              <NA>               <NA>        <NA>    <NA>       <NA>
+     7        IV  3762  3836    75      +    sgd gene    NA    NA YDL247W-A         sgd protein_coding          <NA>              <NA>               <NA>        <NA>    <NA>       <NA>
+     13       IV  5985  7814  1830      +    sgd gene    NA    NA   YDL247W         sgd protein_coding          <NA>              <NA>               <NA>        <NA>    <NA>       <NA>
+     19       IV  8683  9756  1074      -    sgd gene    NA    NA   YDL246C         sgd protein_coding          <NA>              <NA>               <NA>        <NA>    <NA>       <NA>
+     25       IV 11657 13360  1704      -    sgd gene    NA    NA   YDL245C         sgd protein_coding          <NA>              <NA>               <NA>        <NA>    <NA>       <NA>
+     31       IV 16204 17226  1023      +    sgd gene    NA    NA   YDL244W         sgd protein_coding          <NA>              <NA>               <NA>        <NA>    <NA>       <NA>
+
+
+    YAL038W   (RefSeq) pyruvate kinase CDC19, pyruvate kinase [EC:2.7.1.40]
+     subset(tbl.x, type=="gene" & gene_id == "YAL038W")
+         seqnames start   end width strand source type score phase gene_id gene_source   gene_biotype transcript_id transcript_source transcript_biotype exon_number exon_id protein_id
+                I 71786 73288  1503      +    sgd gene    NA    NA YAL038W         sgd protein_coding          <NA>              <NA>               <NA>        <NA>    <NA>       <NA>
+    biocGet("org.Sc.sgd.db")
+    library(org.Sc.sgd.db)
+    keytypes(org.Sc.sgd.db)
+
+    select(org.Sc.sgd.db, keys=head(unique(tbl.x$gene_id)), columns="GENENAME", keytype="ORF")
+                ORF        SGD GENENAME
+        1   YDL248W S000002407     COS7
+        2 YDL247W-A S000007602     <NA>
+        3   YDL247W S000002406     MPH2
+        4   YDL246C S000002405     SOR2
+        5   YDL245C S000002404    HXT15
+        6   YDL244W S000002403    THI13
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* bioc build failures
+
+   --- PSICQUIC
+      version 1.20.0  of (30 oct 2018) on (16 apr 2019):
+        checking for biomart access...   does 'http://www.ensembl.org' respond?
+        Error: processing vignette 'PSICQUIC.Rnw' failed with diagnostics:
+          chunk 8 (label = addGeneNames)
+          Error in IDMapper("9606") : url.exists(url) is not TRUE
+
+*-----------------------------------------------------------------------------------------------------------------------
+* chip peaks vs srm, gata1, first look (30 apr 2019)
+
+  cd ~/github/TrenaProjectErythropoiesis/prep/compareChIPVsSRM/
+  compare.R
+
+    day     srm.1   srm.2  chip-wg   chip-gh-gata2  chip-gh-allGenes
+     0          0    4052      240          0               113
+    11.5    38037   18486   118271         17             54059
+    12      23528   24125   118271         17             54059
+    14      35990   30984    13394          6              9930
+
+*-----------------------------------------------------------------------------------------------------------------------
+* marjorie's response (29 apr 2019)
+
+  cd ~/github/TrenaProjectErythropoiesis/prep/compareChIPVsSRM/
+  Just some comments:
+
+  Not all the datasets come from Huang paper (only the ones corresponding to Day0 and
+  Day11.5-12). Not an important comment, but maybe useful to keep in mind as we compare datasets.
+
+  Regarding these datasets:
+
+    1381093 Apr 27 06:19 GATA1-Erythroid.Day14-16.GSM1067274_peaks.BLFilt.narrowPeak
+    2067498 Apr 27 06:19 GATA1.Day4-16.GSM651547_peaks.BLFilt.narrowPeak
+
+  The first one corresponds to cells from Day 14 to Day 16, so good to use
+  The second one is from Day 4 to Day 16. So it is a mixture of many days. It is from another paper where the authors have used a mixture of cells that correspond to our Day4 to Day16. Maybe better not to use it? (the reason we have it is because for other factors we do not have the more restricted Day14-16). Am I making sense?
+
+   Karthi, shouldn’t we also have a file like this: 11823741 Apr 27 06:19 GATA1-A.Day11.5-12.GSM1278240_peaks.BLFilt.narrowPeak
+   But for GATA1-F (in addition to GATA1-A)?
+
+   I suspect the small size of Day0 is because there are few peaks at this time point since GATA1 is expressed at low levels.
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* analysis plan sent to marjorie (29 apr 2019)
+
+  cd ~/github/TrenaProjectErythropoiesis/prep/compareChIPVsSRM/
+
+  look for patterns between ChIP peaks and SRM counts for a given transcription factor over three timepoints.
+
+Some details:
+
+  - The Huang data has 3-timepoint peaks for only GATA1 and TAL1. I propose using GATA1 first.
+
+  - In the comparisons, I will progressively refine and subset the peaks I consider:
+      1) all peaks - anywhere in the genome, no exclusions.
+      2) peaks only in GeneHancer regions (enhancers and promoters).
+      3) peaks only in GeneHancer promoters
+      4,5) as in 2 and 3, but restricted to genes which we know (or suspect) are regulated by GATA1
+
+These are the GATA1 peak files, sorted into three time points:
+
+      21504 Apr 27 06:19 GATA1-A0.Day0.GSM1816081_peaks.BLFilt.narrowPeak
+      84636 Apr 27 06:19 GATA1-F0.Day0.GSM1816080_peaks.BLFilt.narrowPeak
+
+   11823741 Apr 27 06:19 GATA1-A.Day11.5-12.GSM1278240_peaks.BLFilt.narrowPeak
+
+    1381093 Apr 27 06:19 GATA1-Erythroid.Day14-16.GSM1067274_peaks.BLFilt.narrowPeak
+    2067498 Apr 27 06:19 GATA1.Day4-16.GSM651547_peaks.BLFilt.narrowPeak
+
+Does the small size of day 0 files suggests that their data may be incomplete?  If so, this does not pose a problem at
+this point.  I will write the code with these data to start.  It will be easy to run it again with more complete data
+when they are ready.
+
+The srm matrices I have from March first (rep 1 and rep 2) have counts at these days. I have highlighted the samples I
+propose to use for comparison.  I will average Day11.5 and Day12.   I will start with srm rep1, then do rep2, then with
+ an average of rep1 and rep2, comparing these 3 srm counts agains each of the 5 peak subsets described above.
+
+ Day0
+ Day2
+ Day4
+ Day6
+ Day7.5
+ Day8
+ Day8.5
+ Day10
+ Day10.5
+ Day11
+ Day11.5
+ Day12
+ Day14
+
+#------------------------------------------------------------------------------------------------------------------------
+* overview of karthi's chip files (29 apr 2019)
+
+    data is from "Dynamic Control of Enhancer Repertoires Drives Lineage and Stage-Specific Transcription during Hematopoiesis."
+    https://www.ncbi.nlm.nih.gov/pubmed/26766440    Dev Cell jan 2016
+
+    ~/github/TrenaProjectErythropoiesis/compareChIPVsSRM/29apr2019/
+
+    --- day 0
+      ERG.Day0
+      FLI1.Day0
+      GATA1-A0.Day0
+      GATA1-F0.Day0
+      GATA2-A1.Day0
+      NFE2-A0.Day0
+      NFE2-F0.Day0
+      PU1-A0.Day0
+      PU1-F0.Day0
+      RUNX1-A0.Day0
+      RUNX1-A1.Day0
+      RUNX1-F0.Day0
+      TAL1-A0.Day0
+      TAL1-F0.Day0
+      Tal1-A1.Day0
+
+    --- day 11.5-12
+      GATA1-A.Day11.5-12
+      GFI1B-A.Day11.5-12
+      KLF1-HuDep-ChIPSeq.Day11.5-12
+      TAL1-A.Day11.5-12
+
+    ---  day 14-16
+      ERG.Day0
+      FLI1.Day0
+      GATA1-A.Day11.5-12
+      GATA1-A0.Day0
+      GATA1-Erythroid.Day14-16
+      GATA1-F0.Day0
+      GATA1.Day4-16
+      GATA2-A1.Day0
+      GFI1B-A.Day11.5-12
+      KLF1-Erythroid.Day14-16
+      KLF1-HuDep-ChIPSeq.Day11.5-12
+      NFE2-A0.Day0
+      NFE2-Erythroid.Day14-16
+      NFE2-F0.Day0
+      PU1-A0.Day0
+      PU1-F0.Day0
+      RUNX1-A0.Day0
+      RUNX1-A1.Day0
+      RUNX1-F0.Day0
+      TAL1-A.Day11.5-12
+      TAL1-A0.Day0
+      TAL1-F0.Day0
+      TAL1.Day4-16
+      Tal1-A1.Day0
+      p300-Erythroid.Day14-16
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* download all of karthi's chip files (28 apr 2019)
+
+  --- karthi's addition (email 29 apr 2019)
+     http://dropbox.ogic.ca/mbrandlab/hg38/NIH-Project-Raw-Data/BLFilt.NarrowPeaks.tgz
+
+  Please use this link to download the blacklist filtered peak files for the NIH data analyzed. I
+  will add three more files early next week.
+
+   https://www.dropbox.com/sh/km91k6vzf0ihwkh/AAC2G1XFJa8R2mmJ3S70iR2na?dl=0
+
+  The data summary (GEO ID, cell type and day of differentiation) are given in the attached excel
+  file.
+
+  We mapped raw data to hg38 using bowtie2 and filtered for mapping quality of ≥ Q20
+  (samtools). Duplicates were removed for peak calling. Peaks were called using MACS2 (2.1.2) with a
+  P-value cutoff of 1E-4. Peaks falling in black-listed regions (hg38 Blacklist from UCSC) were
+  removed using bedtools.
+
+  --- test out a script which can run on khaleesi
+    browser select all copy and paste
+
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/FLI1.Day0.GSM1097880_peaks.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/GATA1-A.Day11.5-12.GSM1278240_peaks.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/GATA1-A0.Day0.GSM1816081_peaks.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/GATA1-Erythroid.Day14-16.GSM1067274_peaks.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/GATA1-F0.Day0.GSM1816080_peaks.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/GATA1.Day4-16.GSM651547_peaks.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/GATA2-A1.Day0.GSM1097883_peaks.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/GFI1B-A.Day11.5-12.GSM1278242_peaks.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/KLF1-Erythroid.Day14-16.GSM1067275_peaks.BLFilt.narrowPeak
+
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/KLF1-HuDep-ChIPSeq.Day11.5-12.GSM2575041-GSM2575049…s.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAAah7Ca8e4PohSD4qgoq8Mta/KLF1-HuDep-ChIPSeq.Day11.5-12.GSM2575041-GSM2575049_peaks.BLFilt.narrowPeak?dl=0
+
+wehttps://www.dropbox.com/sh/km91k6vzf0ihwkh/AAAah7Ca8e4PohSD4qgoq8Mta/KLF1-HuDep-ChIPSeq.Day11.5-12.GSM2575041-GSM2575049_peaks.BLFilt.narrowPeak?dl=0
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/NFE2-A0.Day0.GSM1816087_peaks.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/NFE2-Erythroid.Day14-16.GSM1067276_peaks.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/NFE2-F0.Day0.GSM1816085_peaks.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/p300-Erythroid.Day14-16.GSM1067278_peaks.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/PU1-A0.Day0.GSM1816090_peaks.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/PU1-F0.Day0.GSM1816089_peaks.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/RUNX1-A0.Day0.GSM1816092_peaks.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/RUNX1-A1.Day0.GSM1097884_peaks.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/RUNX1-F0.Day0.GSM1816091_peaks.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/TAL1-A.Day11.5-12.GSM1278241_peaks.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/TAL1-A0.Day0.GSM1816084_peaks.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/Tal1-A1.Day0.GSM1097881_peaks.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/TAL1-F0.Day0.GSM1816082_peaks.BLFilt.narrowPeak
+wget https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/TAL1.Day4-16.GSM651545_peaks.BLFilt.narrowPeak
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* dropbox tips:  create a wget-compatible link (28 apr 2019)
+
+   https://www.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/ERG.Day0.GSM1097879_peaks.BLFilt.narrowPeak?dl=0
+
+   change www to dl:
+      https://dl.dropbox.com/sh/km91k6vzf0ihwkh/AAD96ejkbbzITodpRYshD0HCa/ERG.Day0.GSM1097879_peaks.BLFilt.narrowPeak?dl=0
+
+*-----------------------------------------------------------------------------------------------------------------------
+* fuzzy join, used to merge praat pitch and intensity for harry moses, al kwi tu-hakw (27 apr 2019)
+
+  ~/github/howDaylightWasStolen-harryMoses/soundReduction/blend.R
+
+*-----------------------------------------------------------------------------------------------------------------------
+* aggregating trena scores: a first look at flexible voting (26 apr 2019)
+
+   cd ~/github/TrenaProjectErythropoiesis/prep/gata-switch/
+   in createModels.R:
+     see trimModel <- function(tbl.model, tbl.reg, tf.keepers=c(), votesNeeded=3)
+
+        tbl.model:  an expansive, unfiltered trena model data.frame, with perhaps > 200 tf rows
+          tbl.reg:  included here only so that it can be returned, filtered to exclude binding sites for tfs
+                    which did not make it into the trimmed model
+       tf.keepers:  keep these in the model no matter how well they performed.
+      votesNeeded:  any tf with at least this many votes, by any solver method, is kept in the model
+
+      thresholds:  learned in the function from fivenum, of by beta coefficient hard-coded > 0.1
+
+      trimModel <- function(tbl.model, tbl.reg, tf.keepers=c(), votesNeeded=3){
+         matched.keeper.rows <- unlist(lapply(tf.keepers, function(tf) grep(tf, tbl.model$gene)))
+         pvals <- -log10(tbl.model$lassoPValue)
+         good.lassoPval <- which(pvals > 5)
+         good.betaLasso <- which(abs(tbl.model$betaLasso) > 0.1)
+         good.betaRidge <- which(abs(tbl.model$betaRidge) > 0.1)
+         spearman.cutoff <- fivenum(abs(tbl.model$spearmanCoeff))[4]
+         good.spearmanCoeff <- which(abs(tbl.model$spearmanCoeff) >= spearman.cutoff)
+         randomForest.cutoff <- fivenum(tbl.model$rfScore)[4]
+         forest.tfs <- subset(tbl.model, rfScore >= randomForest.cutoff)$gene
+         good.rfScore <- unlist(lapply(forest.tfs, function(tf) grep(tf, tbl.model$gene)))
+         all.counts <- c(good.lassoPval, good.betaLasso, good.betaRidge, good.spearmanCoeff, good.rfScore)
+         tbl.freq <- as.data.frame(table(all.counts), stringsAsFactors=FALSE)
+         colnames(tbl.freq) <- c("rowNumber", "count")
+         tbl.freq <- tbl.freq[order(tbl.freq$count, decreasing=TRUE),]
+         tbl.freq$rowNumber <- as.integer(tbl.freq$rowNumber)
+         good.tf.rows <- subset(tbl.freq, count >= votesNeeded)$rowNumber
+         not.yet.included <- setdiff(matched.keeper.rows, good.tf.rows)
+         if(length(not.yet.included) > 0)
+            good.tf.rows <- c(good.tf.rows, not.yet.included)
+         tbl.model <- tbl.model[good.tf.rows,]
+         new.order <- order(abs(tbl.model$spearmanCoeff), decreasing=TRUE)
+         tbl.model <- tbl.model[new.order,]
+         tbl.reg <- subset(tbl.reg, tf %in% tbl.model$gene)
+         return(list(model=tbl.model, regulatoryRegions=tbl.reg))
+         } # trimModel
+
+
+      test_trimModel <- function(){
+         printf("--- test_trimModel")
+         x.raw <- get(load("modelsAndRegionsAllSamples-rawNeedTrimming.RData"))
+         model.number <- 9
+         tbl.model <- x.raw[[model.number]]$model
+         tbl.reg <- x.raw[[model.number]]$regulatoryRegions
+         x.trimmed <- trimModel(tbl.model, tbl.reg, c("GATA1", "GATA2"), votesNeeded=2)
+         x.final <- fixModelAndRegions(x.trimmed, targetGene="GATA2")
+         checkTrue(all(x.final$regulatoryRegions$tf %in% x.final$model$tf))
+         browser()
+         xyz <- "after trimming"
+        } # test_trimModel
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* bioc build system failure trena (22 apr 2019) exchange with herve
+
+Hi Paul,
+
+Is there a possibility that trena's code is having one worker
+downloading/re-installing BSgenome.Hsapiens.UCSC.hg38 while at the same
+time another worker is trying to access it?
+
+The reason I suspect something like this is that it seems that
+BSgenome.Hsapiens.UCSC.hg38 gets reinstalled every night on the builders
+and that this happens at the time the build system is running 'R CMD
+check' on trena.
+
+Package vignettes, examples, and unit tests should avoid re-installing
+packages.
+
+H.
+
+On 4/22/19 15:01, Paul Shannon wrote:
+I cannot reproduce daily build failures found in the trena package by the build system.  The build report shows:
+
+trena RUnit Tests - 86 test functions, 7 errors, 0 failures
+
+ERROR in test_.injectSnp: Error in .seqlengths_TwoBitFile(x) : UCSC library operation failed
+ERROR in test_bugInStartEndOfMinusStrandHits: Error in .seqlengths_TwoBitFile(x) : UCSC library operation failed
+ERROR in test_findMatchesByChromosomalRegion: Error in .seqlengths_TwoBitFile(x) : UCSC library operation failed
+ERROR in test_findMatchesByChromosomalRegion.twoAlternateAlleles: Error in .seqlengths_TwoBitFile(x) : UCSC library operation failed
+ERROR in test_findMatchesByMultipleChromosomalRegions: Error in .seqlengths_TwoBitFile(x) : UCSC library operation failed
+ERROR in test_getSequence: Error in .seqlengths_TwoBitFile(x) : UCSC library operation failed
+ERROR in test_noMatch: Error in .seqlengths_TwoBitFile(x) : UCSC library operation failed
+
+This seems similar to a bioc support exchange from two years ago, which may suggest that the build system's BSgenome.Hsapiens.UCSC.hg38 is the locus of the problem.   I offer suggestion very tentatively.
+
+   support https://urldefense.proofpoint.com/v2/url?u=https-3A__support.bioconductor.org_p_95963_&d=DwIFAg&c=eRAMFD45gAfqt84VtBcfhQ&r=BK7q3XeAvimeWdGbWY_wJYbW0WYiZvSXAJJKaaPhzWA&m=1AJWecG5cm0EI_BZG7zYbHNZa3JkQY8pdsJFahrtpIU&s=2WHZQbOLmt-jvKlwVBty43jY5JcBt2U_sdqZDqRxEOY&e=
+
+Any suggestions?
+
+ - Paul
+
+sessionInfo()  # from my clean R CMD check
+R version 3.6.0 beta (2019-04-11 r76379)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 16.04.5 LTS
+
+Matrix products: default
+BLAS:   /local/users/pshannon/src/R-beta/lib/libRblas.so
+LAPACK: /local/users/pshannon/src/R-beta/lib/libRlapack.so
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+
+attached base packages:
+[1] stats4    parallel  stats     graphics  grDevices utils     datasets
+[8] methods   base
+
+other attached packages:
+ [1] RPostgreSQL_0.6-2   DBI_1.0.0           RUnit_0.4.32
+ [4] trena_1.5.14        MotifDb_1.22.0      Biostrings_2.48.0
+ [7] XVector_0.20.0      IRanges_2.14.12     S4Vectors_0.18.3
+[10] BiocGenerics_0.26.0 glmnet_2.0-16       foreach_1.4.4
+[13] Matrix_1.2-17
+
+loaded via a namespace (and not attached):
+ [1] SummarizedExperiment_1.10.1       lassopv_0.2.0
+ [3] progress_1.2.0                    lattice_0.20-38
+ [5] rtracklayer_1.40.6                blob_1.1.1
+ [7] XML_3.98-1.19                     rlang_0.3.4
+ [9] flare_1.6.0                       BiocParallel_1.14.2
+[11] bit64_0.9-7                       splitstackshape_1.4.8
+[13] matrixStats_0.54.0                GenomeInfoDbData_1.1.0
+[15] stringr_1.4.0                     zlibbioc_1.26.0
+[17] codetools_0.2-16                  memoise_1.1.0
+[19] Biobase_2.40.0                    biomaRt_2.36.1
+[21] GenomeInfoDb_1.16.0               curl_3.3
+[23] AnnotationDbi_1.42.1              lars_1.2
+[25] Rcpp_1.0.1                        BSgenome_1.48.0
+[27] DelayedArray_0.6.6                org.Hs.eg.db_3.6.0
+[29] bit_1.1-14                        Rsamtools_1.32.3
+[31] BSgenome.Hsapiens.UCSC.hg38_1.4.1 RMySQL_0.10.17
+[33] hms_0.4.2                         digest_0.6.18
+[35] stringi_1.4.3                     GenomicRanges_1.32.7
+[37] grid_3.6.0                        tools_3.6.0
+[39] bitops_1.0-6                      magrittr_1.5
+[41] RCurl_1.95-4.12                   RSQLite_2.1.1
+[43] randomForest_4.6-14               crayon_1.3.4
+[45] vbsr_0.0.5                        pkgconfig_2.0.2
+[47] MASS_7.3-51.4                     data.table_1.12.2
+[49] prettyunits_1.0.2                 httr_1.4.0
+[51] assertthat_0.2.1                  iterators_1.0.10
+[53] R6_2.4.0                          GenomicAlignments_1.16.0
+[55] igraph_1.2.4.1
+
+*-----------------------------------------------------------------------------------------------------------------------
+* emacs ess R macos: all in a bundle (22 apr 2019)
+
+   https://vigou3.gitlab.io/emacs-modified-macos/
+
+*-----------------------------------------------------------------------------------------------------------------------
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ImproViz: Visual Explorations of Jazz Improvisations: try this for harry moses how daylight was stolen (22 apr 2019)
+
+   Jon Snydal and Marti Hearst
+   School of Information Management & Systems (SIMS)
+   University of California, Berkeley
+   102 South Hall, Berkeley, CA USA 94720-4600
+   {jon, hearst}@sims.berkeley.edu
+
+   ABSTRACT
+
+   ImproViz is a visualization technique for diagramming music that brings to light the signature
+   patterns of a jazz musician’s improvisational style. ImproViz consists of two parts: (1) melodic
+   landscapes show the general contours of musical phrasing; and (2) harmonic palettes represent the
+   musician's tendency to use a particular combination of notes in a given part of the song. Viewing
+   the jazz standard All Blues through the lens of ImproViz illustrates the contrasting melodic and
+   harmonic styles of three musicians.  This analysis uncovers some surprises, such as how Miles
+   Davis played musical ideas that contradicted his own composition. ImproViz offers jazz students a
+   new way to study jazz theory and can also serve as a real-time improvisational aid, allowing a
+   student to borrow the harmonic vocabulary of jazz masters.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* early list of genes related to T cell exhaustion from cory (19 apr 2019)
+
+  goi <- c("CTLA4", "EOMES", "LAG3", "CD160", "CD244", "CXCR3", "NFATC2", "PTPN6", "PTPN11", "TIGIT", "CD8A",
+            "IL6", "IL7", "IL11", "TGFB1", "HAVCR2", "BTLA")
+
+  goi <- c("BTLA", "CD244", "CXCR3", "EOMES", "HAVCR2", "IL11", "IL6", "IL7", "LAG3", "PDCD1", "TGFB1", "TIGIT")
+
+
+   found this subset is in the TrenaProjectLymphocyte geneSymbols expression data
+   dir()
+     [1] "GTEx.lymphocyte.ensg.matrix.asinh.RData"
+     [2] "GTEx.lymphocyte.geneSymbols.matrix.asinh.RData"
+     [3] "GTEX.wholeBlood.rna-seq-geneSymbols.filtered.RData"
+     [4] "GTEX.wholeBlood.rna-seq-geneSymbols.RData"
+     [5] "GTEX.wholeBlood.rna-seq.filtered.RData"
+     [6] "GTEX.wholeBlood.rna-seq.RData"
+     > mtx <- get(load("GTEx.lymphocyte.geneSymbols.matrix.asinh.RData"))
+     > dim(mtx)
+     [1] 29253   130
+     > all(goi %in% rownames(mtx))
+     [1] FALSE
+     > setdiff(goi, rownames(mtx))
+     [1] "CTLA4"  "CD160"  "NFATC2" "PTPN6"  "PTPN11" "CD8A"
+     > mtx <- get(load("GTEX.wholeBlood.rna-seq-geneSymbols.filtered.RData"))
+     > setdiff(goi, rownames(mtx))
+     [1] "CTLA4"  "CD160"  "NFATC2" "PTPN6"  "PTPN11" "CD8A"
+     > mtx <- get(load(dir()[1])) #"GTEX.wholeBlood.rna-seq-geneSymbols.filtered.RData"))
+     > "ENSG00000163599" %in% rownames(mtx)
+     [1] FALSE
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* install R 3.5.3 on khaleesi - figure it out for cory (19 apr 2019)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* check that remap chipseq database is properly indexed
+
+  --- first, time a representative query
+   khaleesi, ~/s/data/postgres-fill/remap-2018/checkIndexing.R
+   takes about 10 seconds for every select by value/field query
+
+  (export PGPASSWORD=trena; psql -h khaleesi -U trena hg38)
+  \pset pager
+   select * from pg_indexes where tablename not like 'pg%';
+     # came up empty
+
+   --- do them all at once, or one at a time?
+
+     hg38=# create index on chipseq (chrom)
+     hg38=# create index on chipseq (start); create index on chipseq (endpos);  create index on chipseq (tf);
+
+     hg38=# \di;
+                         List of relations
+       Schema |        Name        | Type  | Owner |  Table
+      --------+--------------------+-------+-------+---------
+       public | chipseq_chrom_idx  | index | trena | chipseq
+       public | chipseq_endpos_idx | index | trena | chipseq
+       public | chipseq_start_idx  | index | trena | chipseq
+       public | chipseq_tf_idx     | index | trena | chipseq
+
+    query <- "select * from chipseq where chrom='chr3' and start >= 1000000 and endpos <= 11000000 and tf='TP73'" #
+    system.time(tbl <- dbGetQuery(db, query))
+     # sped up from 10 to 0.03 seconds: 300 times faster!
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trena build errors BBS (19 apr 2019)
+
+ Last 13 lines of output:
+  ERROR in test_findMatchesByMultipleChromosomalRegions: Error in .seqlengths_TwoBitFile(x) : UCSC library operation failed
+  ERROR in test_getSequence: Error in .seqlengths_TwoBitFile(x) : UCSC library operation failed
+  ERROR in test_noMatch: Error in .seqlengths_TwoBitFile(x) : UCSC library operation failed
+
+  Test files with failing tests
+
+     test_MotifMatcher.R
+       test_findMatchesByMultipleChromosomalRegions
+       test_getSequence
+       test_noMatch
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* sql tips: build up a set of strings for IN operator in dbGetQuery (18 apr 2019)
+
+   loc.set <- sprintf("('%s')", paste(tbl.regions$loc, collapse="','"))
+   query.hits <- sprintf("select * from hits where loc in %s", loc.set)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* t-cell exhaustion networks
+
+  2012: https://www.sciencedirect.com/science/article/pii/S1074761312004700
+
+    Network Analysis Reveals Centrally Connected Genes and Pathways Involved in CD8+ T Cell Exhaustion versus Memory
+
+*-----------------------------------------------------------------------------------------------------------------------
+* build chipDB package, initiall as part of exploring motif binding site frequency and distribution for jeff (18 apr 2019)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* explore TBX15 jaspar2018 motif with mood, bioc and fimo in neigborhood of gata 2
+
+  cd ~/github/MotifDb/explore/motifMatchingDistributions
+  code: mmd.R
+
+  result:
+    [[file://users/paul/images/gata2.motifMatchingTracks.allMethods.png]]
+
+  todo:   see how fimo qvalue changes for high quality hits as the encompassing regions
+          grows and shrinks
+
+*-----------------------------------------------------------------------------------------------------------------------
+* fimoClient tips
+
+   FIMO_HOST <- "localhost"
+   FIMO_PORT <- 600100
+
+   export(motif, con="motif.meme", format="meme")
+   cmd <- sprintf("make -f ~/github/fimoService/server/makefile PORT=%d MOTIFS=motif.meme", FIMO_PORT)
+   system(cmd)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* genehancer tips, track tips (16 apr 2019)
+
+  library(TrenaProject)
+  tbl.enhancers <- get(load(system.file(package="TrenaProject", "extdata", "genomeAnnotation", "geneHancer.v4.7.allGenes.RData")))
+  tbl.gata2 <- subset(tbl.enhancers, geneSymbol=="GATA2")
+  track <- DataFrameQuantitativeTrack("enhancers", tbl.gata2[, c("chrom", "start", "end", "combinedScore")],
+                                        autoscale=FALSE, min=0, max=50, color="brown")
+  displayTrack(igv, track)
+  bigRegion <- with(tbl.gata2, sprintf("%s:%d-%d", chrom=tbl.gata2$chrom[1], start=min(start)-5000, end=max(end)+5000))
+  showGenomicRegion(igv, bigRegion)
+
+*-----------------------------------------------------------------------------------------------------------------------
+*  build check bioccheck trena on khaleesi, R 3.6.0 beta (16 apr 2019)
+
+   see "* install R 3.6.0 beta on khaleesi (12 apr 2019)" below
+   v 1.5.14
+
+    export PATH=~/local/R360beta/bin:$PATH
+    make -f build.makefile
+
+*-----------------------------------------------------------------------------------------------------------------------
+* seward annotated map, delfino's work log videos (14 apr 2019)
+
+   --- work-log from 2018.12.01
+
+    on the Andrews Bay Trail, approximately halfway between its intersections with Woodpecker Trail
+    and  the unnamed trail that connects with the Lost Lake Trail.
+
+   https://www.youtube.com/watch?v=l0xVAf4-fFY
+   47.554986 -122.2516566
+
+*-----------------------------------------------------------------------------------------------------------------------
+* curl tips, show headers only  (appropos: BrowserViz and igvR proper content type for bed, bam, vcf, etc) (13 apr 2019)
+
+   Handily, when you use the -v verbose flag with curl, it sends the output to stdout as usual, but
+   the extra information including the headers goes to stderr. This means that I can therefore view
+   the headers only throwing away stdout completely:
+
+      -L: follow redirects
+      -s: stop curl from "helpfully" printing progress bars as well
+
+    curl -v -s http://awesome-site.com 1> /dev/null
+    curl -v -s -k -L https://igv-data.systemsbiology.net/static/hintDemo/footprints.bed  2>&1 | grep Content
+        < Content-Type: application/octet-stream
+        < Content-Length: 16836
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* enhance BrowserViz/httpuv web server  to support bam file download, for igvR (13 apr 2019)
+
+  --- content-type, mime types
+
+     Two primary MIME types are important for the role of default types:
+
+         text/plain is the default value for textual files. A textual file should be human-readable
+         and must not contain binary data.
+
+         application/octet-stream is the default value for all other cases. An unknown file type
+         should use this type. Browsers pay a particular care when manipulating these files,
+         attempting to safeguard the user to prevent dangerous behaviors.
+
+  --- my retracted issue to igv.js gets this suggestion from jim robinson
+
+     https://github.com/igvteam/igv.js/issues/897#issuecomment-481686781
+
+    See if you can set the content type header for the response to "application/octet-stream" on the server side.
+
+  --- my github issue at rstudio/httpuv
+
+   My Bioconductor package igvR, built on BrowserViz - recently updated to use httpuv 1.5.0 - needs
+   to return a binary file to igv.js running in the browser. In the current case, this a genomic BAM
+   (binary alignment map) file.
+
+   The httpuv WebServer nicely supports returning other genomic text files used by igv: bed, vcf,
+   bedGraph. Can it return a binary file over http also?
+
+   FWIW, BrowserViz detects and responds to file requests using a technique I developed (probably
+   borrowed from example code) with httpuv 1.3.x. Maybe it is antiquated, needs updating, and in
+   updating I'd get binary file support? Here's how I currently do it:
+
+     wsCon$call = function(req) {
+        qs <- req$QUERY_STRING
+        if(nchar(qs) > 0){
+           queryProcessorFunction <- BrowserViz.state[["httpQueryProcessingFunction"]]
+           if(!is.null(queryProcessorFunction))
+             body <- queryProcessorFunction(qs)
+           else
+             body <- "no query processor registered"
+           return(list(status=200L, headers = list('Content-Type' = 'text/html'), body=body))
+           } # the request had a query string
+
+
+  joe cheng:
+
+    You should just be able to use a raw vector in place of the string, for the body. Here's the
+    relevant section of the Rook spec:
+    https://github.com/jeffreyhorner/Rook/blob/master/README.md#the-body
+
+      library(GenomicAlignments)
+      library(rtracklayer)
+
+      which <- GRanges(seqnames = "chr19", ranges = IRanges(42866464, 42879822))
+      param <- ScanBamParam(which=which)
+      bamFile <- "~/github/igvR/inst/extdata/LN54310_chr19.bam"
+      x <- readGAlignments(bamFile, use.names=TRUE, param=param)
+      export(x, "x.bam", format="bam")
+
+
+      file.size("x.bam")
+      rawVector <- readBin("x.bam", "rb", n=file.size("x.bam"))
+      class(rawVector)
+      length(rawVector)
+      writeBin(rawVector, con="x2.bam")
+
+
+  winston chang:
+
+    I think you also need to use a different Content-Type:
+      headers = list('Content-Type' = 'application/octet-stream')
+
+*-----------------------------------------------------------------------------------------------------------------------
+* tpe, erythropoiesis, tbx15/gata2 connection, stumbled-upon: create bedgraph files of atac-seq for loading into tv shiny app (10 apr 2019)
+
+  cd ~/github/TrenaProjectErythropoiesis/prep/gata-switch/
+  createModels.R
+  has function:
+        x <- getATACseq("chr3", 128495142, 128498398)
+  source("createModels.R")
+  opens igv, enter gata2 in searchbox, get this 16kb region: chr3:128,478,422-128,494,187
+  tbl.atac <- getATACseq("chr3", 128478422, 128494187)
+  bigger 63kb region (missing d04 1 and 2 in previous region)
+  chr3:128,459,896-128,522,959
+  tbl.atac <- getATACseq("chr3", 128459896, 128522959)
+
+  --- summary, after high hopes, dashed hopes, hope restored
+    see findLowerFidelityBindingSites function in
+       ~/github/TrenaProjectErythropoiesis/prep/gata-switch/tbx15.$
+    with these 5 hits in marjorie's atac-seq regions
+                                motifName chrom motifStart  motifEnd strand motifScore motifRelativeScore    match chromStart  chromEnd                  seq status shortMotif
+    2  Hsapiens-jaspar2018-TBX15-MA0803.1  chr3  128475449 128475456      +   6.710003          0.8856179 GGGTGTGA  128475407 128475590 TCCCTAAGAGTTGCAGA...     wt   MA0803.1
+    12 Hsapiens-jaspar2018-TBX15-MA0803.1  chr3  128486955 128486962      +   6.661377          0.8792000 TGGTGTGA  128486844 128487055 GGGTTGGCATAGTAGGG...     wt   MA0803.1
+    21 Hsapiens-jaspar2018-TBX15-MA0803.1  chr3  128483451 128483458      +   6.658030          0.8787582 CGGTGTGA  128482966 128483521 AGAAGGGACAGAGGGAC...     wt   MA0803.1
+    13 Hsapiens-jaspar2018-TBX15-MA0803.1  chr3  128497527 128497534      +   6.658030          0.8787582 CGGTGTGA  128497484 128498222 GGGTGGACTCCGGGCTG...     wt   MA0803.1
+    11 Hsapiens-jaspar2018-TBX15-MA0803.1  chr3  128483002 128483009      +   6.642737          0.8767398 AGGGGTGA  128482966 128483521 AGAAGGGACAGAGGGAC...     wt   MA0803.1
+    1  Hsapiens-jaspar2018-TBX15-MA0803.1  chr3  128461602 128461609      +   6.636363          0.8758986 AGGCGTGA  128461467 128461684 CACCACGCCCGGCTAAT...     wt   MA0803.1
+
+    and this igv plot:
+       [[file:/Users/paul/images/gata2-tbx15-bindingSites.png]]]]
+
+    and this expression correlation plot:
+       [[file:/Users/paul/images/gata2-tbx15-expression-correlation.png]]]]
+
+*-----------------------------------------------------------------------------------------------------------------------
+* amazon spheres botantist: Ron Gagliardo
+
+*-----------------------------------------------------------------------------------------------------------------------
+* hg38 tbl.geneInfo
+
+  if(!exists("tbl.geneInfo"))
+      tbl.geneInfo <- get(load((system.file(package="TrenaProject", "extdata", "geneInfoTable_hg38.RData"))))
+
+   head(tbl.geneInfo)
+                ensg chrom     start       end       tss strand geneSymbol entrez       appris  tsl      transcript           type
+   1 ENSG00000000003  chrX 100627109 100639991 100636806     -1     TSPAN6   7105 A_principal1 tsl1 ENST00000373020 protein_coding
+   2 ENSG00000000005  chrX 100584802 100599885 100584802      1       TNMD  64102 A_principal1 tsl1 ENST00000373031 protein_coding
+   3 ENSG00000000419 chr20  50934867  50958555  50958550     -1       DPM1   8813 A_principal1 tsl1 ENST00000371588 protein_coding
+   4 ENSG00000000457  chr1 169849631 169894267 169888888     -1      SCYL3  57147 A_principal4 tsl1 ENST00000367770 protein_coding
+   5 ENSG00000000460  chr1 169662007 169854080 169795049      1   C1orf112  55732 A_principal1 tsl1 ENST00000359326 protein_coding
+   6 ENSG00000000938  chr1  27612064  27635277  27635277     -1        FGR   2268 A_principal1 tsl1 ENST00000374005 protein_coding
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trenaProjectErythropoiesis, tpe, reinvigorate rcyjs and cyjShiny to display multiple regulatory models (8 apr 2019)
+
+   cd ~/github/TrenaProjectErythropoiesis/prep/gata-switch/
+
+   source("createModels.R"); buildModelsAtEachStage()
+     # saving 11 models to modelsAndRegionsAllSamples.RData
+
+   source("geneRegulatoryModelToGraph.R")
+      test_geneRegulatoryModelToGraph()
+      test_buildMultiModelGraph()
+
+   --- went looking for (as it turns out) javascript code to iterate through the models. found:
+
+       ~/github/trenaHelpers/inst/scripts/trenaViz.html
+       maybe better to do all from R?
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trenaProjectErythropoiesis, tpe, reinvigorate rcyjs and cyjShiny to display multiple regulatory models (2,8 apr 2019)
+  cyjs code to render regulatory model - revamp and refurbish in a trenaViz tab shiny app for jeff & marjorie (2 apr 2019)
+
+   cd ~/github/TrenaProjectErythropoiesis/prep/gata-switch/
+
+   [experimenting in gata-switch directory, will promote and move code once it's working]
+
+     ~/github/TrenaProjectErythropoiesis/prep/gata-switch/geneRegulatoryModelToGraph.R
+
+   buildModelsAtEachStage.R creates modelsAndRegionsAllSamples.RData:  248131 Apr  8 14:05
+
+   --- old source code!
+       code from 2017 that constructs a graph in animated graph cyjs, looking something like the genome,
+       with tfs spread out below the chromosome, target gene above
+
+        ~/github/trenaUtilities/R/TrenaPrep.R   #  Sep  8  2017
+        ~/github/trenaUtilities/R/TrenaViz.R     #  Sep  8  2017
+        ~/github/trenaUtilities/inst/unitTests/test_TrenaVizCyjs.R
+
+   setGeneric('geneRegulatoryModelToGraph',  signature='obj', function(obj, target.gene, tbl.gm, tbl.reg)
+                                                                       standardGeneric('geneRegulatoryModelToGraph'))
+
+    ~/github/trenaUtilities/R/TrenaUtils.R
+      setGeneric('buildMultiModelGraph', signature='obj', function(obj, models) standardGeneric('buildMultiModelGraph'))
+      setGeneric('addGeneModelLayout', signature='obj', function(obj, g, xPos.span=1500) standardGeneric('addGeneModelLayout'))
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* refactored trena gsm, TrenaProjectLiver (8 apr 2019)
+
+   cd ~/github/TrenaProjectLiver/inst/gsm/
+   predicting that the staged build bplapply strategy is too complex and currently maybe broken,
+   refactored to produce
+      normalRun.R, which uses
+      configUtils.R
+
+   see function test_threeGenes
+
+  --- todo:
+    1) write results for each gene out of the buildModel function
+    2) handle failures (eg, no footprints for pseudogene RBMXP2) by catching all exceptions,
+       write "FAILURE" to the gene-specific output directory
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* sword fern video map: shared google folder -> you tube, bainbridge island example (6 apr 2019)
+
+   --- embed video
+
+   1) go to the google folder tim shared with me
+       https://photos.google.com/share/AF1QipMpPErSlPWgfXeN9jDmtLtlzSKxALr-9tdkRWPTr-dfYi6c2yDx_09b-ivKPPMcHQ?key=UF85eWw2cTd6WVpDbUdNaWllWEpKVUFVSWFVZ3RB
+
+   2) choose a video of interest, play it (only it will appear on the screen)
+
+   3) share that to my own folder:
+        click on the shared icon  (sort of a < symbol)
+        in lower left, click text which reads "Shared album"
+        select "map videos and photos"
+        click on "view" button towards bottom: this takes me from tim's shared album to my own "map videos and photos"
+
+   4) go to "YouTube upload"   see bookmark in my ferns bookmark folder
+
+   5) click "Import Videos" - from google photos in top left
+
+   6) select "map videos and photos" album, then the new video of interest
+
+   7) as video uploads, change title to, e.g.,
+
+
+   --- embed my own photos from photos.google.com
+     https://photos.google.com/
+     find the photo
+     click the "share" icon
+
+     https://ctrlq.org/google/photos/
+
+   --- embed photo from shared google photos folder
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igvR, add bam (alignment track), initial exploration (9 apr 2019)
+
+   see https://github.com/igvteam/igv.js/issues/897
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igvR, add bam (alignment track), initial exploration (5,8 apr 2019)
+
+   cd ~/github/igvR/
+
+   library(Rsamtools)
+
+   psg1 chromloc: chr19:42866464-42879822
+   which <- GRanges(seqnames = "chr19", ranges = IRanges(42866464, 42879822))
+   what <- c("rname", "strand", "pos", "qwidth", "seq")
+   param <- ScanBamParam(which = which, what=what)
+   bamFile <- "~/github/igvR/inst/extdata/LN54310_chr19.bam"
+   bam <- scanBam(bamFile, param=param)
+   filterBam(bamFile, "tmp.bam", param=param)
+> bam
+$`chr19:42866464-42879822`
+$`chr19:42866464-42879822`$rname
+  [1] chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19 chr19
+195 Levels: chr1 chr2 chr3 chr4 chr5 chr6 chr7 chr8 chr9 chr10 chr11 chr12 chr13 chr14 chr15 chr16 chr17 chr18 chr19 chr20 chr21 chr22 chrX chrY chrM chr1_KI270706v1_random chr1_KI270707v1_random chr1_KI270708v1_random chr1_KI270709v1_random chr1_KI270710v1_random chr1_KI270711v1_random chr1_KI270712v1_random chr1_KI270713v1_random chr1_KI270714v1_random chr2_KI270715v1_random chr2_KI270716v1_random chr3_GL000221v1_random chr4_GL000008v2_random chr5_GL000208v1_random chr9_KI270717v1_random chr9_KI270718v1_random chr9_KI270719v1_random chr9_KI270720v1_random chr11_KI270721v1_random chr14_GL000009v2_random chr14_GL000225v1_random chr14_KI270722v1_random chr14_GL000194v1_random chr14_KI270723v1_random chr14_KI270724v1_random chr14_KI270725v1_random chr14_KI270726v1_random chr15_KI270727v1_random chr16_KI270728v1_random chr17_GL000205v2_random chr17_KI270729v1_random chr17_KI270730v1_random chr22_KI270731v1_random chr22_KI270732v1_random chr22_KI270733v1_random chr22_KI270734v1_random chr22_KI270735v1_random chr22_KI270736v1_random chr22_KI270737v1_random chr22_KI270738v1_random chr22_KI270739v1_random chrY_KI270740v1_random chrUn_KI270302v1 chrUn_KI270304v1 chrUn_KI270303v1 chrUn_KI270305v1 chrUn_KI270322v1 chrUn_KI270320v1 chrUn_KI270310v1 chrUn_KI270316v1 chrUn_KI270315v1 chrUn_KI270312v1 chrUn_KI270311v1 chrUn_KI270317v1 chrUn_KI270412v1 chrUn_KI270411v1 chrUn_KI270414v1 chrUn_KI270419v1 chrUn_KI270418v1 chrUn_KI270420v1 chrUn_KI270424v1 chrUn_KI270417v1 chrUn_KI270422v1 chrUn_KI270423v1 chrUn_KI270425v1 chrUn_KI270429v1 chrUn_KI270442v1 chrUn_KI270466v1 chrUn_KI270465v1 chrUn_KI270467v1 chrUn_KI270435v1 chrUn_KI270438v1 chrUn_KI270468v1 chrUn_KI270510v1 chrUn_KI270509v1 chrUn_KI270518v1 chrUn_KI270508v1 chrUn_KI270516v1 chrUn_KI270512v1 chrUn_KI270519v1 chrUn_KI270522v1 chrUn_KI270511v1 chrUn_KI270515v1 chrUn_KI270507v1 chrUn_KI270517v1 chrUn_KI270529v1 chrUn_KI270528v1 chrUn_KI270530v1 chrUn_KI270539v1 chrUn_KI270538v1 chrUn_KI270544v1 chrUn_KI270548v1 chrUn_KI270583v1 chrUn_KI270587v1 ... chrEBV
+
+$`chr19:42866464-42879822`$strand
+  [1] + - + - + - + + - - + - + - + + - - + - + - + - + - + - + - + - + + - - + - + - + - + - + - + - + - + - + - + - - + + - + - + - + - + - + - + - + - + - + - + - + - + - + + - - + - + - + - + - + - + + - - + + + + - - + - + - + - + + - - - + + + - - + - + - - + + + + - - - + - - + - + + - - + + - - + + - - + + + - - - + + - - - + - + + - - + - + - + - + + - + - + - + - + - + - + - - + - + + - - + - + - + - + - + - + - + - + - + - + - + - + - + + - - + - + - + - + - + - - + + - + - + + + - - - + - + - + - + - + - + - + - + - + - + - + - + - + - + - + - + - + - + + - - + - + - + - + - + - + - + - + - + - + + + - - - + + - - + - + + + - - - + - + -
+Levels: + - *
+
+$`chr19:42866464-42879822`$pos
+  [1] 42868061 42868061 42868430 42868431 42868494 42868494 42868596 42868596 42868596 42868596 42868659 42868659 42868661 42868661 42868938 42868938 42869064 42869064 42869097 42869097 42869101 42869125 42869177 42869177 42869180 42869180 42869197 42869197 42869286 42869286 42869290 42869290 42869312 42869313 42869313 42869337 42869570 42869570 42869708 42869728 42870038 42870038 42871547 42871547 42871616 42871616 42871617 42871617 42872324 42872324 42872392 42872479 42872505 42872505 42872598 42872598 42872598 42872599 42872707 42872722 42872848 42872848 42872854 42872854 42872867 42872867 42873017 42873038 42873096 42873119 42873587 42873597 42874401 42874401 42874449 42874449 42874482 42874485 42874567 42874567 42874575 42874586 42874937 42874982 42874990 42874990 42874990 42874990 42874992 42874992 42875003 42875003 42875040 42875040 42875054 42875054 42875151 42875165 42875346 42875346 42875355 42875355 42875496 42875500 42875510 42875511 42875511 42875512 42875515 42875515 42875518 42875518 42875520 42875520 42875524 42875524 42875524 42875524 42875524 42875526 42875526 42875526 42875526 42875526 42875530 42875530 42875550 42875553 42875553 42875558 42875558 42875558 42875558 42875558 42875558 42875564 42875567 42875567 42875570 42875575 42875575 42875583 42875583 42875583 42875583 42875585 42875585 42875585 42875585 42875587 42875587 42875587 42875587 42875588 42875588 42875588 42875588 42875588 42875588 42875589 42875589 42875589 42875589 42875591 42875595 42875595 42875597 42875597 42875597 42875597 42875599 42875599 42875634 42875651 42875881 42875881 42875965 42875970 42875970 42875988 42875988 42876026 42876040 42876072 42876072 42876126 42876126 42876148 42876148 42876198 42876198 42876275 42876312 42876312 42876337 42876337 42876337 42876337 42876545 42876545 42876568 42876568 42876610 42876897 42876906 42876906 42877392 42877393 42877456 42877456 42877496 42877496 42877793 42877793 42877851 42877859 42877950 42877950 42877964 42877964 42878151 42878151 42878227 42878302 42878351 42878377 42878470
+[228] 42878479 42878542 42878542 42878571 42878571 42878727 42878727 42878738 42878738 42879043 42879044 42879181 42879181 42879188 42879188 42879216 42879216 42879216 42879216 42879216 42879216 42879225 42879225 42879492 42879492 42879512 42879512 42879608 42879608 42879619 42879620 42879623 42879623 42879631 42879631 42879632 42879632 42879634 42879634 42879638 42879638 42879640 42879640 42879647 42879647 42879649 42879649 42879658 42879658 42879660 42879660 42879661 42879661 42879663 42879663 42879664 42879664 42879664 42879664 42879666 42879666 42879669 42879669 42879672 42879672 42879675 42879675 42879678 42879678 42879680 42879680 42879681 42879681 42879684 42879684 42879689 42879689 42879692 42879692 42879692 42879692 42879692 42879692 42879701 42879701 42879701 42879701 42879711 42879711 42879719 42879719 42879719 42879719 42879719 42879719 42879723 42879723 42879739 42879740
+
+$`chr19:42866464-42879822`$qwidth
+  [1] 53 53 76 76 60 60 54 54 54 54 69 69 59 59 76 76 76 76 54 54 76 76 73 73 58 58 37 37 66 66 45 45 76 54 54 76 72 72 76 76 60 60 51 51 49 49 54 54 41 41 76 76 70 70 39 39 76 76 76 76 61 61 45 45 65 65 76 76 76 76 76 76 76 76 50 50 76 76 44 44 76 76 76 76 54 59 54 59 53 53 65 65 51 51 65 65 76 76 76 76 76 76 76 76 76 68 68 76 71 71 67 67 68 68 55 66 55 66 76 76 56 59 56 59 72 72 76 76 76 66 76 76 64 66 64 76 71 71 76 63 63 51 57 51 57 45 45 45 45 53 56 53 56 43 41 36 43 41 36 49 49 49 49 76 35 35 44 41 44 41 55 55 76 76 62 62 76 42 42 50 50 76 76 70 70 70 70 52 52 67 67 76 47 47 53 53 53 53 60 60 50 50 76 76 55 55 76 76 70 70 40 40 47 47 76 76 54 54 63 63 43 43 76 76 76 76 76 76 64 64 28 28 56 56 46 46 76 76 55 55 52 52 58 63 54 58 63 54 69 69 69 69 50 50 52 52 76 76 57 57 70 70 70 70 70 70 58 58 56 56 76 76 58 58 55 55 63 63 70 70 56 56 55 51 55 51 49 49 64 64 72 72 63 63 40 40 52 52 51 51 57 57 66 66 43 63 49 43 63 49 58 58 58 58 55 55 41 38 60 41 38 60 43 43 76 76
+
+$`chr19:42866464-42879822`$seq
+  A DNAStringSet instance of length 326
+      width seq
+  [1]    53 ACCTAAAACCCTATTGCCAACGATGCTGGGATCCACTTACCAGAGACTTCGAC
+  [2]    53 GCCTAAAACCCTATTGCCAACGATGCTGGGATCCACTTACCAGAGACTGCGAC
+  [3]    76 CAGTGACCCTCTGAGCCAAGACACACCCTCAAGTCCCAGCCCAACCCCCTCTATGTTCACTGAGCCGAATCCTGAG
+  [4]    76 AGTGACCCTCTGAGCCAAGACACACCCTCAAGTCCCAGCCCAACCCCCTCTATGTTCACTGAGCCGAATCCTGAGG
+  [5]    60 CCGAATCCTGAGGTATTCCCCTGTTTCTCCCATCACAAGCTGTGGGCCCCAAGTCTCCCA
+  ...   ... ...
+[322]    60 CATGGGCAGGGTCAGGCCCAGGACACCTCTCTGTCCCCTCCTCTCTAAGTCCTGCCTCCT
+[323]    43 GGCAGGGTCAGGCCCAGGACACCTCTCTGTCCCCTCCTCTCTA
+[324]    43 GGCAGGGTCAGGCCCAGGACACCTCTCTGTCCCCTCCTCTCTA
+[325]    76 GGACACCTCTCTGTCCCCTCCTCTCTAAGTCCTGCCTCCTTGTCCCTCCTTCTGTTTCTCCTTTTGTCTGTGTTTC
+[326]    76 GACACCTCTCTGTCCCCTCCTCTCTAAGTCCTGCCTCCTTGTCCCTCCTTCTGTTTCTCCTTTTGTCTGTGTTTCA
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* apophenia: contrast to connections made via deleuzian "lines of flight"
+
+  the tendency to mistakenly perceive connections and meaning between unrelated things. The term (German: Apophänie) was
+  coined by psychiatrist Klaus Conrad in his 1958 publication on the beginning stages of schizophrenia.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* logic of an S4 shiny tab: cyjShiny for trenaViz (3 apr 2019)
+
+   ~/github/trenaViz/R/NetworkView.R
+   developed and tested with ~/github/TrenaViz/inst/devel/devel_NetworkView.R
+
+   --- the order and structure of events:
+    devel_NetworkView.R
+      ui <- dashboardPage(
+        dashboardHeader(title="NetworkView devel"),
+       .createSidebar(),
+       .createBody()
+       )
+    .createBody: a dashboardBody with two tabItems
+        main: has only a button "View Network"
+          whose click event callback is in  NetworkView::addEventHandlers
+        (this seems a little odd to me, but it works)
+
+    NetworkView::addEventHandlers
+      detects the "View Network" button click
+         raises the nv tab
+         calls NetworkView::displayPage()
+            insertUI(selector="#networkViewPageContent", where="afterEnd", createPage(obj), immediate=TRUE)
+            createPage defines a div containing a cyjShinyOutput widget
+         output$cyjShiny <- renderCyjShiny({
+            cyjShiny(graph=graph.json, layoutName="cola")
+            })
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* yeast metabolic & regulatory modeling (12 apr 2019) zhiaoyu
+
+   Just now we mentioned that we could add another pathway of S.cerevisiae besides the n-butanol
+   pathway. And I think we could work on the glycolysis
+   pathway:https://www.kegg.jp/kegg-bin/highlight_pathway?scale=1.0&map=sce00010&keyword=ethanol
+
+   I am also contacting the author of the IDREAM paper for their microarray data. Here's the link to
+   the paper: https://www.biorxiv.org/content/10.1101/087148v1.abstract
+
+   goal:  once the atac-seq arrives, assemble rna-seq, build models of some well understood enzymes.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* yeast atac-seq (2 apr 2019)
+
+  https://experiments.springernature.com/articles
+
+
+/10.1007/978-1-4939-8618-7_15
+
+  13 November 2018
+   Simultaneous Profiling of DNA Accessibility and Gene Expression Dynamics with ATAC-Seq and RNA-Seq
+
+   This chapter describes sequencing-based methods for profiling dynamic changes in DNA accessibility and gene
+   expression in Saccharomyces cerevisiae. Assay for transposase-accessible chromatin with high-throughput sequencing
+   (ATAC-Seq) is a powerful technique for identifying nucleosome-free regions of the genome. Combining ATAC-Seq with RNA
+   Sequencing (RNA-Seq) is a rapid approach for studying the relationship between genome structure and changes in global
+   patterns of gene expression from a single experiment. A laboratory protocol is presented for these methods as well as
+   examples of typical results and visualizations. less
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* yeast rna-seq (12 apr 2019)
+
+   https://www.yeastgenome.org/search?q=rna-seq&is_quick=true
+   https://www.yeastgenome.org/reference/S000181022    48 samples
+   GSE53720: 4 conditions
+   https://www.google.com/search?q=geo+saccharomyces+rna-seq&oq=geo+saccharomyces+rna-seq&aqs=chrome..69i57.8183j0j4&sourceid=chrome&ie=UTF-8
+
+*-----------------------------------------------------------------------------------------------------------------------
+* for alison: can we get more footprints out of the bamtobed files (2 apr 2019)
+
+  cd
+  ~/github/TrenaProjectPlacenta/inst/footprinting/yeonsExplorations/displayFseqThresholds.R
+
+     [[file:/users/paul/images/placenta-psg1-fseq-threshold-comparison.png]]
+
+     16337 chr19-fseqOutput-1.5.bed
+     12632 chr19-fseqOutput-2.5.bed
+     10431 chr19-fseqOutput-3.5.bed
+
+
+
+   --- fseq with threshold of 3.5
+         ~/github/F-seq/dist~/fseq/bin/fseq -v -of bed -t 3.5   LN54305_chr19.bed
+            wc -l chr19.bed #  10431
+            mv chr19.bed chr19-fseqOutput-3.5.bed
+
+            F-Seq Version 1.85
+            Settings:
+            	window=2860
+            	bandwidth=100
+            	threshold = 0.67883575
+            	est. fragment size = 75
+            	sequence length = 42
+            chr19: first=63293, last=58606936
+            ....................
+            .....................
+            chr19: Completed in 13.688 seconds.
+            chr19: Found 10431 peaks.
+
+   --- fseq with threshold of 2.5
+       F-Seq Version 1.85
+      Settings:
+      	window=2860
+      	bandwidth=100
+      	threshold = 0.5806591
+      	est. fragment size = 75
+      	sequence length = 42
+      chr19: first=63293, last=58606936
+      ....................
+      .....................
+      chr19: Completed in 13.985 seconds.
+      chr19: Found 12632 peaks.
+
+    ---- fseq with threshold of 1.5
+      ~/github/F-seq/dist~/fseq/bin/fseq -v -of bed -t 1.5 LN54305_chr19.bed
+      F-Seq Version 1.85
+      Settings:
+      	window=2860
+      	bandwidth=100
+      	threshold = 0.48449957
+      	est. fragment size = 75
+      	sequence length = 42
+      chr19: first=63293, last=58606936
+      ....................
+      .....................
+      chr19: Completed in 20.668 seconds.
+      chr19: Found 16337 peaks.
+      -----------------------
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* arabdopsis atac-seq:  Regulatory chromatin landscape in Arabidopsis thaliana roots uncovered by coupling INTACT and ATAC-seq
+
+   https://plantmethods.biomedcentral.com/articles/10.1186/s13007-018-0381-9#Sec10
+   https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE122772
+
+  --- rna-seq?
+    Step-by-Step Construction of Gene Co-expression Networks from High-Throughput Arabidopsis RNA Sequencing Data.
+       https://www.ncbi.nlm.nih.gov/pubmed/29525965
+
+   --- rna-seq?  (apparently available via and EBI "Expression Atlas" and bioc package
+      http://www.bioconductor.org/packages/release/bioc/html/ExpressionAtlas.html
+
+     RNA-Seq mRNA baseline
+     Organism: Arabidopsis thaliana
+     Reference(s): 23136377 (Filter by genes in paper)
+
+   --- rna-seq? travadb
+
+     2. Anna Klepikova, Artem Kasianov, Evgeny Gerasimov, Maria Logacheva and Aleksey Penin A High
+        Resolution Map of the Arabidopsis thaliana Developmental Transcriptome Based on RNA-seq
+        Profiling.
+
+      Arabidopsis thaliana is a long established model species for plant molecular biology, genetics
+        and genomics, and studies of A.thaliana gene function provide the basis for formulating
+        hypotheses and designing experiments involving other plants, including economically
+        important species. A comprehensive understanding of the A.thaliana genome and a detailed and
+        accurate understanding of the expression of its associated genes is therefore of great
+        importance for both fundamental research and practical applications. Such goal is reliant on
+        the development of new genetic and genomic resources, involving new methods of data
+        acquisition and analysis. We present here the genome-wide analysis of A.thaliana gene
+        expression profiles across different organs and developmental stages using high-throughput
+        transcriptome sequencing. The expression of 25,706 protein-coding genes, as well as their
+        stability and their spatiotemporal specificity, was assessed in 79 organs and developmental
+        stages. A search for alternative splicing events identified 37,873 previously unreported
+        splice junctions, approximately 30% of occurred in intergenic regions. These potentially
+        represent novel spliced genes that are not included in the TAIR10 database. These data are
+        housed in an open-access web-based database, TraVA (Transcriptome Variation Analysis,
+        http://travadb.org/), which allows visualization and analysis of gene expression profiles
+        and differential gene expression between organs and developmental stages.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* postgres tips, footprint tips
+
+  library(RPostgreSQL)
+
+  --- connect to the "master database"
+    db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="hg38", host="khaleesi")
+    dbGetQuery(db, "select * from pg_database")
+   ...
+                chipatlas  16385        6 en_US.UTF-8 en_US.UTF-8         FALSE         TRUE           -1         12406          651          1          1663                                <NA>
+                placenta2  16385        6 en_US.UTF-8 en_US.UTF-8         FALSE         TRUE           -1         12406          651          1          1663                                <NA>
+            brain_hint_20  16385        6 en_US.UTF-8 en_US.UTF-8         FALSE         TRUE           -1         12406          651          1          1663                                <NA>
+      brain_wellington_20  16385        6 en_US.UTF-8 en_US.UTF-8         FALSE         TRUE           -1         12406          651          1          1663                                <NA>
+      brain_wellington_16  16385        6 en_US.UTF-8 en_US.UTF-8         FALSE         TRUE           -1         12406          651          1          1663                                <NA>
+            brain_hint_16  16385        6 en_US.UTF-8 en_US.UTF-8         FALSE         TRUE           -1         12406          651          1          1663                                <NA>
+      lymphoblast_hint_16  16385        6 en_US.UTF-8 en_US.UTF-8
+  FALSE         TRUE           -1         12406          651
+  1          1663                                <NA>
+
+  --- connect to a "contained database"
+     db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="brain_hint_20", host="khaleesi")
+     dbGetQuery(db, "select count(*) from regions")
+        157524344
+
+     db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="placenta2", host="khaleesi")
+      dbGetQuery(db, "select count(*) from regions")
+         16885714
+
+     dbDisconnect(db)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igvR, BrowserViz: accomodate httpuv 1.5.0 (30 mar 2019)
+
+  cd ~/s/examples/R/websockets/httpuv/v150/echo/separateUsingEnvironment
+
+*-----------------------------------------------------------------------------------------------------------------------
+* nature's mutiny:  How the Little Ice Age of the Long Seventeenth Century Transformed the West and Shaped the Present
+  review in (27 mar 2019) new yorker
+*-----------------------------------------------------------------------------------------------------------------------
+
+*-----------------------------------------------------------------------------------------------------------------------
+* fill the placenta2 footprint hint database on khaleesi, for extra speed (27 mar 2019)
+
+    cd  ~/github/TrenaProjectPlacenta/inst/footprinting/postgres/
+    bash> createdb -h khaleesi -U trena  placenta2
+    bash> make createTables
+          (export PGPASSWORD=trena; psql -h khaleesi -U trena placenta2 -f createTables.sql)
+
+   make fillRegions
+   make fillHits
+   make look
+     placenta2=# select count(*) from regions;   16,885,714
+     placenta2=# select count(*) from hits;      25,768,676
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* placenta footprints: called too conservatively?  (27 mar 2019)
+
+   --- found a gene with highly variable expression:
+     tpp <- TrenaProjectPlacenta()
+     getExpressionMatrixNames(tpp)
+     mtx <- getExpressionMatrix(tpp, "CombatAdjustedData_MWHONLY_312019_geneSymbols")
+     sd <- apply(mtx, 1, sd)
+     sd[sd > 4]
+      DDX3Y      ZFY    NOMO1   RPS4Y1      UTY   AGPAT1    HLA-C
+    4.614912 4.656109 4.410734 5.446394 4.273324 4.161649 4.300836
+
+    surprised to see that in a trena model, we find ONLY footprints 200bp upstream of the tss
+    even a 7k region, all footprints in region, returns those footprints
+
+    [[file:/users/paul/images/nomo1-footprints-placenta.png]]
+
+    --- strategy: look at all processing steps leading up to the
+      footprints in a region 24kb centered on the footprints
+
+     method, on khaleesi:
+
+    cd  /local/trenaPlacentaProject/whole_genome/LN54305/LN54305_bed/
+      tbl.bed <- read.table("LN54305_chr16.bed", sep="\t", as.is=TRUE, nrow=-1)
+      colnames(tbl.bed) <- c("chrom", "start", "end", "name", "score", "strand")
+        # chr16:14,820,841-14,845,288
+      tbl.sub <- subset(tbl.bed, start > 14820841 & end < 14845288)
+      write.table(tbl.sub[, c("chrom", "start", "end", "score")], file="~/tmp/nomoRegion.tsv", sep="\t",
+                  quote=FALSE, row.names=FALSE, col.names=FALSE)
+
+     see that footprints were called too stringently.  two nearby DHS regions overlapped bam2bed
+     regions, did not make it into footprints, no chance for motifs to be called:
+
+     [[file:/users/paul/images/nomo1-footprints-placenta-bam2bed-added-1sample.png]]
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* placenta footprints, khaleesi, fimo threshold 1e-4 (27 mar 2019)
+
+   placenta-test=> select count(*) from regions;  13,711,146
+   placenta-test=> select count(*) from hits;     25,579,989
+
+   initial and barely serviceable approach for all chromosomes
+
+     /local/users/pshannon/github/fptodb/inst/unitTests/
+
+   khaleesi.unitTests> find . -name regions.tsv -exec wc -l {} ';' | sort -nr
+   1713491 ./chr1/regions.tsv
+   1260392 ./chr2/regions.tsv
+   992126 ./chr19/regions.tsv
+   968308 ./chr3/regions.tsv
+   946347 ./chr17/regions.tsv
+   946006 ./chr11/regions.tsv
+   915280 ./chr6/regions.tsv
+   900691 ./chr7/regions.tsv
+   809429 ./chr12/regions.tsv
+   808272 ./chr9/regions.tsv
+   791909 ./chr5/regions.tsv
+   775214 ./chr10/regions.tsv
+   746823 ./chr16/regions.tsv
+   717885 ./chr8/regions.tsv
+   637975 ./chr4/regions.tsv
+   577111 ./chr14/regions.tsv
+   560392 ./chr15/regions.tsv
+   485702 ./chr20/regions.tsv
+   442867 ./chr22/regions.tsv
+   349876 ./chr13/regions.tsv
+   320289 ./chr18/regions.tsv
+   219329 ./chr21/regions.tsv
+
+   khaleesi.unitTests> find . -name hits.tsv -exec wc -l {} ';' | sort -nr
+   2612793 ./chr1/hits.tsv
+   1923151 ./chr2/hits.tsv
+   1519676 ./chr19/hits.tsv
+   1475776 ./chr3/hits.tsv
+   1446369 ./chr17/hits.tsv
+   1441125 ./chr11/hits.tsv
+   1395697 ./chr6/hits.tsv
+   1377222 ./chr7/hits.tsv
+   1235682 ./chr12/hits.tsv
+   1235095 ./chr9/hits.tsv
+   1204812 ./chr5/hits.tsv
+   1181617 ./chr10/hits.tsv
+   1144461 ./chr16/hits.tsv
+   1094616 ./chr8/hits.tsv
+   968700 ./chr4/hits.tsv
+   879661 ./chr14/hits.tsv
+   852406 ./chr15/hits.tsv
+   743831 ./chr20/hits.tsv
+   676739 ./chr22/hits.tsv
+   534693 ./chr13/hits.tsv
+   488256 ./chr18/hits.tsv
+   336298 ./chr21/hits.tsv
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* alison genome scale model region strategy (26 mar 2019)
+
+
+  I spoke with Cory about the advantages and disadvantages of a couple of different options for regions to
+  build the model within.  I understand the utility of using the genehancer regions and would like to build a
+  model to integrate them in the future. However, since there are limitations to the genehancer regions in the
+  sense that they are constructed using all public 3C data, so they might not be as comprehensive for a
+  relatively understudied tissue.
+
+  I propose that we build this first model using +/- 2500 BP from the TSS & any distal enhancer regions
+  outside of this region identified within genehancer. I think that this strikes a good balance of being as
+  inclusive of a broad range of the promoter as possible, and also will capture distal hits in a way that is
+  fair. This was the most liberal of the 3 strategies I came up with. We can tone this down if the models end
+  up looking strange.  Let me know if this makes sense and what you think of this strategy. Thanks!
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* tpe TrenaProjectErythropoiesis, model regulation using srm for TFs, rna-seq for target genes (26 mar 2019)
+
+   cd ~/github/TrenaProjectErythropoiesis/prep/srmTFs-rnaSeqGeneTargets
+
+*-----------------------------------------------------------------------------------------------------------------------
+* write fasta for fimo (26 mar 2019)
+
+   library(Biostrings)
+   sequences <- DNAStringSet(c("CCCCCCC", "AAAAA", "GGGGG", "TTTT"))
+   names(sequences) <- c("c", "a", "g", "t")
+   writeXStringSet(sequences, "tmp.fa")
+
+   --- tmp.fa
+     >c
+     CCCCCCC
+     >a
+     AAAAA
+     >g
+     GGGGG
+     >t
+     TTTT
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trenaProjectErythropoiesis, Hsapiens-jaspar2018-GATA1::TAL1-MA0140.2 (21 mar 2019)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* fill alison's chr19 motif-called footprints into a new postgres database (21 mar 2019)
+
+  cd ~/s/data/alisonPaquette/placentaFootprints2019/chr19/
+     fillDB.R   # creates regions.tsv and motifs.tsv
+
+  --- first test this on whovian.
+  --- ensure access, see what databases already exist
+     psql -h whovian -U trena postgres
+     \pset pager
+     select * from pg_database;
+  bash> createdb -h whovian -U trena placenta-test
+  bash> psql -h whovian -U trena -f createTables.sql
+
+   --- createTables.sql
+      \connect placenta-test;
+      drop table regions;
+      drop table hits;
+      create table regions(loc varchar primary key,
+                           chrom varchar,
+                           start int,
+                           endpos int);
+      grant all on table "regions" to trena;
+      create table hits(loc varchar,
+                        type varchar,
+                        name varchar,
+                        strand char(1),
+                        sample_id varchar,
+                        method varchar,
+                        provenance varchar,
+                        score1 real,
+                        score2 real,
+                        score3 real,
+                        score4 real,
+                        score5 real,
+                        score6 real);
+      grant all on table "hits" to trena;
+
+
+   > psql -h whovian -U trena  placenta-test
+     \copy regions from 'regions-chr19-small.tsv' delimiter E'\t' CSV NULL as 'NA';
+     \copy hits from 'motifs-chr19-small.tsv' delimiter E'\t' CSV NULL as 'NA';
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* Cædmon's hymn and material culture in the world of Bede: six essays
+*-----------------------------------------------------------------------------------------------------------------------
+* macos curly quotes
+   can't do this directly in emacs.  but it works in the Terminal, copy and pasted here
+   note that macbook key labeled   alt     can be called by either name. shift does not seem to apply to this key
+                                      option
+
+   option ]: opening single curly quote   ‘‘‘‘‘‘‘‘
+   option shift ]:                        ’’’’’’’’
+   option [:       ““““““
+   option shift [: ”””””
+
+   note that the direction of the curl does not change. but the
+
+   Alt + ] produces an opening single curly quote ( ‘ )
+   Alt + Shift + ] produces a closing single curly quote ( ’ )
+   Alt + [ produces an opening double curly quote ( “ )
+   Alt + Shift + [ produces a closing double curly quote ( ” )
+   ‘
+
+  --- emacs
+
+    Electric Quote mode makes it easier to type curved quotes. As you type characters it optionally
+    converts ` to ‘, ' to ', “ to “, and ” to ”.
+    It's possible to change the default quotes listed
+    above, by customizing the variable electric-quote-chars, a list of four characters, where the
+    items correspond to the left single quote, the right single quote, the left double quote and the
+    right double quote, respectively, whose default value is '(?` ?' ?`` ?'').
+
+    You can customize the behavior of Electric Quote mode by customizing variables that control
+    where it is active. It is active in text paragraphs if electric-quote-paragraph is non-nil, in
+    programming-language comments if electric-quote-comment is non-nil, and in programming-language
+    strings if electric-quote-string is non-nil. The default is nil for electric-quote-string and t
+    for the other variables.
+
+    Electric Quote mode is disabled by default. To toggle it in a single buffer, use M-x
+    electric-quote-local-mode. To toggle it globally, type M-x electric-quote-mode. To suppress it
+    for a single use, type C-q ` or C-q ' instead of ` or '. To insert a curved quote even when
+    Electric Quote is disabled or inactive, you can type C-x 8 [ for ‘, C-x 8 ] for ’, C-x 8 { for
+    “, and C-x 8 } for ”. See Inserting Text. Note that the value of electric-quote-chars does not
+    affect these keybindings, they are not keybindings of electric-quote-mode but bound in
+    global-map.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* alison's preferred tfs (20 mar 2019): the 925 unique gene symbols from Motifdb(sapiens, jaspar2018, hocomoco, swissregulon)
+
+   ~/github/fimoService/explore/HumanTFDB/compareMotifDbAndHumanTFDB.R
+
+   http://humantfs.ccbr.utoronto.ca/download.php
+   http://humantfs.ccbr.utoronto.ca/download/v_1.01/TF_names_v_1.01.txt
+
+library(MotifDb)
+tfs.human <- scan("TF_names_v_1.01.txt", sep="\n", what=character(0), quiet=TRUE)
+length(tfs.human)
+x <- query(MotifDb, "sapiens", c("jaspar2018", "hocomoco", "swissregulon"))
+length(x)  # 1861
+mdb.genes <- unique(mcols(x)$geneSymbol)
+length(mdb.genes)   # 925
+length(intersect(tfs.human, mdb.genes)) # 677
+length(setdiff(mdb.genes, tfs.human))   # 248
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* yeon mi's placental footprint work, handover (20 mar 2019)
+
+  khaleesi
+  cd /local/trenaPlacentaProject
+     whole_genome
+     chr19-exploration/chr19
+
+   copied chr19 to riptide to examine peaks, footprints, motif calls
+
+   --- first sanity check
+     display all reads (as bed), called peaks, called footprints in and around PSG1 on chr19
+
+   ~/s/data/alisonPaquette/placentaFootprints2019/chr19/displayPSG1.R
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* bernSCM
+
+   khaleesi
+   cd ~/github
+   git clone https://github.com/bernSCM/bernSCM.git
+   cd ~/github/bernSCM
+   make
+   ./run_examples.sh
+   dir output
+
+     5301277 Mar 19 19:17 389ppm_Pulse100GtC_Res0.1yr_D0.1_BernSCM_t_f_CS30.dat
+       58402 Mar 19 19:17 389ppm_Pulse100GtC_Res10yr_D10QI_BernSCM_t_f_CS30.dat
+      535034 Mar 19 19:17 389ppm_Pulse100GtC_Res1yr_D1I_BernSCM_t_f_CS30.dat
+     3053240 Mar 19 19:17 c4mip_a2_D0.1_BernSCM_t0_f0_CS25.dat
+     3053281 Mar 19 19:17 c4mip_a2_D0.1_BernSCM_t0_f_CS25.dat
+     3053317 Mar 19 19:17 c4mip_a2_D0.1_BernSCM_t_f0_CS25.dat
+     3053358 Mar 19 19:17 c4mip_a2_D0.1_BernSCM_t_f_CS25.dat
+       35787 Mar 19 19:17 c4mip_a2_D10QI_BernSCM_t0_f0_CS25.dat
+       35828 Mar 19 19:17 c4mip_a2_D10QI_BernSCM_t0_f_CS25.dat
+       35864 Mar 19 19:17 c4mip_a2_D10QI_BernSCM_t_f0_CS25.dat
+       35905 Mar 19 19:17 c4mip_a2_D10QI_BernSCM_t_f_CS25.dat
+      310109 Mar 19 19:17 c4mip_a2_D1I_BernSCM_t0_f0_CS25.dat
+      310150 Mar 19 19:17 c4mip_a2_D1I_BernSCM_t0_f_CS25.dat
+      310186 Mar 19 19:17 c4mip_a2_D1I_BernSCM_t_f0_CS25.dat
+      310227 Mar 19 19:17 c4mip_a2_D1I_BernSCM_t_f_CS25.dat
+
+   quickly abandoned building xmgrace: it needs motif
+
+   --- from kuno
+
+    Yes, you need xmgrace to show the results, but this is just intended for a quick check. The
+    output is in simple tables that can just as well be processed with R.
+
+    As for your idea to use bernSCM with a R/shiny webapp frontend, I think that would be great!
+    This kind of application was one of the reasons for recoding the model, and we would be happy to
+    see it being used this way. The simplest way to go about it would be to just use R to write the
+    input files and call the model. It may also be possible to achieve a more sophisticated
+    integration, e.g., by replacing the main program bernSCMmain with an R function and calling the
+    individual routines from R, though I don't have any practical experience doing this. In any case
+    I would be happy to give you some guidance and support with bernSCM for such a project.
+
+    As for your idea to use bernSCM with a R/shiny webapp frontend, I think that would be great!
+    This kind of application was one of the reasons for recoding the model, and we would be happy to
+    see it being used this way. The simplest way to go about it would be to just use R to write the
+    input files and call the model. It may also be possible to achieve a more sophisticated
+    integration, e.g., by replacing the main program bernSCMmain with an R function and calling the
+    individual routines from R, though I don't have any practical experience doing this. In any case
+    I would be happy to give you some guidance and support with bernSCM for such a project.
+
+   --- one sample table
+    khaleesi
+      cd   /local/users/pshannon/github/bernSCM/output
+
+    tbl <- read.table("c4mip_a2_D10QI_BernSCM_t0_f0_CS25.dat")
+    colnames <-c("time_(yr)", "glob_temp_dev_(℃)", "RF_tot_(W/m²)", "RF_CO2_(W/m²)", "RF_nonCO2_(W/m²)",
+                 "RF_budget_(W/m²)", "ocean_heat_uptake_(PW)", "co2_atm_(ppm)", "co2_seasurf_(ppm)",
+                 "atm_CO2_change_(GtC/yr)", "fossil_CO2_em_(GtC/yr)", "budget_C_uptake_(GtC/yr)",
+                 "ocean_C_uptake_(GtC/yr)", "land_C_uptake_(GtC/yr)", "NPP_(GtC/yr)", "RH_(GtC/yr)",
+                  "LandC_(GtC)", "dDIC_(μmol/kg)", "fdeep_(GtC/yr)")
+    colnames(tbl) <- colnames
+    dim(tbl)  # 81 19
+
+*-----------------------------------------------------------------------------------------------------------------------
+* other modeling tools
+
+   educational global climate modeling (19 mar 2019)
+
+    http://edgcm.columbia.edu/download-edgcm/
+    apparently not open source, not updated since 2016
+    requested a 30-day demo
+
+    https://github.com/ESCOMP   Earth System Community Modeling Portal
+
+
+    https://www.cesm.ucar.edu/
+     UCAR |  NCAR |  CESM™ : : COMMUNITY EARTH SYSTEM MODEL
+    Sponsored by NSF
+
+   https://en.wikipedia.org/wiki/Community_Earth_System_Model
+
+   The first version of CCSM was created in 1983 as the Community Climate Model (CCM). Over the next
+   two decades it was steadily improved and was renamed CCSM after the Climate System Model (CSM)
+   components were introduced in May 1996.[1] In June 2004 NCAR released the third version, which
+   included new versions of all of the submodels. In 2007 this new version (commonly given the
+   acronym CCSM3 or NCCCSM[14]) was used in the IPCC Fourth Assessment Report,[15] alongside many
+   others. In May 2010 NCAR released CCSM version 4 (CCSM4). On June 25, 2010 NCAR released the
+   successor to CCSM, called the Community Earth System Model (CESM), version 1.0 (CESM1), as a
+   unified code release that included CCSM4 as the code base for its atmospheric component.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* build hbb model, marjorie brand jeff ranish, from marjorie's mrna data (19 mar 2019)
+
+   cd ~/github/TrenaProjectErythropoiesis/prep/betaGlobinLocus/model.hbb/
+   hbb.R
+
+   beta globin canonical regions:
+    tbl.lcr <- data.frame(chrom="chr11", start=5269925, end=5304186, stringsAsFactors=FALSE)
+    tbl.hs2 <- data.frame(chrom="chr11", start=5280519, end=5281050, stringsAsFactors=FALSE)
+    tbl.hbg1.promoter <- data.frame(chrom="chr11", start=5249612, end=5250107, stringsAsFactors=FALSE)
+
+   sent this email to marjorie and jeff:
+
+   Hi Marjorie,
+   Here's a trena model for the regulation of HBB based only upon TFs which:
+     1) have non-zero expression in your mRNA matrix
+     2) have binding sites in the 532 bases of HS2 with a FIMO match score < 1e-4
+   They are sorted by decreasing random forest score (“rfScore”) - a score on the TF for which we have developed a mostly intuitive preference.
+   Does any part of the model look plausible?
+   The model is heavily affected by at least these factors:
+     - regulatory region/s selected  (here I use only HS2)
+     - motif-to-sequence match threshold  (FIMO <= 1e-4) (GATA1/2 match only at a lower threshold)
+     - expression matrix, and its transformation: I normalized your counts by applying, quick-and-easy,
+       the arc hyperbolic sin function
+   I think my next task is to give you a webapp in which you can make these choices yourself, and explore to your heart’s content.  Agreed?
+
+     [[file://Users/paul/images/hbb-hs2-model.png]]
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* protein and rna expression in the TrenaProjectErythropoiesis (19 mar 2019)
+
+  --- by example, exploring this report from marjorie:
+
+    • The beta globin locus: the adult beta-globin gene (HBB) is activated
+      by a distal regulatory element (locus control region or LCR that is
+      made of several HSs). HS2 of the LCR is the most potent of all HSs
+      that make up the LCR. See Figure 1 in attached Bungert review. HBB
+      is activated by GATA1, KLF1, TAL1, NFE2 – and repressed by Bach1
+
+
+   --- bulk srm from jeff
+     load("~/github/TrenaProjectErythropoiesis/prep/import/srm-from-jeff/srm-copyNumberMatrices-rep1-rep2.RData") #  mtx.cn1, mtx.cn2
+     colnames(mtx.cn1) #  1] Day0    Day2    Day4    Day6    Day7.5  Day8    Day8.5  Day10   Day10.5 Day11   Day11.5 Day12   Day14
+
+     cor(mtx.cn1["TAL1",], mtx.cn1["GATA1",])   #  0.9110899
+     cor(mtx.cn2["TAL1",], mtx.cn2["GATA1",])   #  0.7450966
+
+     cor(mtx.cn1["BACH1",], mtx.cn1["HBB",])    #  -0.559973
+     cor(mtx.cn2["BACH1",], mtx.cn2["HBB",])    # -0.2258944
+
+     cor(mtx.cn2["KLF1",], mtx.cn2["HBB",])     #  0.2367522
+     cor(mtx.cn1["KLF1",], mtx.cn1["HBB",])     #  0.02163295
+
+     cor(mtx.cn1["TAL1",], mtx.cn1["HBB",])     #  -0.1166526
+     cor(mtx.cn2["TAL1",], mtx.cn2["HBB",])     #  0.1177785
+
+     cor(mtx.cn1["NFE2",], mtx.cn1["HBB",])     #  0.4999383
+     cor(mtx.cn2["NFE2",], mtx.cn2["HBB",])     #  0.3305137
+
+     cor(mtx.cn1["GATA1",], mtx.cn1["GATA2",])  # 0.4702717
+     cor(mtx.cn2["GATA1",], mtx.cn2["GATA2",])  # 0.6028586
+
+
+    --- bulk rna from marjorie
+     mtx <- get(load("~/github/TrenaProjectErythropoiesis/prep/import/rnaFromMarjorie/mtx-rna.RData"))
+     noquote(colnames(mtx))
+       day0.r1  day0.r2  day2.r1  day2.r2  day4.r1  day4.r2  day6.r1  day6.r2  day7.r1  day7.r2  day8.r1  day8.r2
+       day8.r1  day8.r2  day10.r1 day10.r2 day10.r1 day10.r2 day11.r1 day11.r2 day11.r1 day11.r2 day12.r1 day12.r2
+       day14.r1 day14.r2 day16.r1 day16.r2
+
+
+     cor(mtx["TAL1",], mtx["GATA1",])   #  0.581
+     cor(mtx["BACH1",], mtx["HBB",])    #  0.8226
+     cor(mtx["KLF1",], mtx["HBB",])     #  0.7405897
+     cor(mtx["TAL1",], mtx["HBB",])     #  0.9750346
+     cor(mtx["NFE2",], mtx["HBB",])     #  0.9136309
+     cor(mtx["GATA1",], mtx["GATA2",])  # -0.1795
+
+
+   --- single cell cytof
+     now working in ~/github/TrenaProjectErythropoiesis/prep/import/cytof/makeMatrixOfMedians.R
+     # tbl.all, used here, was assembled (14 dec 2018) in ~/github/cytofViz/inst/explore/noShinyExplore.R
+     # rather complicated!
+     tbl.all <- get(load("tbl.allDays.allProteins.RData"))
+
+*-----------------------------------------------------------------------------------------------------------------------
+* john donne's metaphysical conceit (19 mar 2019)
+
+  A metaphysical conceit is a complex, and often lofty literary device that makes a far-stretched
+  comparison between a spiritual aspect of a person and a physical thing in the world. Quite simply,
+  a metaphysical conceit is an extended metaphor, which can sometimes last through the entire poem.A
+
+  harry moses and photosynthesis - also a conceit?  analogy stretched too far?  or an artful
+  conjunction?
+
+*-----------------------------------------------------------------------------------------------------------------------
+* early model building suggestions from marjorie brand (19 mar 2019)
+
+  --- (email 18 mar 2019)
+
+    I think it’s a good idea to start with one HS.
+
+    HS2 has been proposed to be the “stronger” of all HSs in terms of beta-globin activation. So it’s a good one to start with.
+    HS5 alone should be weaker. So maybe good to use for comparison purposes.
+
+    The LCR per se is thought to be made of HS1 through HS5. The other HSs around are thought to
+    serve as boundary elements, but actually not part of the LCR (although this is somewhat
+    controversial).  It has also been proposed that the HSs work in an additive manner.
+
+    So maybe, you could try HS2+HS3;  and then all the HSs (1 through 5) together.
+
+
+  --- (email 17 mar 2019)
+
+    • The beta globin locus: the adult beta-globin gene (HBB) is activated
+      by a distal regulatory element (locus control region or LCR that is
+      made of several HSs). HS2 of the LCR is the most potent of all HSs
+      that make up the LCR. See Figure 1 in attached Bungert review. HBB
+      is activated by GATA1, KLF1, TAL1, NFE2 – and repressed by Bach1
+
+    • Other simple genes: GPA gene is activated by KLF1. AHSP gene is
+      activated by KLF1. TAL1 gene is activated by GATA1.
+
+    • The GATA1 – GATA2 antagonism could be interesting. GATA2 is proposed
+      to be expressed first and to activate itself and GATA1. GATA1 then
+      represses GATA2. See Figure 1 of attached review. GATA1 and GATA2
+      binds to the exact same motifs.
+
+    • KLF1 and FLI1 are also proposed to be antagonistic: inhibit each
+      other with KLF1 increasing and FLI1 decreasing during erythroid
+      differentiation.
+
+    • PU1 and GATA1 are also antagonistic with GATA1 increasing and PU1
+      decreasing during erythroid differentiation.
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* yeon mi's footprinting results on khaleesi (18 mar 2019)
+
+  I have footprint files in following directories and have instructions in following links!  I have to
+  leave now because of class project meeting but I am planning to come tomorrow since I am leaving
+  early today.
+
+
+  --- footprint files path
+
+  /users/yhwang/whole_genome/LN54305/LN54305_fp
+  /users/yhwang/whole_genome/LN54309/LN54309_fp
+  /users/yhwang/whole_genome/LN54310/LN54310_fp
+  /users/yhwang/whole_genome/LN54311/LN54311_fp
+  /users/yhwang/whole_genome/LN54312/LN54312_fp
+  /users/yhwang/whole_genome/LN54315/LN54315_fp
+  /users/yhwang/whole_genome/LN54316/LN54316_fp
+  /users/yhwang/whole_genome/LN54318/LN54318_fp
+  /users/yhwang/whole_genome/LN54320/LN54320_fp
+  /users/yhwang/whole_genome/LN54323/LN54323_fp
+  /users/yhwang/whole_genome/LN54324/LN54324_fp
+  /users/yhwang/whole_genome/LN54328/LN54328_fp
+
+  --- instruction
+
+  https://github.com/PriceLab/TrenaProjectPlacenta/blob/master/inst/notes/footprint_genome.txt
+  https://github.com/PriceLab/TrenaProjectPlacenta/blob/master/inst/notes/footprint_singlechrom.txt
+
+*-----------------------------------------------------------------------------------------------------------------------
+* give chris lausted the cell-surface markers (and tfs) used for marjorie brand's cytof phenograph (18 mar 2019)
+
+   --- marjorie says (email, 9 dec 2018)
+
+    we use 11 CD markers (CD34, CD36, CD71, CD38, CD45RA, CD123, CD49f, CD90, CD44, CD41, CD235ab)
+    and 16 TFs (GATA1, PU1, ATRX, c-Myc, KLF1, FLI1, TAL1, GATA2, RUNX1, NFE2p45, BACH1, IKZF1,
+    MAFG, c-JUN, KAT3B/p300 and CEBPa). Thus, a total of 27 markers
+
+
+    --- by inspection of data i have already used
+   ~/github/cytofViz/inst/extdata/
+      file from (21 dec 2018)
+     tbl.all <-  get(load(file="~/github/cytofViz/inst/docker/tbl.allDays.allProteins.transformed.RData"))
+     dim(tbl.all)   # [1] 48076    35
+    colnames(tbl.all)
+
+     [1] "cluster"           "day"               "number"            "tsne1"
+     [5] "tsne2"             "sampleName"        "color"             "phenographCluster"
+     [9] "CD90"              "TAL1"              "GATA2"             "CD49F"
+    [13] "KAT3B"             "PU.1"              "CD123"             "CD44"
+    [17] "CD36"              "GATA1"             "RUNX1"             "ATRX"
+    [21] "KLF1"              "CD71"              "CD45RA"            "c-EBPa"
+    [25] "CD235ab"           "CD34"              "MAFG"              "NFE2p45"
+    [29] "IKZF1"             "FLI1"              "CD41"              "BACH1"
+    [33] "CD38"              "c-JUN"             "c-MYC"
+
+    sort(noquote(grep("^CD", colnames(tbl.all), v=TRUE)))
+      CD123   CD235ab CD34    CD36    CD38    CD41    CD44    CD45RA  CD49F   CD71    CD90
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* TrenaProjectErythgropoiesis, tpe, simpleShinyApp with ggplot2, srm + atac-seq (14 mar 2019)
+
+  cd ~/github/TrenaProjectErythropoiesis/prep/compareAtacVsSRM-5timepoints/
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ggplot tips: scatter plot with regression line(14 mar 2019)
+
+  library(ggplot2)
+  library(grid)
+  grob1 <- grobTree(textGrob(paste("Pearson Correlation : ", round(cor(tbl$FLI1.total.density, tbl$FLI1.srm), 4) ),
+                           x = 0.63, y = 0.97, hjust = 0, gp = gpar(col = "red", fontsize = 11, fontface = "bold")))
+
+  ggplot(tbl, aes(x=FLI1.total.density, y=FLI1.srm)) + geom_point() +
+    ggtitle("FLI1.total.density vs FLI1.srm") + geom_smooth(method=lm, se=FALSE) +
+    #scale_x_continuous(name = "FLI1.total.density", limits = c(5, 15), breaks = seq(5, 15, 2)) +
+    #scale_y_continuous(name = "FLI1.srm", limits = c(4000,8000), breaks = seq(5, 15, 2)) +
+    annotation_custom(grob1) +
+    theme(plot.title = element_text(hjust = 0.5), panel.background = element_blank(), axis.line = element_line(color="black"), axis.line.x = element_line(color="black")) +
+    theme_bw()
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ggplot tips: plot srm levels at 9 time points
+
+   tbl[1:5, c(1:5, 11)]
+             KLF1.srm FLI1.srm KLF1.total.hits KLF1.top.hits KLF1.total.density time
+   day.04.1  6560.000 3929.000           32654          8186              10.68    1
+   day.04.2  7097.302 1282.478           17656          4423              13.25    2
+   day.08.1 17185.000  690.000           35912          9033              18.61    3
+   day.10.1 17483.000  334.000           20872          5257              24.79    4
+   day.10.2 14245.733    0.000           26365          6644              22.68    5
+
+
+
+x.axis.labels <- c("4r1", "4r2", "8", "10r1", "10r2", "11r1", "11r2", "12r1", "12r2")
+m <- aes(x=time, y=KLF1.srm)
+m <- aes(x=time, y=FLI1.srm)
+p <- ggplot(data=tbl) + geom_point(mapping=m) + geom_smooth(mapping=m) + xlab("Day & replicate") +
+      scale_x_continuous(breaks=1:9, labels=x.axis.labels)
+p
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+*  TrenaProjectErythrocyte, compareAtacVsSRM-5timepoints (12 mar 2019)
+
+   khaleesi (with latest fimo 5.0.4 and update FimoClient)
+    cd ~/github/TrenaProjectErythropoiesis/
+
+       1161 Mar 12 13:32 findAllBindingSites.R
+   27995220 Mar 12 13:32 regionsAndHits.RData    has all regions, all of the KLF1 and FLI1 hits found by fimo
+       7307 Mar 12 13:13 util.R
+
+   --- next up
+     create multiple plots seeking correlation between open chromatin and srm counts
+     hits total, hits > fimo threshold, hits/count, hits/(sum of open chromatin widths)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* build fimo 5.0.4 on riptide (18 mar 2019)
+
+  cd ~/tools/meme-5.0.4/
+  ./configure --prefix=$HOME/meme --with-url=http://meme-suite.org/ --enable-build-libxml2 --enable-build-libxslt
+   make
+   make test   # many failures on riptide
+   make install
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* fimo 5.0.4 on khaleesi (11 mar 2019)
+
+   ~/github/fimoService/simplestCommandLineAndRClientUse/README
+
+I created this directory when, after updating to meme suire 5.0.4 (11 mar 2019), the Fimoclient no longer worked.
+I eventually found that fimo now appends a few comment lines to its results.  these were included by pandas, and
+completely confused the table reconstruction in FimoClient.R.   The solution was to add "comment='#'" to
+the pandas read_csv function call:
+
+        tbl = pandas.read_csv(filename, delimiter="\t", comment='#')
+
+But to discover this problem, I needed some simple versions, command line and in R, to explore the problem.
+Hence this directory.
+
+----- simplest comand line
+  took GCN4.meme.txt from /local/users/pshannon/tools/meme-5.0.4/tests/fimo/GCN4.meme.txt
+  took GCN4_YPD.fasta from /local/users/pshannon/tools/meme-5.0.4/tests/fimo/GCN4_YPD.fasta
+
+ ~/meme/bin/fimo GCN4.meme.txt GCN4_YPD.fasta
+
+  produces, in fimo_out/
+      19768 Mar 11 08:33 cisml.xml
+      13364 Mar 11 08:33 fimo.gff
+      43950 Mar 11 08:33 fimo.html
+       6339 Mar 11 08:33 fimo.tsv
+       2390 Mar 11 08:33 fimo.xml
+
+  with these extra lines at the bottom of fimo.tsv:
+    MA0303.1	GCN4	iYBR249C	316	336	+	9.85556	9.88e-05	0.0811	TCATCGTTGAGTCATTTCGCA
+
+    # FIMO (Find Individual Motif Occurrences): Version 5.0.4 compiled on Mar 10 2019 at 20:32:32
+    # The format of this file is described at http://meme-suite.org/doc/fimo-output-format.html.
+    # fimo GCN4.meme.txt GCN4_YPD.fasta
+
+---- simplest use of FimoClient.R
+   found in fimo_out/fimo.tsv
+     MA0303.1	GCN4	iYHR018C	181	201	+	16.4778	8.29e-07	0.035	CAAAAAGTGAGTCATTCATCT
+   looked in GCN4_YPD.fasta for that larger sequence from which that came:
+   expanded those ~20 bases to 100
+   >iYHR018C
+   AGTGCCGTCTGACA
+
+   creating these lines in cherryMatch.R
+    library(FimoClient)
+    FIMO_HOST <- "localhost"
+    FIMO_PORT <- 5000
+    fc <- FimoClient(FIMO_HOST, FIMO_PORT, quiet=FALSE)
+    sequence <- list(cherry="CGCTGACCTTTTATAATCCTTTTTTTTTTTTTTCACATGTTTCAATTTGCGCCAGCTTATCCAAAAAGTGAGTCATTCATCTACTAATCATGATTTTCGGGATTCTGCCAATGAGTAACCACCACAAGAACGAACAAATAAT")
+    requestMatch(fc, sequence, pvalThreshold=0.0011)
+
+    requestMatchForRegions(rc, tbl.regions, "hg38", 1e-4)
+
+
+---- problems solved with the extra "comment" arg to pandas.read_csv
+
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* install meme suite and fimo on khaleesi (10 mar 2019)
+
+   status: found version 5.0.4 changes (different output table name, comments at end of table file
+           eventually figured out and code fixed.
+           developed ~/github/fimoService/simplestCommandLineAndRClientUse with minimal examples
+      riptide: meme suite 5.0.4 fails most tests on macos.
+
+   http://meme-suite.org/meme-software/5.0.4/meme-5.0.4.tar.gz
+   khaleesi
+   cd ~/tools
+   curl -O http://meme-suite.org/meme-software/5.0.4/meme-5.0.4.tar.gz
+   tar zxf meme-5.0.4.tar.gz
+   cd ~/tools/meme-5.0.4
+   ./configure --prefix=$HOME/meme --with-url="http://meme-suite.org"
+   make
+   make test   # many failures on riptide
+   make install
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* atac-seq, srm, jeff & marjorie: only 5 shared time points: days 4, 8*, 10, 11, 12, FLI1 and KLF1
+
+  After Jeff pointed out the mistake in my Friday night FLI1 claim; after Jeff, Cory and I spoke today; and with
+  Marjorie’s entirely sensible suggestion to start at day 4, I propose now to make a fresh start at comparing ATAC-seq
+  and SRM across the erythropoiesis time course.
+
+  I propose to use the input data you have provided, listed below, at 5 time points found in both data types. There are
+  2 replicates at each of these timepoints in both sources - except for ATAC-seq day 8*, which just has one.
+
+  Days for which we have two reps from both data sources: 4, 8*, 10, 11, 12
+
+  The first two comparisons will address FLI1 and KLF1, which (Jeff and Corry suggest) may exhibit different pioneering
+  behavior.  FLI1 has > 95% correlation in the the SRM replicates.  KLF1 correlates at about 85%.  For each of these two
+  TFs I will compare copy number counts and FIMO-derived motif match counts in open chromatin of each TFs motif.
+
+  If helpful, I will also provide whole genome motif match counts for each TF as background to the open chromatin motif
+  counts.
+
+
+— from Marjorie
+ATAC_Cord_d04_rep1_hg38_macs2_default_peaks.narrowPeak
+ATAC_Cord_d04_rep2_hg38_macs2_default_peaks.narrowPeak
+ATAC_Cord_d08_rep1_hg38_macs2_default_peaks.narrowPeak
+ATAC_Cord_d10_rep1_hg38_macs2_default_peaks.narrowPeak
+ATAC_Cord_d10_rep2_hg38_macs2_default_peaks.narrowPeak
+ATAC_Cord_d11_rep1_hg38_macs2_default_peaks.narrowPeak
+ATAC_Cord_d11_rep2_hg38_macs2_default_peaks.narrowPeak
+ATAC_Cord_d12_rep1_hg38_macs2_default_peaks.narrowPeak
+ATAC_Cord_d12_rep2_hg38_macs2_default_peaks.narrowPeak
+ATAC_Cord_d16_rep1_hg38_macs2_default_peaks.narrowPeak
+ATAC_Cord_d16_rep2_hg38_macs2_default_peaks.narrowPeak
+
+— from Jeff (Protein Absolute Quants 20180112-Mark-Marjorie-Daniel - USE THIS VERSION 20180807.xlsx)
+Day0
+Day2
+Day4
+Day6
+Day7.5
+Day8
+Day8.5
+Day10
+Day10.5
+Day11
+Day11.5
+Day12
+Day14
+
+With this overlap, with 2 reps in both data sources at each timepoint - except for ATAC-seq at Day8:
+
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* films to consider
+
+   high fidelity
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cosmology as ecological analysis: a view from the rain forest (10 mar 2019)
+
+   ~/Documents/cosmologyAsEcologicalAnalysisAViewFromTheRainForest.pdf
+   gerardo reichel-dolmatoff
+
+   He was best known for his work on Tukano shamanism, pointing out the role of ecological concepts
+   in indigenous cosmology[4] and highlighting the significance of the hallucinogenic vine yagé
+   (ayahuasca)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* chip-atlas downloads fourth attempt, "light"  using normalized database, now on khaleesi  (9 mar 2019)
+
+  khaleesi, cd /local/chipAtlas
+
+  -rw-r--r-- 1 pshannon pricelab 19445175530 Mar  9 14:21 allPeaks_light.hg19.05.bed
+  -rw-r--r-- 1 pshannon pricelab         119 Mar  9 15:35 createAndFillDatabase.sh
+  -rw-r--r-- 1 pshannon pricelab        1833 Mar  9 15:39 createAndFill.R
+  -rw-r--r-- 1 pshannon pricelab    33568077 Mar  9 14:18 experimentList.tab
+  -rw-r--r-- 1 pshannon pricelab      606773 Mar  9 14:22 hg19ToHg38.over.chain
+  -rw-r--r-- 1 pshannon pricelab      227698 Mar  9 14:38 hg19ToHg38.over.chain.gz
+  -rw------- 1 pshannon pricelab       37942 Mar  9 15:14 nohup.out
+  drwxr-xr-x 2 pshannon pricelab         243 Mar  9 20:26 postgres
+  -rw-r--r-- 1 pshannon pricelab        4907 Mar  9 18:06 prepForDatabase.R
+
+   --- test
+    db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="chipatlas", host="khaleesi")
+    dbListTables(db) # [1] "experiments" "peaks"
+
+    dbGetQuery(db, "select * from experiments limit 3")
+         id genome   antigenClass antigen cellTypeClass cellType                                                    cellTypeDescription         processingLogs
+1 DRX000549   hg38 TFs and others   PARK7        Neural  SH-SY5Y                    Primary Tissue=Brain|Tissue Diagnosis=Neuroblastoma  9270532,24.5,32.1,384
+2 DRX000550   hg38 TFs and others   PARK7        Neural  SH-SY5Y                    Primary Tissue=Brain|Tissue Diagnosis=Neuroblastoma  8039428,33.1,43.5,203
+3 DRX001460   hg38 TFs and others   KMT2A         Blood     ML-2 Primary Tissue=Bone Marrow|Tissue Diagnosis=Leukemia Acute Myelogenous 30648533,93.2,12.1,518
+
+    db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="chipatlas", host="khaleesi")
+    dbListTables(db)  # experiments peaaks
+    dbGetQuery(db, "select * from experiments limit 3")
+    dbGetQuery(db, "select * from experiments limit 3")[, c("antigen", "cellType")]
+
+*-----------------------------------------------------------------------------------------------------------------------
+* chip-atlas downloads third attempt, "light"  using normalized database, trim to hg19+TFs and others (9 mar 2019)
+
+  trena, cd  /local/pshannon/chipAtlas/
+
+  - from experimentList.tab, discover all experiments which are both hg19 + "TFs and others"
+  - use those experiment ids to subset   allPeaks_light.hg19.05.bed
+  - liftover that subset to hg38
+  - add both as tables to a postgress database
+  - index on tf, chrom, start, end
+
+*-----------------------------------------------------------------------------------------------------------------------
+* chip-atlas downloads (8 mar 2019)  second attempt, "light"  using normalize database (8 mar 2019)
+
+  doing this on trena:/local/pshannon/chipAtlas
+  curl -O http://dbarchive.biosciencedbc.jp/kyushu-u/metadata/experimentList.tab
+  curl -O http://dbarchive.biosciencedbc.jp/kyushu-u/hg19/allPeaks_light/allPeaks_light.hg19.50.bed.gz &
+    Download the lighter version of all peak-call data
+     hg19 (Q: MACS2 Q-value thresholds) < 1e-50
+
+    # gunzip:  unexpected end of file, zcat avoids the problem
+   zcat allPeaks_light.hg19.05.bed.gz > allPeaks_light.hg19.05.bed
+   head allPeaks_light.hg19.05.bed
+     chr1    9698    10591   SRX502813       1000
+     chr1    9718    10545   SRX2512462      996
+     chr1    9720    10449   SRX825369       841
+     chr1    9721    10542   SRX2512461      1000
+     chr1    9724    10526   SRX825398       957
+     chr1    9734    10697   SRX359894       1000
+     chr1    9738    10605   SRX359916       1000
+     chr1    9742    10749   SRX502815       940
+     chr1    9749    10547   SRX539666       808
+     chr1    9755    10456   SRX825368       829
+
+
+# 40 experimens with GATA2 hits
+subset(tbl.tfmd, antigen=="GATA2")
+# see this one: 44176  SRX248934   hg19 TFs and others   GATA2          Blood                         CD34+                                                  $
+# how many occurences of SRX248934 in allPeaks_light.hg19.05.bed?
+# grep -c SRX248934 allPeaks_light.hg19.05.bed  5818
+
+
+   library(data.table) #    data.table 1.12.0  Latest news: r-datatable.com
+   > tbl <- fread("allPeaks_light.hg19.05.bed")
+ |--------------------------------------------------|
+ |==================================================|
+  dim(tbl) #  [1] 507,198,949         5
+  dim(subset(tbl, V4 == "SRX248934")) #  [1] 5818    5
+   tbl.gata2 <- subset(tbl, V4 == "SRX248934")
+ fivenum(tbl.gata2$V5)
+ [1]   63  153  210  325 1000
+        V1        V2        V3        V4   V5
+!> head(subset(tbl.gata2, V5 > 950))
+      V1        V2        V3        V4   V5
+ 1: chr1   8075096   8075374 SRX248934 1000
+ 2: chr1  35562880  35563209 SRX248934 1000
+ 3: chr1  40596622  40596925 SRX248934  975
+ 4: chr1 121484033 121485472 SRX248934 1000
+ 5: chr1 157373833 157374144 SRX248934  961
+ 6: chr1 160509905 160510292 SRX248934 1000
+ >
+
+
+
+
+
+   readExperimentList.R
+     colnames <- c("id", "genome", "antigenClass", "antigen", "cellTypeClass", "cellType", "cellTypeDescription", "processingLogs", "title")
+     tbl.md <- read.table("experimentList-hg19.tab", sep="\t", as.is=TRUE, nrow=-1, fill=TRUE, header=FALSE)[, 1:9]
+     colnames(tbl.md) <- colnames
+     tbl.md <- subset(tbl.md, genome=="hg19")
+     dim(tbl.md)
+     head(subset(tbl.md, antigen=="GATA2"))
+     length(which(duplicated(tbl.md$id))) ==	0
+     table(tbl.md$antigenClass)
+     #    DNase-seq        Histone  Input control No description RNA polymerase TFs and others   Unclassified
+     #          675           4283           2116           3204            636           4916           1932
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* chip-atlas downloads (8 mar 2019)  first attempt, abandonded in favor of "light" - see above
+
+  doing this on trena:/local/pshannon/chipAtlas
+  getChIPseq.sh: nohup curl -O http://dbarchive.biosciencedbc.jp/kyushu-u/hg19/assembled/Oth.Neu.05.AllAg.AllCell.bed
+
+  --- prepForDatabase.R
+    library(GenomicRanges)
+    library(rtracklayer)
+    # grep chr19 Oth.Bld.50.AllAg.AllCell.bed > blood.chr19.bed
+    gr <- import("blood.chr19.bed")
+    #library(liftOver)
+    system("curl -O http://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz")
+    system("gunzip hg19ToHg38.over.chain.gz")
+    chain <- import.chain("hg19ToHg38.over.chain")
+    x <- liftOver(gr, chain)
+    gr.hg38 <- unlist(x)
+
+    metadata <- strsplit(gr.hg38$name[1], ";")[[1]]
+    metadata <- unlist(lapply(metadata, URLdecode))
+    strsplit(metadata, "=")
+
+    do this parsing on every name field in the granges, identifying the full set of metadata columns for the database
+
+
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trenaBatch, on khaleesi
+
+   dir /proj/price4/trena-genomeScaleModels
+      150758914 Feb 21 11:11 GBM-footprints-2019feb15-tbl.models.all.RData
+      110472059 Feb 26 12:34 lympho-footprints-2019feb22-tbl.models.all.RData
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* srm/atac-seq comparison, revisited (4 mar 2019)  jeff & marjorie
+
+  using srm copy number this time
+
+  cd ~/github/TrenaProjectErythropoiesis/prep/import/srm-from-jeff
+  cleanupTable.R
+  save(mtx.cn1, mtx.cn2, file="srm-copyNumberMatrices-rep1-rep2.RData")
+
+
+  mean value of genes across timecourse:
+   round(fivenum(apply(mtx.cn1, 1, mean)))
+      cn1:   184   4736  10963  27031 859762
+      cn2:   194   2435   7196  17963 555195
+
+   round(apply(mtx.cn2, 2, mean))
+               Day 0    Day2    Day4    Day6  Day7.5    Day8  Day8.5   Day10 Day10.5   Day11 Day11.5   Day12  Day 14
+   mtx.cn2     12233   23827   33218   14142   20925   25784   27497   34286   42616   52340   27719   24318   51077
+   mtx.cn1     20357   29894   35276   24285   30014   32981   35671   33629   42149   53739   35012   29320   67955
+
+
+   ~/github/TrenaProjectErythropoiesis/prep/srm.vs.atac/combineFimoHitsWithSRM.R
+    # tbl.fli1.hits
+    #       atac.rep1 fli1.match1 atac.rep2 fli1.match2 fli1.srm1 fli1.srm2
+    # Day4     305762       32305    133208       18000      3929  1282.478
+    # Day8     192979       31820         0           0       690     0.000
+    # Day10     84179       16875    116255       21485       334     0.000
+    # Day11     83692       15898     98661       18091       328     0.000
+    # Day16     90002       20620     58240       16477         0     0.000   # actually atac-seq day 14
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* mariam benazouz
+*-----------------------------------------------------------------------------------------------------------------------
+* carbon flow modeling, ODE, shiny app, rates of change, differential equations, claudia, monica (1 mar 2019)
+
+   good shiny apps, and modeling packages, found here?  http://www.rforscience.com/
+   http://www.rforscience.com/teaching/
+
+   Our interaction with master and PhD students tells whether we are able to convey our knowledge in
+   scientific computing to non-professionals. This is quite a challenge, as many of our students
+   never had any course even remotely similar to what we teach them. Thanks to a yearlong struggle
+   from our side, we now have a quite stable set of exercises that we use in our classes.
+
+   We generally start with a course on scientific computing in R. This course takes several days,
+   and should make the students acquainted to programming in R. Our free lecture material can be
+   found here. Accessory material can be found here.
+
+   Those that follow our environmental modelling classes are then gently introduced in the fine art
+   of mathematical modelling. You can see a selection of the type of problems our students solve
+   during these classes in a number of shiny applications on this page. Change the values of
+   parameters (sliders) and look at the effect on the model outcome.
+
+   The chemostat is the first model that students implement in R. It describes how algae grow in a
+   flow-through system.  A more realistic biological model that represents a simple ecosystem for a
+   marine bay is the NPZD application.  The nitrification example is a biogeochemical model
+   representing the eutrophication of the Westerschelde, and its impacts on the oxygen
+   concentrations.  Finally, there is a fish management example where the students calculate the
+   consequences of plans for fisheries in a lake over the next 50 years. This is a quite
+   sophisticated shiny application that allows you to keep certain model runs and compare it with
+   the reference run.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* exploring with alison's new expression matrix, apol1 regulated by plausible irf1-stat1 dimer (1 mar 2019)
+
+  running trenaViz in ~/github/TrenaProjectPlacenta/inst/unitTests
+
+  [[file://Users/paul/images/Screen Shot 2019-03-01 at 4.43.45 PM.png]]
+
+*-----------------------------------------------------------------------------------------------------------------------
+* make geneSymbol version of alison's new matrix
+
+   ~/github/TrenaProjectPlacenta/inst/extdata/expression
+   CombatAdjustedData_MWHONLY_312019.RData
+   print(load("../extdata/expression/CombatAdjustedData_MWHONLY_312019.RData"))  # [1] "mtx"
+   print(load("~/github/TrenaProject/inst/extdata/geneInfoTable_hg38.RData"))  # [1] "tbl.geneInfo"
+   head(rownames(mtx))  # [1] "ENSG00000000003" "ENSG00000000005" "ENSG00000000419" "ENSG00000000457" "ENSG00000000460" "ENSG00000000938"
+   rownames.ensg <- rownames(mtx)
+   ensg.with.symbols <- intersect(rownames(mtx), tbl.geneInfo$ensg)
+   nrow(mtx); length(ensg.with.symbols)   15666  14643
+   mtx <- mtx[ensg.with.symbols,]
+   dim(mtx)   # [1] 14643   107
+
+   matches <- match(rownames(mtx), tbl.geneInfo$ensg)
+   length(which(is.na(matches)))  # [1] 0
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* configure emacs for ess and R (18 apr 2019)
+
+cd to a directory where you want to install ESS, creating it if necessary. This directory will be referred to below as ESSDIR.
+Retrieve the latest version from gzipped tar file to ESSDIR.
+Decompress/unarchive the files from the disribution.
+gunzip ess-VERSION.tar.gz
+tar xvf ess-VERSION.tar
+(or: gunzip < ess-VERSION.tar.gz | tar xvf - ).
+(or using GNU tar:  tar zxvf ess-VERSION.tar.gz).
+The tar command will create the subdirectory ess-VERSION and unarchive the files there. If you are using GNU Emacs 19.29, decompress/unarchive `ESSDIR/ess-VERSION/lisp/19.29.tar.gz', read `ESSDIR/ess-VERSION/lisp/19.29/README', follow the instructions and you might be able to get ESS to work. Please note that GNU Emacs 19.29 is no longer supported. For a list of supported versions of emacs, see See section Requirements.
+Edit the file `ESSDIR/ess-VERSION/lisp/ess-site.el' as explained in the comments section of that file.
+Add the line
+
+(load "ESSDIR/ess-VERSION/lisp/ess-site")
+
+to your user or system installation file (GNU Emacs uses `$HOME/.emacs' and XEmacs uses `$HOME/.xemacs/init.el' for the user initialization file. GNU Emacs uses default.el or site-init.el and XEmacs uses site-start.el for the system installation file). Alternatively, if ess-site.el is in your current Lisp path, you can do:
+(require 'ess-site)
+to configure emacs for ESS.
+That's it! To edit statistical programs, load the files with the requiste extensions (".sas" for SAS, ".S" for S-PLUS, ".R" for R, and ".lsp" for XLispStat).
+(OPTIONAL) If you are running S-PLUS or R, you might consider installing the database files. From within emacs, C-x d to the directory containing ESS. Now:
+M-x S+6
+get running. once you have reached the SPLUS prompt, do:
+M-x ess-create-object-name-db
+(this will create the file `ess-s+6-namedb.el'; if it isn't in the ESS directory, move it there). Then, completions will be autoloaded and will not be regenerated for every session. For R, do the same, using
+M-x R
+and then M-x ess-create-object-name-db creating `ess-r-namedb.el'; if it isn't in the ESS directory, move it there).
+(OPTIONAL) READ THIS ITEM THOROUGHLY BEFORE STARTING: In the ESSDIR/ess-VERSION directory, edit the file `Makeconf' if you want to place the compiled files in other locations; see LISPDIR and INFODIR. Then type:
+make all
+If this works, then you might try:
+make install
+This will install the info files (and the lisp files, if they are to go in another directory). Don't forget to edit the file `dir' in the info directory specified by INFODIR in `doc/Makefile'. See the sample `dir' file for an example of the line to add. If you are using XEmacs, you might do:
+make EMACS=xemacs all
+and then
+make EMACS=xemacs install
+instead of editing the Makefile. Note that you might need to use GNU make for everything to work properly An alternative, if you are running XEmacs and have access to the XEmacs system directories, would be to place the directory in the site-lisp directory, and simply type make all (and copy the documentation as appropriate). For GNU Emacs, you would still have to move the files into the top level site-lisp directory.
+
+
+* configure emacs for ess and R (1 mar 2017)
+
+  found this in trena:~/.emacs:
+
+   (add-to-list 'load-path "~/github/ESS/lisp")
+   (load "ess-site")   ;; finds ~/github/ESS/lisp/ess-site.el
+   (ess-toggle-underscore nil)
+
+  also probably needed (but somehow, not on trena):
+
+     (custom-set-variables
+      ;; custom-set-variables was added by Custom.
+      ;; If you edit it by hand, you could mess it up, so be careful.
+      ;; Your init file should contain only one such instance.
+      ;; If there is more than one, they won't work right.
+      '(ess-default-style (quote OWN))
+      '(ess-indent-offset 20 t)
+      '(ess-indent-with-fancy-comments nil)
+      '(ess-own-style-list
+        (quote
+         ((ess-indent-offset . 3)
+          (ess-offset-arguments . open-delim)
+          (ess-offset-arguments-newline . prev-call)
+          (ess-offset-block . open-delim)
+          (ess-offset-continued . straight)
+          (ess-align-nested-calls "ifelse")
+          (ess-align-arguments-in-calls "function[ 	]*(")
+          (ess-align-continuations-in-calls . t)
+          (ess-align-blocks control-flow)
+          (ess-indent-from-lhs arguments fun-decl-opening)
+          (ess-indent-from-chain-start . t)
+          (ess-indent-with-fancy-comments))))
+      '(inferior-R-program-name "/usr/local/bin/R"))    # which R in ess?
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* erythropoiesis 22-day time-course, marjorie & jeff, simple comparison of bulk srm data with atac-seq (1 mar 2019)
+
+  --- initial results
+     cd ~/github/TrenaProjectErythropoiesis/prep/srm.vs.atac    correlate.R
+
+     d04.1 matches: 32305/305762: 10.57
+     d04.2 matches: 18000/133208: 13.51
+
+     d08.1 matches: 31820/192979: 16.49
+
+     d10.1 matches: 16875/84179: 20.05
+     d10.2 matches: 21485/116255: 18.48
+
+     d11.1 matches: 15898/83692: 19.00
+     d11.2 matches: 18091/98661: 18.34
+
+     d12.1 matches: 20963/120568: 17.39
+     d12.2 matches: 19541/107772: 18.13
+
+     d16.1 matches: 20620/90002: 22.91
+     d16.2 matches: 16477/58240: 28.29
+
+fli1.counts.over.time <- c( 32305, 18000, 31820, 16875, 21485, 15898, 18091, 20963, 19541, 20620, 16477)
+
+
+  --- prep
+
+  srm, raw from excel:
+     ~/github/TrenaProjectErythropoiesis/prep/import/srm-from-jeff/quants.fmol.per.ug.txt
+  atac-seq: bed9 (?) files, eg,
+      ~/github/TrenaProjectErythropoiesis/prep/import/atacPeaks/ATAC_Cord_d04_rep1_hg38_macs2_default_peaks.narrowPeak
+     where days: 4, 8, 10, 11, 12, 16
+
+  rna-seq from marjorie: ~/github/TrenaProjectErythropoiesis/inst/extdata/expression/brandLabDifferentiationTimeCourseRNA.RData
+      dim(mtx) #  27171    28
+      mtx[1:10, 1:10]
+              day0.r1 day0.r2 day2.r1 day2.r2 day4.r1 day4.r2 day6.r1 day6.r2 day7.r1 day7.r2
+     A1BG         569     395     223     147     153     105      41      52      20      22
+     A1BG-AS1      25      27      37      45      35      16      12      16       9       5
+     A1CF           1       0       0       0       4       0       0       0       2       5
+     A2M          178      95     114     315     224      54      53      50      29      15
+     A2M-AS1       69      46      41      50      24      20      10       2       6       2
+     A2ML1         13      10      13      18      20      11       9       9      40      16
+     A2MP1         10       6       2       7       1       1       0       0       0       0
+     A3GALT2       27      10       0       0       1       4       0       0       0       0
+     A4GALT       193      85      34     131     547     722    2334    1050    4919    4626
+     A4GNT          2       0       0       0       0       0       0       0       0       0
+
+   --- clean up srm data exported from jeff's spreadsheet
+     cd ~/github/TrenaProjectErythropoiesis/prep/import/srm-from-jeff
+     cleanupTable.R
+     load("~/github/TrenaProjectErythropoiesis/prep/import/srm-from-jeff/tbl.rep1a.RData")
+
+     save(tbl.cor, file="tbl.atac.rep1.rep2.correlations.RData")
+     save(mtx.rep1, mtx.rep2, file="matrices.rep1.and.rep2.RData")
+     load("~/github/TrenaProjectErythropoiesis/prep/srm.vs.atac/tbl.atac.rep1.rep2.correlations.RData")
+     load("~/github/TrenaProjectErythropoiesis/prep/srm.vs.atac/matrices.rep1.and.rep2.RData")
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* marjorie brand replies to my tracks combining corces & brand atac-seq data (28 feb 2019)
+
+   table of ordered timepoints:
+      [[file:/Users/paul/images/Screen Shot 2019-02-28 at 3.30.17 PM.png]]
+
+   the different proportions of cell populations at each Day (this comes from Cytof measurements -slide2)
+    to give us an idea of the heterogeneity
+    [[file://Users/paul/images/Screen Shot 2019-02-28 at 3.33.13 PM.png]]
+
+   Corces do not define their cell types with exactly the same marker combinations as we do (there are common markers but also specific ones). I know the field is very confusing this way. Everyone has
+   their preferred markers. Please see Slide 3 on the power point for the differences. I think this is ok, but I just wanted to make sure everyone knows about this caveat when we compare the data.
+     [[file://Users/paul/images/Screen Shot 2019-02-28 at 3.37.31 PM.png]]
+
+*-----------------------------------------------------------------------------------------------------------------------
+* explore trenaViz correlation weakness:  PSG1 in TrenaProjectPlacentas (28 feb 2019)
+
+   ~/github/TrenaProjectPlacenta/inst/unitTests/exploreExpressionCorrelation.R
+
+     library(TrenaProjectPlacenta)
+     library(trenaSGM)
+     library(RUnit)
+     #------------------------------------------------------------------------------------------------------------------------
+     if(!exists("tpp")) {
+        message(sprintf("--- creating instance of TrenaProjectPlacenta"))
+        tpp <- TrenaProjectPlacenta();
+        }
+     #------------------------------------------------------------------------------------------------------------------------
+     mtx <- getExpressionMatrix(tpp, "FilteredCountData8282018-vsn-geneSymbols")
+     targetGene <- "PSG1"
+     targetGene %in% rownames(mtx)
+     tfs <- allKnownTFs()
+     head(tfs)
+     tfs <- intersect(tfs, rownames(mtx))
+     length(tfs)
+     cors <- lapply(tfs, function(tf) cor(mtx[targetGene,], mtx[tf,]))
+     length(cors)
+     names(cors) <- tfs
+     fivenum(as.numeric(cors)) #  -0.310422106 -0.071539520  0.001843582  0.076996014  0.377675262
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ChIP-Atlas:  get slices of bed files (28 feb 2019) [igv github issue from (5 feb 2019)]
+
+
+   Hi @paul-shannon, @jrobinso, a comment from the ChIP-Atlas side here: As described in the documentation page of ChIP-Atlas, we are hosting the bed files for each combination of antigen, cell type,
+   and threshold. From the documentation, the files are stored like below:
+
+    Example:
+      http://dbarchive.biosciencedbc.jp/kyushu-u/hg19/assembled/Oth.ALL.05.GATA2.AllCell.bed
+   (All peak-call data of GATA2 in all cell types with Q-value < 1E-05.)
+
+    Therefore the ChIP-Atlas web app just selects the bed file corresponds to the slice the user selected, and give it to the IGV via HTTP. Then the IGV imports the bed file from the given URL.
+
+    The problem was that it takes a time to import the file if the bed file was too large. The one option was to make bigbed files, but we wanted to put the annotation information into the bed files
+    so the IGV browser can show it by mouseover action. Then we've contacted the IGV team to ask how to get a part of bed files, then we've been told to use the bed file indexes. As I understand, the
+    IGV browser can use the indexes to get a part of the remote bed file.
+
+    So I assume Paul may need to know how to use the bed index files generated by the IGV command to get the specific region of bed file.
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trenaBatch on TrenaProjectLymphocyte: no footprints found after no enhancer found? (27 feb 2019)
+
+  on khaleesi
+
+   --- opening connection lymphoblast_hint_20
+   --- querying lymphoblast_hint_20 for footprints across 1 regions totaling 10000 bases
+      <simpleError in strsplit(tbl.hits$loc, ":"): non-character argument>
+      [1] saving failed 0 model tfs, 0 regulatoryRegions, in 2019feb27/ENSG00000186092-OR4F5/models.RData
+
+--- opening connection lymphoblast_hint_16
+--- querying lymphoblast_hint_16 for footprints across 1 regions totaling 10000 bases
+--- opening connection lymphoblast_hint_20
+--- querying lymphoblast_hint_20 for footprints across 1 regions totaling 10000 bases
+<simpleError in strsplit(tbl.hits$loc, ":"): non-character argument>
+[1] saving failed 0 model tfs, 0 regulatoryRegions, in 2019feb27/ENSG00000237613-FAM138A/models.RData
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* TrenaProjectLymphocyte expression matrices (27 feb 2019)
+
+   ~/github/TrenaProjectLymphocyte/prep/import/expression
+   source("extractTissueSpecificMatrix.R")
+   createAndSave <- function(){
+      mtx <- createSubMatrix(mtx.raw, tbl.md, "Cells_-_EBV-transformed_lymphocytes")
+      save(mtx, file="../../../inst/extdata/expression/GTEx.lymphocyte.ensg.matrix.asinh.RData")
+      mtx <- restrictToGeneSymbolRows(mtx, tbl.geneInfo)
+      save(mtx, file="../../../inst/extdata/expression/GTEx.lymphocyte.geneSymbols.matrix.asinh.RData")
+      }
+  cd ~/github/TrenaProjectLymphocyte
+  make
+
+*-----------------------------------------------------------------------------------------------------------------------
+* GTEx lymphocyte lymphoblast model, ambiguity of "blood" samples vs "whole_blood"
+
+  whole_blood genome-scale model has NO negative regulators
+  cd ~/github/TrenaProjectLymphocyte/prep/import/expression/
+  extractWholeBloodExpression.R
+
+  tbl.md <- read.table("GTEx_v7_Annotations_SampleAttributesDS.txt", sep = '\t', header=TRUE, quote="", as.is=TRUE, row.names=1)
+  dim(tbl.md) # 15598 63
+  wb <- grep("Whole_Blood", tbl.md$SMTSD)
+  length(wb)   # 2412
+  unique(grep("blood", tbl.md$SMTS, ignore.case=TRUE, v=TRUE))   #  [1] "Blood"        "Blood_Vessel"
+  unique(grep("blood", tbl.md$SMTSD, ignore.case=TRUE, v=TRUE))  # [1] "Whole_Blood"
+  length(grep("^Blood$", tbl.md$SMTS)) # [1] 2561
+  table(tbl.md[grep("^Blood$", tbl.md$SMTS),"SMTSD"])
+    Cells_-_EBV-transformed_lymphocytes                         Whole_Blood
+                                   149                                2412
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* slexil exploratory: download file from click (26 feb 2019)
+
+  ~/github/slexil/explorations/downloadZipFile/demo3.py
+  from https://community.plot.ly/t/allowing-users-to-download-csv-on-click/5550/13
+
+*-----------------------------------------------------------------------------------------------------------------------
+* BDDS report (25 feb 2019)
+
+trenaViz is now a suite of web applications, publicly available (with a login,
+see below).  Each instance - each member of the suite - is configured via a
+tissue-specific "TrenaProject".  Eachof these is an R package subclassed from
+the TrenaProject base class.  This separations of concerns allows for the rapid
+creation of a new tissue- specific TrenaViz instance.  Among the tissue-specific
+projects currently in use are Lymphocyte, and Alzheimer's Disease, Glioblastoma,
+and Skin and an Arabidopsis study.  Mouse Macrophage and human Placenta projects
+are are under development.
+
+trenaViz provides the means to build a gene regulatory model for one target gene
+at a time.  The built-in igv genome browser displays the ensembl gene transcript
+models, to which generic regulatory tracks (ENCODE DHS and GeneHancer 4.7) are
+added.  The selects the region of interest to consider: 1 MB for a comprehensive
+model which includes distal enhancers, or as small as 500 base pairs for narrow
+consideration of a traditional promoter.  Footprint database access then
+identifies transcription factors possibly binding in the region of interest, and
+correlated expression of those TFs and the target gene, using a variety of
+feature selectors, determines the regulatory model.
+
+Interactive exploration of the model is the usual next step for the user.
+Interactive selectionof TFs in the model table creates a track for the putative
+TF binding sites; for ChIP-seq binding sites of that TF (when the data can be
+found) or for nuanced exploration of motif/sequence match across the currently
+displayed genomic region.
+
+A video which includes many of these features can be seen here:
+https://www.youtube.com/watch?v=TvGwJWmYaBI&t=368s Run the trenaViz webapp at
+http://trena.systemsbiology.net login: igap password: igap
+
+
+
+
+
+   1) target
+TrenaProjectErythropoiesis, TrenaProjectMouseMa
+
+*-----------------------------------------------------------------------------------------------------------------------
+* genome-scale trena model for lymphoblast/lymphocyte (22 feb 2019)
+
+  khaleesi:  cd github/trenaBatch/lympho/footprints/
+  used all 4 footprint databases, full run took 50 hours
+  gtex matrix normalized naively by asinh
+  high failure rate:
+    find 2019feb22 -name models.RData  | xargs ls -l |  wc -l; find 2019feb22 -name models.RData  | xargs ls -l | grep " 156 " | wc -l
+    26172; 9060
+
+  --- find out why
+ find 2019feb22 -name models.RData  | xargs ls -l | grep " 156 " | head -2
+     Feb 22 17:51 2019feb22/ENSG00000004948-CALCR/models.RData
+     Feb 22 17:51 2019feb22/ENSG00000006059-KRT33A/models.RData
+
+*-----------------------------------------------------------------------------------------------------------------------
+* do we have lymphocyte|lymphoblast postgres databases?  (22 feb 2019)
+
+  psql -h bddsrds.globusgenomics.org -U trena postgres   # password trena
+  psql -h khaleesi -U trena postgres                     # password trena
+  \pset pager
+
+  select * from pg_database;
+
+     lymphoblast_hint_16                    |  16385 |        6 | en_US.UTF-8 | en_US.UTF-8 | f             | t            |           -1 |         12406 |          651 |          1 |          1663 |
+     lymphoblast_wellington_20              |  16385 |        6 | en_US.UTF-8 | en_US.UTF-8 | f             | t            |           -1 |         12406 |          651 |          1 |          1663 |
+     lymphoblast_wellington_16              |  16385 |        6 | en_US.UTF-8 | en_US.UTF-8 | f             | t            |           -1 |         12406 |          651 |          1 |          1663 |
+     lymphoblast_hint_20                    |  16385 |        6 | en_US.UTF-8 | en_US.UTF-8 | f             | t            |           -1 |         12406 |          651 |          1 |          1663 |
+
+
+    template1
+    template0
+    postgres
+    extraembryonic_structure_hint_16
+    extraembryonic_structure_wellington_16
+    hg38
+    adrenal_gland_hint_20
+    adrenal_gland_wellington_20
+    bone_element_wellington_20
+    bone_element_hint_20
+    bronchus_hint_20
+    bronchus_wellington_20
+    esophagus_wellington_20
+    esophagus_hint_20
+    eye_hint_20
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* paper of interest:  Leveraging Polygenic Functional Enrichment to Improve GWAS Power.
+
+  Am J Hum Genet. 2019 Jan 3;104(1):65-75. doi: 10.1016/j.ajhg.2018.11.008. Epub 2018 Dec 27.
+
+  Leveraging Polygenic Functional Enrichment to Improve GWAS Power.
+
+  Kichaev G1, Bhatia G2, Loh PR3, Gazal S3, Burch K4, Freund MK5, Schoech A3, Pasaniuc B6, Price AL7.
+
+  Abstract
+
+  Functional genomics data has the potential to increase GWAS power by identifying SNPs that have a
+  higher prior probability of association. Here, we introduce a method that leverages polygenic
+  functional enrichment to incorporate coding, conserved, regulatory, and LD-related genomic
+  annotations into association analyses. We show via simulations with real genotypes that the
+  method, functionally informed novel discovery of risk loci (FINDOR), correctly controls the
+  false-positive rate at null loci and attains a 9%-38% increase in the number of independent
+  associations detected at causal loci, depending on trait polygenicity and sample size. We applied
+  FINDOR to 27 independent complex traits and diseases from the interim UK Biobank release (average
+  N = 130K). Averaged across traits, we attained a 13% increase in genome-wide significant loci
+  detected (including a 20% increase for disease traits) compared to unweighted raw p values that do
+  not use functional data. We replicated the additional loci in independent UK Biobank and non-UK
+  Biobank data, yielding a highly statistically significant replication slope (0.66-0.69) in each
+  case. Finally, we applied FINDOR to the full UK Biobank release (average N = 416K), attaining
+  smaller relative improvements (consistent with simulations) but larger absolute improvements,
+  detecting an additional 583 GWAS loci. In conclusion, leveraging functional enrichment using our
+  method robustly increases GWAS power.
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* TrenaProjectLymphocyte (21 feb 2019)
+
+    --- exression
+
+     combine big matrix with cleaned up colnames from the covariates
+     cd ~/github/TrenaProjectLymphocyte/prep/import/expression/
+     scp pshannon@whovian:/local/Cory/gtex/GeneReads.rds .
+     mtx <- readRDS("GeneReads.rds")
+
+*-----------------------------------------------------------------------------------------------------------------------
+* TrenaProject standard gwas format (21 feb 2019)
+
+  print(load("/Users/paul/github/TrenaProjectIGAP/inst/extdata/variants/GWAS.snps.RData")) # [1] "tbl.snp"
+  head(tbl.snp)
+      chrom   start     end       rsid variant reference    pval   pScore
+   71  chr1 1042813 1042813  rs2710873       A         G 0.03412 1.466991
+   81  chr1 1063015 1063015  rs7526076       A         G 0.02543 1.594654
+   84  chr1 1064776 1064776 rs11584349       C         T 0.01687 1.772885
+   85  chr1 1065797 1065797  rs4970401       G         C 0.01812 1.741842
+   86  chr1 1067007 1067007 rs74048003       G         A 0.03236 1.489991
+   88  chr1 1067552 1067552  rs4246502       C         G 0.02352 1.628563
+
+*-----------------------------------------------------------------------------------------------------------------------
+* GTEx: The Genotype-Tissue Expression (GTEx) project
+
+   scp pshannon@whovian:/local/Cory/gtex/GeneReads.rds .
+                                         GTEx_Data_V6_Annotations_SampleAttributesDS.txt
+
+   other files of interest found there too
+   used, for instance, in TrenaProjectLymphocyte
+       ~/github/TrenaProjectLymphocyte/prep/import/expression/extractWholeBloodExpression.R
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* trenaBatch qc: lympho (22 feb 2019)
+
+   cd ~/github/trenaBatch/lympho/footprints/
+
+   tbl <- subset(tbl.models, rank <= 10)
+   dim(tbl)  # [1] 168235     13
+
+   tbl <- subset(tbl.models, rank <= 5)
+   dim(tbl) #  [1]  84239    13
+
+   tbl.tfDist <- as.data.frame(table(tbl$tf.symbol))
+   colnames(tbl.tfDist) <- c("tf", "count")
+   tbl.tfDist <- tbl.tfDist[order(tbl.tfDist$count, decreasing=TRUE),]
+   head(tbl.tfDist)
+   fivenum(tbl.tfDist$count)  # [1]    1.0   12.0   58.5  212.5 1266.0
+
+   hist(tbl$pearsonCoeff)     # should be nicely bi-modal, roughly as many negatives as postives
+   fivenum(tbl$pearsonCoeff)  # roughly symmetric around 0
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* trenaBatch qc: GBM (15 feb 2019)
+
+   [note!  this is actually TrenaProjectGBM]
+
+   AD/footprints/2019feb15
+   tbl <- subset(tbl.models, rank <= 10)
+   dim(tbl)  # [1] 168235     13
+   tbl <- subset(tbl.models, rank <= 5)
+   dim(tbl) #  [1]  84239    13
+
+   tbl.tfDist <- as.data.frame(table(tbl$tf.symbol))
+   colnames(tbl.tfDist) <- c("tf", "count")
+   tbl.tfDist <- tbl.tfDist[order(tbl.tfDist$count, decreasing=TRUE),]
+   head(tbl.tfDist)
+           tf count
+        119 GABPA  1494
+        351 SMAD5  1223
+        211 MEF2C   992
+        146   HLF   976
+        340 SATB1   871
+        206   MAX   839
+   fivenum(tbl.tfDist$count)   #    1   50  112  238 1494
+
+
+   --- once satisfied, copy to the new models repository
+
+      cp -p 2019feb15/tbl.models.all.RData /proj/price4/trena-genomeScaleModels/GBM-footprints-2019feb15-tbl.models.all.RData
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* TrenaBatch AD/footprints run, examined (20 feb 2019)
+
+   khaleesi:/local/users/pshannon/github/trenaBatch/AD/footprints/2019feb15
+
+   uses all fp databases, not just the single fp db used in the
+    started: 15 feb 1pm
+   finished: 17 feb 5pm
+   run time: 51 hours
+   success rate:
+
+     find 2019feb15 -name models.RData  | xargs ls -l |  wc -l; find 2019feb15 -name models.RData  | xargs ls -l | grep " 156 " | wc -l
+     models created: 16942
+             failed: 78
+
+    find 2019feb08 -name models.RData  | xargs ls -l |  wc -l; find 2019feb08 -name models.RData  | xargs ls -l | grep " 156 " | wc -l
+     models created: 16942
+             failed: 115
+
+*-----------------------------------------------------------------------------------------------------------------------
+* good ATAC-seq primer, argues that many ChIP-seq tools are appropriate for ATAC-seq (20 feb 2019)
+
+   https://github.com/harvardinformatics/ATAC-seq
+
+
 *-----------------------------------------------------------------------------------------------------------------------
 * abline tips, lm tips plot tips
 
@@ -112,11 +3290,86 @@ bed format: chrom, start, end, name, score, strand
 
 
 *-----------------------------------------------------------------------------------------------------------------------
+* buenrostro's nat genetics 2016 atac-seq and rna-seq data, incorporating it into TrenaProjectErythropoiesis (20 feb 2019)
+
+   recommended by marjorie
+   originally explored here: ~/s/data/public/erythroid/import.from.GSE74912/
+   now working here: ~/github/TrenaProjectErythropoiesis/prep/import/buenrostro/
+     toMatrix.R: reads table, uses marjorie's guidance to select columns corresponding to her erythroid-only
+     differentiation.
+
+      GSE74246: Unstranded RNA sequencing data
+      GSE74310: Single-cell chromatin accessibility data using scATAC-seq
+      GSE74912: ATAC-seq data
+        Samples of interest for hemato/erythropoiesis (in this order) – several replicates for each:
+        HSC; MPP; CMP; MEP; Ery (CD71+; GPA+)*
+        *Ery: this cell population includes e-basoE; l-baso-E; polyE; orthoE
+
+   atac-seq data as counts available here:
+      ~/github/TrenaProjectErythropoiesis/prep/import/buenrostro/GSE74912-atacSeq.RData
+          591k regions, 135 samples, counts, samples mapped with marjorie's help
+
+
+* -----------------------------------------------------------------------------------------------------------------------
+* marjorie's atac data, processed, from karthi (20 feb 2019): explore via late time point inactivity of gata2
+
+    cd ~/github/TrenaProjectErythropoiesis/prep/import/atacPeaks
+    data is hg38
+    [[file:/Users/paul/images/Screen Shot 2019-02-25 at 3.19.32 PM.png]]
+
+    Please find the url for bigWig files to be used with track hub. The last link in the file
+    corresponds to the peak Files (.tgz ~50Mb); it is given below.
+
+    http://dropbox.ogic.ca/mbrandlab/ATAC-bigWigs/ATACPeaks-default-filtered.tgz
+
+    The tgz file has two files: (1) narrowPeak files from MACS, and (2) bed files after filtering for blacklisted loci.
+
+        https://deeptools.readthedocs.io/en/develop/content/feature/blacklist.html
+      Blacklist Regions: There are many sources of bias in ChIPseq experiments. Among the most
+      prevalent of these is signal arising from “blacklist” regions (see Carroll et al. and the
+      references therein for historical context). Blacklisted regions show notably enriched signal
+      across many ChIP experiment types (e.g., regardless of what is being IPed or the experimental
+      conditions). Including these regions can lead not only to false-positive peaks, but can also
+      throw off between-sample normalization.
+
+   --- what does blacklist removal actually do?  19 regions removed,
+       wc -l ATAC_Cord_d10_rep1_hg38_macs2_default_*
+         84160 ATAC_Cord_d10_rep1_hg38_macs2_default_blacklistremoved.bed
+         84179 ATAC_Cord_d10_rep1_hg38_macs2_default_peaks.narrowPeak
+
+   31474315 Feb 20 08:08 ATAC_Cord_d4_rep1_hg38_macs2_default_blacklistremoved.bed
+   13663016 Feb 20 08:08 ATAC_Cord_d4_rep2_hg38_macs2_default_blacklistremoved.bed
+
+   19904707 Feb 20 08:08 ATAC_Cord_d8_rep1_hg38_macs2_default_blacklistremoved.bed
+
+    8729141 Feb 20 08:08 ATAC_Cord_d10_rep1_hg38_macs2_default_blacklistremoved.bed
+   12075387 Feb 20 08:08 ATAC_Cord_d10_rep2_hg38_macs2_default_blacklistremoved.bed
+
+    8663003 Feb 20 08:08 ATAC_Cord_d11_rep1_hg38_macs2_default_blacklistremoved.bed
+   10222162 Feb 20 08:08 ATAC_Cord_d11_rep2_hg38_macs2_default_blacklistremoved.bed
+
+   12531471 Feb 20 08:08 ATAC_Cord_d12_rep1_hg38_macs2_default_blacklistremoved.bed
+   11192590 Feb 20 08:08 ATAC_Cord_d12_rep2_hg38_macs2_default_blacklistremoved.bed
+
+    9411375 Feb 20 08:08 ATAC_Cord_d16_rep1_hg38_macs2_default_blacklistremoved.bed
+    6113191 Feb 20 08:08 ATAC_Cord_d16_rep2_hg38_macs2_default_blacklistremoved.bed
+
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
 * marjorie's understanding of the colnames in the 2016 Nat Gen paper
+
+  [these suggestions acted on:   ~/github/TrenaProjectErythropoiesis/prep/import/atacPeaks/quickLookNarrowPeak.R
+   tracks 11 ottawa tracks, 5 corces tracks: pHSC, MPP, CMP, MEP, Ery]
 
        from Corces MR, Buenrostro JD, Wu B, Greenside PG et al. Lineage-specific
        and single-cell chromatin accessibility charts human hematopoiesis and
        leukemia evolution. Nat Genet 2016 Oct;48(10):1193-203. PMID: 27526324
+
+    [[file:/Users/paul/images/Screen Shot 2019-02-26 at 8.31.35 PM.png]]
+
 
    I think I could figure out their samples, at least the healthy ones.
 
@@ -126,7 +3379,7 @@ bed format: chrom, start, end, name, score, strand
    The donors IDs and corresponding cell types can be found in the excel file “Normal Donor Information”.
 
    I also made another excel file with the sample names that you sent in the email,
-   “samples-ATAC-seq”. I copied the hematopoietic tree next to the sample names, so you can see
+   samples-ATAC-seq. I copied the hematopoietic tree next to the sample names, so you can see
    which ones we are the most interested in (i.e. the ones related to erythropoiesis, which
    correspond to our in vitro differentiation system).
 
@@ -263,6 +3516,92 @@ bed format: chrom, start, end, name, score, strand
      http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d16mb_rep2_R1.fastq.gz
      http://dropbox.ogic.ca/mbrandlab/00-060-RawData/2017Aug22/ATAC_Cord_d16mb_rep2_R2.fastq.gz
 
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* hematopoietic + leukemic cell types: 13 normal and 3 AML, 132 samples, with marjorie's elucidation (25 feb 2019)
+
+  --- based on email (19 feb 2019)
+
+     Looking more into the Nat Gen paper, I think I could figure out their samples, at least the healthy ones.
+
+     They have 13 different hematopoietic cell types from 9 healthy donors along the hematopoietic
+     hierarchical tree, all purified by FACS.  The donors IDs and corresponding cell types can be
+     found in the excel file “Normal Donor Information”.  I also made another excel file with the
+     sample names that you sent in the email, “samples-ATAC-seq”. I copied the hematopoietic tree
+     next to the sample names, so you can see which ones we are the most interested in (i.e. the
+     ones related to erythropoiesis, which correspond to our in vitro differentiation system).
+     Also, I noticed there should be more samples than the ones you sent by email.
+
+     Finally, I am attaching another excel file with the leukemia patients samples IDs from the
+     paper, but I don't think they are going to be very useful, except maybe for some
+     comparison. But these samples are quite heterogenous.
+
+   --- marjorie's timepoints, HSC to RBC
+     d04_rep1
+     d04_rep2
+     d08_rep1
+     d10_rep1
+     d10_rep2
+     d11_rep1
+     d11_rep2
+     d12_rep1
+     d12_rep2
+     d16_rep1
+     d16_rep2
+
+
+    --- from Normal Donor Information spreadsheet
+     HSC: hematologic stem cell
+     MPP: multipotent progenitors
+     CMP: common myeloid progenitor
+     MEP: megakaryocytes erythroid progenitor
+     ERY: purified erythroblasts
+
+grep("pHSC", colnames(tbl.hg38), v=TRUE)
+ [1] "SU048.pHSC"             "SU070.pHSC.140603"      "SU070.pHSC.Rep2.140805"
+ [4] "SU209.pHSC.140911"      "SU306.pHSC.141121"      "SU336.pHSC.141119"
+ [7] "SU351.pHSC.140814"      "SU353.pHSC.140923"      "SU444.pHSC.141118"
+[10] "SU484.pHSC.140812"      "SU496.pHSC.140814"      "SU501.pHSC.141118"
+[13] "SU575.pHSC"             "SU583.pHSC.141115"      "SU623.pHSC"
+[16] "SU654.pHSC.141115"      "SU209.pHSC.A.150627"    "SU209.pHSC.B.150627"
+[19] "SU583.pHSC.150627"
+>
+
+
+Donor:	5852	6792	7256	7653	1022	4983	2596	5483	6926	Totals
+Age (years)	27	27	28	28	28	25	53	22	30
+Sex	F	M	M	M	M	M	F	M	F
+
+RNA-seq Libraries:
+HSC	1	1	1	1						4
+MPP	1	1	1	1						4
+LMPP			1	1				1		3
+CMP	1	1	1	1						4
+MEP	1	1	1	1						4
+ERY							1	1	1	3
+GMP	1	1	1	1						4
+Mono	1	1	1	1						4
+CLP							1	1	1	3
+B cell	1			1	1		1			4
+CD4 T cell	1			1	1		1			4
+CD8 T cell	1			1	1		1			4
+NK cell				1	1		1	1		4
+
+ATAC-seq Libraries
+HSC		2	2			1	2			7
+MPP		1	2			1	2			6
+LMPP		1	1			1	0			3
+CMP		2	2			2	2			8
+GMP		2	2			2	1			7
+MEP		2	2			2	1			7
+Mono		2	2			2	0			6
+CD4 T cell					1	1	1	2		5
+CD8 T cell					1	1	1	2		5
+NK cell					1	1	2	2		6
+B cell					1	1	0	2		4
+CLP							2	1	2	5
+ERY							3	3	2	8
 
 
 *-----------------------------------------------------------------------------------------------------------------------
@@ -479,6 +3818,16 @@ bed format: chrom, start, end, name, score, strand
 * cory & gtex matrix: cleanup mapping between matrix colnames and the provided metadata (13 feb 2019)
 
   cd ~/s/data/cory/gtex/
+  fix.R consults the metadata, extracts bladder samples, intersects with actual colnames, creates bladder-only mtx
+
+  needs big expression matrix from whovian:/local/Cory/gtex
+  from
+
+  this somewhat misplaced file:  ~/github/trenaBatch/AD/footprints/GTEx_parsing.R
+     # large matrix and other files are located on whovian:/local/Cory/gtex
+     # load the matrix
+     mtx <- readRDS("GeneReads.rds")
+
 
 *-----------------------------------------------------------------------------------------------------------------------
 * slexil version 0.99.0 (12 feb 2019)
@@ -611,6 +3960,9 @@ bed format: chrom, start, end, name, score, strand
   --- back on riptide
    cd   ~/github/TrenaProjectPlacenta/inst/footprinting/yeonsExplorations/
    scp pshannon@trena:/local/httpd/vhosts/trena/static/placenta/yeonsExplorations/LN54305_chr19.bed .  # 7 minutes
+
+   executable seems to be here on riptide:
+      ~/github/F-seq/dist~/fseq/bin/fseq
 
    ./fseq -v -of bed -t 3.5 ~/github/TrenaProjectPlacenta/inst/footprinting/yeonsExplorations/LN54305_chr19.bed
      F-Seq Version 1.85
@@ -980,7 +4332,6 @@ that	def:fem:sg	straight–fem:sg	pathfem	be:3sg:impf	lose–partic–fem:sg
 
     -- to liftover
       library(rtracklayer)
-      library(liftOver)
       http://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz
       system("curl -O http://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz")
       system("gunzip hg19ToHg38.over.chain.gz")
@@ -2839,6 +6190,7 @@ Thank you!
     cd <some directory of your choice>
     git clone https://github.com/paul-shannon/ijalupload2.git
     cd ijalupload2
+    /Users/paul/anaconda/bin/pip install -r requirements.txt
     pip install -r requirements.txt
     python webapp.py   # runs flask on 0.0.0.0, port 60041, easily changed at bottom of script
 
@@ -2932,13 +6284,18 @@ Thank you!
 *-----------------------------------------------------------------------------------------------------------------------
 * fimo tips
 
+  --- start new sever from command line, using makefile
+
+    make PORT=600100 MOTIFS=../pfms/jaspar2018-TBX15-MA0803.1.meme
+
+
   --- create meme format file with just a few motifs
     moi <- c(query(MotifDb, c("hsapie", "GCM1"), c("jaspar2018", "hocomoco")),
              query(MotifDb, c("hsapie", "dlx3"), c("jaspar2018", "hocomoco")))
     export(moi, con="~/github/fimoService/pfms/gcm1.dlx3.human.meme", format="meme")
   --- server
     cd ~/github/fimoService/server/
-    make -f pshannon.makefile
+    make -f makefile.pshannon
 
       PORT=5558
       FIMO="/Users/paul/meme/bin/fimo"
@@ -3472,6 +6829,17 @@ Thank you!
    losing < 30 lines along the way
 
 *-----------------------------------------------------------------------------------------------------------------------
+* cyjShiny &etc widget height sizing strategy, via tags$style (1 mar 2019)
+
+   ~/github/cyjShiny/inst/unitTests/cyjShinyDemo.R
+
+  tags$head(
+     tags$link(rel = "stylesheet", type = "text/css",
+               href = "http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css"),
+     tags$style("#cyjShiny{height:95vh !important;}")),
+
+
+
 * shiny plot tips: resize plot to a constant percentage of browser window (23 dec 2018) css3
 
    ~/s/examples/R/shiny/resizePlot/tutorialDemo.R
@@ -4461,6 +7829,11 @@ Seattle, WA +12067321335
 
 
 *-----------------------------------------------------------------------------------------------------------------------
+* github tips: restore latest version of a specific file
+
+  git checkout -- <filename>
+
+*-----------------------------------------------------------------------------------------------------------------------
 * github tips:  clear the "add" list, useful especially if there are really big files queued up (7 dec 2018)
 
   git reset --soft HEAD^
@@ -4469,7 +7842,7 @@ Seattle, WA +12067321335
 
 
 *-----------------------------------------------------------------------------------------------------------------------
-* single cell symposium, isb (7 dec 2018)   chan/zuckerberg biohub
+* single cell symposium, isb (7 dec 2018)   chan / zuckerberg biohub   add this new method to trena
 
   pseudo time: monocle   http://cole-trapnell-lab.github.io/monocle-release/
   tabula muris:  pca, cluster in pca space, by eucldian, t-sne visualization, cell types assigned to tissue clusters
@@ -4482,7 +7855,7 @@ Seattle, WA +12067321335
       on the importance spectrum (somewhat similar to scree plots; for the selection of
       large, potentially highly-correlated variables). Main applications in high-dimensional
       data (e.g., microarray data, and other genomics and proteomics applications).
-      "interatively eliminates a fraction of the least important variables used in previous
+      "iteratively eliminates a fraction of the least important variables used in previous
        iteration and chooses the random forest model that has the smallest number of genes
        for a given classification error"
     "From transcription factors to reprogramming protocols":
@@ -4502,7 +7875,7 @@ Seattle, WA +12067321335
 
      10/2018 paper: Single-cell transcriptomics of 20 mouse organs creates a Tabula Muris
 
-    cellexalvr: virutal reality platoform for visulzing and analysing single-cell gene data
+    cellexalvr: virutal reality platform for visualzing and analysing single-cell gene data
       shamit some.last.name from lund university
       angela oliveria pisco
 
@@ -5733,6 +9106,19 @@ ZCWPW1  chr7:99892814-101231552     chr7:99490437-100874833
    chromLoc <- trena::parseChromLocString(roi)
       # returns a list of chrom, start, end fields
 
+   --- make them into an easily assimilated data.frame:
+      [from ~/github/TrenaProjectErythropoiesis/prep/gata-switch/geneRegulatoryModelToGraph.R]
+      chromLocStrings <- tbl.reg$sequence_name
+      locs <- lapply(chromLocStrings, parseChromLocString)
+      tbl.locs <- as.data.frame(do.call(rbind, locs))
+      tbl.new <- cbind(tbl.locs, tbl.reg)
+
+       all the new columns are lists().  throw away that structure:
+
+          tbl.new$chrom <- as.character(tbl.new$chrom)
+          tbl.new$start <- as.numeric(tbl.new$start)
+          tbl.new$end <- as.numeric(tbl.new$end)
+
 *-----------------------------------------------------------------------------------------------------------------------
 * DT and igvShiny both in need redraw in tg2, the dashboard shiny app, after toggling visibility (16 oct 2018)
 
@@ -6797,6 +10183,18 @@ ZCWPW1  chr7:99892814-101231552     chr7:99490437-100874833
 
 *-----------------------------------------------------------------------------------------------------------------------
 * RColorBrewer tips
+
+library (RColorBrewer)
+totalColorCount <- 12
+colors <- brewer.pal(12, "Paired")
+currentColorNumber <- 0
+
+then in a subsequnt loop
+
+   currentColorNumber <<- (currentColorNumber %% totalColorCount) + 1
+   color <- colors[currentColorNumber]
+
+
 
    There are 3 types of palettes, sequential, diverging, and qualitative.
 
@@ -8542,7 +11940,7 @@ ZCWPW1: 1
 
    postgresql.conf = max_connections = 100
 *------------------------------------------------------------------------------------------------
-* youtube -> mp3
+* youtube -> mp3  capture
 
    --- clipgrab (8 jul 2018)
     works well. on riptide.
@@ -9612,6 +13010,31 @@ tbl.round <- roundNumericColumns(tbl.orig, 3,
   covariates.file <- "AMP-AD_MayoBB_UFL-Mayo-ISB_IlluminaHiSeq2000_TCX_Covariates_Flowcell_1.csv"
   tbl.covariates <- read.table(covariates.file, sep=",", as.is=TRUE, header=TRUE)
   table(tbl.covariates$Diagnosis)
+
+
+*------------------------------------------------------------------------------------------------
+* install R 3.6.0 beta on khaleesi (12 apr 2019)
+
+   cd ~/src
+   curl -O https://cran.r-project.org/src/base-prerelease/R-devel_2019-04-10_r76362.tar.gz
+   tar zxf R-devel_2019-04-10_r76362.tar.gz
+   cd R-beta
+
+    needed to remove conda from PATH to handle this failure with ./configure
+      "libcurl >= 7.22.0 library and headers are required with support for https?"
+    answered variously here:
+       https://stackoverflow.com/questions/38690232/installing-r-on-linux-configure-error-libcurl-7-28-0-library-and-headers-a
+
+        In my case, it was due to libcurl installed in anaconda2 package, whose libcurl version
+        did not support https.   I removed the path to anaconda2 from PATH variable, and it was all fixed.
+
+    I commented out all occurences, including the conda-inserted code at the bottom of ~/.bashrc
+
+    ./configure --prefix=/users/pshannon/local/R360beta/
+   make
+   make install
+    ~/local/R360beta/bin/R --version
+    R version 3.6.0 beta (2019-04-11 r76379) -- "Planting of a Tree"
 
 
 *------------------------------------------------------------------------------------------------
@@ -11143,6 +14566,7 @@ robertianum) is another threatening invasive for this association.
    --- RCyjs
       create an empty repo: https://github.com/PriceLab/RCyjs
       git remote add priceLab git@github.com:priceLab/RCyjs.git
+      git remote add origin https://github.com/PriceLab/BrowserViz.git
       git push priceLab master
       git remote -v
          origin	git@github.com:paul-shannon/RCyjs (fetch)
@@ -39431,7 +42855,7 @@ How about a quick phone call?
 Thanks!
 
 - Paul
-v
+
 
      head ../lymphoblast/lymphoblast_fp.bed   # from May 3rd
      1       10799   10834   KLF16_DBD       23      33      -       14.9082 5.09e-06        0       GCCACGCCTCC
@@ -76513,7 +79937,7 @@ Reference to this paper
 Abstract
 
 Every era has its basic tasks that must be performed. The issues to be
-solved are ‘in the air’; they are generated by the era; they are
+solved are in the air; they are generated by the era; they are
 components of the spirit of the age. The question generated by the
 time (the middle of the 20th century) was: that whether the only way
 to reveal the truth would be the method of natural sciences (also
@@ -76521,7 +79945,7 @@ applied by the history of architecture), or such experiences of the
 truth existed that could reach the surface only by means of art,
 philosophy or history. On these basic questions that change period by
 period, the different areas of arts and sciences and philosophy work
-almost always in parallel.  Zoltán Szentkirályi wrote his paper Some
+almost always in parallel.  Zoln Szentkirályi wrote his paper Some
 issues of the evaluation of the Baroque in 1964. The opus magnum of
 Hans-Georg Gadamer, Truth and method, was published in
 1960. Szentkirályi starts from the philosophy and reaches the history
