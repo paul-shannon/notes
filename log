@@ -1,3 +1,4 @@
+SwordFernDieOff+subscribe@groups.io
 *------------------------------------------------------------------------------------------------------------------------
 * RColorBrewer tips
 
@@ -59,8 +60,694 @@ bed format: chrom, start, end, name, score, strand
 
 * -TOP-
 *-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* sword fern die-off, schema and field protocol
+
+ So here in brief is my suggestion for a simple field assay.  Maybe we can try some version of this, with protected shoes, at IslandWood tomorrow morning.  The goal is to quickly characterize unambiguous features of a continuous site where dead crowns are observed.
+
+ 1) choose and measure approximate size of the candidate site.
+    Do so in a way (might be site-specific) so that it can be found again in subsequent years
+
+ 2) place landscaper pin flags in every dead crown (that is, every fern which is
+    irredeemably dead).  count the flags.
+
+ 3) count the obviously healthy ferns (get at least a rough count)
+
+ 4) maybe count intermediate “not sure” ferns
+
+ 5) count and characterize the trees (dbh & species)
+
+ 6) describe the non-fern understory in approximate terms
+
+This (or something like this) should take no more than 30 minutes per site.  And while imprecise, I think it will tell us a lot about the presence and spread of the die-off.  It is an imprecise measure, but
+
+ - informative
+ - fast
+ - reproducible
+ - easily visualized on a map
+
+A site assay like this is probably worth doing only if 3 or more dead crowns are in proximity to
+each other.  We could formalize that by saying “3 dead crowns visible in a cellphone photo taken
+from < 10 feet”.  Or something.
+
+   --- islandwood #1
+      name: top of lower alder grove
+      lat:
+      long:
+      elevation:
+      slope:
+      ferns (healthy): 20
+      ferns (no new growth): 1
+      ferns (dead): 3
+      estimated pre-die-off dominance: 90%
+      area: 572
+      shape: rectangular
+      canopy cover:  70%
+      trees:  ALRU 20, 18, 16, 20, 20, 20;
+      tree distribution: balanced
+      shrubs: NA
+      forbs, grasses, etc: NA
+
+   --- islandwood #2
+      name: Service Road T
+      lat:
+      long:
+      elevation:
+      slope:
+      ferns (healthy): 40
+      ferns (no new growth): 4
+      ferns (dead): 10
+      estimated pre-die-off dominance: 40%
+      area: 1800
+      shape: semi-circular
+      canopy cover:  80%
+      trees(cm dbh): TSHE 40; THPL 70, 22, 103; ACMA 109
+      tree distribution: periphery
+      shrubs: NA
+      forbs, grasses, etc: NA
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trena-related paper: candid Time-resolved genome-scale profiling reveals a causal expression network
+
+  Sean R. Hackett, Edward A. Baltz, Marc Coram, Bernd J. Wranik, Griffin Kim, Adam Baker, Minjie Fan, David G. Hendrickson, Marc Berndl, R. Scott McIsaac
+
+*-----------------------------------------------------------------------------------------------------------------------
+* javascript promise audio animated playback slexil (5 & 27 may 2019)
+
+   ~/github/slexil/explorations/playAudioInSequence/playAudioInSequence.html
+
+     async function playOne(id){
+
+       promiseContent = function(resolve, reject){
+         var audio = document.getElementById(id);
+           // when the sound is complete, resolve is called
+           // resolve is a function provided by the Promise api, indicating
+           // the successful completion of the promised activity
+           // await pauses until the Promise resolves
+         audio.addEventListener('ended', resolve);
+         audio.play();
+         } // promiseContent
+
+       return(new Promise(promiseContent));
+       } // playOne
+
+    async function playAll(audioElementIds){
+      for(i=0; i<audioElementIds.length; i++){
+          // The await operator pauses for the completion of a Promise.
+          // It can only be used inside an async function.
+        await playOne(audioElementIds[i])
+        } // for i
+      } // playAll
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* IslandWood candidate sword fern die-off sites (24 may 2019)
+
+  --- from my visit (12 may 2019)
+    on lower loop trail, on the left, near junction with loop access trail
+    on loop acces trail, on west side, roughly in line with the mill worker's cabin
+    on pond trail, a few dead crowns, not far along from junction with mac's dam trail
+
+  --- from tim
+    spine trail between pond trail and macs dam trail on N side of spine trail.
+    patch of about 20 dead there about equidistant between pond and macs dam trails.
+
+    back in the cedar grove downhill from that patch looks worse - i think some
+    other historical disturbance there
+
+    patchy dieoff along spine trail mostly on south side, downhill from there
+    all the way to the junction with the suspension bridge.  might be obscured
+    by spring growth but flagging may reveal quite a few.
+
+    some dead ferns near the canopy tower too.
+
+    in alder forest: left (south) side of the harbor trail or lower spine trail,
+    going uphill: full of old fern crowns indicating a GroundZero-like, or
+    historical die-off site. (perhaps best approached from junction of
+    country club road and harbor trail)
+
+    blakely harbor trail: start at trailhead on country club road.
+    head around several curves and switchbacks as trail gains
+    elevation. on left south side within  a quarter mile,
+    arrive at a big active die-off area.
+
+    continue along to another large (but smaller) patch, again on left.
+
+    eventually trail crosses a forest road.  after junction, see ~5 dead ferns.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* david gibbs proposes adding xgboost as a trena solver (23 may 2019)
+  see https://cran.r-project.org/web/packages/xgboost/index.html
+
+*-----------------------------------------------------------------------------------------------------------------------
 * org-mode tips org mode tips org tips
   3 ^U tab: open up all sections, entire buffer visible
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* bioc tips, martin tips
+
+  grep -[Rr] "string" *   # searches throughout all package
+  library(trena); BiocGenerics:::testPackage('trena')
+
+*-----------------------------------------------------------------------------------------------------------------------
+* Suggests fields:
+
+  The ‘Suggests’ field uses the same syntax as ‘Depends’ and lists packages that are not necessarily
+  needed. This includes packages used only in examples, tests or vignettes (see Writing package
+  vignettes), and packages loaded in the body of functions. E.g., suppose an example11 from package
+  foo uses a dataset from package bar. Then it is not necessary to have bar use foo unless one wants
+  to execute all the examples/tests/vignettes: it is useful to have bar, but not necessary. Version
+  requirements can be specified but should be checked by the code which uses the package.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* martin morgan's critique of trena package, prompted by my bioc-devel post (23 may 2019)
+
+   The recurring failure, which I cannot replicate on my own systems, is due to this error:
+     test_.getScoredMotifs Warning in .seqlengths_TwoBitFile(x) : mustOpen:
+      Can't open /home/biocbuild/bbs-3.9-bioc/R/library/BSgenome.Hsapiens.UCSC.hg38/extdata/single_sequences.2bit
+      to read: No such file or directory
+
+   I tried to reproduce the commands reported by the build system. So on a fresh git clone
+
+    $ cd /tmp
+    $ git clone git@git.bioconductor.org:packages/trena
+    $ R -vanilla CMD build --keep-empty-dirs --no-resave-data trena
+
+    (the buld system doesn't use vanilla, but I have an ~/.Rprofile and maybe other things, and I'm
+    doing my best not to introduce extraneous stuff). I then tried to check as the build system does
+
+    R --vanilla CMD check --install=check:trena.install-out.txt --library=/Users/ma38727/bin/R-3-6-branch/library --no-vignettes --timings trena_1.7.1.tar.gz
+
+    where I tried various arguments for --library (an empty directory; the directory shown here
+    which is the location my R is installed; the directory where my non-base R packages are
+    installed, the current directory, the directory containing trena source, :-separated
+    directories). I'd end up either with
+
+      * checking whether package ‘trena’ can be installed ... ERROR        Installation failed.
+      See ‘/private/tmp/trena.Rcheck/00install.out’ for details.
+
+     or (if 'trena.install-out.txt' didn't exist in the cwd)
+     * checking whether package ‘trena’ can be installed ... ERROR
+     install log ‘’ does not exist
+     * DONE
+
+    I couldn't find helpful documentation (other than R CMD check --help) on what value --library= should take;
+    maybe Hervé or other build system wiz can provide guidance so that we can exactly reproduce what the build system is doing?
+
+   I doubt any of the following is the magic bullet, but...
+
+    When I built and checked this on my local machine I received a warning and then error
+
+
+* checking dependencies in R code ... WARNING
+'::' or ':::' import not declared from: ‘BSgenome.Scerevisiae.UCSC.sacCer3’
+...
+* checking tests ...
+ Running ‘runTests.R’
+ERROR
+Running the tests in 'tests/runTests.R' failed.
+Last 13 lines of output:
+
+ 1 Test Suite :
+ trena RUnit Tests - 87 test functions, 1 error, 0 failures
+ ERROR in test_findMatchesByChromosomalRegion.yeast: Error in loadNamespace(name) :
+   there is no package called 'BSgenome.Scerevisiae.UCSC.sacCer3'
+
+because 'BSgenome.Scerevisiae.UCSC.sacCer3' is not listed in the Suggests: field of your package; are there other missing dependencies?
+
+In the build report, it's weird to see
+
+[1] --- test_createGeneModelFromRegulatoryRegions
+Called from: test_createGeneModelFromRegulatoryRegions()
+Browse[1]> debug: checkTrue(nrow(tbl.geneModel) > 40)
+
+which suggests that there is a stray browser() call in your code
+
+$ grep -r browser *
+...
+inst/misc/multiModels/aqp4.R:  browser()
+inst/misc/multiModels/aqp4.R:   browser()
+inst/misc/multiModels/aqp4.R:   browser()
+inst/misc/multiModels/aqp4-multi.R:  browser()
+inst/misc/multiModels/aqp4-multi.R:   browser()
+inst/misc/multiModels/aqp4-multi.R:   browser()
+inst/misc/multiModels/aqp4-multi.R:   browser()
+inst/misc/multiModels/aqp4-multi.R:   browser();
+inst/unitTests/test_Trena.R:    browser()
+inst/utils/evaluateAllSolvers.R:    browser()
+inst/utils/TReNA.R:    browser()
+
+In trena.Rcheck/tests/runTests.Rout
+
+I see
+
+[1] --- test_scalePredictorPenalties.lasso
+Warning in Solver(mtx.assay = mtx.assay, quiet = quiet, targetGene = targetGene,  :
+ Target gene mean expression is in the bottom 10% of all genes in the assay matrix
+...
+[1] --- test_scalePredictorPenalties.lasso
+Warning in Solver(mtx.assay = mtx.assay, quiet = quiet, targetGene = targetGene,  :
+ Target gene mean expression is in the bottom 10% of all genes in the assay matrix
+
+i.e., the same test running twice. Why is that?
+
+I notice that there are .DS_store files in your repository that shouldn't be there
+
+trena master$ find . -name ".*"
+.
+./man/.DS_Store
+./.Rbuildignore
+./.gitignore
+./.git
+./inst/misc/.DS_Store
+./inst/.DS_Store
+./inst/demos/.DS_Store
+
+Maybe resolving some of these issues, especially the last, helps to resolve problems?
+
+Martin
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* TrenaProjectLymphocyte trenaViz docker build: use GTEx expression which has all genes (21 may 2019)
+
+  background:  the existing shinyProxy lymphocyte trena viz
+                Lymphocyte (01 may 2019) GTEx lymphoctye and whole blood expression matrices, ENCODE footprints
+       has really crummy expression matrices, missing genes crucial to Joceylyn's research.
+
+    (14 may 2019): used these two matrices to create gsm
+
+        11565863 May 14 07:43 GTEX.lymphocyte.rna-seq-geneSymbols.21415x130.RData
+        30009186 May 13 16:28 GTEX.wholeBlood.rna-seq-geneSymbols.22330x407.RData
+
+  goal: rebuild this trenaViz project using only these two expression data sets, in version 0.99.22 of TrenaProjectLymphocyte
+
+*-----------------------------------------------------------------------------------------------------------------------
+* shinytest on the mtcars DT demo originally prepared for jocelyn (20 may 2019)
+
+   cd ~/github/TrenaViz/misc/explore/tables/DataTable/docker/
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* marjorie brand suggests (email 20 may 2019) in the correlate-srm-with-ChiP project
+
+   Another possibility would be to use the ATACseq data and/or GeneHancer to provide an estimate of the number
+   of enhancers, or even just open chromatin regions and compare with p300 protein copy numbers.
+   Maybe using this:
+      https://www.nature.com/articles/s41598-018-34420-9
+      A neural network based model effectively predicts enhancers from clinical ATAC-seq samples
+       Article | OPEN | Published: 30 October 2018
+
+*-----------------------------------------------------------------------------------------------------------------------
+* upgrade centurylinek
+
+
+     Hi Luis. We are a CenturyLInk customer, and wish to get the upgrade to $65 gigabit service. Only for new customers?
+
+  Luis A. at 13:26, May 20:
+
+    it is not only for new customers.
+
+  Luis A. at 13:27, May 20:
+
+    Okay that is for the simple pay account type and you have to call
+    another department to switch to that because the account you have
+    is not the same type, you have a post paid one, here is the
+    information of how to switch and the difference between account
+    types:
+
+  Luis A. at 13:27, May 20:
+
+    Thanks for your interest in SimplePay. This plan requires
+    prepayment in advance each month with auto-pay. If you would like
+    to convert your account, our team of specialists at 866-961-2650
+    can assist. They are open Monday - Friday from 8am - 6pm in your
+    local time zone. We appreciate your business!
+
+    SIMPLEPAY Internet is a month-to-month service which may be
+    cancelled at any time and requires monthly pre-payment with a
+    credit/debit card. Service will begin on the date your Service
+    order completes. Each prepaid billing cycle is 30 days with
+    service automatically renewing monthly until you cancel. Prepaid
+    payments for unused service will not be refunded or credited to
+    account.
+
+   POSTPAID Price for Life Internet can be bundled with DIRECTV and/or
+   Price for Life Home Phone. There are no activation fees or
+   contract. Services and equipment are NOT paid in advance. Keep your
+   rate as long as you keep your plan at your current address.
+
+   CenturyLink account number (20 may 2019): 206-760-0369 433
+
+   (21 may 2019) need password. direct line844.275.9829
+
+*-----------------------------------------------------------------------------------------------------------------------
+* repeat TrenaProjectLymphocyte model for jocelyn using wholeBlood - better negative regulation? (17 may 2019)
+
+   ~/github/TrenaProjectLymphocyte/prep/import/expression/extractWholeBloodExpression.R
+   ~/github/TrenaProjectLymphocyte/inst/extdata/expression/GTEX.wholeBlood.rna-seq-geneSymbols.22330x407.RData   30M
+
+   [the geneSymbol rownames of this matrix were mapped from ensg after the fix to this command, which in particular
+    picks up IRF4 when it is names ENSG00000137265.10
+    as well as 6006 other genes:  length(grep("\\.1[0-9]$", rownames(mtx.gtex), v=TRUE)) # 6006]
+
+    new.rownames <- sub("\\.[0-9]*", "", rownames(mtx))
+    rownames(mtx) <- new.rownames
+
+   fivenum(mtx)  # [1]  0.000000  2.094713  4.912709  7.229839 17.811715
+
+
+   -- explore for negative correlation
+     library(trenaSGM)
+     tfs <- allKnownTFs()
+     tfs.oi <- intersect(tfs, rownames(mtx))  # 1386
+     targetGene <- "LAG3"
+     cors <- lapply(tfs.oi, function(tf) cor(mtx[targetGene,], mtx[tf,]))
+     fivenum(as.numeric(cors))  # [1] -0.6329323 -0.0563126  0.1265003  0.3346974  0.8543132
+
+   --- compare with lymphocyte 21415x130
+      print(load("../../../inst/extdata/expression/GTEX.lymphocyte.rna-seq-geneSymbols.21415x130.RData"))
+     tfs.oi <- intersect(tfs, rownames(mtx))  # 1386
+     targetGene <- "LAG3"
+     cors <- lapply(tfs.oi, function(tf) cor(mtx[targetGene,], mtx[tf,]))
+     fivenum(as.numeric(cors))  # -0.47717577  0.06922055  0.16804384  0.27600526  0.66686149
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* motifbreakR-demo.R for cory, ad (17 may 2019)
+
+  ~/github/genomescale_scripts/examples/motifbreakR/motifbreakR-demo.R
+   library(MotifDb)
+   library(motifbreakR)
+   library(BSgenome.Hsapiens.UCSC.hg38)
+   library(SNPlocs.Hsapiens.dbSNP150.GRCh38)
+
+   snps <- c("rs483082", "rs59325138", "rs584007", "rs438811")
+   demo.snp <- snps[4]
+
+   apoc1.tfs <- c("SPI1", "IRF5", "ELK3", "STAT3", "IKZF1", "RREB1", "JUNB", "SMAD2", "FOS", "FLI1")
+
+   matches <- unlist(lapply(apoc1.tfs,
+                            function(tf) grep(sprintf("^%s$", tf),mcols(MotifDb)$geneSymbol)))
+
+   mini.db <- MotifDb[matches]
+   motifs <- query(mini.db, c("hsapiens", "jaspar2018"))
+   length(motifs)
+
+   snps.gr <- snps.from.rsid(rsid = demo.snp,
+                             dbSNP=SNPlocs.Hsapiens.dbSNP150.GRCh38,
+                             search.genome=BSgenome.Hsapiens.UCSC.hg38)
+
+   results <- motifbreakR(snpList = snps.gr,
+                          filterp = TRUE,
+                          pwmList = motifs,
+                          show.neutral=FALSE,
+                          method = c("ic", "log", "notrans")[2],
+                          bkg = c(A=0.25, C=0.25, G=0.25, T=0.25),
+                          BPPARAM = BiocParallel::bpparam(),
+
+                          verbose=TRUE)
+   length(results)  # 5
+   length(results[results$effect=="strong"])  # 4
+
+   plotMB(results, rsid=demo.snp, effect=c("strong")) # takes a minute or two
+
+   results <- calculatePvalue(results)
+
+     # translate the results into a more convenient data structure, a data.frame
+     # add a few summary columns.
+
+   results$rsid <- names(results)
+   tbl.breaks <- as.data.frame(results, row.names=seq_len(length(results)))
+   tbl.breaks$delta <- with(tbl.breaks, pctRef-pctAlt)
+   tbl.breaks$refPvalScore <- -log10(tbl.breaks$Refpvalue)
+   tbl.breaks$altPvalScore <- -log10(tbl.breaks$Altpvalue)
+   tbl.breaks$deltaPvalScore <- tbl.breaks$refPvalScore - tbl.breaks$altPvalScore
+
+*-----------------------------------------------------------------------------------------------------------------------
+* yeast_atac_seq, from noa's friend ilya solfer (8 may 2019)
+
+   --- email (21 apr 2019)
+
+     We have probably 5-6 TFs for which we did ATACseq and expression.
+
+   --- email (8 may 2019)
+
+   I am CCing Scott McIsaac, the corresponding author of the book chapter. Feel free to ping us both
+   with questions.
+
+   A few notes:
+
+   1. Transcriptional data for a large collection of TFs is described here:
+      https://www.biorxiv.org/content/10.1101/619577v2 and you can download all expression time courses
+      from this website: candid.research.calicolabs.com
+
+   2. The folder that I shared with you contains ATACseq time courses of seven strains where ZEV is
+      driving expression of SIR2, WAR1, FLO8, GCN4, INO4, NDT80, ZAP1 respectively.
+
+   3. Note that there are two versions of synthetic TF that drives expression in these strains: ZEV
+      and GEV (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5542879). GEV has more side effects and
+      induces slightly GAL regulon. WAR1, FLO8, INO4, NDT80 and ZAP1 are driven by GEV, SIR2 and
+      GCN4 are driven by ZEV.
+
+   4. bigWig files that I am sharing are chromatin accessibilities x minutes post induction of the
+      TF. rsm-4 file in SIR2 is chromatin accessibility of sir2delta.
+
+   5. The files contain number of Tn5 insertions at each nucleotide. Insertions that generated reads
+      that are not uniquely mapped are discarded. The total number of insertions is normalized so
+      that the total number of non-ribosomal, non-mitochondrial insertions over genome is 100. If
+      needed I can look up the total number of reads in each sample if you want to convert the
+      normalized insertion counts to the total number of insertions.
+
+   --- google drive shared with me p.t.s@gmail.com
+
+    downloading timecourse atac-seq bigwig files
+    cd ~/github/TrenaProjectSc
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ngl shiny for the rhos project (16 may 2019)
+
+   ~/github/nglShiny
+
+    get latest ngl.js:
+       cd ~/github/ngl; git pull; cd ~/github/nglShiny;
+       cp ~/github/ngl/dist/ngl.js /github/nglShiny/inst/htmlwidgets/lib
+
+   cd  ~/github/nglShiny/inst/unitTests
+   R> source("minimalDemoApp.R"); shinyApp(ui, server)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* liftover tips (15 may 2019)
+
+  library(GenomicRanges)
+  library(rtracklayer)
+  library(data.table)
+  f <- "Naive_CD8_T_cells.tsv"
+  tbl <- fread(f)
+  head(tbl)
+  colnames(tbl) <- c("chrom", "start", "end", "sequence", "score")
+  gr <- GRanges(tbl)
+
+  system("curl -O http://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz")
+  system("gunzip hg19ToHg38.over.chain.gz")
+  chain <- import.chain("hg19ToHg38.over.chain")
+  x <- liftOver(gr, chain)
+  gr.hg38 <- unlist(x)
+  gr.hg38
+  tbl.cd8naive <- as.data.frame(gr.hg38)
+  dim(tbl.cd8naive)
+  colnames(tbl.cd8naive) <- c("chrom", "start", "end", "width", "strand", "sequence", "score")
+  save(tbl.cd8naive, file="cd8naive-scATAC.RData")
+
+*-----------------------------------------------------------------------------------------------------------------------
+* make bigWig files out of scATAC-seq?  (15 may 2019)
+
+  Massively parallel single-cell chromatin landscapes of human immune cell development and intratumoral T cell exhaustion
+    https://www.biorxiv.org/content/biorxiv/early/2019/04/18/610550.full.pdf   (Satpathy first author, howard change)
+
+  data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE129785
+
+   67 samples
+
+     GSM3722011	0p1_99p9_CD4Mem_CD8Naive
+     GSM3722012	0p1_99p9_Mono_T
+     GSM3722013	0p5_99p5_CD4Mem_CD8Naive
+     GSM3722014	0p5_99p5_Mono_T
+     GSM3722015	PBMC_Rep1
+     GSM3722016	1_99_CD4Mem_CD8Naive
+     GSM3722017	1_99_Mono_T
+     GSM3722018	50_50_CD4Mem_CD8Naive
+     GSM3722019	50_50_Mono_T
+     GSM3722020	99_1_CD4Mem_CD8Naive
+     GSM3722021	99_1_MonoT
+     GSM3722022	99p5_0p5_CD4Mem_CD8Naive
+     GSM3722023	99p5_0p5_MonoT
+     GSM3722024	99p9_0p1_CD4Mem_CD8Naive
+     GSM3722025	99p9_0p1_Mono_T
+     GSM3722026	Dendritic_Cells
+     GSM3722027	Monocytes
+     GSM3722028	B_Cells
+     GSM3722029	CD34_Progenitors_Rep1
+     GSM3722030	Regulatory_T_Cells
+     GSM3722031	Naive_CD4_T_Cells_Rep1
+     GSM3722032	Memory_CD4_T_Cells_Rep1
+     GSM3722033	CD4_HelperT
+     GSM3722034	CD4_Memory
+     GSM3722035	CD4_Naive
+     GSM3722036	NK_Cells
+     GSM3722037	Naive_CD8_T_Cells
+     GSM3722038	Memory_CD8_T_Cells
+     GSM3722039	Dendritic_all_cells
+     GSM3722040	Fresh_pbmc_5k
+     GSM3722041	Frozen_sorted_pbmc_5k
+     GSM3722042	Frozen_unsorted_pbmc_5k
+     GSM3722043	BY_10k
+     GSM3722044	BY_1k
+     GSM3722045	BY_500
+     GSM3722046	BY_5k
+       tumor subclones
+     GSM3722047	SU001_Immune_Post2
+     GSM3722048	SU001_Tcell_Post2
+     GSM3722049	SU001_Tcell_Post
+     GSM3722050	SU001_Total_Post2
+     GSM3722051	SU001_Total_Pre
+     GSM3722052	SU001_Tumor_Immune_Post
+     GSM3722053	SU005_Total_Post
+     GSM3722054	SU006_Immune_Pre
+     GSM3722055	SU006_Tcell_Pre
+     GSM3722056	SU006_Total_Post
+     GSM3722057	SU006_Tumor_Pre
+     GSM3722058	SU007_Total_Post
+     GSM3722059	SU008_Immune_Post
+     GSM3722060	SU008_Immune_Pre
+     GSM3722061	SU008_Tcell_Post
+     GSM3722062	SU008_Tcell_Pre
+     GSM3722063	SU008_Tumor_Post
+     GSM3722064	SU008_Tumor_Pre
+     GSM3722065	SU009_Tcell_Post
+     GSM3722066	SU009_Tcell_Pre
+     GSM3722067	SU009_Tumor_Immune_Post
+     GSM3722068	SU009_Tumor_Immune_Pre
+     GSM3722069	SU010_Total_Post
+     GSM3722070	SU010_Total_Pre
+     GSM3722071	Bone_Marrow_Rep1
+     GSM3722072	CD34_Progenitors_Rep2
+     GSM3722073	Memory_CD4_T_Cells_Rep2
+     GSM3722074	Naive_CD4_T_Cells_Rep2
+     GSM3722075	PBMC_Rep3
+     GSM3722076	PBMC_Rep2
+     GSM3722077	PBMC_Rep4
+
+
+
+   p13:
+
+    We next examined regulatory landscapes of intratumoral T cells. We first reclustered 23,274 T
+    cells (defined in Fig. 4) and identified 19 sub-clusters of intratumoral T cell states,
+    revealing a rich diversity of T cell phenotypes in the tumor microenvironment (TME, Fig. 5a).
+    Classification of clusters using cis-element accessibility and gene scores for CD8A and CD4
+    showed that 6 clusters represented CD8+ T cell states and 13 clusters represented CD4+ T cell
+    states (Fig. 5b). CD8+ T cell states included naïve T cells (high accessibility of CCR7 and TCF7
+    enhancers), effector T cells (high accessibility of EOMES and IFNG enhancers), memory T cells
+    (high accessibility of EOMES enhancers, but low accessibility of effector gene enhancers), and
+    exhausted T cells (TEx; high accessibility of ciselements proximal to inhibitory receptor genes
+    PDCD1, CTLA4, and HAVCR2, and to T cell dysfunction genes CD101 and CD3849; Fig. 5b and
+    Supplementary Fig. 8a-b). We also identified a cluster consistent with an intermediate TEx
+    cluster (Cluster 16), that exhibited gene score patterns of both TEx and memory T cells
+    (Fig. 5b). CD4+ T cell states included naïve T cells and several T helper cell phenotypes, such
+    as Tregs (high accessibility of FOXP3 and CTLA4 enhancers), T helper 1 (Th1) cells (high
+    accessibility of IFNG and TBX21 enhancers), T helper 17 (Th17) cells (high accessibility of
+    IL17A and CTSH enhancers), and T follicular helper (Tfh) cells (high accessibility of CXCR5,
+    IL21, and BTLA enhancers; Fig. 5b and Supplementary Fig. 8a-b).
+
+     wikipedia: Follicular B helper T cells (also known as just follicular helper T cells or TFH),
+       are antigen-experienced CD4+ T cells found in the periphery within B cell follicles of
+       secondary lymphoid organs such as lymph nodes, spleens and Peyer's patches, and are identified
+       by their constitutive expression of the B cell follicle homing receptor CXCR5.[1]
+
+
+    We focused on CD8+ TEx cells because previous studies demonstrated that this population is
+    enriched for clonally-expanded tumor-specific T cells41,50, and that irreversibility of the TEx
+    epigenetic state may limit the re-invigoration of tumor-specific T cells after PD-1
+    blockade51. Indeed, a comparison of pre- and post-PD-1 blockade profiles in our dataset showed
+    that TEx cells were the most highly-expanded T cell cluster (Cluster 17) after therapy
+    (Fig. 5c). More than 90% of TEx cells were derived from post-therapy biopsies, whereas memory
+    and effector CD8+ clusters (Clusters 12 and 14) were equally derived from both
+    timepoints. Notably, compared to other CD4+ T cell types, we observed an expansion of CD4+ Tfh
+    cells post-therapy – nearly to the same extent as TEx cells – compared to other CD4+ T cell
+    types, suggesting that PD-1 blockade impacts both CD4+ and CD8+ cell states in the TME
+    (Fig. 5c). We first analyzed cis-regulatory landscapes in TEx cells to: (1) measure global
+    changes in chromatin accessibility in TEx cells, and (2) nominate individual cis-elements that
+    may regulate TEx-specific inhibitory receptor expression. Across all T cell states, we
+    identified 35,147 cis-elements that were specifically accessible only in a single cluster (mean:
+    3,361 peaks per cluster, range: 979 peaks (naïve CD8+ T)-10,808 peaks (Tregs), FDR < 0.01;
+    Supplementary Fig. 8d). In TEx cells, we identified 4,598 such elements, demonstrating that
+    human T cell exhaustion is accompanied by substantial global remodeling of the chromatin
+    accessibility landscape, and that the epigenetic state occupied by this cell state is as
+    distinct as most other recognized T cell states, consistent with prior studies in
+    mice49,51,52. Analysis of individual TEx-specific enhancers identified novel regulatory elements
+    in inhibitory receptor loci (Fig. 5d). For example, the PDCD1 locus (encoding PD-1) contained an
+    intragenic ciselement (+5kb) with specific accessibility in TEx cells, suggesting that the
+    persistent expression of PD-1 in exhausted human T cells is controlled by a single
+    state-specific enhancer, and that the regulation of persistent PD-1 expression may be different
+    in humans and mice53. In contrast, the CTLA4 and HAVCR2 loci showed TEx-specific activity of
+    several distal cis-elements, compared to other CD8+ T cell states (Fig. 5d).
+
+    We used pseudotime ordering to identify TF trajectories in TEx differentiation, compared to
+    effector or memory CD8+ T cells (Fig. 5e). Since we also observed an expansion of CD4+ Tfh cells
+    post-therapy, we included this cell type in our comparison.  As expected, the differentiation of
+    naïve CD8+ T cells to either effector or memory cells identified the critical roles of EOMES and
+    TBX21 (T-bet) motifs in effector and memory cell formation, once again supporting the validity
+    of this analysis54–56 (Fig. 5f). Effector cell pseudotime also demonstrated the late
+    accessibility of other known regulators, including TFAP4 and YY1, among others57,58. Similarly,
+    memory cell pseudotime also showed accessibility at HIF1A and E protein sites59. In contrast,
+    TEx cells showed a distinct regulatory program, which progressed through two stages of
+    differentiation (Fig.  5g). The first stage (intermediate TEx) showed new accessibility of
+    cis-elements near inhibitory receptors, as well as elements near genes associated with tissue
+    residency, such as ITGAE (CD103)60. Accordingly, this stage of differentiation was accompanied
+    by accessibility of NR3C1 and NR4A1 motifs, factors immediately downstream of T cell receptor
+    (TCR) signaling61, as well as the RUNX3 motif, a factor that programs tissue residency of CD8+ T
+    cells in tumors (Fig. 5g)62. The second stage (terminal TEx) showed new accessibility of
+    cis-elements near genes associated with terminal T cell dysfunction, such as CD101 and TOX49,51,
+    as well as of new elements in stage 1 gene loci, such as CTLA4 (Fig. 5g). Importantly, this
+    stage was accompanied by accessibility of a core set of TF motifs, which included NFKB1 and
+    NFKB2, BATF, IRF4, and NFATC1, factors that are all directly downstream of TCR signaling, and
+    three of which have been demonstrated to play crucial roles in T cell exhaustion in mice63–65.
+
+    Finally, we examined the epigenetic relationship between TEx and Tfh cells. Tfh cells have
+    previously been observed in tumors and have been proposed as a prognostic indicator of patient
+    survival and response to checkpoint blockade66–68.The inferred differentiation trajectory from
+    CD4+ naïve T cells to Tfh cells showed new accessibility of cis-elements neighboring
+    Tfh-specific genes, such as IL21 and BTLA, but also of elements near genes typically associated
+    with TEx cells, such as inhibitory receptors, consistent with the known, but unexplained,
+    expression of these genes in human Tfh cells (Fig. 5h and Supplementary
+    Fig. 8c-e)69. Strikingly, differentiation was accompanied by the accessibility of Tfh
+    regulators, but also of the same core set of TF motifs associated with TEx differentiation,
+    including NFKB2, BATF, IRF4, and NFATC1, suggesting a common program driving the development of
+    TEx and Tfh cells downstream of PD-1 blockade (Fig. 5h-i and Supplementary Fig. 8f). Indeed, the
+    abundance of TEx and Tfh cells was similar in all patients post-therapy, and in our small
+    cohort, was associated with therapy response (Fig. 5j). Altogether, these results map the
+    epigenetic landscape of intratumoral TEx cells in humans and suggest that chronic TCR (T cell
+    receptor) signals drive a shared regulatory program in TEx and Tfh cells after PD-1 blockade
+    (Fig. 5k).
+
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* naive and memory CD8 T cells from chang 2019: hg19!  (15 may 2019)
+
+  downloaded to khaleesi due to speed need:
+
+   cd ~/github/TrenaProjectLymphocyte/prep/import/chang/
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+*  solve cory's the bplapply “disk image is malformed” problem, goEnrichment of gsm trena models
+
+   ~/github/genomescale_scripts/examples/goEnrichmentParallelBug/solution.R
+
 *-----------------------------------------------------------------------------------------------------------------------
 * combineGeneModels.R with cory's tryCatch for bad files (14 may 2019)
 
@@ -121,7 +808,9 @@ bed format: chrom, start, end, name, score, strand
    What regulates LAG3, PD1, TIM3 would also be great! (upstream)   (PDCD1, HAVCR2)
 
 *-----------------------------------------------------------------------------------------------------------------------
-* shiny DT demo, to track down joceylyn/lyell bug in which row selection does not work (14 may 2019)
+* shiny mtcars DT demo, to track down joceylyn/lyell bug in which row selection does not work (14 may 2019)
+
+  [status (16 may 2010)]: might well be that Jocelyn uses an obsolete version of Chrome]
 
    cd ~/github/TrenaViz/misc/explore/tables/DataTable/docker/
 
@@ -3301,7 +3990,7 @@ TrenaProjectErythropoiesis, TrenaProjectMouseMa
       GSE74246: Unstranded RNA sequencing data
       GSE74310: Single-cell chromatin accessibility data using scATAC-seq
       GSE74912: ATAC-seq data
-        Samples of interest for hemato/erythropoiesis (in this order) – several replicates for each:
+        Samples of interest for hemato/erythropoiesis (in this order),  several replicates for each:
         HSC; MPP; CMP; MEP; Ery (CD71+; GPA+)*
         *Ery: this cell population includes e-basoE; l-baso-E; polyE; orthoE
 
@@ -12807,7 +13496,7 @@ tbl.round <- roundNumericColumns(tbl.orig, 3,
   https://link.springer.com/article/10.1023/A:1006350405674
 
   The Rb. sphaeroides PGC is 40.7 kb in length and consists of 38 open reading frames encoding the
-  reaction center H, L and M subunits, the α and β polypeptides of the light-harvesting I (B875)
+  reaction center H, L and M subunits, the polypeptides of the light-harvesting I (B875)
   complex, and the enzymes of bacteriochlorophyll and carotenoid biosynthesis. PGCs are a feature of
   gene organization in several photosynthetic bacteria, and the similarities between the clusters of
   Rb. sphaeroides and Rb. capsulatus have been apparent for some time. Here we present the first
@@ -60426,7 +61115,7 @@ mo.MSource_ID = ms.MSource_ID and
 tf.Family_ID = fa.Family_ID and
 pr.TF_ID = tf.TF_ID"
 
-cherry picking the problem: tow pfalc motifs, one which responds to the general query, one does not
+cherry picking the problem: two pfalc motifs, one which responds to the general query, one does not
 
 M0052_1.02 PF11_0442 Plasmodium_falciparum 21060817         AP2 PF11_0442
 
