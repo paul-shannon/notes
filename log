@@ -1,16 +1,15 @@
 SwordFernDieOff+subscribe@groups.io
+org-mode:  (3 ^U) tab: open up all sections, entire buffer visible;  toggle image display: ^c^x^v
 *------------------------------------------------------------------------------------------------------------------------
 * RColorBrewer tips
 
 library (RColorBrewer)
 display.brewer.all()
-
-totalColorCount <- 12
 colors <- brewer.pal(12, "Paired")
+colors <- brewer.pal(8, "Dark2")
+totalColorCount <- length(colors)
 currentColorNumber <- 0
-
 then in a subsequent loop
-
    currentColorNumber <<- (currentColorNumber %% totalColorCount) + 1
    color <- colors[currentColorNumber]
 
@@ -61,9 +60,1591 @@ bed format: chrom, start, end, name, score, strand
 * -TOP-
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* install hint-atac (costaLab/reg-gen) (2 jul 2019)
+
+  cd ~/github/reg-gen/
+  /usr/local/bin/pip install --user -r requirements.txt
+  python setup.py install --user .
+  error: pysam 0.15.2 is installed but pysam==0.13.0 is required by set(['HTSeq'])
+  try this:
+     pip install pysam==0.13.0
+
+
+  --- run their example addressing dendritic cells
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* get sample metadata on tanjanay's first expression matrix (2 jul 2019)
+
+  paper: https://www.sciencedirect.com/science/article/pii/S2213596016300216#f0005
+  42 hybridizations
+  12 experimental conditions: [Zn- Zn+ Zn++][wildtype bzip19:bzip23ko][root shoot]
+
+  Thus, it expands from 8 to 42 microarrays hybridizations, which have been deposited at the Gene
+  Expression Omnibus (GEO) under the accession number GSE77286.
+
+  cd ~/github/TrenaProjectArabidopsisRoot/prep/munoz-zinc/
+  load("mtx.zinc.21201x42.RData")
+  colnames(mtx)
+  GPL198	[ATH1-121501] Affymetrix Arabidopsis ATH1 Genome Array
+    GSM2047275	Root, WT, Zn-, Rep1
+    GSM2047276	Root, WT, Zn-, Rep2
+    GSM2047277	Root, WT, Zn- ,Rep3
+    GSM2047278	Root, WT, Zn-, Rep4
+    GSM2047279	Root, Mut, Zn-, Rep1
+    GSM2047280	Root, Mut, Zn-, Rep2
+    GSM2047281	Root, Mut, Zn-, Rep3
+    GSM2047282	Root, Mut, Zn-, Rep4
+    GSM2047283	Root, Wt, Zn+, Rep1
+    GSM2047284	Root, Wt, Zn+, Rep2
+    GSM2047285	Root, Wt, Zn+, Rep3
+    GSM2047286	Root, Wt, Zn+, Rep4
+    GSM2047287	Root, Mut, Zn+, Rep1
+    GSM2047288	Root, Mut, Zn+, Rep2
+    GSM2047289	Root, Mut, Zn+, Rep3
+    GSM2047290	Root, Mut, Zn+, Rep4
+    GSM2047291	Root, WT, Zn++, Rep1
+    GSM2047292	Root, WT, Zn++, Rep2
+    GSM2047293	Root, WT, Zn++, Rep3
+    GSM2047294	Root, WT, Zn++, Rep4
+    GSM2047295	Root, Mut, Zn++, Rep1
+    GSM2047296	Root, Mut, Zn++, Rep2
+    GSM2047297	Root, Mut, Zn++, Rep3
+    GSM2047298	Root, Mut, Zn++, Rep4
+    GSM2047299	Shoot, WT, Zn-, Rep1
+    GSM2047300	Shoot, WT, Zn-, Rep2
+    GSM2047301	Shoot, WT, Zn-, Rep3
+    GSM2047302	Shoot, Mut, Zn-, Rep1
+    GSM2047303	Shoot, Mut, Zn-, Rep2
+    GSM2047304	Shoot, Mut, Zn-, Rep3
+    GSM2047305	Shoot, WT, Zn+, Rep1
+    GSM2047306	Shoot, WT, Zn+, Rep2
+    GSM2047307	Shoot, WT, Zn+, Rep3
+    GSM2047308	Shoot, Mut, Zn+, Rep1
+    GSM2047309	Shoot, Mut, Zn+, Rep2
+    GSM2047310	Shoot, Mut, Zn+, Rep3
+    GSM2047311	Shoot, WT, Zn++, Rep1
+    GSM2047312	Shoot, WT, Zn++, Rep2
+    GSM2047313	Shoot, WT, Zn++, Rep3
+    GSM2047314	Shoot, Mut, Zn++, Rep1
+    GSM2047315	Shoot, Mut, Zn++, Rep2
+    GSM2047316	Shoot, Mut, Zn++, Rep3
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* alison's placenta footprints, fpdb: the "fp4" footprints called by yeon mi (1 jul 2019)
+
+   discovered that footprints have already been called
+   khaleesi, cd /local/users/pshannon/github/TrenaProjectPlacenta/prep/fp2db/2019jul01/
+
+          run: fp4-fimoOutput-QC.R         #   680 Jul  1 07:51
+   to produce: fimo-output-qc-summary.txt  # 17847 Jul  1 07:55
+
+   --- step 2: reads tsv files from step 1, calls transformFimoResultsForDatabaseFile(f) on each
+    /local/users/pshannon/github/TrenaProjectPlacenta/prep/fp2db/2019jun16/combineSampleTsvFilesPostgresPrep.R
+       source("~/github/fptodb/R/fptodb.R")
+       resultsBaseDir <- "/local/trenaPlacentaProject/whole_genome_fimoCalls"
+       method.suffixes <- c("_fp", "fp4", "fb_bc", "fp4_bc")
+       chromosomes <- sprintf("chr%s", c(as.character(1:22), "X", "Y"))
+       main function: runAndReduceChromosomes(resultsBaseDir, suffix, chrom)
+         called by doAll_runAndReduceChromosomes()
+         identifies all 12 sample tsv files for the given suffix (method), one of _fp, _fp4, fp_bc, fp4_bc
+           cmd <- sprintf("find %s -name '*.tsv' | grep '%s/' | grep '%s:'", resultsBaseDir, suffix, chrom)
+         calling transformFimoResultsForDatabaseFile(f) on each file
+
+   --- step 2: results
+     /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-fp4-01jul2019/
+        158920543 Jul  1 09:12 chr10_fp4.RData
+        197515536 Jul  1 09:18 chr11_fp4.RData
+        168186069 Jul  1 09:23 chr12_fp4.RData
+         67225906 Jul  1 09:25 chr13_fp4.RData
+        121741717 Jul  1 09:29 chr14_fp4.RData
+        114975213 Jul  1 09:32 chr15_fp4.RData
+        158213188 Jul  1 09:37 chr16_fp4.RData
+        198567626 Jul  1 09:44 chr17_fp4.RData
+         61718817 Jul  1 09:46 chr18_fp4.RData
+        215073495 Jul  1 09:52 chr19_fp4.RData
+        365654753 Jul  1 08:23 chr1_fp4.RData
+        103496462 Jul  1 09:55 chr20_fp4.RData
+         43283834 Jul  1 09:56 chr21_fp4.RData
+         92814168 Jul  1 09:59 chr22_fp4.RData
+        253634509 Jul  1 08:32 chr2_fp4.RData
+        199893908 Jul  1 08:38 chr3_fp4.RData
+        125181570 Jul  1 08:41 chr4_fp4.RData
+        161987883 Jul  1 08:46 chr5_fp4.RData
+        189019928 Jul  1 08:52 chr6_fp4.RData
+        187023364 Jul  1 08:58 chr7_fp4.RData
+        145583317 Jul  1 09:02 chr8_fp4.RData
+        165463692 Jul  1 09:07 chr9_fp4.RData
+         87211078 Jul  1 10:02 chrX_fp4.RData
+          1913565 Jul  1 10:02 chrY_fp4.RData
+
+*-----------------------------------------------------------------------------------------------------------------------
+* arabidopsis expression matrix for tanjanay (30 jun 2019)
+
+   https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE77286
+
+   Status	Public on Jan 28, 2016
+   Title	Expression data from Arabidopsis plants under varying zinc supply.
+   Organism	Arabidopsis thaliana
+   Experiment type	Expression profiling by array
+
+   Summary Deficiency of the micronutrient zinc is a widespread condition in agricultural soils,
+   generating a negative impact on crop quality and yield. Nevertheless, there is insufficient
+   knowledge on the regulatory and molecular mechanisms underlying the plant response to inadequate
+   zinc nutrition.  Hydroponically-grown Arabidopsis thaliana plants (WT Col-0 and the T-DNA insertion
+   double mutant bzip19 bzip23) were subjected to zinc deficiency, sufficiency and excess. The
+   particular role of the bZIP19 and bZIP23 transcription factors was investigated via the bzip19
+   bzip23 double mutant.
+
+   ~/github/TrenaProjectArabidopsisRoot/prep/munoz-zinc
+   cp -p ~/github/projects/external/mentewab/arabidopsis.zinc/mtx.zinc.21201x42.RData .
+   plot(mtx["ATWBC19",])   shows two very distinct states across the 42 samples
+
+*-----------------------------------------------------------------------------------------------------------------------
+* slexil version
+
+  --- 0.99.13, 29 jun 2019
+     tag=v0.99.13:
+     first 11 lines fo daylight work
+     cd ~/github/slexil/explorations/generateEAF/pythonDemos/daylight1/
+     make all
+
+*-----------------------------------------------------------------------------------------------------------------------
+* tanjanay transporter modeling (28 jun 2019)
+
+  mentewab reports 45x over-expression of WBC19: AT3G55130
+     Other names: ABCG19, ATP-BINDING CASSETTE G19, ATWBC19, WBC19, WHITE-BROWN COMPLEX HOMOLOG 19
+     Encodes a vacuole localized protein of the ABC transporter White-Brown Complex (WBC) family.
+     When overexpressed in planta, confers resistance to kanamycin.
+
+   rna-seq: We collected 65 publicly available Illumina RNA-seq high quality Arabidopsis thaliana
+     samples and generated Pearson correlation coexpression networks
+     https://academic.oup.com/bioinformatics/article/29/6/717/184320
+     2013
+
+*-----------------------------------------------------------------------------------------------------------------------
+* michael ginty asks my salary and 403b contributions (27 jun 2019)
+
+   My annual salary is $140,796.
+   My 403b budget breaks down like this:
+
+   employer base contribution: $175.01
+               employer match:  291.69
+       my pretax contribution:  816.73
+                        total: 1283.42
+
+*-----------------------------------------------------------------------------------------------------------------------
+* tf binding thresholds, chip-seq, mariam's summer project (27 jun 2019)
+
+   ~/github/tfBindingThresholds/explore/firstLook.R
+
+library(RPostgreSQL)
+db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="chipatlas", host="khaleesi")
+dbListTables(db) # [1] "experiments" "peaks"
+dbGetQuery(db, "select * from experiments limit 4")
+dbGetQuery(db, "select * from peaks limit 4")
+
+tf <- "PARK7"
+tf <- "ZNF263"
+tf <- "LXRalpha"
+tf <- "MEF2C"
+tbl <- dbGetQuery(db, sprintf("select * from experiments where antigen = '%s'", tf))
+dim(tbl)
+
+id <- unique(tbl$id)
+tbl.hits <- dbGetQuery(db, sprintf("select * from peaks where experiment='%s'", id))
+dim(tbl.hits)
+
+
+db2 <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="hg38", host="khaleesi")
+dbGetQuery(db2, "select count(*) from chipseq")  # 80,143,591
+
+dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="chipatlas", host="khaleesi")
+dbListTables(db2) # "gtf"         "motifsgenes" "chipseq"
+dbGetQuery(db2, "select * from chipseq limit 5")
+
+tf <- "KLF1"
+tf <- "PARK7"
+tf <- "ZNF263"
+tf <- "LXRalpha"
+tf <- "MEF2C"
+tbl <- dbGetQuery(db2, sprintf("select * from chipseq where tf='%s'", tf))
+dim(tbl)
+
+library(trena)
+pfms <- query(MotifDb, c("jaspar2018", "MEF2C"))
+mm <- MotifMatcher("hg38", as.list(pfms), quiet=TRUE)
+
+tbl.fixed <- tbl[, c("chrom", "peakStart", "peakEnd")]
+colnames(tbl.fixed) <- c("chrom", "start", "end")
+tbl.fixed$start <- tbl.fixed$start - 10
+tbl.fixed$end   <- tbl.fixed$end + 10
+tbl.match <- findMatchesByChromosomalRegion(mm, head(tbl.fixed, n=100), pwmMatchMinimumAsPercentage=70)
+dim(tbl.match)
+
+tbl.fixedBigger <- tbl[, c("chrom", "start", "endpos")]
+colnames(tbl.fixedBigger) <- c("chrom", "start", "end")
+dim(tbl.fixedBigger)
+tbl.match <- findMatchesByChromosomalRegion(mm, head(tbl.fixedBigger, n=100), pwmMatchMinimumAsPercentage=75)
+dim(tbl.match)
+
+
+
+# library(FimoClient)
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* macs2 tips, narrowpeak tips narrow peak tipbs, bed6+4
+
+   NAME_peaks.narrowPeak is BED6+4 format file which contains the peak locations together with peak
+   summit, pvalue and qvalue. You can load it to UCSC genome browser. Definition of some specific
+   columns are:
+
+   5th: integer score for display calculated as int(-10*log10qvalue). Please note that currently
+         this value might be out of the [0-1000] range defined in UCSC Encode narrowPeak format
+
+   7th: fold-change
+   8th: -log10pvalue
+   9th: -log10qvalue
+  10th: relative summit position to peak start
+
+   read.table("GSM3484757_Root_ATAC_1_peaks.narrowPeak", sep="\t", as.is=TRUE, nrow=3)
+     V1   V2   V3           V4 V5 V6      V7       V8      V9 V10
+
+   2  1 3064 3277 L_all_peak_2 78  . 4.18140 10.41559 7.80000  62
+   3  1 8652 8810 L_all_peak_3 44  . 3.25220  6.48017 4.46350  83
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* org packages tips, org.Hs.eg.db, org.At.tair.db
+
+  db <- org.Hs.eg.db
+  db <- org.At.tair.db
+  columns(db)
+
+    "ARACYC"       "ARACYCENZYME" "ENTREZID"     "ENZYME"       "EVIDENCE"     "EVIDENCEALL"
+    "GENENAME"     "GO"           "GOALL"        "ONTOLOGY"     "ONTOLOGYALL"  "PATH"
+    "PMID"         "REFSEQ"       "SYMBOL"       "TAIR"
+
+   tbl.at <- select(db, keys=keys(db), columns=c("SYMBOL", "GENENAME"))
+   dim(tbl.at)  # 36537 3
+   tbl.at[grep("IRT1", tbl.at$SYMBOL),]
+              TAIR SYMBOL                        GENENAME
+   24877 AT4G19690 ATIRT1 Fe(II) transport protein (IRT1)
+   24878 AT4G19690   IRT1 Fe(II) transport protein (IRT1)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* merge two matrices for cory(25 jun 2019)
+
+  cd ~/github/TrenaProjectBrainCell/inst/extdata/expression/
+  mtx.linc <- get(load("Exc_LINC00507.RData"))
+  mtx.themis <- get(load("Exc_THEMIS.RData"))
+  dim(mtx.linc); dim(mtx.themis)
+   [1] 14737   264
+   [1] 14726   264
+  length(which(is.na(mtx.linc)))  # [1] 19536
+  mtx.linc[which(is.na(mtx.linc))] <- 0
+  mtx.themis[which(is.na(mtx.themis))] <- 0
+  gene.names <- sort(unique(c(rownames(mtx.linc), rownames(mtx.themis))))
+  nrow(mtx.themis); nrow(mtx.linc); length(gene.names)  # 14726 14737 14738
+  mtx.out <- matrix(0, nrow=length(gene.names), ncol=ncol(mtx.themis), dimnames=list(gene.names, colnames(mtx.themis)))
+  mtx.out[rownames(mtx.themis), colnames(mtx.themis)] <- mtx.out[rownames(mtx.themis), colnames(mtx.themis)] + mtx.themis
+  mtx.out[rownames(mtx.linc), colnames(mtx.linc)] <- mtx.out[rownames(mtx.linc), colnames(mtx.linc)] + mtx.linc
+
+  for(i in 1:100){
+    row <- rownames(mtx.out)[sample(1:nrow(mtx.out),1)]
+    col <- colnames(mtx.out)[sample(1:ncol(mtx.out),1)]
+    stopifnot(mtx.out[row, col] == mtx.linc[row, col] + mtx.themis[row, col])
+    }
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* alison's placenta footprints, fpdb, retracing the steps (25 jun 2019): the "fp" footprints called by yeon mi
+
+   --- step 1: fimoize yeong mi's footprint regions, input files
+      input files in these sample-specific directories:
+        /local/trenaPlacentaProject/whole_genome/LN54305,LN54309,LN54310,LN54311,LN54312,LN54315,LN54316,LN54318,
+                                                 LN54320,LN54323,LN54324,LN54328
+      each sample directory has 4 method subdirectories, eg:
+          LN54305_fp, LN54305_fp4, LN54305_fp4_bc, LN54305_fp_bc
+      each method subdirectory has 24 bed files:
+          LN54305_chr1_fp.bed .. LN54305_chrY_fp.bed
+
+   ---  step 1, source code
+    /local/users/pshannon/github/TrenaProjectPlacenta/prep/fp2db/2019jun16
+         fpToFimoTables.R  (21 jun 2019)
+            source("~/github/fptodb/R/fptodb.R")
+            method.suffixes <- c("fp", "fp_bc", "fp4", "fp4_bc")
+            sample.names <- c("LN54305","LN54309","LN54310","LN54311","LN54312","LN54315","LN54316","LN54318","LN54320",
+                              "LN54323","LN54324","LN54328")
+         Rscript fpToFimoTables.R  LNxxxxxx
+
+   ---  step 1, output files
+      /local/trenaPlacentaProject/whole_genome_fimoCalls/LNXXXXX, for example:
+      /local/trenaPlacentaProject/whole_genome_fimoCalls/LN54305/LN54305_fp:
+           436361 Jun 24 14:59 chr10:1-133797422.footprints-combined.fa
+            74433 Jun 24 14:59 chr10:1-133797422.footprints-combined.RData
+              145 Jun 24 17:27 chr10:1-133797422.footprints-combined.RData.fimoOut/
+                    72475759 Jun 24 15:01 chr10:1-133797422.footprints-combined.tsv: standard fimo output (transformed later)
+                motif_id	motif_alt_id	sequence_name	start	stop	strand	score	p-value	q-value	matched_sequence
+                Hsapiens-jaspar2018-RUNX1-MA0002.1		chr10:101043248-101043282	18	28	+	8.42697	0.000381		AATTGTGGCTC
+                Hsapiens-jaspar2018-RUNX1-MA0002.1		chr10:102198898-102198930	1	11	+	10.6854	0.000111		AACTATGGTTA
+                Hsapiens-jaspar2018-RUNX1-MA0002.1		chr10:102502864-102502894	21	31	+	11.4494	6.74e-05		ATTTGTGGTCT
+                Hsapiens-jaspar2018-RUNX1-MA0002.1		chr10:102580742-102580810	47	57	+	9.29213	0.000245		ATTTGTGGCTG
+
+   --- qc: tsv files expected: 12 samples, 4 methods, 24 chromosomes: 1152
+      find /local/trenaPlacentaProject/whole_genome_fimoCalls -name "*.tsv" | wc -l                # 1118  (some missing)
+      find /local/trenaPlacentaProject/whole_genome_fimoCalls -name "*.tsv" | grep "_fp/" | wc -l  # 288
+
+   --- step 2: reads tsv files from step 1, calls transformFimoResultsForDatabaseFile(f) on each
+    /local/users/pshannon/github/TrenaProjectPlacenta/prep/fp2db/2019jun16/combineSampleTsvFilesPostgresPrep.R
+       source("~/github/fptodb/R/fptodb.R")
+       resultsBaseDir <- "/local/trenaPlacentaProject/whole_genome_fimoCalls"
+       method.suffixes <- c("_fp", "fp4", "fb_bc", "fp4_bc")
+       chromosomes <- sprintf("chr%s", c(as.character(1:22), "X", "Y"))
+       main function: runAndReduceChromosomes(resultsBaseDir, suffix, chrom)
+         called by doAll_runAndReduceChromosomes()
+         identifies all 12 sample tsv files for the given suffix (method), one of _fp, _fp4, fp_bc, fp4_bc
+           cmd <- sprintf("find %s -name '*.tsv' | grep '%s/' | grep '%s:'", resultsBaseDir, suffix, chrom)
+         calling transformFimoResultsForDatabaseFile(f) on each file
+
+   --- step 2, output files
+      /local/users/pshannon/github/TrenaProjectPlacenta/prep/fp2db/2019jun16/combineSampleTsvFilesPostgresPrep.R
+      doAll_runAndReduceChromosomes() loops over chromosomes with, for each, a final
+         outfile <- file.path(resultsBaseDir, "fill-24jun2019", sprintf("%s_%s.RData", chrom, method.suffix))
+         x <- runAndReduceChromosomes(resultsBaseDir, method.suffix, chrom)
+         save(x, file=outfile)
+      where outfile is, eg,
+           /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr1__fp.RData
+
+   --- step 3, fill database, review * fill the placenta2 footprint hint database on khaleesi, for extra speed (27 mar 2019)
+     cd  ~/github/TrenaProjectPlacenta/inst/footprinting/postgres/
+     bash> createdb -h khaleesi -U trena  placenta2
+     bash> make createTables
+          (export PGPASSWORD=trena; psql -h khaleesi -U trena placenta2 -f createTables.sql)
+
+     make fillRegions
+     make fillHits
+     make look
+       placenta2=# select count(*) from regions;   16,885,714
+       placenta2=# select count(*) from hits;      25,768,676
+
+   --- step 3, modify makefile
+     cd  /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/
+     cp ~/github/TrenaProjectPlacenta/inst/footprinting/postgres/makefile .
+     bash> createdb -h khaleesi -U trena  placenta_fp
+     bash> make createTables
+          (export PGPASSWORD=trena; psql -h khaleesi -U trena placenta2 -f createTables.sql)
+
+     colnames in tsv files: add HEADER to sql, for example, in fillAllRegions.sql:
+       \connect placenta_fp
+       \copy regions from '/local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr1/regions.tsv' delimiter E'\t' CSV HEADER NULL as 'NULL';
+       \copy regions from '/local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr2/regions.tsv' delimiter E'\t' CSV HEADER NULL as 'NULL';
+       \copy regions from '/local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr3/regions.tsv' delimiter E'\t' CSV HEADER NULL as 'NULL';
+
+     make fillRegions
+     make fillHits
+
+
+   --- step 4, do some simple tests, including query speed
+     make look  # (export PGPASSWORD=trena; psql -h khaleesi -U trena placenta_fp)
+     \list
+     \dt
+     select count(*) from hits;        # 179,035,248
+     select count(*) from regions;     #  54,183,654
+     for comparison, check previous placenta database:
+        \connect placenta
+          select count(*) from regions;     #  16,885,714
+          select count(*) from hits;        #  25,768,676
+    \connect placenta_fp
+
+      # a small 300bp genehancer/encodeDHS promoter region, overlapping the 5' utr: chr14:74,955,470-74,955,770
+   select count(*) from regions where chrom='chr14' and start >= 74955470 and endpos <= 74955770;   # 696 rows
+   select * from hits where loc='chr14:74955476-74955499';
+              loc           | fp_start |  fp_end  |        type        |                  name                  | length | strand | sample_id  | method |   provenance   | score1 | score2 |  score3  | score4 | score5 | score6
+   -------------------------+----------+----------+--------------------+----------------------------------------+--------+--------+------------+--------+----------------+--------+--------+----------+--------+--------+--------
+    chr14:74955476-74955499 | 74955476 | 74955499 | motif.in.footprint | Hsapiens-SwissRegulon-SP4.SwissRegulon |     24 | +      | LN54328_fp | HINT   | placental_hint |    0.9 |        | 0.000494 |        |        |
+
+     # compare with brain_hint_20
+    brain_hint_20=# select count(*) from regions where chrom='chr14' and start >= 74955470 and endpos <= 74955770;  #  182
+    --> placenta_fp has about 4x the number of regions in this one 300 bp region
+    brain_hint_20=# select count(*) from regions;  #  157,524,344
+    select count(*) from hits;                     #  865,315,264
+
+    --- step 5: try placenta_fp in TrenaProjectPlacenta
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+*  put all the tsv fimo calls into postgres  (24 jun 2019)
+
+  start with the _fp (simple, original) method
+  khaleesi
+  cd /local/trenaPlacentaProject/whole_genome_fimoCalls
+  /local/users/pshannon/github/TrenaProjectPlacenta/prep/fp2db/2019jun16/combineSampleTsvFilesPostgresPrep.R
+      source("~/github/fptodb/R/fptodb.R")   # combineS...R starts with this command
+      test_runaAndReduceChromsomes()  # just uses fp method, chr21, checks to make sure all samples have different counts
+
+   cd /local/users/pshannon/github/TrenaProjectPlacenta/prep/fp2db/2019jun16/
+
+   results are here, khaleesi, /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019
+      163757355 Jun 24 18:52 chr10__fp.RData
+      205310130 Jun 24 18:58 chr11__fp.RData
+      172308692 Jun 24 19:03 chr12__fp.RData
+       67965047 Jun 24 19:05 chr13__fp.RData
+      124589052 Jun 24 19:09 chr14__fp.RData
+      118520213 Jun 24 19:13 chr15__fp.RData
+      163696267 Jun 24 19:18 chr16__fp.RData
+      207331440 Jun 24 19:25 chr17__fp.RData
+       62571098 Jun 24 19:26 chr18__fp.RData
+      225940706 Jun 24 19:34 chr19__fp.RData
+      374900459 Jun 24 18:00 chr1__fp.RData
+      106467347 Jun 24 19:37 chr20__fp.RData
+       43967189 Jun 24 19:39 chr21__fp.RData
+       97637533 Jun 24 19:42 chr22__fp.RData
+      258578979 Jun 24 18:09 chr2__fp.RData
+      203120909 Jun 24 18:16 chr3__fp.RData
+      125945016 Jun 24 18:19 chr4__fp.RData
+      164199700 Jun 24 18:24 chr5__fp.RData
+      192550157 Jun 24 18:30 chr6__fp.RData
+      190461025 Jun 24 18:36 chr7__fp.RData
+      147845574 Jun 24 18:41 chr8__fp.RData
+      169468969 Jun 24 18:47 chr9__fp.RData
+       87954806 Jun 24 19:44 chrX__fp.RData
+        1910068 Jun 24 19:44 chrY__fp.RData
+
+    print(load("chr1__fp.RData"))  # x
+    lapply(x, dim)  #     $regions  [1] 5331303       4
+                    #     $hits     [1] 18177763     16
+
+    head(x$regions)
+                                  loc chrom   start  endpos
+    LN54305_fp.1 chr1:1000146-1000167  chr1 1000146 1000167
+    LN54305_fp.2 chr1:1000147-1000160  chr1 1000147 1000160
+    LN54305_fp.3 chr1:1000148-1000155  chr1 1000148 1000155
+    LN54305_fp.4 chr1:1000148-1000157  chr1 1000148 1000157
+    LN54305_fp.5 chr1:1000149-1000155  chr1 1000149 1000155
+    LN54305_fp.6 chr1:1000149-1000156  chr1 1000149 1000156
+
+    head(x$hits)
+                                        loc fp_start  fp_end               type                                     name length strand  sample_id method     pro$
+    LN54305_fp.823422  chr1:1000146-1000167  1000146 1000167 motif.in.footprint   Hsapiens-HOCOMOCOv10-SP4_HUMAN.H10MO.D     22      - LN54305_fp   HINT placent$
+    LN54305_fp.317369  chr1:1000147-1000160  1000147 1000160 motif.in.footprint        Hsapiens-jaspar2018-MTF1-MA0863.1     14      + LN54305_fp   HINT placent$
+    LN54305_fp.1230360 chr1:1000147-1000160  1000147 1000160 motif.in.footprint  Hsapiens-SwissRegulon-MTF1.SwissRegulon     14      + LN54305_fp   HINT placent$
+    LN54305_fp.690341  chr1:1000148-1000155  1000148 1000155 motif.in.footprint Hsapiens-HOCOMOCOv10-NR1I2_HUMAN.H10MO.S      8      - LN54305_fp   HINT placent$
+    LN54305_fp.691548  chr1:1000148-1000155  1000148 1000155 motif.in.footprint Hsapiens-HOCOMOCOv10-NR1I3_HUMAN.H10MO.S      8      - LN54305_fp   HINT placent$
+    LN54305_fp.1272329 chr1:1000148-1000155  1000148 1000155 motif.in.footprint Hsapiens-SwissRegulon-NR1I2.SwissRegulon      8      - LN54305_fp   HINT placent$
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* quick QC on alison's 4 fimoized-footprint calls before filling to postgres database (24 jun 2019)
+
+  working on riptide, ~/github/TrenaProjectPlacenta/inst/demos/footprint-QC
+  fpqc.R
+
+  --- her email of (13 jun 2019): PGF promoter
+
+   As we previously discussed, there have been some analyses of the placental specific gene PGF.
+   For this gene, we should identify footprints and binding sites for the TFs DLX3 and GCM1 .
+
+   There are a couple of papers that report on this interaction:
+
+      " DLX3 and GCM1 modulate PGF promoter activity through the genomic region -369 to -320 (relative to TATA box, i.e. -622 to -592 relative to TSS)."
+
+   To note, both GCM1 and PGF are genes only expressed in the placenta.  This means that I might be
+   giving you a particularly challenging test case, since they might not be included in
+   chipseq/other datasets.  If this is the case and we cant find these binding sites, we can work
+   through a different target gene that is relevant to pregnancy but perhaps not tissue specific,
+   such as APOL1.
+
+  one genehancer/encodeDHS small promoter region, overlapping the 5' utr: chr14:74,955,470-74,955,770
+
+*-----------------------------------------------------------------------------------------------------------------------
+* tunes to learn
+
+  shady grove, lee sexton, banjo, suggested by johnny
+  white cockade, played by johnny
+
+*-----------------------------------------------------------------------------------------------------------------------
+* articles on improving tf/motif/dna match (22 jun 2019)
+
+  https://scholar.google.com/scholar?q=related:fZnvlgL4FXQJ:scholar.google.com/&scioq=Quantitative+modeling+of+gene+expression+using
+
+  related to bill noble's paper
+
+   https://scholar.google.com/scholar?cites=9410351373593960890&as_sdt=5,48&sciodt=0,48&hl=en
+
+   A De Novo Shape Motif Discovery Algorithm Reveals
+   Preferences of Transcription Factors for DNA Shape
+   Beyond Sequence Motifs: ShapeMF
+
+   https://www.cell.com/cell-systems/pdf/S2405-4712(18)30475-7.pdf
+
+*-----------------------------------------------------------------------------------------------------------------------
+* motif match thresholds for trena: learn from actual chip-seq experiments (21 jun 2019)
+
+  ~/github/tfBindingThresholds/explore/firstLook.R
+
+*-----------------------------------------------------------------------------------------------------------------------
+* clean up disk on riptide (20 jun 2019)
+
+  683,326,028 GB?
+
+*-----------------------------------------------------------------------------------------------------------------------
+* rcis: author aertes, mentioned at the trenaViz talk I gave at childrens (20 jun 2019)
+
+  motifs & genes & some kind of enrichment.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* tal1 and gata2 (19 jun 2019)
+
+  https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4891438/
+
+
+  While LSD1 mainly forms complex with GATA2 to repress GATA1 expression in hematopoietic progenitor
+  cells, it mostly forms complex with TAL1 to repress GATA2 expression in differentiated cells.
+
+  trenaViz with erythropoeisis shows TAL1 correlation -0.5 at d04_rep1, binding in the one binding site
+  overlapping with genehancer,
+
+*-----------------------------------------------------------------------------------------------------------------------
+* igv.js save image (19 jan 2019)
+
+   I see that there's a way to export a single track to an svg if you
+   right click it and save. Is there any way to save an svg of the
+   whole genome browser though?
+
+   This will save all tracks including cytoband and ruler:   browser.toSVG()
+
+   jim robinson adds:
+
+     should point out this is not released, I'll do so later
+     today. It's been there but not exposed as an API
+     function. toSVG() will return a string. We're also adding an
+     optional button on the toolbar that will download it to a file.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* seattle children's talk (20 jun 2017)
+
+   Turning genes on and off - software tools to explore, model and visualize gene regulation
+   using gene expression, open chromatin, and motif binding scores.
+
+   trena & trenaViz  are useful for two audiences. For programmers, we offer a set
+   of R packages.  For non-programming biologists, an interactive webapp centered
+   around the igv.js genome browser.
+
+   We will present a case study from current work in progress: using ATAC-seq, RNA-seq and
+   trena, we explore the regulation of GATA2 in erythropoiesis differentiation, identifying
+   some novel candidate regulators in this much-studied system, one of which has just received
+   partial validation by western blot.
+
+  ---  make gata2 plot without asinh
+    library(TrenaProjectErythropoiesis)
+    tpe <- TrenaProjectErythropoiesis()
+    getExpressionMatrixNames(tpe)
+      # [1] "brandLabDifferentiationTimeCourse-16173x28" "brandLabDifferentiationTimeCourse-27171x28"
+    mtx <- getExpressionMatrix(tpe, "brandLabDifferentiationTimeCourse-16173x28")
+    colnames(mtx)
+     #  [1] "day0.r1"  "day0.r2"  "day2.r1"  "day2.r2"  "day4.r1"  "day4.r2"  "day6.r1"  "day6.r2"  "day7.r1"  "day7.r2"  "day8.r1"  "day8.r2"  "day8.r1"  "day8.r2"  "day10.r1" "day10.r2" "day10.r1" "day10.r2" "day11.r1" "day11.r2" "day11.r1" "day11.r2" "day12.r1" "day12.r2" "day14.r1" "day14.r2" "day16.r1" "day16.r2"
+    length(colnames(mtx)) # [1] 28
+    plot(mtx["GATA2",], axes=FALSE, xlab="timepoint", ylab="rna-seq counts", pch=16, col="blue", main="GATA2 RNA-seq", cex=2)
+    axis(2);     axis(1, at=0:28, labels=c("", colnames(mtx)))
+
+
+  --- make plot of tb15 vs gata2
+     mtx <- getExpressionMatrix(tpe, "brandLabDifferentiationTimeCourse-16173x28")
+     plot(mtx["TBX15",], mtx["GATA2",], pch=16, cex=1.5, main="TBX15 vs GATA2", ylab="GAT2", xlab="TBX15", col="blue")
+     plot(mtx["TWIST1",], mtx["GATA2",], pch=16, cex=1.5, main="TWIST1 vs GATA2", ylab="GAT2", xlab="TWIST1", col="red")
+     plot(mtx["TBX15",], mtx["TWIST1",], pch=16, cex=1.5, main="TBX15 vs TWIST1", ylab="GAT2", xlab="TWIST1", col="purple")
+*-----------------------------------------------------------------------------------------------------------------------
+* marjorie's day-to-erythropoiesis-stage mapping (19 jun 2019)
+
+  --- from email (28 feb 2019) titled "ATACseq data - combining Ottawa with Nat Gen 2016"
+
+  Thanks for sending this! Overall, at first glance, the data seems to correlate quite well
+  indeed. Thinking more how to combine the data, I think it is possible but maybe slightly
+  challenging as there are many variables that we should probably consider. What I tried to do is
+  use our Cytof data and see what populations are present at each day in each proportion, and see
+  how does that compare with the Corces data on purified populations.
+
+   Some points to consider:
+
+  First, I noticed that you use one of the Corces sample named “pHSC”. In their paper, “pHSC” is
+  what they call “pre-leukemic HSC”: these are “HSC-like” cells that have been isolated from
+  leukemia patients, so they are not true HSCs. Are there other samples named “HSC” only?
+
+  To try to combine the Corces data and our data there may be a few things to keep in mind:
+
+  First, Corces do not define their cell types with exactly the same marker combinations as we do
+  (there are common markers but also specific ones). I know the field is very confusing this
+  way. Everyone has their preferred markers. Please see Slide 3 on the power point for the
+  differences. I think this is ok, but I just wanted to make sure everyone knows about this caveat
+  when we compare the data.
+
+  Corces data is great on the very early populations (HSC, MPP, CMP and MEP), which is useful
+  because our ATACseq data starts at Day4 and by Day4, most of these early populations are gone.
+
+  In contrast, for the late erythroid populations, our data is more detailed i.e. the “Ery” fraction
+  from Corces correspond to at least 6 different populations that span our Days 8 to 16.
+
+  On slide 1 of the power point, I made a table with the different proportions of cell populations
+  at each Day (this comes from Cytof measurements -slide2) to give us an idea of the heterogeneity
+
+  Day 4 is very heterogenous, which may explain why our ATACseq quality is quite poor at this
+  particular day.
+
+  The later Days are relatively more homogeneous.
+
+   I tried to do a correspondence chart between Corces and our data (power point Slide1). Looking at
+   the data you sent Paul from this perspective, I think the 2 datasets correlates quite well. For
+   instance, the Ery data seem to be more similar to our data combined, which makes sense because it
+   should encompass all the stages from Day8 to the end. Maybe our Day4 ATACseq is more of a
+   concern, probably because of the heterogeneity issue. Maybe we should just forget this one, and
+   use Corces MEP data? And then we could also ignore the Corces “Ery” data because our data is more
+   detailed for late erythropoiesis.
+
+  Since one of our goal is to compare SRM data with ATACseq (and motif), do you think it would be
+  possible to combine the 2 datasets: for example, we know Day 2 contains MPP (44%) and MEP(22%):
+  can we use our Day2 SRM data and compare it with the combined (MPP+MEP) ATACseq data from Corces?
+  This would be an approximation, but maybe still meaningful?
+
+  Otherwise, we could just use our ATACseq data and start at Day4, or 8.
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* fimo match tbx15 and twist1 in d12_rep2 gata2 enhancer (19 jun 2019)
+
+   --- fimo finds these two binding sites better than either bioc-pwmMatch or moods
+
+    library(FimoClient); FIMO_HOST <- "localhost"; FIMO_PORT <- 60000;
+    fc <- FimoClient(FIMO_HOST, FIMO_PORT, quiet=FALSE)
+    tbl.regions <- data.frame(chrom="chr3", start=128497878, end=128498095, stringsAsFactors=FALSE)
+    tbl.regions <- data.frame(chrom="chr3", start=128498004, end=128498048, stringsAsFactors=FALSE)
+    tbl.match <- requestMatchForRegions(fc, tbl.regions, "hg38", 1e-4)
+
+    tbl.match <- requestMatchForRegions(fc, tbl.regions, "hg38", 1e-4)
+    tbl.match[grep("TWIST", tbl.match$motif),]
+      chrom     start       end                                     motif strand   score   pValue   qValue matched_sequence
+   16  chr3 128498014 128498023 Hsapiens-SwissRegulon-TWIST1.SwissRegulon      - 15.9888 2.98e-06 0.000214       CGCCAGGTGG
+    tbl.match[grep("TBX15", tbl.match$motif),]
+   19  chr3 128498027 128498045 Hsapiens-HOCOMOCOv10-TBX15_HUMAN.H10MO.D       + 14.5046 4.42e-06 0.000239 GCGGGGTCTCGGGTGGGGT
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* runFromRecipe:  debug tv, debug TrenaViz
+
+  in any of the tv model-building tabs (currently only ~/github/TrenaViz/R/FimoModelWidget.R is a sensible module)
+  add this code:
+
+     save(recipe, file="recipe.RData")
+
+  then use this minimal code to run the recipe, see where it failed, all in a simple R (no shiny) context:
+
+     library(trenaSGM)
+     library(TrenaProjectErythropoiesis)
+     load("recipe.RData")
+     genomeName <- "hg38"
+     targetGene <- "GATA2"
+     builder <- trenaSGM::FimoDatabaseModelBuilder(genomeName, targetGene, recipe)
+     x <- build(builder)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* build new sqlite database for children's demo
+
+   working in this file:
+     ~/github/TrenaProjectErythropoiesis/inst/demos/tbx15-represses-gata2/createFimoSqliteDatabase.R
+   creating:
+       fimoResults-2e-4-chr3-128074944-128620958-214k.sqlite  # 34M
+   sample call:
+     tbl.atac.538bp <- dbGetQuery(db, "select * from fimoBindingSites where chrom='chr3' and start >= 128497516 and end <= 128498053")
+
+   install for use with TrenaViz Erythropoiesis
+      cp the sqlite file to ~/github/TrenaProjectErythropoiesis/inst/extdata/fimoDBs
+
+*-----------------------------------------------------------------------------------------------------------------------
+* slexil: yaml -> eaf -> rendered (14 jun 2019)
+
+  ~/github/slexil/explorations/generateEAF/pythonDemos/daylight1/
+
+  next up: get date in proper format.
+   now uses
+      generated_on = str(datetime.datetime.now())
+      '2019-06-14 07:59:52.124921'
+   needs
+        DATE="2009-06-10T21:33:58+01:00"
+        FORMAT="2.8"
+
+*-----------------------------------------------------------------------------------------------------------------------
+* hg38 whole genome fimo (14 jun 2019)
+
+  start with chr3, which includes GATA2
+  khaleesi, cd  ~/github/fptodb/R/
+    fimoize-chr3.R
+      source("fimoByChromosome.R")
+      chromosome.lengths <- org.Hs.egCHRLENGTHS[c(as.character(1:22), "X", "Y")]
+      names(chromosome.lengths) <- sprintf("chr%s", names(chromosome.lengths))
+      tbl.regions <- data.frame(chrom="chr3", start=1, end=chromosome.lengths[["chr3"]], stringsAsFactors=FALSE)
+      tbl.regions <- data.frame(chrom="chr3", start=128484511, end=128492184, stringsAsFactors=FALSE)
+      fastaFileName <- "gata2.fa"
+      createFastaFileForFimo(tbl.regions, fastaFileName)
+      resultsDirectory <- "./"
+      runFimo(fastaFileName, resultsDirectory, threshold=5e-4)
+
+  replaced last two lines with minimal bash script:
+   /users/pshannon/meme/bin/fimo --thresh 5e-4  --verbosity 1 --text \
+     ~/github/fimoService/pfms/human-jaspar2018-hocomoco-swissregulon.meme chr3.fa > chr3-fimo.tsv
+    started 934am friday 14 jun, finished 326am sunday 16 jun,
+    reads  chr3.fa 201M Jun 14 08:46
+  -rw-r--r-- 1 pshannon pricelab 54,019,423,953 Jun 16 03:26 chr3-fimo.tsv
+  plenty of TBX15 entries: grep -c TBX15 chr3-fimo.tsv # 1,422,101
+
+/local/users/pshannon/github/TrenaProjectPlacenta/prep/fp2db/2019jun12/
+/local/users/pshannon/github/TrenaProjectPlacenta/prep/fp2db/2019jun12/
+
+  --- some qc with a very small area on chr3: are we finding TBX15
+    /users/pshannon/meme/bin/fimo --thresh 5e-4  --verbosity 1 --text \
+      ~/github/fimoService/pfms/human-jaspar2018-hocomoco-swissregulon.meme gata2.fa > gata2-fimo.tsv
+     grep -c TBX15 gata2-fimo.tsv  # 300
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* prepare and fill postgres database for alison and yeon mi (16 jun 2019)
+
+  code: cd /local/users/pshannon/github/TrenaProjectPlacenta/prep/fp2db/2019jun16/
+           /local/users/pshannon/github/TrenaProjectPlacenta/prep/fp2db/2019jun12/fpToFimoTables.R
+
+  see same notes title below from (12 jun 2019) showing how to create all-chromosome fimo.tsv for one lane, one fp parameter
+
+  --- the layout:
+    sample_fp:     fseq threshold 2.5, HINT standard setting
+    sample_fp_bc:  fseq threshold 2.5, HINT bias-correction
+    sample_fp4:    fseq threshold 4, HINT standard setting
+    sample_fp4_bc: fseq threshold 4, HINT bias-correction
+
+    for these samples:
+      LN54305
+      LN54309
+      LN54310
+      LN54311
+      LN54312
+      LN54315
+      LN54316
+      LN54318
+      LN54320
+      LN54323
+      LN54324
+      LN54328
+
+
+   LN54305_fp
+   LN54305_fp4
+   LN54305_fp4_bc
+   LN54305_fp_bc
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* prepare and fill postgres database for alison and yeom mi (12 jun 2019)
+
+  khaleesi
+
+  code: cd /local/users/pshannon/github/TrenaProjectPlacenta/prep/fp2db/2019jun12/
+           /local/users/pshannon/github/TrenaProjectPlacenta/prep/fp2db/2019jun12/fpToFimoTables.R
+  write fimo output here, for example chr11
+
+     /local/trenaPlacentaProject/whole_genome_fimoCalls/LN54305/LN54305_fp/chr11:1-135086622.footprints-combined.RData.fimoOut/fimo.tsv
+
+    wc -l *.fimoOut/*.tsv
+
+    690842 chr10:1-133797422.footprints-combined.RData.fimoOut/fimo.tsv
+    859117 chr11:1-135086622.footprints-combined.RData.fimoOut/fimo.tsv
+   1566644 chr1:1-248956422.footprints-combined.RData.fimoOut/fimo.tsv
+    740145 chr12:1-133275309.footprints-combined.RData.fimoOut/fimo.tsv
+    281233 chr13:1-114364328.footprints-combined.RData.fimoOut/fimo.tsv
+    537699 chr14:1-107043718.footprints-combined.RData.fimoOut/fimo.tsv
+    503307 chr15:1-101991189.footprints-combined.RData.fimoOut/fimo.tsv
+    702738 chr16:1-90338345.footprints-combined.RData.fimoOut/fimo.tsv
+    893547 chr17:1-83257441.footprints-combined.RData.fimoOut/fimo.tsv
+    269310 chr18:1-80373285.footprints-combined.RData.fimoOut/fimo.tsv
+    984796 chr19:1-58617616.footprints-combined.RData.fimoOut/fimo.tsv
+    467126 chr20:1-64444167.footprints-combined.RData.fimoOut/fimo.tsv
+    187561 chr21:1-46709983.footprints-combined.RData.fimoOut/fimo.tsv
+   1086539 chr2:1-242193529.footprints-combined.RData.fimoOut/fimo.tsv
+    422337 chr22:1-50818468.footprints-combined.RData.fimoOut/fimo.tsv
+    841675 chr3:1-198295559.footprints-combined.RData.fimoOut/fimo.tsv
+    509689 chr4:1-190214555.footprints-combined.RData.fimoOut/fimo.tsv
+    674499 chr5:1-181538259.footprints-combined.RData.fimoOut/fimo.tsv
+    795052 chr6:1-170805979.footprints-combined.RData.fimoOut/fimo.tsv
+    797684 chr7:1-159345973.footprints-combined.RData.fimoOut/fimo.tsv
+    624520 chr8:1-145138636.footprints-combined.RData.fimoOut/fimo.tsv
+    728938 chr9:1-138394717.footprints-combined.RData.fimoOut/fimo.tsv
+    335510 chrX:1-156040895.footprints-combined.RData.fimoOut/fimo.tsv
+     12962 chrY:1-57227415.footprints-combined.RData.fimoOut/fimo.tsv
+
+  cd /local/users/pshannon/github/TrenaProjectPlacenta/prep/fp2db/2019jun12/
+
+  the full file set, 48 total, all within /local/trenaPlacentaProject/whole_genome
+        writing results to /local/trenaPlacentaProject/whole_genome_fimoCalls/LN54305/LN54305_fp
+
+     LN54305
+     LN54309
+     LN54310
+     LN54311
+     LN54312
+     LN54315
+     LN54316
+     LN54318
+     LN54320
+     LN54323
+     LN54324
+     LN54328
+
+  within each, using LN54305 as an example
+     LN54305_fp4_bc
+     LN54305_fp4
+     LN54305_fp_bc
+     LN54305_fp
+
+
+   --- create RData files for each chromosome in the designated directory
+
+  fpToFimoTables.R
+     source("~/github/fptodb/R/fptodb.R")
+     fpDirectory <- "/local/trenaPlacentaProject/whole_genome/LN54305/LN54305_fp"
+     resultsDirectory <- "/local/trenaPlacentaProject/whole_genome_fimoCalls/LN54305/LN54305_fp"
+     stopifnot(dir.exists(fpDirectory))
+     stopifnot(dir.exists(resultsDirectory))
+     chroms <- sprintf("chr%s", c(as.character(1:22), "X", "Y"))
+     for(chrom in chroms)
+       filename <- createFootprintTablesForRegion(fpDirectory, resultsDirectory, chrom, 1, 300000000, shoulder=10)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* introductions to R
+
+   https://www.r-bloggers.com/learning-r-the-ultimate-introduction-incl-machine-learning/
+
+*-----------------------------------------------------------------------------------------------------------------------
+* tbx15 hypothesis: why can't i reproduce the models in gata2-tbx15-apr2019.pdf? (10 jun 2019)
+
+  those models were created and saved out of ~/github/TrenaProjectErythropoiesis/prep/gata-switch/createModels.R
+
+  results were saved:
+
+  -rw-r--r--@  1 paul  staff    16450 Apr 10 20:01 geneRegulatoryModelToGraph.R
+  -rw-r--r--   1 paul  staff   203490 Apr  9 13:32 modelsAndRegionsAllSamples-rawNeedTrimming.RData
+  -rw-r--r--   1 paul  staff     7391 Apr  9 21:04 modelsAndRegionsAllSamples.RData
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* fimoizeRegion.R: run command line fimo on a tbl.regions data.frame.  fix truncated 100+ character motif names (10 jun 2019)
+
+   (17 jun 2019): redo with hocomocol tbx15 motif, on riptide
+
+
+   khaleesi
+    cd /local/users/pshannon/github/TrenaProjectErythropoiesis/inst/demos/tbx15-represses-gata2
+
+  /local/users/pshannon/github/TrenaProjectErythropoiesis/inst/demos/tbx15-represses-gata2/fimoizeRegion.R
+  this produces fimo.tsv and fimo-fixed.tsv (with >100 character motif names restored.
+  next, convert this tab-delimited file to a standard bed-style format:
+
+     fimoTsvToSqliteDatabase.R
+
+
+  --- now try this out on ~/github/TrenaProjectErythropoiesis/prep/gata-switch/reproduce-10jun2019/reproduce-d12_rep2-fimoDBmodel.R
+
+     scp
+     pshannon@khaleesi:./github/TrenaProjectErythropoiesis/inst/demos/tbx15-represses-gata2/fimoResults-10e-3-chr3-128383794-128647775-v2/fimoResults-10e-3-chr3-128383794-128647775-v2.sqlite
+     .
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* tbx15-represses-gata2 hypothesis: reproduced side-by-side noDNA sgm, FimoDatabase sgm (11 jun 2019)
+
+  cd ~/github/TrenaProjectErythropoiesis/prep/gata-switch/reproduce-10jun2019/
+
+    reproduce-d12_rep2-fimoDBModel.R
+    reproduce-d12_rep2-noDNAmodel.R
+
+  each produce roughly the same result, with this 3-vote reduction:
+
+    --- fimoDB model
+        gene   betaLasso  lassoPValue pearsonCoeff  rfScore   betaRidge spearmanCoeff bindingSites
+    1    VDR  0.10967667 2.400238e-10    0.9131338 3.442960  0.04269136     0.8330597            1
+    2  PATZ1  0.13416550 5.409538e-09    0.8957847 2.145686  0.07398658     0.8056924            7
+    3 PLAGL1  0.30807886 2.919189e-12    0.9226215 4.167192  0.05731507     0.7509579            2
+    4  TBX15 -0.09856402 1.009446e-09   -0.8722489 2.094011 -0.02911226    -0.7068894           11
+
+    --- original noDNA model, with tfs obtained from FimoClient running on riptide
+        gene  betaLasso  lassoPValue pearsonCoeff  rfScore   betaRidge spearmanCoeff bindingSites
+    1    VDR  0.1116900 2.400238e-10    0.9131338 4.353677  0.04215368     0.8330597           NA
+    2  PATZ1  0.1452730 5.409538e-09    0.8957847 1.921338  0.07261783     0.8056924           NA
+    3 PLAGL1  0.3249989 2.919189e-12    0.9226215 3.323164  0.05669808     0.7509579           NA
+    4  TBX15 -0.1063288 1.009446e-09   -0.8722489 2.789605 -0.02850897    -0.7068894           NA
+
+    --- fimoDB x2.2$model
+        gene   betaLasso  lassoPValue pearsonCoeff   rfScore   betaRidge spearmanCoeff bindingSites
+    1    VDR  0.10967667 2.400238e-10    0.9131338 3.4429602  0.04269136     0.8330597            1
+    2  TFCP2  0.00000000 4.166239e-05    0.8113943 0.6300682  0.11610677     0.8193760            1
+    3  PATZ1  0.13416550 5.409538e-09    0.8957847 2.1456860  0.07398658     0.8056924            7
+    4  CEBPZ  0.05409047 9.127965e-01    0.8820538 2.0256974  0.09999692     0.7931034            2
+    5 PLAGL1  0.30807886 2.919189e-12    0.9226215 4.1671921  0.05731507     0.7509579            2
+    6  TBX15 -0.09856402 1.009446e-09   -0.8722489 2.0940111 -0.02911226    -0.7068894           11
+    7 ZNF263  0.00426040 4.442665e-02    0.9003067 3.8387488  0.10575770     0.6360153            2
+
+    --- noDNA x2.2$model
+        gene   betaLasso  lassoPValue pearsonCoeff   rfScore   betaRidge spearmanCoeff bindingSites
+    1    VDR  0.11169003 2.400238e-10    0.9131338 4.3536770  0.04215368     0.8330597           NA
+    2  TFCP2  0.02152543 4.166239e-05    0.8113943 0.7559796  0.11336725     0.8193760           NA
+    3  PATZ1  0.14527305 5.409538e-09    0.8957847 1.9213376  0.07261783     0.8056924           NA
+    4  CEBPZ  0.03797724 9.127965e-01    0.8820538 2.7094815  0.09835914     0.7931034           NA
+    5 PLAGL1  0.32499888 2.919189e-12    0.9226215 3.3231636  0.05669808     0.7509579           NA
+    6  TBX15 -0.10632878 1.009446e-09   -0.8722489 2.7896045 -0.02850897    -0.7068894           NA
+    7 ZNF263  0.00000000 4.442665e-02    0.9003067 3.3936597  0.10438496     0.6360153           NA
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* tbx15-represses-gata2 hypothesis: with lower threshold sqlite fimo database, which atac-seq regions has tbx15 hits? (10 jun 2019)
+
+  cd ~/github/TrenaProjectErythropoiesis/inst/demos/tbx15-represses-gata2
+  source("tbx15-represses-gata2.R");    makeAtacBasedModels()
+  save(atac.regions.list, file="gata2.atac.regions.list.RData")
+  print(load("~/github/TrenaProjectErythropoiesis/inst/demos/tbx15-represses-gata2/gata2.atac.regions.list.RData"))
+  [1] "atac.regions.list"
+  first two timepoints:
+     $d04_rep1
+       chrom     start       end
+     1  chr3 128477108 128477312
+     2  chr3 128483207 128483409
+
+     $d04_rep2
+       chrom     start       end
+     3  chr3 128483145 128483328
+
+   library(trena)
+   library(MotifDb)
+   pfms <- query(MotifDb, c("jaspar2018", "TBX15"))
+   mm <- MotifMatcher("hg38", as.list(pfms), quiet=TRUE)
+   nrow(findMatchesByChromosomalRegion(mm, atac.regions.list$d04_rep1, pwmMatchMinimumAsPercentage=80))  # 0
+   nrow(findMatchesByChromosomalRegion(mm, atac.regions.list$d04_rep2, pwmMatchMinimumAsPercentage=80))  # 0
+   nrow(findMatchesByChromosomalRegion(mm, atac.regions.list$d08_rep1, pwmMatchMinimumAsPercentage=80))  # 1
+   nrow(findMatchesByChromosomalRegion(mm, atac.regions.list$d10_rep1, pwmMatchMinimumAsPercentage=80))  # 0
+   nrow(findMatchesByChromosomalRegion(mm, atac.regions.list$d10_rep2, pwmMatchMinimumAsPercentage=80))  # 1
+   nrow(findMatchesByChromosomalRegion(mm, atac.regions.list$d11_rep1, pwmMatchMinimumAsPercentage=80))  # 0
+   nrow(findMatchesByChromosomalRegion(mm, atac.regions.list$d11_rep2, pwmMatchMinimumAsPercentage=80))  # 0
+   nrow(findMatchesByChromosomalRegion(mm, atac.regions.list$d12_rep1, pwmMatchMinimumAsPercentage=80))  # 2
+   nrow(findMatchesByChromosomalRegion(mm, atac.regions.list$d12_rep2, pwmMatchMinimumAsPercentage=80))  # 2
+   nrow(findMatchesByChromosomalRegion(mm, atac.regions.list$d16_rep1, pwmMatchMinimumAsPercentage=80))  # 2
+   nrow(findMatchesByChromosomalRegion(mm, atac.regions.list$d16_rep2, pwmMatchMinimumAsPercentage=80))  # 1
+
+
+   findMatchesByChromosomalRegion(mm, atac.regions.list$d12_rep1, pwmMatchMinimumAsPercentage=80)
+                              motifName chrom motifStart  motifEnd strand motifScore motifRelativeScore    match chromStart  chromEnd                  seq status shortMotif
+   2 Hsapiens-jaspar2018-TBX15-MA0803.1  chr3  128486955 128486962      +   6.661377          0.8792000 TGGTGTGA  128486844 128487055 GGGTTGGCATAGTAGGG...     wt   MA0803.1
+   1 Hsapiens-jaspar2018-TBX15-MA0803.1  chr3  128483451 128483458      +   6.658030          0.8787582 CGGTGTGA
+                              128483249 128483521 AGGACTGAGCTGAGGAG...     wt   MA0803.1
+
+
+     A [	10502	458	19	61	0	140	44	10502	]
+     C [	74	101	7	175	8	435	454	71	]
+     G [	664	10502	10502	245	10502	324	10502	306	]
+     T [	112	103	0	10502	0	10502	937	96	]
+
+   --- what do these score look like in 1e-3 fimo?
+
+     library(RSQLite)
+     db <- dbConnect(SQLite(), "fimoResults-10e-3-chr3-128383794-128647775.sqlite")
+     dbListTables(db)  # [1] "fimoBindingSites"
+     query <- sprintf("select * from fimoBindingSites where chrom='chr3' and start > 128486950 and end < 128486970")
+     tbl <- (dbGetQuery(db, query))  # 68 rows
+      tbl[grep("TBX15", tbl$motif),]
+         chrom     start       end                                    motif strand   score   pValue qValue matched_sequence
+      20  chr3 128486956 128486963 Hsapiens-SwissRegulon-TBX15.SwissRegulon      + 8.93258 0.000167  0.332         TGGTGTGA
+      21  chr3 128486956 128486963       Hsapiens-jaspar2018-TBX15-MA0803.1      + 8.93258 0.000167  0.333         TGGTGTGA
+
+   --- what does a 1e-3 fimo match look like in bioc pwmMatch?  --> 76%
+     subset(tbl, pValue >= 0.0009)
+       chrom     start       end                                      motif strand   score   pValue qValue matched_sequence
+        chr3 128486960 128486968 Hsapiens-SwissRegulon-SMARCC1.SwissRegulon      + 6.65556 0.000959  0.602        GTGAGTCGG
+        chr3 128486958 128486968         Hsapiens-jaspar2018-FOSL2-MA0478.1      + 2.43820 0.000972  0.739      GTGTGAGTCGG
+        chr3 128486955 128486968    Hsapiens-jaspar2018-JUN(var.2)-MA0489.1      + 2.42697 0.000996  0.832   GTGGTGTGAGTCGG
+
+    pfms <- query(MotifDb, c("jaspar2018", "JUN", "MA0489"))
+    mm <- MotifMatcher("hg38", as.list(pfms), quiet=TRUE)
+    tbl.regions <- data.frame(chrom="chr3", start=128486950, end=128486972, stringsAsFactors=FALSE)
+    findMatchesByChromosomalRegion(mm, tbl.regions, pwmMatchMinimumAsPercentage=80))  # 0
+                                     motifName chrom motifStart  motifEnd strand motifScore motifRelativeScore          match chromStart  chromEnd                  seq status shortMotif
+     1 Hsapiens-jaspar2018-JUN(var.2)-MA0489.1  chr3  128486954 128486967      +   7.173969          0.7591149 GTGGTGTGAGTCGG  128486950 128486972 CCGGGTGGTGTGAGTCG...     wt   MA0489.1
+
+
+    --- now build a trena model of d04_rep1.  can I reproduce page 7 of gata2-tbx15-apr2019.pdf?
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* tbx15/gata2: need fimo databases to build models in atac-seq regions (9 jun 2019)
+
+   scp pshannon@khaleesi:github/TrenaProjectErythropoiesis/inst/demos/tbx15-represses-gata2/fimoResults-10e-3-chr3-128383794-128647775/fimoResults-10e-3-chr3-128383794-128647775.sqlite .
+   inappropiately developed on khaleesi:github/TrenaProjectErythropoiesis/inst/demos/tbx15-represses-gata2/
+
+   --- fimoizeRegion.R:
+
+       # only 263kb around GATA2's enhancers
+       tbl.regions <- data.frame(chrom="chr3", start=128383794, end=128647775, stringsAsFactors=FALSE)
+       with(tbl.regions, printf("span: %d", end-start))
+       fastaFilename <- tempfile(fileext=".fa")
+       createFastaFileForFimo(tbl.regions, fastaFilename)
+       checkTrue(file.exists(fastaFilename))
+       checkTrue(file.size(fastaFilename) > with(tbl.regions, end-start))  # bigger than the base count
+
+       resultsDirectory <- "./fimoResults-10e-2-chr3:128383794-128647775"
+        #  4 minutes for 1e-4, 263k    201090 lines
+        #  5 minutes for 1e-3, 263k   1510766 lnes
+        # 18 minutes for 1e-2, 263k  12033436 lines
+
+       system.time(runFimo(fastaFilename, resultsDirectory, threshold=1e-2))
+
+    --- fimoTsvToSqliteDatabase.R: create a bed file, load into database, good structure for trenaSGM
+      core function is convertFimoOutputToBedFormat
+      lifted nested functions from FimoClient.R
+          .expandChromLocStrings(tbl.fimo$sequence_name)
+          .parseChromLocString(chromLocString)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ongoing trena build/check failures in the bioc build system (8 jun 2019)
+
+  --- see email to martin (8 jun 2019)
+   Re: [Bioc-devel] daily build failures for the trena package, related to BSgenome.Hsapiens.UCSC.hg38 2bit file
+
+   I think I made all the corrections you suggested, cleaned up some crufty stuff (lingering “browser()” calls, for
+   instance).  After a fresh clone from the RELEASE_3_9 repo, R CMD check runs clean but for two vignette-related
+   warnings on my ubuntu machine, R 3.6.0.
+
+   But trena build system builds still fail quite regularly, usually with errors which leave me scratching my head.
+
+   For instance, today’s release build on macOS (but only on macOS) reports:
+
+   ERROR in /Library/Frameworks/R.framework/Versions/3.6/Resources/library/trena/unitTests/test_HumanDHSFilter.R:
+     there is no package called ‘BSgenome.Hsapiens.UCSC.hg38'
+
+   And today’s devel build on ubuntu (but only on ubuntu) I see this:
+
+    Warning in .seqlengths_TwoBitFile(x) :
+      mustOpen: Can't open /home/biocbuild/bbs-3.10-bioc/R/library/BSgenome.Hsapiens.UCSC.hg38/extdata/single_sequences.2bit to read: No such file or directory
+    Timing stopped at: 0.064 0.004 0.069
+    Error in .seqlengths_TwoBitFile(x) : UCSC library operation failed
+
+*-----------------------------------------------------------------------------------------------------------------------
+* first sqlite database for tbx15/gata2
+
+   ~/github/TrenaProjectErythropoiesis/prep/gata-switch/createModels.R
+
+   create.fimo.tf.database <- function() {
+     setTargetGene(tpe, "GATA2")
+     tbl.enhancers <- getEnhancers(tpe)
+     tbl.matches <- findTFs(tbl.enhancers, threshold=1e-4)
+     library(RSQLite)
+     db <- dbConnect(SQLite(), "gata2.gh.fimoBindingSites.sqlite")
+     dbWriteTable(db, name="fimoBindingSites", value=tbl.matches, overwrite=TRUE)
+     dbDisconnect(db)
+     }
+
+   copied this to ~/github/TrenaProjectErythropoiesis/inst/extdata/fimoDBs/gata2.gh.fimoBindingSites.sqlite
+   temporarily used in the build method of ~/github/trenaSGM/R/FimoDatabaseModelBuilder.R
+   and tested in ~/github/trenaSGM/inst/unitTests/test_FimoDatabaseModelBuilder.R
+
+*-----------------------------------------------------------------------------------------------------------------------
+* michael lawrence asks about CORS problem with genomes.json (7 jun 2019)
+
+  but seems okay to me:
+
+    curl -L -H "Access-Control-Request-Method: GET" -H "Origin: http://riptide.systemsbiology.net" --head https://s3.amazonaws.com/igv.org.genomes/genomes.json
+    HTTP/1.1 200 OK
+    x-amz-id-2: 5DVPyUdrKkapVmOXQD11II+XAUxf5jK+K5of1t7MXT12JruRaqzPbAPepD6jj8YC1aWyRIWGDp0=
+    x-amz-request-id: 9D4611BCC0BD1F2D
+    Date: Fri, 07 Jun 2019 22:27:39 GMT
+    Access-Control-Allow-Origin: *
+    Access-Control-Allow-Methods: GET, HEAD
+    Access-Control-Expose-Headers: Content-Length, Content-Type, Content-Range
+    Access-Control-Max-Age: 3000
+    Vary: Origin, Access-Control-Request-Headers, Access-Control-Request-Method
+    Last-Modified: Sun, 16 Dec 2018 04:32:07 GMT
+    ETag: "bbbacde6be11c7e0cce90e3a7c429259"
+    Accept-Ranges: bytes
+    Content-Type: application/json
+    Content-Length: 11733
+    Server: AmazonS3
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* docker run macs2 (27 jun 2019)    docker mount local directory
+
+   default:
+	docker run -v $$PWD:/data/ fooliu/macs2 callpeak -t /data/CTCF_PE_ChIP_chr22.bam -c /data/CTCF_PE_CTRL_chr22.bam -n test-run --outdir /data/
+
+     61434589 Jun 27 13:25 CTCF_PE_ChIP_chr22.bam
+     93827095 Jun 27 13:28 CTCF_PE_CTRL_chr22.bam
+          151 Jun 27 13:33 makefile
+        88318 Jun 27 13:33 test-run_model.r
+        88548 Jun 27 13:33 test-run_peaks.narrowPeak
+       100063 Jun 27 13:33 test-run_peaks.xls
+        57106 Jun 27 13:33 test-run_summits.bed
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* run PEAS example on khaleesi (21 jun 2019)
+
+   clone the PEAS repo:
+     cd ~/github
+     git clone https://github.com/UcarLab/PEAS.git
+     git clone https://github.com/taoliu/MACS.git  (might not be needed - docker image instead?)
+       docker pull fooliu/macs2
+       docker images | grep -i macs # fooliu/macs2 latest 4d1bb157a37f 5 months ago 1.01GB
+   also maybe consider a more recent image:
+      https://hub.docker.com/r/dceoy/macs2/
+     docker run fooliu/macs2
+        usage: macs2 [-h] [--version]
+             {callpeak,bdgpeakcall,bdgbroadcall,bdgcmp,bdgopt,cmbreps,bdgdiff,filterdup,predictd,pileup,randsample,refinepeak}
+
+    (26 jun 2019)
+    khaleesi.PEAS> docker images | grep -i macs
+      dceoy/macs2                   latest              59a2ab82e478        5 weeks ago         356MB
+      fooliu/macs2                  latest              4d1bb157a37f        5 months ago        1.01GB
+
+    --- need homer
+       http://homer.ucsd.edu/homer/introduction/install.html
+       cd ~/src/homer
+       curl -O http://homer.ucsd.edu/homer/configureHomer.pl
+       perl configureHomer.pl -install
+       ~/src/homer/bin    # many files here
+         Simply typing "findMotifs.pl" should work before running Homer.
+
+   --- next up
+     ~/github/PEAS/README.md
+      python libraries
+      cd ~/github/PEAS/
+      virtualenv --python=/usr/bin/python3 py3
+      khaleesi.PEAS> source py3/bin/activate
+      (py3) khaleesi.PEAS> type pip  #    pip is /local/users/pshannon/github/PEAS/py3/bin/pip
+      pip install numpy pandas scikit-learn matplotlib
+
+    --- (2 jul 2019) building makefile to run PEASFeatureExtraction.sh
+      following page 27 of ~/github/PEAS/PEASManual.pdf
+     PEASFeatureExtraction.sh
+     To extract features using command line arguments, locate the PEASFeatureExtraction.sh shell file and execute the following command using the following 9 arguments:
+       <path to shell file>/PEASFeatureExtraction.sh <arg1> <arg2> <arg3> <arg4> <arg5> <arg6> <arg7> <arg8>
+       arg1: The path to the bam file’s directory without the trailing “/”.
+             Example: If the path is /user/documents/cd4t.bam, provide: /user/documents
+       arg2: The filename prefix (before .bam).
+             Example: If the filename is cd4t.bam, provide cd4t
+       arg3: The path to the fasta file location. Example: /user/documents/hg19.fa
+       arg4: The reference genome to use for HOMER. This reference genome will need to be installed/configured in HOMER as well.
+             Example: hg19
+       arg5: The path to the bed file containing error prone regions of the genome to remove. This file is provided in the PEAS Github: https://github.com/UcarLab/PEAS.
+             Example: /user/documents/hg19.filter.bed
+       arg6: The path to the motifs file. This file is provided in the PEAS Github: https://github.com/UcarLab/PEAS.
+             Example: /user/documents/humantop_Nov2016_HOMER.motifs
+       arg7: The path to the conservation bed file. This file is provided in the PEAS Github: https://github.com/UcarLab/PEAS.
+             Example: /user/documents/phastCons46wayPlacental.bed
+       arg8: The path to the CTCF motifs file. This file is provided in the PEAS Github: https://github.com/UcarLab/PEAS. Example: /user/documents/CTCF.motifs
+       arg9: The path to the PEASTools.jar file without the trailing “/”.
+             Example: If the PEASTools.jar file is located in /user/documents/peas/, provide /user/documents/peas
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* jeff, marjorie, p300, enhancer prediction, atac-seq, PEAS (7, 21 jun 2019)
+
+  https://github.com/UcarLab/PEAS
+
+  git clone https://github.com/UcarLab/PEAS.git
+  cd ~/github/PEAS
+
+  --- downloaded bam files from karthi
+
+  khaleesi, cd ~/github/TrenaProjectErythropoiesis/prep/srm.vs.atac/p300-srm-chip-atac-peas/
+
+    407688266 Jun 12 10:11 ATAC_PB_JH_d8_rep1_hg38_sorted.bam
+    656732739 Jun 12 10:11 ATAC_PB_JH_d16_rep1_hg38_sorted.bam
+    594657195 Jun 12 10:10 ATAC_PB_JH_d12_rep2_hg38_sorted.bam
+    600522146 Jun 12 10:10 ATAC_PB_JH_d12_rep1_hg38_sorted.bam
+    382151472 Jun 12 10:09 ATAC_PB_JH_d10_rep2_hg38_sorted.bam
+    427557753 Jun 12 10:09 ATAC_PB_JH_d10_rep1_hg38_sorted.bam
+    340330526 Jun 12 10:09 ATAC_PB_CD_d8_rep1_hg38_sorted.bam
+    500507361 Jun 12 10:09 ATAC_PB_CD_d16_rep2_hg38_sorted.bam
+    590162158 Jun 12 10:08 ATAC_PB_CD_d16_rep1_hg38_sorted.bam
+    507636747 Jun 12 10:08 ATAC_PB_CD_d12_rep2_hg38_sorted.bam
+    534776198 Jun 12 10:08 ATAC_PB_CD_d12_rep1_hg38_sorted.bam
+    440217791 Jun 12 10:07 ATAC_PB_CD_d10_rep2_hg38_sorted.bam
+    486983626 Jun 12 10:07 ATAC_PB_CD_d10_rep1_hg38_sorted.bam
+    563226694 Jun 12 10:07 ATAC_Cord_d8_rep1_hg38_sorted.bam
+   1058316137 Jun 12 10:06 ATAC_Cord_d4_rep2_hg38_sorted.bam
+    722667863 Jun 12 10:06 ATAC_Cord_d4_rep1_hg38_sorted.bam
+    824239889 Jun 12 10:05 ATAC_Cord_d16_rep2_hg38_sorted.bam
+   1088392198 Jun 12 10:05 ATAC_Cord_d16_rep1_hg38_sorted.bam
+    465453635 Jun 12 10:04 ATAC_Cord_d12_rep2_hg38_sorted.bam
+    488445494 Jun 12 10:04 ATAC_Cord_d12_rep1_hg38_sorted.bam
+    453806951 Jun 12 10:04 ATAC_Cord_d11_rep2_hg38_sorted.bam
+    385131262 Jun 12 10:03 ATAC_Cord_d11_rep1_hg38_sorted.bam
+    440739776 Jun 12 10:03 ATAC_Cord_d10_rep2_hg38_sorted.bam
+    366957248 Jun 12 10:03 ATAC_Cord_d10_rep1_hg38_sorted.bam
+    141592798 Jun 11 08:19 p300-Erythroid.Day14-16.GSM1067278.sorted.bam
+
+*-----------------------------------------------------------------------------------------------------------------------
+* jeff & marjorie, p300, ChIP and genehancer? (7 jun 2019)
+
+
+  --- marjorie (email 20 may 2019)
+
+    Karthi has now finished the assembly and analysis of all the ChIP-seq data. Here is a quick
+    summary of what we did: We assembled ChIP-seq datasets from the literature (several papers,
+    several labs, different years)  Based on cell surface markers, I attributed each published
+    dataset to one of our time points (Day0, Day11.5-12, and Day14-16): this can only be an
+    approximation.  Please, note that sometimes, for the same time-point, we have several ChIP-seq
+    datasets (e.g. from different labs, or different papers) Karthi downloaded the raw data, and did
+    peak calling with the same parameters across all datasets: one search with low stringency
+    (p<0.05), one search with higher stringency (q<0.05) We uploaded all the tracks on UCSC browser
+    (see below for links). I examined all the tracks for some genes like the beta-globin locus, and
+    the called peaks seem good overall.
+
+    Then, we did a Table (see power point as an attachment) to compare number of peaks and SRM copy
+    number. Unfortunately, I think it will be very difficult (maybe impossible) to use this data for
+    such a simple comparison. At least I was not able to see any trend or correlation between
+    ChIP-seq peaks and copy numbers. I think there are many technical difficulties that could
+    explain that: e.g. sometimes there are huge differences in peak numbers for the same TF peaks
+    between different labs (it's hard to know which one to use). Another problem is that the Huang
+    paper use fetal and adult while we use cord blood, which is intermediary. And there are huge
+    differences between fetal and adult: so again, hard to know which one to use. I think the
+    problem comes down to the fact that peak number in ChIP-seq is highly dependent on the noise
+    between experiments, so even if the data is good qualitatively, quantitative comparison is
+    misleading. At least, not a 'simple' comparison like we were trying to do.
+
+    So, Jeff, I think we will not be able to include a simple Table with numbers of peaks vs SRM
+    copy numbers.
+
+    Now, the ChIP-seq data may still be usable for TRENA, or for validation of links. I'm not
+    sure. Or maybe a more elaborate comparison that correct for noise is possible.
+
+    Paul, do you still want that Karthi send you the ChIP-seq called peaks?
+
+    Another possibility would be to use the ATACseq data and/or GeneHancer to provide an estimate of
+    the number of enhancers, or even just open chromatin regions and compare with p300 protein copy
+    numbers.  Maybe using this: https://www.nature.com/articles/s41598-018-34420-9
+
+
+  --- jeff's followup
+
+    Thanks for doing the analysis and sending the data.  I agree with you that it will be difficult
+    to make a meaningful comparison of the ChIP seq peaks and the SRM data given the challenges with
+    the different sources of cells and labs and noise.
+
+    I still think that the analysis might yield some interesting insights, even if the insights are
+    more technical in nature.  For example most of the proteins show ChIP peaks that far exceed
+    their copy number; in some cases we have both fetal and adult analyses that show this trend so
+    it is unlikely to be attributed to this difference. What is the reason for this?  Noise?  A
+    single TF can crosslink to more than 1 DNA site? Heterogeneity? Are any of the datasets from
+    scRNA seq? Regardless I think it could be an important observation, and it requires the SRM
+    data.
+
+    Would it be worthwhile to intersect the current ChIP peaks with GeneHancer?  Maybe there is a
+    better relationship between SRM and ChIP peaks after intersecting with regulatory regions?
+
+    I think it would be worthwhile to compare p300 copies to ATACseq/GeneHancer as well as ChIP
+    intersection.
+
+
+   --- my followup (7 jun 2019)
+
+     I am ready to try out Jeff's idea:
+
+       Would it be worthwhile to intersect the current ChIP peaks with GeneHancer?  Maybe there is a
+       better relationship between SRM and ChIP peaks after intersecting with regulatory regions?
+       I think it would be worthwhile to compare p300 copies to ATACseq/GeneHancer as well as ChIP
+       intersection.
+
+     And Marjorie suggests:
+
+       Another possibility would be to use the ATACseq data and/or GeneHancer to provide an estimate
+       of the number of enhancers, or even just open chromatin regions and compare with p300 protein
+       copy numbers.  Maybe using PEAS:
+
+          A neural network based model effectively predicts enhancers from clinical ATAC-seq samples
+
+     I'm eager to give that a try.  I like the idea of deriving enhancers from the ATAC-seq, rather
+     than the all-tissue predictions from GeneHancer.
+
+     Can I get these things?  Sorry to put you all to more work with files and file transfers.
+
+        1) ATAC-seq bam files (needed by PEAS)
+        2) p300 ChIP peaks
+
+
+  --- email from karthi (12 jun 2019)
+
+     Please find below the links for the P300 analysis files.
+
+     The .bam is the sorted bam file. The .bb files are bigBed for the peaks (the two files are peak
+     P-value filtered at 0.05, and Q value filtered at 0.05). And the .bw contains the bigWig data
+     for the dataset.
+
+       http://dropbox.ogic.ca/mbrandlab/hg38/NIH-ChIP-2019/p300/GSM1067278.Erythroid.Day14-16.p300.bw
+       http://dropbox.ogic.ca/mbrandlab/hg38/NIH-ChIP-2019/p300/p300-Erythroid.Day14-16.GSM1067278_peaks.bb
+       http://dropbox.ogic.ca/mbrandlab/hg38/NIH-ChIP-2019/p300/p300-Erythroid.Day14-16.GSM1067278_peaks.q0.05.bb
+       http://dropbox.ogic.ca/mbrandlab/hg38/NIH-ChIP-2019/p300/p300-Erythroid.Day14-16.GSM1067278.sorted.bam
+
+
+     khaleesi, cd ~/github/TrenaProjectErythropoiesis/prep/srm.vs.atac/p300-srm-chip-atac-peas
+     bash download.sh
+
+
+    --- jeff (27 jun 2019)
+
+      I'm talking to Paul about the p300 ChIP comparison to ATAC seq data.  It appears that we have
+      p300 ChIP data for days 14-16.  Should we compare this data to all of the ATAC seq data or just
+      to days 14-16?
+
+      Regarding the p300/ATAC seq comparison.  Marjorie suggested that we could try the PEAS method
+      as a way to estimate the number of enhancers from ATAC seq data.
+
+      A neural network based model effectively predicts enhancers from clinical ATAC-seq samples
+
+      Marjorie, is the idea to
+          1) estimate the number of Enhancers at different time points using PEAS/ATAC seq data,
+          2) estimate enhancers at day 14-16 using p300 ChIP, and
+          3) compare these  numbers to p300 copy number?
+
+    --- marjorie (28 jun 2019)
+
+     Yes, this is the idea. Because we only have p300 ChIP-seq at Day14-16, I was thinking to use
+     the PEAS method to identify enhancers from ATACseq data because we have more time-points with
+     ATACseq.
+
+     The big question is: how do the number of p300 molecules compare to the number of enhancers. (for all TFs?)
+
+     One way to identify enhancer is to use Genehancer filtered with our ATACseq peaks. Another way
+     is to use PEAS with our ATACseq peaks (maybe this is the best way since it is using our data –
+     unless our data is not so good of course) Maybe another way is to intersect Genehancer and p300
+     ChIP-seq peaks (but as you noticed, we can only do it at Day14-16) so it is less useful.
+
+     Once we get the enhancers at different time-points, then we could eventually look into the
+     number of motifs for different TFs, and see how these numbers correlate with the number of
+     molecules of those TFs.
+
+    --- my plan (28 jun 2019)
+      khaleesi:/local/users/pshannon/github/TrenaProjectErythropoiesis/prep/srm.vs.atac/p300-srm-chip-atac-peas/
+        0) get srm p300 counts over time
+        1) count p300 chip peaks in p300-Erythroid.Day14-16.GSM1067278_peaks.narrowPeak
+        2) same, after intersecting with genehancer
+        3)
+
+    --- executing (28 jun 2019)
+      got latest srm matrix from jeff:
+         ~/github/TrenaProjectErythropoiesis/prep/import/srm-from-jeff/SRMforPublication20190614.RData
+                                                                       SRMforPublication20190614.txt
+                                                                       SRMforPublication20190614.xlsx
+
+     khaleesi: ~/github/TrenaProjectErythropoiesis/prep/import/srm-from-jeff/p300-vs-MACS2-atacSeq.R
+     to intersect ATAC-seq hits, at each timepoint, with genehancer, got the latest genehancer 4.11
+     temporarily, to import to a multi-table database (not yet figured out) put zip and its contents in
+       riptide:~/github/TrenaProjectHG38/prep/genehancer_411/
+       copied GeneHancer_elements.txt (presumed to be hg38) to khaleesi:
+
+*-----------------------------------------------------------------------------------------------------------------------
+* PAPERS
+* ATAC-seq papers
+
+  A neural network based model effectively predicts enhancers from clinical ATAC-seq samples
+  (needs bam files)
+  https://www.nature.com/articles/s41598-018-34420-9
+
+*-----------------------------------------------------------------------------------------------------------------------
+* TCEx papers
+
+  The chromatin accessibility signature of human immune aging stems from CD8+ T cells (aging, not TCEx)
+  http://jem.rupress.org/content/jem/214/10/3123.full.pdf
+
+*-----------------------------------------------------------------------------------------------------------------------
+* chang, scATAC-seq and open chromatin changes, pdc1 locus, ctla4, havcr2 (7 jun 2019)
+
+    For example, the PDCD1 locus (encoding PD-1) contained an intragenic ciselement (+5kb) with
+    specific accessibility in TEx cells, suggesting that the persistent expression of PD-1 in
+    exhausted human T cells is controlled by a single state-specific enhancer, and that the
+    regulation of persistent PD-1 expression may be different in humans and mice53. In contrast, the
+    CTLA4 and HAVCR2 loci showed TEx-specific activity of several distal cis-elements, compared to
+    other CD8+ T cell states (Fig. 5d).
+
+    abandoned.  geo experiment names do not reveal the cluster of cells which are TCEx.
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* buenrostro revisited
+
+  ~/github/TrenaProjectErythropoiesis/prep/import/buenrostro
+  view.R
+  found some regulatory regions missing in HSC.1[AB] and MPP.2[AB] which, could be binding sites for
+  a repressor, if model were built with, eg, wholeBlood.  set aside for now in favor of the chang scATAC-seq
+*-----------------------------------------------------------------------------------------------------------------------
+* cory's deconvolved microglia brain model: 6 days, huge files (5 jun 2019)
+
+  khaleesi: ~/github/TrenaProjectBrainCell/inst/unitTests/test_TrenaProjectBrainCell
+  his slowest genes:  c("SF3A2", "ZNF764", "PRR12", "ALDH16A1", "EIF1AD", "ZNF44")
+  perhaps a function of many enhancer regions?
+
+    print(load("~/github/TrenaProjectHG38/inst/extdata/genomeAnnotation/geneHancer.v4.7.allGenes.RData"))
+    dim(tbl.enhancers) # [1] 716477      6
+    head(tbl.enhancers)
+          chrom    start      end              type combinedScore geneSymbol
+        1 chr19 58330336 58331198          Enhancer    13.4799258       A1BG
+        2 chr19 58361346 58363463 Promoter/Enhancer     9.2256618       A1BG
+        3 chr19 58400379 58402529 Promoter/Enhancer     6.1593449       A1BG
+        4 chr19 58355787 58358617          Enhancer     0.7714079       A1BG
+        5 chr19 58498069 58500260 Promoter/Enhancer     7.5296868       A1BG
+        6 chr19 58325078 58328663 Promoter/Enhancer    12.2297451       A1BG
+     tbl.freq <- as.data.frame(table(tbl.enhancers$geneSymbol))
+     fivenum(tbl.freq$Freq)  # [1]   1   4  10  22 197
+     unlist(lapply(slow.models, function(gene) nrow(getEnhancers(tp, gene))))  #  82  78 100  68  82  73
+     quantile(tbl.freq$Freq, .99)  # 99% ->  77
+
+     gene   database request                              tbl.fp for mapping           elapsed time     motifs
+     SF3A2  82 regions totaling 377350 bases, unsorted                  3.6M             181 seconds    MotifDb only
+     SF3A2  82 regions totaling 377350 bases, sorted                    3.7M             167 seconds    MotifDb only
+     SF3A2  82 regions totaling 377350 bases, sorted                    3.7M             440 seconds    MotifDb + TFClass
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* yeon mi provides paths to new placenta footprint files (5 jun 2019;  16 may 2019) - call motifs, fill to postgres
+
+   --- email from yeon mi (16 may 2019)
+     This is the path to all files including original bam, bed, peak bed, and footprint bed files:
+
+      /Local/trenaPlacentaProject/whole_genome/
+          sample_fp directory : fseq threshold 2.5, HINT standard setting
+
+   Following directories have new footprint files.
+
+    sample_fp_bc directory: fseq threshold 2.5, HINT bias-correction
+      sample_fp4 directory: fseq threshold 4, HINT standard setting
+   sample_fp4_bc directory: fseq threshold 4, HINT bias-correction
+
+   --- code used to create postgres database "placenta2" (27 mar 2019)
+
+     /local/users/pshannon/github/fptodb/inst/unitTests/
+
+   --- today (5 jun 2019)
+      re-invigorated khaleesi:/local/users/pshannon/github/fptodb/inst/unitTests/test_fptodb.R
+      not a proper R package, but setup a bit like one.
+      uses two-column data.frame sort, /local/users/pshannon/github/fptodb/R/fptodb.R
+        createFootprintTablesForRegion()
+
+          tbl.fpsExpanded$signature <- with(tbl.fpsExpanded, sprintf("%s:%d-%d", chrom, start, end))
+          tbl.fpsExpanded <- tbl.fpsExpanded[with(tbl.fpsExpanded, order(signature, -score)),]
+          dups <- which(duplicated(tbl.fpsExpanded$signature))
+          if(length(dups) > 0)
+             tbl.fpsExpanded <- tbl.fpsExpanded[-dups,]
+
+    next up: test_small()
+*-----------------------------------------------------------------------------------------------------------------------
+* bioc git update the release branch (by example: trena RELEEASE_3_9) (5 jun 2019)
+
+  cd ~/tmp
+  git clone git@git.bioconductor.org:packages/trena
+  cd trena
+  git checkout RELEASE_3_9
+
+  --- remove all browser calls
+    grep -r browser *  # remove all of these
+    DESCRIPTION        # bump version
+    git commit -m "removed all browser() calls, live and commented"
+    git push
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* Fungal endophytes in stems and leaves: from latent pathogen to mutualistic symbiont
+  https://esajournals.onlinelibrary.wiley.com/doi/pdf/10.2307/1943154
+  george carroll 1988
+*-----------------------------------------------------------------------------------------------------------------------
+* elan 5.6 install (2 jun 2019)
+
+  cd ~/s/src
+*-----------------------------------------------------------------------------------------------------------------------
+* josh marshall recommends the google wifi (an extender) (31 may 2019)
+
+  https://talkingpointsmemo.com/edblog/joshs-first-and-probably-only-tech-recommendation#more-1186580
+  $250 on amazon
+
+*-----------------------------------------------------------------------------------------------------------------------
+* tim mentions western hemlock looper (28 may 2019)
+
+   https://tidcf.nrcan.gc.ca/en/insects/factsheet/1000002
+
+*------------------------------------------------------------------------------------------------------------------------
+* cancel iphone audm subscription (28 may 2019)
+
+   https://www.macworld.com/article/3268624/how-to-cancel-a-subscription-on-ios.html
+
+*-----------------------------------------------------------------------------------------------------------------------
+* sword fern die-off, regional map, al smith's data via nelson, kml, kmz (28 may 2019)
+
+  --- retrieved february files from here
+    ~/github/fernDieOffRegionalMap/experiments/dataDriven/fromAlSmithViaNelson-feb2019.kml   110826 Feb  7 19:39
+    ~/github/fernDieOffRegionalMap/experiments/dataDriven/fromAlSmityViaNelson-feb2019.kmz  14357 Feb  7 19:39
+
+  --- moved them to here
+
+    ~/github/annotatedMap/regionalSwordFernDieOff/import/
+
+  --- added in these new files from Nelson, sent last week
+     swordFernPhotoPoints_0.kmz           19587 May 22 17:29
+     swordFernPhotoPoints_05-22-19.xlsx   32188 May 22 17:29
+
+  --- strategy: parse newer kml file into the "islandwood data schema" shown below
+
+  ---- code "readYaml.R"
+    cd ~/github/annotatedMap/regionalSwordFernDieOff/import/
+    library(yaml)
+    x <- yaml.load(readLines("doc4.raw"))
+    coi <- c("Date", "Comments", "lat", "lon")
+    x2 <- lapply(x, function(myList) myList[coi])
+    tbl <-  data.frame(matrix(unlist(x2), nrow=length(x2), byrow=T),stringsAsFactors=FALSE)
+    colnames(tbl) <- coi
+    rownames(tbl) <- names(x2)
+    head(tbl)
+    dead.numbers <- lapply(tbl$Comments, function(s) sum(as.integer(str_match_all(s, "(\\d+)")[[1]][,1])))
+    tbl$deadCount <- dead.numbers
+    dim(tbl)   # 163   5
+    dim(subset(tbl, deadCount > 25)) #  56  5
+    dim(subset(tbl, deadCount > 20)) #  61  5
+    load("~/github/annotatedMap/regionalSwordFernDieOff/import/alSmithsCleanedDataFromKmlFile.RData")
+    tbl.alSmith <- read.table("
+
+  --- make into map
+    cd ~/github/annotatedMap/
+    make al            # python regen.py  regionalSwordFernDieOff/import/map.alSmith alsmith.html
+    make publish_al    # scp alsmith.html paulshannnon@pshannon.net:public_html/pshannon.net/swordFerns/regionalMap/
+    open http://pshannon.net/swordFerns/regionalMap/alsmith.html
+
+  --- photo wrangling
+    cd ~/github/annotatedMap/regionalSwordFernDieOff/import/map.alSmith-photoWrangling/
+    downloadPhotos.bash   # curl's all of the big, 90-degree rotated images from arcgis
+    viewed each of these:  open 573.jpg, screen-grabbed to get 573-small.png, then
+       scp 573-small.png paulshannnon@pshannon.net:public_html/pshannon.net/swordFerns/photos/
+    added this to site annotation:
+        redmondWatershed.04/site.yaml:    url: http://pshannon.net/swordFerns/photos/573-small.png
+
+*------------------------------------------------------------------------------------------------------------------------
 * sword fern die-off, schema and field protocol
 
- So here in brief is my suggestion for a simple field assay.  Maybe we can try some version of this, with protected shoes, at IslandWood tomorrow morning.  The goal is to quickly characterize unambiguous features of a continuous site where dead crowns are observed.
+ So here in brief is my suggestion for a simple field assay.  Maybe we can try some version of this,
+ with protected shoes, at IslandWood tomorrow morning.  The goal is to quickly characterize
+ unambiguous features of a continuous site where dead crowns are observed.
 
  1) choose and measure approximate size of the candidate site.
     Do so in a way (might be site-specific) so that it can be found again in subsequent years
@@ -79,7 +1660,9 @@ bed format: chrom, start, end, name, score, strand
 
  6) describe the non-fern understory in approximate terms
 
-This (or something like this) should take no more than 30 minutes per site.  And while imprecise, I think it will tell us a lot about the presence and spread of the die-off.  It is an imprecise measure, but
+ This (or something like this) should take no more than 30 minutes per site.  And while imprecise, I
+ think it will tell us a lot about the presence and spread of the die-off.  It is an imprecise
+ measure, but
 
  - informative
  - fast
@@ -92,10 +1675,10 @@ from < 10 feet”.  Or something.
 
    --- islandwood #1
       name: top of lower alder grove
-      lat:
-      long:
+      lat: 47.605974
+      lon: -122.529931
       elevation:
-      slope:
+      slope: +15 south
       ferns (healthy): 20
       ferns (no new growth): 1
       ferns (dead): 3
@@ -103,17 +1686,18 @@ from < 10 feet”.  Or something.
       area: 572
       shape: rectangular
       canopy cover:  70%
-      trees:  ALRU 20, 18, 16, 20, 20, 20;
+      trees (cm dbh):  ALRU 20, 18, 16, 20, 20, 20;
       tree distribution: balanced
       shrubs: NA
       forbs, grasses, etc: NA
 
    --- islandwood #2
       name: Service Road T
-      lat:
-      long:
+      who:
+      lat: 47.604739
+      lon: -122.526622
       elevation:
-      slope:
+      slope: -5 west
       ferns (healthy): 40
       ferns (no new growth): 4
       ferns (dead): 10
@@ -125,7 +1709,9 @@ from < 10 feet”.  Or something.
       tree distribution: periphery
       shrubs: NA
       forbs, grasses, etc: NA
-
+      photo list: each with comment & url
+      video list: each with comment & url
+      text list: list
 
 *-----------------------------------------------------------------------------------------------------------------------
 * trena-related paper: candid Time-resolved genome-scale profiling reveals a causal expression network
@@ -362,6 +1948,7 @@ Martin
 *-----------------------------------------------------------------------------------------------------------------------
 * upgrade centurylinek
 
+    order number:  c07115286  (31 may 2019) installation next friday  9-1
 
      Hi Luis. We are a CenturyLInk customer, and wish to get the upgrade to $65 gigabit service. Only for new customers?
 
@@ -416,7 +2003,6 @@ Martin
     rownames(mtx) <- new.rownames
 
    fivenum(mtx)  # [1]  0.000000  2.094713  4.912709  7.229839 17.811715
-
 
    -- explore for negative correlation
      library(trenaSGM)
@@ -541,6 +2127,8 @@ Martin
 *-----------------------------------------------------------------------------------------------------------------------
 * liftover tips (15 may 2019)
 
+   example taken from khaleesi:/local/users/pshannon/github/TrenaProjectLymphocyte/prep/import/chang/
+
   library(GenomicRanges)
   library(rtracklayer)
   library(data.table)
@@ -559,6 +2147,7 @@ Martin
   tbl.cd8naive <- as.data.frame(gr.hg38)
   dim(tbl.cd8naive)
   colnames(tbl.cd8naive) <- c("chrom", "start", "end", "width", "strand", "sequence", "score")
+
   save(tbl.cd8naive, file="cd8naive-scATAC.RData")
 
 *-----------------------------------------------------------------------------------------------------------------------
@@ -649,14 +2238,14 @@ Martin
     revealing a rich diversity of T cell phenotypes in the tumor microenvironment (TME, Fig. 5a).
     Classification of clusters using cis-element accessibility and gene scores for CD8A and CD4
     showed that 6 clusters represented CD8+ T cell states and 13 clusters represented CD4+ T cell
-    states (Fig. 5b). CD8+ T cell states included naïve T cells (high accessibility of CCR7 and TCF7
+    states (Fig. 5b). CD8+ T cell states included naive T cells (high accessibility of CCR7 and TCF7
     enhancers), effector T cells (high accessibility of EOMES and IFNG enhancers), memory T cells
     (high accessibility of EOMES enhancers, but low accessibility of effector gene enhancers), and
     exhausted T cells (TEx; high accessibility of ciselements proximal to inhibitory receptor genes
     PDCD1, CTLA4, and HAVCR2, and to T cell dysfunction genes CD101 and CD3849; Fig. 5b and
     Supplementary Fig. 8a-b). We also identified a cluster consistent with an intermediate TEx
     cluster (Cluster 16), that exhibited gene score patterns of both TEx and memory T cells
-    (Fig. 5b). CD4+ T cell states included naïve T cells and several T helper cell phenotypes, such
+    (Fig. 5b). CD4+ T cell states included naive T cells and several T helper cell phenotypes, such
     as Tregs (high accessibility of FOXP3 and CTLA4 enhancers), T helper 1 (Th1) cells (high
     accessibility of IFNG and TBX21 enhancers), T helper 17 (Th17) cells (high accessibility of
     IL17A and CTSH enhancers), and T follicular helper (Tfh) cells (high accessibility of CXCR5,
@@ -676,31 +2265,33 @@ Martin
     (Fig. 5c). More than 90% of TEx cells were derived from post-therapy biopsies, whereas memory
     and effector CD8+ clusters (Clusters 12 and 14) were equally derived from both
     timepoints. Notably, compared to other CD4+ T cell types, we observed an expansion of CD4+ Tfh
-    cells post-therapy – nearly to the same extent as TEx cells – compared to other CD4+ T cell
+    cells post-therapy  nearly to the same extent as TEx cells  compared to other CD4+ T cell
     types, suggesting that PD-1 blockade impacts both CD4+ and CD8+ cell states in the TME
     (Fig. 5c). We first analyzed cis-regulatory landscapes in TEx cells to: (1) measure global
     changes in chromatin accessibility in TEx cells, and (2) nominate individual cis-elements that
     may regulate TEx-specific inhibitory receptor expression. Across all T cell states, we
     identified 35,147 cis-elements that were specifically accessible only in a single cluster (mean:
-    3,361 peaks per cluster, range: 979 peaks (naïve CD8+ T)-10,808 peaks (Tregs), FDR < 0.01;
+    3,361 peaks per cluster, range: 979 peaks (naive CD8+ T)-10,808 peaks (Tregs), FDR < 0.01;
     Supplementary Fig. 8d). In TEx cells, we identified 4,598 such elements, demonstrating that
     human T cell exhaustion is accompanied by substantial global remodeling of the chromatin
     accessibility landscape, and that the epigenetic state occupied by this cell state is as
     distinct as most other recognized T cell states, consistent with prior studies in
     mice49,51,52. Analysis of individual TEx-specific enhancers identified novel regulatory elements
-    in inhibitory receptor loci (Fig. 5d). For example, the PDCD1 locus (encoding PD-1) contained an
-    intragenic ciselement (+5kb) with specific accessibility in TEx cells, suggesting that the
-    persistent expression of PD-1 in exhausted human T cells is controlled by a single
-    state-specific enhancer, and that the regulation of persistent PD-1 expression may be different
-    in humans and mice53. In contrast, the CTLA4 and HAVCR2 loci showed TEx-specific activity of
-    several distal cis-elements, compared to other CD8+ T cell states (Fig. 5d).
+    in inhibitory receptor loci (Fig. 5d).
+
+    For example, the PDCD1 locus (encoding PD-1) contained an intragenic ciselement (+5kb) with
+    specific accessibility in TEx cells, suggesting that the persistent expression of PD-1 in
+    exhausted human T cells is controlled by a single state-specific enhancer, and that the
+    regulation of persistent PD-1 expression may be different in humans and mice53. In contrast, the
+    CTLA4 and HAVCR2 loci showed TEx-specific activity of several distal cis-elements, compared to
+    other CD8+ T cell states (Fig. 5d).
 
     We used pseudotime ordering to identify TF trajectories in TEx differentiation, compared to
     effector or memory CD8+ T cells (Fig. 5e). Since we also observed an expansion of CD4+ Tfh cells
     post-therapy, we included this cell type in our comparison.  As expected, the differentiation of
-    naïve CD8+ T cells to either effector or memory cells identified the critical roles of EOMES and
+    naive CD8+ T cells to either effector or memory cells identified the critical roles of EOMES and
     TBX21 (T-bet) motifs in effector and memory cell formation, once again supporting the validity
-    of this analysis54–56 (Fig. 5f). Effector cell pseudotime also demonstrated the late
+    of this analysis54-56 (Fig. 5f). Effector cell pseudotime also demonstrated the late
     accessibility of other known regulators, including TFAP4 and YY1, among others57,58. Similarly,
     memory cell pseudotime also showed accessibility at HIF1A and E protein sites59. In contrast,
     TEx cells showed a distinct regulatory program, which progressed through two stages of
@@ -714,12 +2305,12 @@ Martin
     as well as of new elements in stage 1 gene loci, such as CTLA4 (Fig. 5g). Importantly, this
     stage was accompanied by accessibility of a core set of TF motifs, which included NFKB1 and
     NFKB2, BATF, IRF4, and NFATC1, factors that are all directly downstream of TCR signaling, and
-    three of which have been demonstrated to play crucial roles in T cell exhaustion in mice63–65.
+    three of which have been demonstrated to play crucial roles in T cell exhaustion in mice63-65.
 
     Finally, we examined the epigenetic relationship between TEx and Tfh cells. Tfh cells have
     previously been observed in tumors and have been proposed as a prognostic indicator of patient
-    survival and response to checkpoint blockade66–68.The inferred differentiation trajectory from
-    CD4+ naïve T cells to Tfh cells showed new accessibility of cis-elements neighboring
+    survival and response to checkpoint blockade66-68.The inferred differentiation trajectory from
+    CD4+ naive T cells to Tfh cells showed new accessibility of cis-elements neighboring
     Tfh-specific genes, such as IL21 and BTLA, but also of elements near genes typically associated
     with TEx cells, such as inhibitory receptors, consistent with the known, but unexplained,
     expression of these genes in human Tfh cells (Fig. 5h and Supplementary
@@ -3035,6 +4626,8 @@ length(setdiff(mdb.genes, tfs.human))   # 248
 *-----------------------------------------------------------------------------------------------------------------------
 * ggplot tips: scatter plot with regression line(14 mar 2019)
 
+  --- also see: ~/github/TrenaProjectErythropoiesis/prep/import/srm-from-jeff//p300-vs-MACS2-atacSeq.R
+
   library(ggplot2)
   library(grid)
   grob1 <- grobTree(textGrob(paste("Pearson Correlation : ", round(cor(tbl$FLI1.total.density, tbl$FLI1.srm), 4) ),
@@ -3990,14 +5583,38 @@ TrenaProjectErythropoiesis, TrenaProjectMouseMa
       GSE74246: Unstranded RNA sequencing data
       GSE74310: Single-cell chromatin accessibility data using scATAC-seq
       GSE74912: ATAC-seq data
-        Samples of interest for hemato/erythropoiesis (in this order),  several replicates for each:
-        HSC; MPP; CMP; MEP; Ery (CD71+; GPA+)*
-        *Ery: this cell population includes e-basoE; l-baso-E; polyE; orthoE
+        Marjorie, email (19 feb 2019):
+          Samples of interest for hemato/erythropoiesis (in this order),  several replicates for each:
+           HSC; MPP; CMP; MEP; Ery (CD71+; GPA+)*
+           *Ery: this cell population includes e-basoE; l-baso-E; polyE; orthoE
+          HSC: hematopoietic stem cell
+          MPP: multipotent progenitor cell
+          CMP: common myeloid progenitor
+          MEP: megakaryocyte-erythroid progenitor
 
    atac-seq data as counts available here:
       ~/github/TrenaProjectErythropoiesis/prep/import/buenrostro/GSE74912-atacSeq.RData
           591k regions, 135 samples, counts, samples mapped with marjorie's help
 
+   pHSC: grep("pHSC", colnames(tbl), ignore.case=TRUE, v=TRUE)  # 16 total
+    HSC: grep(".HSC.", colnames(tbl), v=TRUE, fixed=TRUE)       # "Donor2596.HSC.1A.150303" "Donor2596.HSC.1B.150303"
+    MPP: grep(".MPP.", colnames(tbl), v=TRUE, fixed=TRUE)       # "Donor2596.MPP.2A.150303" "Donor2596.MPP.2B.150303"
+    CMP: grep(".CMP", colnames(tbl), v=TRUE, fixed=TRUE)        # "Donor2596.CMP.4A.150303" "Donor2596.CMP.4B.150303"
+    MEP: grep("MEP", colnames(tbl), v=TRUE, ignore.case=TRUE)   # "Donor2596.MEP.6A.150303"
+    ERY: grep("Ery", colnames(tbl), v=TRUE, ignore.case=TRUE)   # 8
+
+   grep("Donor2596", colnames(tbl), v=TRUE)
+      [1] "Donor2596.CD4.9A.150303"           "Donor2596.CD8.10B.150303"
+      [3] "Donor2596.CLP.14A.150303"          "Donor2596.CLP.14B.150303"
+      [5] "Donor2596.CMP.4A.150303"           "Donor2596.CMP.4B.150303"
+      [7] "Donor2596.Erythroblast.15A.150303" "Donor2596.Erythroblast.15B.150303"
+      [9] "Donor2596.Erythroblast.15C.150303" "Donor2596.GMP.5A.150303"
+     [11] "Donor2596.HSC.1A.150303"           "Donor2596.HSC.1B.150303"
+     [13] "Donor2596.MEP.6A.150303"           "Donor2596.MPP.2A.150303"
+     [15] "Donor2596.MPP.2B.150303"           "Donor2596.NK.11B.150303"
+     [17] "Donor2596.Nkcell.11A.150303"
+
+    HSC: hematopoietic stem cell, give rise to both myeloid and lymphoid lineages of stems cells, in red bone marrow
 
 * -----------------------------------------------------------------------------------------------------------------------
 * marjorie's atac data, processed, from karthi (20 feb 2019): explore via late time point inactivity of gata2
@@ -4065,7 +5682,7 @@ TrenaProjectErythropoiesis, TrenaProjectMouseMa
    They have 13 different hematopoietic cell types from 9 healthy donors along the hematopoietic
    hierarchical tree, all purified by FACS.
 
-   The donors IDs and corresponding cell types can be found in the excel file “Normal Donor Information”.
+   The donors IDs and corresponding cell types can be found in the excel file Normal Donor Information.
 
    I also made another excel file with the sample names that you sent in the email,
    samples-ATAC-seq. I copied the hematopoietic tree next to the sample names, so you can see
@@ -4359,6 +5976,9 @@ ERY							3	3	2	8
     X6792.5A                          X6792.5B                          X6792.6A
     X6792.6B                          X6792.7A                          X6792.7B
 
+
+CD34 derives its name from the cluster of differentiation protocol
+CD34 derives its name from the cluster of differentiation protocol
 
 
 *-----------------------------------------------------------------------------------------------------------------------
@@ -4972,6 +6592,9 @@ that	def:fem:sg	straight–fem:sg	pathfem	be:3sg:impf	lose–partic–fem:sg
 
 *-----------------------------------------------------------------------------------------------------------------------
 * GenomicRanges tips, GRanges tips: elimnate overlaps with reduce, preserve metadata (5 feb 2019)
+
+
+
 
   [status: not actually needed.  problem arose when liftover from mm9 to hg18.  mm9-mm10 works better!]
 
@@ -5955,6 +7578,7 @@ Source available: Download
 * next up, MultiMotifMatcher.R  "restart here"
 
    matchThreshold <- 1/10^(someNumber)
+
 *-----------------------------------------------------------------------------------------------------------------------
 * hint, rgt-hint: re-install using python 2.7 (24 jan 2019)
 
@@ -7529,6 +9153,7 @@ Thank you!
 
 
 
+*-----------------------------------------------------------------------------------------------------------------------
 * shiny plot tips: resize plot to a constant percentage of browser window (23 dec 2018) css3
 
    ~/s/examples/R/shiny/resizePlot/tutorialDemo.R
@@ -11657,7 +13282,7 @@ For the straightforward pathway had been lost.
 
 
    --- does not yet work because cross-origin is NOT set by default:
-      curl -H "Access-Control-Request-Method: GET" -H "Origin: http://riptide.systemsbiology.net" --head http://trena:60051/static/tair10/chromosomeAliases.txt
+      curl -L -H "Access-Control-Request-Method: GET" -H "Origin: http://riptide.systemsbiology.net" --head http://trena:60051/static/tair10/chromosomeAliases.txt
 
       HTTP/1.0 200 OK
       Content-Length: 119
@@ -12489,6 +14114,13 @@ ZCWPW1: 1
    2 dec 2018: 1 hour blackberry removal
    9 dec 2018: 2 hours blackberry removal
   30 dec 2018: 4 hours planting just ne of cistern, alder and indian plum, with omar
+
+   2 jun 2019: 1 hour grubbing blackberries, andrews bay
+  26 may 2019: 1 hour grubbing blackberries, andrews bay
+
+  20 jun 2019: 2 hours receiving 100 women who care funds
+  23 jun 2019: 1 hour removing gz cedar tree grafitti, looking at highland healthy zone
+  30 jun 2019: 3.5 hours watering ferns & GZ & G1 plantings
 
 *------------------------------------------------------------------------------------------------
 * next up for alison, CKAP2L shiny app (19 jun 2018)
@@ -28201,9 +29833,15 @@ kegg.hgr  <- hyperGTest(kegg.params)
 * whovian psql tips
 
 
+   \pset pager    # Pager usage is off.
+
    --- psql shell
      psql -U trena --host whovian   # prompts for password which is also "trena"
      select datname from pg_database;
+
+   --- list commands
+     \list    # databases
+     \dt      # tables in current database
 
    --- from R
      library(RPostgreSQL)
@@ -54845,13 +56483,13 @@ result = loads(ws.recv())
    associating word and object.
 
   To grasp these important things, we need not to reason verbally, but rather to look more
-  attentively at what lies before us. “Don’t think, look!” Wittgenstein urges in Philosophical
+  attentively at what lies before us. Don't think, look! Wittgenstein urges in Philosophical
   Investigations. Philosophical confusion, he maintained, had its roots not in the relatively
   superficial thinking expressed by words but in that deeper territory studied by Freud, the
   pictorial thinking that lies in our unconscious and is expressed only involuntarily in, for
-  example, our dreams, our doodles and in our “Freudian slips”. “A picture held us captive,”
+  example, our dreams, our doodles and in our Freudian slips. A picture held us captive,
   Wittgenstein says in the Investigations, and it is, he thinks, his job as a philosopher not to
-  argue for or against the ￼￼truth of this or that proposition but rather to delve deeper and
+  argue for or against the truth of this or that proposition but rather to delve deeper and
   substitute one picture for another. In other words, he conceived it as his task to make us, or at
   least to enable us, to see things differently.
 
@@ -57369,9 +59007,9 @@ to envirnonmental conditions" p 451 of plant biochemistry.
 This mistaken view has been justly labelled 'meaning rationalism' and fosters a belief that the universal syntactics of human language is clearly
 distinctive from all other forms of communication exhibited by non-human life; that is
 non-human life has not grammaticality.
-Meaning rationalism proposes that birds may sing, but they have no ‘grammar’ in their
-singing. Moreover, says the ‘meaning rationalists,’ they cannot learn how to give a
-performance in ‘bird songs’ through recursively practicing bird calls. We maintain
+Meaning rationalism proposes that birds may sing, but they have no grammar in their
+singing. Moreover, says the meaning rationalists, they cannot learn how to give a
+performance in bird songs through recursively practicing bird calls. We maintain
 pragmatics trumps syntax. Here we have a specific opposition to Biolinguistics and to
 
    argues for and against robert bringhurst, "the tree of meaning"
