@@ -60,10 +60,82 @@ bed format: chrom, start, end, name, score, strand
 * -TOP-
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* p300/enhancer correlations hypothesis, from marjorie and jeff (3 jul 2019)
+
+   see email from marjorie (3 jul 2019)
+   
 *-----------------------------------------------------------------------------------------------------------------------
+* run hint-atac on marjorie's erythro bam files (3 jul 2019)
+
+  [context: identify enhancer regions through diffentiation, compare to p300 srm counts]
+  setup python 2.7 venv, install hint (see just below: 2 jul 2019)
+  cd ~/github/TrenaProjectErythropoiesis/prep/srm.vs.atac/p300-srm-chip-atac-peas
+  create directory for each bamfile, for instance:
+
+   mkdir, cd  cord_d04_rep1
+   makefile targets:
+     BAM=../ATAC_Cord_d4_rep1_hg38_sorted.bam
+     RAWPEAKS=../ATAC_Cord_d4_rep1_hg38_peaks.narrowPeak
+     PEAKS=narrowPeaks.tsv
+     default:
+     	@echo cleanPeaks, $(BAM).bai, run
+     cleanPeaks:
+     	Rscript cleanPeaks.R $(RAWPEAKS)
+     run: $(BAM).bai
+     	rgt-hint footprinting --atac-seq --organism=hg38 $(BAM) $(PEAKS) 
+     $(BAM).bai:
+     	samtools index $(BAM)
+  
 *-----------------------------------------------------------------------------------------------------------------------
+* install hint for atac-seq on riptide and khaleesi (2 jul 2019)
+
+  cd 
+  virtualenv --python=/usr/bin/python ./vHint
+  source vHint/bin/activate
+  cd ~/vHint
+  python --version   # Python 2.7.12
+  pip install numpy
+  pip install rgt
+     ERROR: rgt 0.12.1 has requirement pyBigWig==0.3.12, but you'll have pybigwig 0.3.16 which is incompatible.
+  curl -O  https://costalab.ukaachen.de/open_data/hint/tutorial/HINT_ATACTest.tar.gz
+  tar zxvf HINT_ATACTest.tar.gz 
+  export RGTDATA=/Users/paul/rgtdata        # on riptide
+  export RGTDATA=/users/pshannon/rgtdata/   # on khaleesi
+    from riptide:  scp ~/rgtdata/hg19/genome_hg19.fa* pshannon@khaleesi:rgtdata/hg19/
+  rgt-hint footprinting --atac-seq HINT_ATACTest/ATAC.bam HINT_ATACTest/ATACPeaks.bed   # bam file accompanied by .bai, and MACS2-called peaks
+  cat footprints.info
+     Number of reads: 11615830
+     Number of peaks: 1000
+     Number of tag counts within peaks: 383921.0
+     Number of footprints: 6762
+
+  prepare for use with hg38
+  cd ~/rgtdata
+  khaleesi.rgtdata> python setupGenomicData.py --hg38   # Downloading hg38 genome, new files:
+     1,249,402,843 Jul  2 20:07 gencode.v24.annotation.gtf
+     3,151,417,447 Jul  2 20:07 genome_hg38.fa
+
+
 *-----------------------------------------------------------------------------------------------------------------------
 * install hint-atac (costaLab/reg-gen) (2 jul 2019)
+
+   on riptide:
+      
+   virtualenv --python=/usr/bin/python ./vHint    # this is the anaconda (python3) virtual env, but seems to work
+   source vHint/bin/activate
+   dir github/reg-gen/requirements.txt 
+   type pip
+   python --version
+  pip install -r github/reg-gen/requirements.txt 
+  pip install numpy
+  pip install rgt
+
+
+    ERROR: htseq 0.11.2 has requirement pysam==0.13.0, but you'll have pysam 0.15.2 which is incompatible.
+    ERROR: rgt 0.12.1 has requirement pyBigWig==0.3.12, but you'll have pybigwig 0.3.16 which is incompatible.
+
+  rgt-hint footprinting --atac-seq --paired-end --organism=mm9 --output-location=./ --output-prefix=cDC1 cDC1.bam cDC1_peaks.narrowPeak 
+    IOError: /Users/paul/rgtdata/mm9/genome_mm9.fa` not found
 
   cd ~/github/reg-gen/
   /usr/local/bin/pip install --user -r requirements.txt
@@ -16557,6 +16629,15 @@ robertianum) is another threatening invasive for this association.
 
    https://www.sciencedirect.com/science/article/pii/S0038071712003409
 
+
+*------------------------------------------------------------------------------------------------
+* books
+  biography of frederick douglas, george orwell
+
+*------------------------------------------------------------------------------------------------
+* video
+   veronica mars: beloved detective series
+   harlots: 18th century high-class strumpets
 
 *------------------------------------------------------------------------------------------------
 * books for leo's birthday 2018
