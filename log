@@ -60,10 +60,648 @@ bed format: chrom, start, end, name, score, strand
 * -TOP-
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* r2d3 demo v1 for TrenaProjectErythropoiesis srm vs mrna for paper (18 jul 2019)
+
+  cd ~/github/TrenaProjectErythropoiesis/viz/srm.vs.mrna/v1
+  plots normalized GATA1 protein against mrna through the time course
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* r2d3 demo v0 for TrenaProjectErythropoiesis srm vs mrna for paper (18 jul 2019)
+
+  cd ~/github/TrenaProjectErythropoiesis/viz/srm.vs.mrna/v0
+  has slider and fixed x:0-16, y:1-256 axes, dynamically updates based on slider setting.
+  data prep all done in R
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* ellen rothenverg's mechanistic gene regularoy networks (18 jul 2019)
+
+  correlation netwworks( helpful for classification of cell types, no eidence for function or mechanism
+  causality networks (perturbation effects): observed function, mechanism to be determeinted
+  connectivity networks (physical connection via ChIP-seq)
+    hypothesiszed function, often non functional
+
+   bbtrqnscription fqctor re the mechanistic core of celluarly
+   lots of AND logic
+
+  drosophila: dorsal -> teist -> mesodern genes (including repressor snail)
+     neurogenic genes have snail repressor binding sites.
+  eric davidson's predictive boolean model: completely successful
+
+  perturbation data: most of it comes from germ line knockouts.  where's your control?
+  
+   Cre recombinase has become an important instrument for achieving precise genetic manipulation in mice. Many of these
+   desired genetic manipulations rely on Cre's ability to direct spatially and temporally specified excision of a
+   predesignated DNA sequence that has been flanked by directly repeated copies of the loxP recombination site. Success
+   in achieving such conditional mutagenesis in mice depends both on the careful design of conditional allel es and on
+   reliable detection of cre gene expression. These procedures include PCR, immunohistochemistry and the use of a
+   recombination-proficient GFP-tagged Cre protein.
+
+    lineage identity factors:  (not master regulators)
+n   erythroid fate: gata1
+    b cell fate: ebf1 + pax5
+    myeloid fates: pu.1 c/ebp-alpha
+
+    sui huage, 2007, developmental biology: systems biology OWNS gata1/pus.1 antagonism, at both protein and transcriptional levels
+      pu.1 drives to innate immune cells
+      gata2: red blood cells
+      anatagonism is conditional
+      mast cells for instance
+      other factors join the fray, leading them to cooperate: mast cells result
+
+   laslo 2006 Cell: dosage differences lead to macrohage OR neutrophil fate
+       intermediate layer egr/nab/irf8: factorss activated only by HIGH levels: dueling repressors
+    immunologial review 2006
+
+   her lab: making T cells from multipotent progenitors
+   made easy to study since the program runs in the thymus, mwhere notch signalling kics things off
+   long period of proliferation before commitment
+      LMPP -> CLP (enter thymus)
+      bcl11b is a final rate-limiting mediatory of T-cell comitme3nt
+      gata3, tcf1
+      late in development, t cell receptor rearrangement starts,  need lots of cells because die-off is extensive
+
+    deep study of a system with constitutive notch signaling
+       of PU.1
+          bcl11b
+        measing chip-seq binding
+        open chromatin with Atac-seq
+
+     cytokines reward and punish (growth? progression?)
+     longabaugh 
+        t-cell gene regulatory network: state before commitment
+        large overlap oif T cell, progenirot
+
+   bcl11b: 4 upstream factors AND logic
+   for jeff & marjorie:  presence of factor proteins
+     cis-regulatory machinery opeing the bcl11b locus is slow, consgrains tf effects to control timing of t-cell
+     commitment.
+     that is: opening of chromatin can determine timing (along with compartment localization)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* d3 tips, r2d3 tips, scatterplot
+
+  --- reasonably concise resizeable scatterplot example:
+
+     ~/s/examples/R/shiny/r2d3/scatterPlotFollowsWindowResize/
+         demo.R:           resizes via    tags$head(tags$style("#d3{height:90vh !important;}")),
+         demo-fullSize.js  this redraws to use current window, don't know wh7
+
+  keep in mind:
+     left|right, top|bottom on axes describes tic label positioning
+     [xy]ScalingFunction:
+        domain:  user coordinates
+         range:  pixel coordinates
+     transform translate: uses pixels
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trena ideas, trena paper ideas
+
+  --- reproduce mouse regulation (17 jul 2019)
+     regulatory relationships found in "The cis-Regulatory Atlas of the Mouse Immune System"
+          Atlas of 512,595 cis-regulatory elements active in 86 immunologic cell types
+          Two classes of loci, controlled by either promoter- or enhancer-driven logic
+          Inference of enhancer elements that activate each gene across differentiation
+          Context-specificity of enhancer activation by transcription factors     
+       https://www.sciencedirect.com/science/article/pii/S0092867418316507
+
+   --- cory may be interested: An ATAC-seq atlas of chromatin accessibility in mouse tissues (nature, may 2019)
+          https://www.nature.com/articles/s41597-019-0071-0
+
+       we report an adult mouse ATAC-seq atlas by producing a total of 66
+       ATAC-seq profiles from 20 primary tissues of both male and female
+       mice. The ATAC-seq read enrichment, fragment size distribution, and
+       reproducibility between replicates demonstrated the high quality of the
+       full dataset. We identified a total of 296,574 accessible elements, of
+       which 26,916 showed tissue-specific accessibility. Further, we identified
+       key transcription factors specific to distinct tissues and found that the
+       enrichment of each motif reflects the developmental similarities across
+       tissues.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* animation - srm vs mrna - for jeff and marjorie (15 jul 2019)
+
+  cd ~/github/TrenaProjectErythropoiesis/viz/srm.vs.mrna
+
+  --- initial plan:
+     I spoke with Marjorie about ways to display the data.  Could we try the following?
+        X-axis: RNA
+        Y-axis: protein
+        Each dot is a gene each in a different color  we can see the name of the gene by pointing the 
+           mouse onto it  the user can choose what gene appears by clicking (2 genes, or 20 genes)
+        The time is dynamic: we see the dots moving from Day0 to Day14 (as in the animation)  so we
+           can see for each gene, how the RNA and protein are changing
+
+      Two proteins to start with are Gata1 and PU.1.  (GATA1 and SPI1)
+
+   ---- srm.vs.mrna.R
+      print(load("~/github/TrenaProjectErythropoiesis/prep/import/rnaFromMarjorie/mtx-rna.RData"))
+      print(load("SRMforPublication20190614.RData"))
+      dim(mtx)
+      fivenum(mtx["GATA1",])
+      fivenum(mtx["SPI1",])
+      plot(mtx["GATA1",], type="b", ylim=c(0,34000), col="blue")
+      lines(mtx["SPI1",], type="b", col="red")
+      
+      quartz()
+      fivenum(mtx.srm["GATA1",])
+      fivenum(mtx.srm["SPI1",])
+      plot(mtx.srm["GATA1",], type="b", ylim=c(0,60000), col="blue")
+      lines(mtx.srm["SPI1",], type="b", col="red")
+      
+*-----------------------------------------------------------------------------------------------------------------------
+* slexil, create tiny minimal gunicorn web app to help ualberta deploy (13 jul 2019)
+
+  ~/s/examples/python/gunicorn/
+
+   from time import gmtime, strftime
+   def app(environ, start_response):
+     data = strftime("%Y-%m-%d %H:%M:%S", gmtime()).encode('UTF-8')
+      start_response("200 OK", [
+        ("Content-Type", "text/plain"),
+        ("Content-Length", str(len(data)))
+      ])
+    return iter([data])
+
+   makefile
+     # create a g-unicorn webserver with 4 workers
+     # depends upon the existence of myapp.py, with a function "app"
+     default:
+     	gunicorn -w 4 myapp:app
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* GEOQuery access to rich bonneau's tf17 dataset (15 jul 2019)
+
+   --- GSE40918_Inferelator_RNAseq.tsv
+      /GSE40918_README_supplementary_files.txt
+
+      appears to be a gene/gene matrix, with inferlator scores
+
+      "Inferelator, with default parameters, applied to Immgen dataset from March 2011. Column 1 is the gene name,
+       and each remaining column is for a specific TF with the values being the confidence score in that TF's
+       regulatory interaction for each gene."
+
+   --- DEseq files
+     DEseq files (named Th17.*.txt):
+     Differential expression between wild type and knockouts. Output is directly from
+     the DEseq program. The following datasets were used in each file:
+
+    Th17.batf.wt.vs.Th17.batf.ko_Aug_2_2012.txt - SL3301_SL4222::SL3303_SL4224
+    tbl <- read.table("GSE40918_Th17.batf.wt.vs.Th17.batf.ko_Aug_2_2012.txt", sep="\t", as.is=TRUE, nrow=-1, header=TRUE)
+    fivenum(-log10(tbl$pval)) # [1]   0.00000000   0.00000000   0.00000000   0.08222744 147.98802172
+    tail(tbl)
+              id baseMean Th17.batf.ko Th17.batf.wt foldChange log2FoldChange      pval padj resVarA resVarB mean.rpkm.ko mean.rpkm.wt mean.rpkm.th0 mean.rpkm.th17 prcnt.chng
+    22064 ZYG11B  2906.50       2800.5       3012.5  1.0775018     0.10388083 0.9058849    1      NA      NA     9.926060     9.926060      7.173624       10.15759   7.037344
+    22065    ZYX  2372.25       2236.0       2508.5  1.1167582     0.15908674 0.8118117    1      NA      NA    46.819950    46.819950     42.672312       54.18104  10.863066
+    22066  ZZEF1  3458.25       3560.5       3356.0  0.9413505    -0.08729579 0.9297922    1      NA      NA    13.497700    13.497700     10.470629       10.69465   6.093564
+    22067   ZZZ3  1725.75       1804.0       1647.5  0.9133515    -0.13159097 0.8567475    1      NA      NA     8.227955     8.227955     12.519400       10.70396   9.499241
+    22068      A    20.50         35.5          5.5  0.1416256    -3.04018671 1.0000000    1      NA      NA     0.993025     0.993025      0.000000        0.00000 545.454545
+    22069  L7RN6  1653.00       1610.0       1696.0  1.0532005     0.07477038 0.9562771    1      NA      NA    64.457300    64.457300     43.862050       45.85872   5.070755
+
+    subset(tbl, -log10(pval) > 100)
+              id baseMean Th17.batf.ko Th17.batf.wt  foldChange log2FoldChange          pval          padj resVarA resVarB mean.rpkm.ko mean.rpkm.wt mean.rpkm.th0 mean.rpkm.th17 prcnt.chng
+    2084 ANGPTL2  3063.00         5848        278.0   0.0495963      -4.345712 2.372899e-130 2.712995e-122      NA      NA      42.0215      42.0215     4.2654812       5.730376 2003.59712
+    9534   IL17A  4753.75           52       9455.5 181.7512821       7.505819 1.027965e-148 4.718490e-140      NA      NA     196.8300     196.8300    20.0153641     702.339375   99.45006
+    9574   IL23R  1514.50           76       2953.0  38.8590278       5.280175 1.339605e-103  6.718940e-96      NA      NA      24.4846      24.4846     0.5738041      27.705362   97.42635
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* GEOquery tips (rich bonneau's large dataset as example) (12 jul 2019)
+
+   https://bioconductor.org/packages/release/bioc/vignettes/GEOquery/inst/doc/GEOquery.html
+
+   full data set (ChIP-seq and RNA-seq: GSE40918
+   geo.main <- getGEO(GEO="GSE40918", destdir="geo", AnnotGPL=T)
+   producing these files in geo/
+       236660 Jul 12 15:55 GPL11002.soft
+      4475484 Jul 12 15:55 GPL13112.soft
+        15014 Jul 12 15:54 GSE40918-GPL11002_series_matrix.txt.gz
+        10435 Jul 12 15:55 GSE40918-GPL13112_series_matrix.txt.gz
+
+    series:   GSE40918
+    platform: GPL13112 Illumina HiSeq 2000 (Mus musculus)
+    sample
+    datasets
+
+   gse <- getGEO("GSE781",GSEMatrix=FALSE)
+   gse40918 <- getGEO('GSE40918',GSEMatrix=TRUE)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* rich bonneau's validate regulatory network for th17 cell specification (12 jul 2019)
+
+   full data set (ChIP-seq and RNA-seq: GSE40918
+   cytosdape & IGV explorations (of network, of genome) described here: http://th17.bio.nyu.edu/pages/index.html
+   https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE40918
+     	143 RNA-seq, 83 ChIP-seq, 65 ChIP-seq controls, and 16 FAIRE-seq: 307 "samples"
+
+     (FAIRE-Seq (Formaldehyde-Assisted Isolation of Regulatory Elements) is a method in molecular
+     biology used for determining the sequences of DNA regions in the genome associated with
+     regulatory activity.[1] The technique was developed in the laboratory of Jason D. Lieb at the
+     University of North Carolina, Chapel Hill. In contrast to DNase-Seq, the FAIRE-Seq protocol
+     doesn't require the permeabilization of cells or isolation of nuclei, and can analyse any cell
+     type. In a study of seven diverse human cell types, DNase-seq and FAIRE-seq produced strong
+     cross-validation, with each cell type having 1-2% of the human genome as open chromatin.
+
+   https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE40918
+    Series Matrix files:
+
+      Series_matrix files are text files that include a tab-delimited value-matrix table generated from
+      the 'VALUE' column of each Sample, headed by Sample and Series metadata. These files are suitable
+      for loading into spreadsheet applications such as Excel.
+
+       CAUTION: data are extracted directly from the original records with no consideration as to whether the values are directly comparable.
+
+   GSE40918-GPL11002_series_matrix.txt.gz 14.7 Kb
+   GSE40918-GPL13112_series_matrix.txt.gz 10.2 Kb
+
+   series <- getGEO('GSE40918',GSEMatrix=TRUE)
+   length(colnames(assayData(series[[2]])$exprs))  # [1] 108   empty matrices
+   length(colnames(assayData(series[[1]])$exprs))  # [1] 199   empty matrices
+
+    these names pairs can be copied from
+        https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE40918
+    after clicking on the "Samples 307 More..." link
+
+       GSM1004784	SL3039
+       GSM1004785	SL3192
+       GSM1004786	SL3033
+
+     then sprintf'd into urls like this
+
+     https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSM1004784&format=file&file=GSM1004784%5FSL3039%5FSL3038%5Fgenes%2Etxt%2Egz
+     https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSM1005033&format=file&file=GSM1005033%5FSL11680%5Fgenes%2Eexpr%2Etxt%2Egz
+
+     https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSM1004784&format=file&file=GSM1004784_SL3039_SL3038_genes%2Etxt%2Egz
+     https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSM1005033&format=file&file=GSM1005033_SL11680_genes.expr.txt.gz
+
+   series
+
+     $`GSE40918-GPL11002_series_matrix.txt.gz`
+     ExpressionSet (storageMode: lockedEnvironment)
+     assayData: 0 features, 199 samples     # "0 features" telss us that matrices were NOT created.
+       element names: exprs
+     protocolData: none
+     phenoData
+       sampleNames: GSM1004784 GSM1004785 ... GSM1005090 (199 total)
+       varLabels: title geo_accession ... time_point:ch1 (56 total)
+       varMetadata: labelDescription
+     featureData: none
+     experimentData: use 'experimentData(object)'
+       pubMedIds: 23021777
+     Annotation: GPL11002
+
+     $`GSE40918-GPL13112_series_matrix.txt.gz`
+     ExpressionSet (storageMode: lockedEnvironment)
+     assayData: 0 features, 108 samples
+       element names: exprs
+
+*-----------------------------------------------------------------------------------------------------------------------
+* psql hints:   bash command to give michael access to brain_hint_16 (10 jul 2019)
+
+  export PGPASSWORD=trena; psql -h khaleesi -U trena postgres  -d brain_hint_16
+  \dt;
+           List of relations
+    Schema |  Name   | Type  | Owner
+   --------+---------+-------+-------
+    public | hits    | table | trena
+    public | regions | table | trena
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* temperatureCoverter demo python project for ryan (9 jul 2019)
+
+  cd ~/github/calorimetry-project/explorations/temperatureConverter/
+  virtualenv --python=/Users/paul/anaconda/bin/python3 ./py363
+  source py363/bin/activate
+  pip install -r requirements.txt
+
+*-----------------------------------------------------------------------------------------------------------------------
+* encode talks
+
+    - eric mendenhall
+     IDEAS cap (crhromatin associated protein
+     high occupancy target (hot) loci:  "motif-less" regions  (5000 total?)
+       hotsite permutation plot
+       house keeping genes if in promoter
+       developmental if found in enhancers
+    zhang, an ye, hardison nar 2016
+    ~"using ideas to discern regulation of CFTF"   cystic fibrosis
+
+   --- partitioning the genome, melton et al 2015 nature geneics, mathieu lupien
+       exons -> gene
+       genes -> pathway
+       two new partitions, providing new aggregates in which significant enrichment of mutation burden
+         plexus: cis-regulatory elelent for one gene
+            sallari et al biorxiv:  beautiful multi-enhancer contact points, mesh network.
+             need only cre maps (atac-seq)  and 3d maps (hiC etc)
+         cistrome: protein-centric CRE  "can identify driver somatic mutations"
+
+            "The cistrome refers to "the set of cis-acting targets of a trans-acting factor on a
+            genome-wide scale, also known as the in vivo genome-wide location of [transcription
+            factor binding-sites] or histone modifications"
+
+         mutations are enriched - but not right in the motif.  just nearby.
+       intergenomic replicates (igr) tool to predict changes in binding intensity of tfs from snvs
+         nature geneitcs 2012
+
+    --- Bru-seq  (PNAS 2013) label with bromouridine, measures reates of rna synthesis?
+        BruChase-seq: rna processing, rna stability
+        BruUV-seq: mapps active enhancers
+      dynamics of transcriptional regulation
+
+     --- steve henkikoff
+       cut&run, 4d genome?  public data
+
+   meers et al moclecular cell 2019, cut & run for pioneering tf activity
+     seacr vs macs2, epitgentics & chromatin, in press, searcr webserver coming soon, c&r only, on fhcrc github
+  foxa2: classic pioneering factor
+   h34kme2 - promoter and enhancers
+
+   --- jay shendure
+      saturation mutagenesis of 20 disease-associated regulatory elements.  30k
+      molly gasperini cell 2019?  genome-wide association framework functional elements
+          eqtls tell which enhnacers regulate which genes gtex consorituion nature 2017
+          limited in scope to common variants, and resolution by linkage disequilibrium
+
+      replace eqtl people with individual cells
+      use crispr to engineer synthetic variation: crisprQTL, using crispI, crispr genetic screens
+      one perturbation per cell, canver et al, nature 2015? 2017?
+      gRNAs: guides? crisp guides k562 cells
+
+     what is the distance distribution between enhancers & the promoters they regulation?
+      24kb: the closest gene is often, in fact, the one that is regulated, roughly uniformly distributed
+            across that 24kb
+
+    --- greenleaf, stanford: integrating multi-omic sc data
+     erythropoieseis, surface marker segregation, then atac-seq
+     waddington's landscapes for human hematopoiesis
+     buenrostro cell 2018
+     how clean are promoter cytometry reults.
+     biorxiv:  101101/610550v1, umap clustering: mapping the h. hierarchy with 10x atac-seq
+
+   --- harvard phd student
+    impact: amariuta et al 2019 ajhg, logistic regression, cell-type agnostic to gain power
+            5345 epgigenetic features to characterize motifs
+
+    virtual chip-seq: karimzadeh and hoffman, 2019 bioRxiv
+    mocap, mocapG, mocapS, chen 2017 nuc acids res
+    impact outperforms, finucane nature 2015
+           produces probabilititic regualatory score between 0 and 1
+  shooshtari ajhg 2017 regulatory fine mapping, per-snp posteriors, per-dhs posterior probability in tissue t, correlation
+   between dhs d and gen g, then correlate open dhs to nearby gene expression
+
+   https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5501874/
+
+  markov clustering of hds peaks, if also have replicates, then a "replication test" can filter, with the remainder
+  explaining as much inheritability as the unfiltered set.
+
+   gwas points to bach2 in t1d and ms.  an upstream dhs actually correlates to downstream gene mdn1
+
+    860 dhs tracks by combining encode, roadmap, ggr, blueprint
+
+    solve sample size and funding limits by cross-disease meta-analysis, pleiotropic gwas hits
+    JLIM, Chun et al NG 2017  (Joint likelihood mapping)
+   "credible interval" explaining a large amount of variablity, inheritablity,
+    reduced by, and pvals shoot up, by combining diseases.  maybe 70% of loci are regulatory,
+
+   ---- mike snyder, regulatory interactions
+     claims cell-type specfic aggregations of gene-specific, aggregate enhancer, promoter snps
+
+   --- erez aiden, loops, contact mapping, inverntor of Hi-C
+    2b contacts offered by encode
+    loops are anchored at convergent ctcf sites.
+    rao & huntley, 2014
+    ctcf motif (ctcf is donut shaped protein) (cohesion donut)
+    dna strands runs through the donut, catching at the motif, tethered motifs,
+    dna motif, pointing one way, catches on the donut, tho  "spearated by a kilometer of dna"
+    motifs point at each other tho separated by > 1MB
+    fusion model of loop formation (sanborn & rao, pnas 2015
+    extrusion enable in silico prdiction of hi-c maps
+    aid rad21 degron: natsume et al, cell reports, kanemaki group.
+    cohesin - is this the donut protin?
+    cohesin moves at 400bp per second
+    nir plos genetics 2018, loops in space
+
+   --- chia-pet, 3d structure of chromosome
+     tang cell 2015
+
+   --- altius jeff footprinting
+     500k footprints per study
+
+    --- deep learning on tf binding
+   the kipoi repository accelerates community exchange and resuse of predictiove models for genomics
+   nature biotechnology 37 2019
+
+  julia zeitlinger chip-nexus enables improved detection of in vivor tf binding footprints
+  bpnet: dna sequene to base-pair resolution profile regression
+    stranded profile shape + signal amplitude. preduces nuc. res binding chip-nexus/exo fp with high accuracty
+  deeplift, shrikumar et al icml 2017 - black box, looking inside.
+  tf-modisco: inferring globally predictive motifs across all binding events, runs deeplift
+
+    http://kundajelab.github.io/dragonn/
+    https://arxiv.org/abs/1811.00416: TF-MoDISco v0.4.2.2-alpha: Technical Note
+    Avanti Shrikumar, Katherine Tian, Anna Shcherbina, Žiga Avsec, Abhimanyu Banerjee, Mahfuza Sharmin, Surag Nair, Anshul Kundaje
+    (Submitted on 31 Oct 2018 (v1), last revised 3 Mar 2019 (this version, v2))
+
+    TF-MoDISco (Transcription Factor Motif Discovery from Importance Scores) is an algorithm for
+    identifying motifs from basepair-level importance scores computed on genomic sequence data. This
+    paper describes the methods behind TF-MoDISco version this http URL-alpha (available at this
+    https URL).
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* tanjanay & trena (5 jul 2019)
+  ~/github/TrenaProjectArabidopsisRoot/prep/mun   oz-zinc/trena.R
+
+          gene  betaLasso  lassoPValue pearsonCoeff   rfScore  betaRidge spearmanCoeff
+          OBP3 -0.8648384 5.490449e-25   -0.9678797 41.888487 -0.4377277    -0.7186614
+          HDG1  0.9805287 1.287853e-27    0.9746154 29.639297  0.3733083     0.7468601
+     AT1G69570  0.0000000 1.931483e-01   -0.8069784 28.643837 -0.4943160    -0.7565837
+          ANL2  0.0000000 8.699399e-01    0.8976026 28.134656  0.4611380     0.7795965
+     AT2G20110  0.0000000 4.847707e-02    0.6761422 12.324696  1.0087148     0.6326068
+     AT5G61620  0.0000000 8.790790e-01   -0.4264173  3.891818 -1.0872295    -0.3358049
+     AT5G66940  0.0000000 7.951546e-01    0.4199634  3.632252  0.5102914     0.5162467
+           FLC  0.0000000 1.270794e-01    0.1062079  1.191406  0.2154719     0.2802852
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* TrenaProjectArabidopsis: mapping identifiers to orfs, using jaspar2018 motifs as driver (4 jul 2019)
+
+  [status: provisional solution in tbl.names, ~/github/TrenaProjectArabidopsisRoot/inst/extdata/misc/geneIdMap.RData]
+  19258 rows
+     head(tbl.names)
+        geneSymbol       orf
+     1 2-Cys Prx B AT5G06290
+     2         2A6 AT1G03410
+     3        4CL1 AT1G51680
+     4        4CL2 AT3G21240
+     5        4CL3 AT1G65060
+     6       5-FCL AT5G13050
+     > tail(tbl.names)
+           geneSymbol       orf
+     19253  ATVAMP714 ATVAMP714
+     19254  ATVAMP723 ATVAMP723
+     19255  ATVAMP724 ATVAMP724
+     19256  ATVAMP725 ATVAMP725
+     19257  ATVAMP726 ATVAMP726
+     19258  ATVAMP727 ATVAMP727
+
+   --- test case: "ORA59" from MotifDb
+    subset(tbl.names, geneSymbol=="ORA59")
+           geneSymbol       orf
+      4566      ORA59 AT1G06160
+
+   --- first foray
+
+  tair gene search https://www.arabidopsis.org/servlets/Search says this is AT1G06160
+
+   as.data.frame(t(subset(tbl.geneInfo, gene_id == "AT1G06160")) )
+                               21601
+   chr                             1
+   start                     1882907
+   end                       1883992
+   width                        1086
+   strand                          1
+   source                  araport11
+   type                         gene
+   score                        <NA>
+   phase                        <NA>
+   gene_id                 AT1G06160
+   geneSymbol                 ERF094
+   gene_source             araport11
+   gene_biotype       protein_coding
+
+   tss                       1882907
+
+   curl -O ftp://ftp.arabidopsis.org/home/tair/Genes/gene_aliases_20140331.txt
+   grep -i ora59 gene_aliases_20140331.txt
+           AT1G06160	ORA59	octadecanoid-responsive Arabidopsis AP2/ERF 59
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* GeneHancer 411 (4 jul 2019)
+
+  cd ~/github/TrenaProjectHG38/prep/genehancer_411/
+  tbl <- read.table("GeneHancer_tissues.txt", sep="\t", as.is=TRUE, nrow=-1, header=TRUE)
+  tbl.freq <- as.data.frame(table(tbl$tissue))
+    22                                      blood   1161
+    23                               blood vessel    155
+    24              blood vessel endothelial cell   1644
+    25                              blood vessels     11
+
+*-----------------------------------------------------------------------------------------------------------------------
+* create new TrenaProjectArabidopsisRoot package (3 jul 2019)
+
+   cd ~/github/TrenaProjectArabidopsisRoot/prep/gtf
+   curl -O ftp://ftp.ensemblgenomes.org/pub/release-44/plants/gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.44.gtf.gz
+   tbl <- import("Arabidopsis_thaliana.TAIR10.44.gtf.gz")
+   class(tbl)  [1] "GRanges"
+   head(as.data.frame(tbl))
+     seqnames start  end width strand    source        type score phase   gene_id gene_name gene_source   gene_biotype transcript_id transcript_source transcript_biotype exon_number           exon_id  protein_id
+   1        1  3631 5899  2269      + araport11        gene    NA    NA AT1G01010    NAC001   araport11 protein_coding          <NA>              <NA>               <NA>        <NA>              <NA>        <NA>
+   2        1  3631 5899  2269      + araport11  transcript    NA    NA AT1G01010    NAC001   araport11 protein_coding   AT1G01010.1         araport11     protein_coding        <NA>              <NA>        <NA>
+   3        1  3631 3913   283      + araport11        exon    NA    NA AT1G01010    NAC001   araport11 protein_coding   AT1G01010.1         araport11     protein_coding           1 AT1G01010.1.exon1        <NA>
+   4        1  3760 3913   154      + araport11         CDS    NA     0 AT1G01010    NAC001   araport11 protein_coding   AT1G01010.1         araport11     protein_coding           1              <NA> AT1G01010.1
+   5        1  3760 3762     3      + araport11 start_codon    NA     0 AT1G01010    NAC001   araport11 protein_coding   AT1G01010.1         araport11     protein_coding           1              <NA>        <NA>
+   6        1  3996 4276   281      + araport11        exon    NA    NA AT1G01010    NAC001   araport11 protein_coding   AT1G01010.1         araport11     protein_coding           2 AT1G01010.1.exon2        <NA>
+   tbl.at <- as.data.frame(tbl)
+   dim(subset(tbl.at, type=="gene"))  #  32833    19
+   tbl.freq <- as.data.frame(table(tbl.at$gene_biotype))
+   tbl.freq[order(tbl.freq$Freq, decreasing=TRUE),]
+                   Var1  Freq
+        protein_coding 27628
+                lncRNA  3481
+                  tRNA   689
+                 miRNA   325
+                 ncRNA   299
+                snoRNA   287
+                 snRNA    82
+    nontranslating_CDS    27
+                  rRNA    15
+
+   save(tbl.at, file="../../inst/extdata/geneInfoTable_tair10.RData")
+
+*-----------------------------------------------------------------------------------------------------------------------
 * p300/enhancer correlations hypothesis, from marjorie and jeff (3 jul 2019)
 
    see email from marjorie (3 jul 2019)
-   
+
+   --- khaleesi directory structure and makefile to call hint-atac on all of marjorie's bam files:
+     cd /local/users/pshannon/github/TrenaProjectErythropoiesis/prep/srm.vs.atac/p300-srm-chip-atac-peas
+
+   --- my plan (04 jul 2019)
+
+     My task: count the open enhancer regions in each bam file.  There are a number of progressively refined methods with which to do this:
+
+      The most liberal: simply count all MACS2 regions
+      The most conservative: include only MACS2 regions which overlap with enhancers
+           identified by GeneHancer in blood tissue, in which Hint-ATAC callsfootprints
+
+     My plan:
+
+       1) use MACS2 to find peaks (areas of open chromatin) in the ATAC-seq bam files
+       2) intersect these MACS2 peaks with GeneHancer blood enhancers (no promoters)
+       3) use hint-atac to find footprints in those intersecting regions
+       4) count all the resulting regions: MACS2 with footprints, in GeneHancer enhancers
+
+     I will keep the all the counts I find along the way:
+       all MACS2
+       all MACS2 with Hint-ATAC footprints
+       all MACS2 with or without footprints, in any GeneHancer region, any tissue
+       all MACS2 with or without footprints, in GeneHancer enhancers, any tissue
+
+     Am I missing any combination which may be interesting?
+
+     Do I apply this to all of these bam files?  Or just the cord blood?
+
+     cord_d04_rep1
+     cord_d04_rep2
+     cord_d08_rep1
+     cord_d10_rep1
+     cord_d10_rep2
+     cord_d11_rep1
+     cord_d11_rep2
+     cord_d12_rep1
+     cord_d12_rep2
+     cord_d16_rep1
+     cord_d16_rep2
+     pb_cd_d08_rep1
+     pb_cd_d10_rep1
+     pb_cd_d10_rep2
+     pb_cd_d12_rep1
+     pb_cd_d12_rep2
+     pb_cd_d16_rep1
+     pb_cd_d16_rep2
+     pb_jh_d08_rep1
+     pb_jh_d10_rep1
+     pb_jh_d10_rep2
+     pb_jh_d12_rep1
+     pb_jh_d12_rep2
+     pb_jh_d16_rep1
+
+   --- all footprints called
+     khaleesi: ~/github/TrenaProjectErythropoiesis/prep/srm.vs.atac/p300-srm-chip-atac-peas/
+     wc -l cord*/footprints.bed
+       7087 cord_d04_rep1/footprints.bed
+       9963 cord_d04_rep2/footprints.bed
+      70200 cord_d08_rep1/footprints.bed
+      39649 cord_d10_rep1/footprints.bed
+      50691 cord_d10_rep2/footprints.bed
+      33720 cord_d11_rep1/footprints.bed
+      45376 cord_d11_rep2/footprints.bed
+      57114 cord_d12_rep1/footprints.bed
+      54679 cord_d12_rep2/footprints.bed
+      95292 cord_d16_rep1/footprints.bed
+      92000 cord_d16_rep2/footprints.bed
+
+
 *-----------------------------------------------------------------------------------------------------------------------
 * run hint-atac on marjorie's erythro bam files (3 jul 2019)
 
@@ -82,14 +720,14 @@ bed format: chrom, start, end, name, score, strand
      cleanPeaks:
      	Rscript cleanPeaks.R $(RAWPEAKS)
      run: $(BAM).bai
-     	rgt-hint footprinting --atac-seq --organism=hg38 $(BAM) $(PEAKS) 
+     	rgt-hint footprinting --atac-seq --organism=hg38 $(BAM) $(PEAKS)
      $(BAM).bai:
      	samtools index $(BAM)
-  
+
 *-----------------------------------------------------------------------------------------------------------------------
 * install hint for atac-seq on riptide and khaleesi (2 jul 2019)
 
-  cd 
+  cd
   virtualenv --python=/usr/bin/python ./vHint
   source vHint/bin/activate
   cd ~/vHint
@@ -98,7 +736,7 @@ bed format: chrom, start, end, name, score, strand
   pip install rgt
      ERROR: rgt 0.12.1 has requirement pyBigWig==0.3.12, but you'll have pybigwig 0.3.16 which is incompatible.
   curl -O  https://costalab.ukaachen.de/open_data/hint/tutorial/HINT_ATACTest.tar.gz
-  tar zxvf HINT_ATACTest.tar.gz 
+  tar zxvf HINT_ATACTest.tar.gz
   export RGTDATA=/Users/paul/rgtdata        # on riptide
   export RGTDATA=/users/pshannon/rgtdata/   # on khaleesi
     from riptide:  scp ~/rgtdata/hg19/genome_hg19.fa* pshannon@khaleesi:rgtdata/hg19/
@@ -120,13 +758,13 @@ bed format: chrom, start, end, name, score, strand
 * install hint-atac (costaLab/reg-gen) (2 jul 2019)
 
    on riptide:
-      
+
    virtualenv --python=/usr/bin/python ./vHint    # this is the anaconda (python3) virtual env, but seems to work
    source vHint/bin/activate
-   dir github/reg-gen/requirements.txt 
+   dir github/reg-gen/requirements.txt
    type pip
    python --version
-  pip install -r github/reg-gen/requirements.txt 
+  pip install -r github/reg-gen/requirements.txt
   pip install numpy
   pip install rgt
 
@@ -134,7 +772,7 @@ bed format: chrom, start, end, name, score, strand
     ERROR: htseq 0.11.2 has requirement pysam==0.13.0, but you'll have pysam 0.15.2 which is incompatible.
     ERROR: rgt 0.12.1 has requirement pyBigWig==0.3.12, but you'll have pybigwig 0.3.16 which is incompatible.
 
-  rgt-hint footprinting --atac-seq --paired-end --organism=mm9 --output-location=./ --output-prefix=cDC1 cDC1.bam cDC1_peaks.narrowPeak 
+  rgt-hint footprinting --atac-seq --paired-end --organism=mm9 --output-location=./ --output-prefix=cDC1 cDC1.bam cDC1_peaks.narrowPeak
     IOError: /Users/paul/rgtdata/mm9/genome_mm9.fa` not found
 
   cd ~/github/reg-gen/
@@ -254,6 +892,50 @@ bed format: chrom, start, end, name, score, strand
         165463692 Jul  1 09:07 chr9_fp4.RData
          87211078 Jul  1 10:02 chrX_fp4.RData
           1913565 Jul  1 10:02 chrY_fp4.RData
+
+
+   --- step 3: prepare for fill, then fill
+      cd /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-fp4-01jul2019/
+      createdb -h khaleesi -U trena  placenta_fp4
+      cp ../fill-24jun2019/makefile .
+      cp -p ../fill-24jun2019/*.sql .
+      cp -p ../fill-24jun2019/unpackRDataFiles.R .
+      make some modifications to upackRDataFiles.R:
+        setwd("/local/trenaPlacentaProject/whole_genome_fimoCalls/fill-fp4-01jul2019")
+        newDirectoryName <- sub("_fp4.RData", "", file)
+      run this, timidly at first, creating (for instance)
+        /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-fp4-01jul2019/chr1
+      edit all sql files to read
+         \connect placenta_fp4;
+      make createTables
+      make fillAllRegions
+      make fillAllHits
+      make index
+      timingTests.R
+      dbGetQuery(db, "select count(*) from regions")  # 50,689,135
+      dbGetQuery(db, "select count(*) from hits")     # 1,757,45,071
+      system.time(tbl.regions.p <- dbGetQuery(db, "select * from regions where chrom='chr14' and start >= 74955470 and endpos <= 74955770"))
+          user  system elapsed
+         0.004   0.000   5.203
+      system.time(tbl.hits.p <- dbGetQuery(db, "select * from hits where loc='chr14:74955476-74955499'"))
+         user  system elapsed
+        0.004   0.000   0.007
+      dim(tbl.regions.p)   #  754   4
+      dim(tbl.hits.p)      #    1  16
+
+      db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="brain_hint_20", host="khaleesi")
+      system.time(tbl.regions.b <- dbGetQuery(db, "select * from regions where chrom='chr14' and start >= 74955470 and endpos <= 74955770"))
+         user  system elapsed
+        0.004   0.000   0.303
+     system.time(tbl.hits.b <- dbGetQuery(db, "select * from hits where loc='chr14:74955476-74955499'"))
+        user  system elapsed
+       0.004   0.000   0.010
+      dim(tbl.regions.b) #  182   4
+      dim(tbl.hits.b)    #   2 16
+
+
+
+
 
 *-----------------------------------------------------------------------------------------------------------------------
 * arabidopsis expression matrix for tanjanay (30 jun 2019)
@@ -498,9 +1180,9 @@ dim(tbl.match)
 
    --- step 3, fill database, review * fill the placenta2 footprint hint database on khaleesi, for extra speed (27 mar 2019)
      cd  ~/github/TrenaProjectPlacenta/inst/footprinting/postgres/
-     bash> createdb -h khaleesi -U trena  placenta2
+     bash> createdb -h khaleesi -U trena  placenta_fp
      bash> make createTables
-          (export PGPASSWORD=trena; psql -h khaleesi -U trena placenta2 -f createTables.sql)
+          (export PGPASSWORD=trena; psql -h khaleesi -U trena placenta_fp -f createTables.sql)
 
      make fillRegions
      make fillHits
@@ -1590,6 +2272,11 @@ dim(tbl.match)
      SF3A2  82 regions totaling 377350 bases, sorted                    3.7M             167 seconds    MotifDb only
      SF3A2  82 regions totaling 377350 bases, sorted                    3.7M             440 seconds    MotifDb + TFClass
 
+
+*-----------------------------------------------------------------------------------------------------------------------
+* order tips:  order data.frame on multiple columns, decreasing/increasing strategy differs on each column
+
+      tbl.fpsExpanded <- tbl.fpsExpanded[with(tbl.fpsExpanded, order(signature, -score)),]
 
 *-----------------------------------------------------------------------------------------------------------------------
 * yeon mi provides paths to new placenta footprint files (5 jun 2019;  16 may 2019) - call motifs, fill to postgres
@@ -8230,6 +8917,44 @@ fData(GSE12946.data) # Feature annotation
    tbl.goTFsymbols <- select(org.Mm.eg.db, keys="GO:0003700", keytype="GOALL", columns="SYMBOL")
 
 *-----------------------------------------------------------------------------------------------------------------------
+* get (with evidence codes) all tfs from GO for arabidopsis (3 jul 2019)
+
+   library(GO.db)
+   library(org.Hs.eg.db)
+
+   go.term <- "GO:0003700"
+   columns(GO.db)  #  "DEFINITION" "GOID"       "ONTOLOGY"   "TERM"
+   keytypes(GO.db) # "DEFINITION" "GOID"       "ONTOLOGY"   "TERM"
+   tbl.go <- select(GO.db, keys=go.term, keytype="GOID", columns=columns(GO.db))
+   as.data.frame(t(select(GO.db, keys=go.term, keytype="GOID", columns=columns(GO.db))))
+
+    GOID: GO:0003700
+    DEFINITION A protein or a member of a complex that interacts selectively and
+             non-covalently with a specific DNA sequence (sometimes referred to
+             as a motif) within the regulatory region of a gene to modulate
+             transcription. Regulatory regions include promoters (proximal and distal)
+             and enhancers. Genes are transcriptional units, and include bacterial operons.
+    ONTOLOGY: MF
+    TERM: DNA-binding transcription factor activity
+
+
+
+
+  grep("GO", keytypes(org.Hs.eg.db), v=TRUE) # [1] "GO"    "GOALL"
+  unique( select(org.Hs.eg.db, "GO:0003700", "SYMBOL", "GOALL")$SYMBOL)
+
+   tbl.go <- select(org.Hs.eg.db, keys=go.term, columns="SYMBOL", keytype="GOALL")
+   head(select(org.Hs.eg.db, keys="GO:0003700", columns="SYMBOL", keytype="GOALL"))
+            GOALL EVIDENCEALL ONTOLOGYALL SYMBOL
+     1 GO:0003700         IDA          MF  PARP1
+     2 GO:0003700         IDA          MF  AEBP1
+     3 GO:0003700         IMP          MF  AEBP1
+     4 GO:0003700         TAS          MF  AEBP1
+     5 GO:0003700         IDA          MF  NR0B1
+     6 GO:0003700         ISA          MF  NR0B1
+
+
+*-----------------------------------------------------------------------------------------------------------------------
 * get (with evidence codes) all tfs from GO for alison (14 jan 2019)
 
    library(GO.db)
@@ -14193,6 +14918,9 @@ ZCWPW1: 1
   20 jun 2019: 2 hours receiving 100 women who care funds
   23 jun 2019: 1 hour removing gz cedar tree grafitti, looking at highland healthy zone
   30 jun 2019: 3.5 hours watering ferns & GZ & G1 plantings
+  07 jul 2019: 2 hours removing blackberry & holly
+  14 jul 2019: 4 hours removing blackberry from doug fir snag, watering GZ * 36 ferns, with leo
+  17 jul 2019: 2 hours sword fern monitoring: learning david perasso's protocol
 
 *------------------------------------------------------------------------------------------------
 * next up for alison, CKAP2L shiny app (19 jun 2018)
@@ -16632,12 +17360,16 @@ robertianum) is another threatening invasive for this association.
 
 *------------------------------------------------------------------------------------------------
 * books
-  biography of frederick douglas, george orwell
+  biography of george orwell
+  Plant Life: A Brief History, by Frederick B. Essig
 
 *------------------------------------------------------------------------------------------------
 * video
+
    veronica mars: beloved detective series
    harlots: 18th century high-class strumpets
+   the expanse: 3 TV seasons of award winning science fiction
+   battle star galactica (reboot) prequel "caprica"
 
 *------------------------------------------------------------------------------------------------
 * books for leo's birthday 2018
