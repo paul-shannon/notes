@@ -14,6 +14,25 @@ then in a subsequent loop
    color <- colors[currentColorNumber]
 
 *------------------------------------------------------------------------------------------------------------------------
+* R list tips
+
+  --- create a list with two parts, a named list
+    x <- list(fu=8, bar="cat")
+    a list can contain elements of different types: above is a numeric and a string
+    get the first element:
+       x[1]
+       x["fu"]
+    get the contents of the first element
+       x[[1]]
+       x[["fu"]]
+
+    get names:
+       names(x)
+
+   --- formals
+       
+    
+*------------------------------------------------------------------------------------------------------------------------
 * fixReg -> should become part of the FimoClient package -> TODO aka "fixFimoResults" (10 apr 2019)
 
    ~/github/TrenaProjectErythropoiesis/prep/gata-switch/createModels.R
@@ -63,6 +82,380 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* slexil notes
+
+  hilbertAndHess1977: david cort's audio
+     cd ~/github/howDaylightWasStolen-harryMoses/hilbertAndHess1977/
+     make build
+
+  hessAndBeck2007:
+     cd ~/github/slexil/explorations/generateEAF/pythonDemos/daylight1/
+     make build
+     
+
+*-----------------------------------------------------------------------------------------------------------------------
+* runx1 snp in AD (30 jul 2019)
+
+  cd ~/github/TrenaProjectAD/explore/runx1/
+   2 replicates:
+      https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM3307219
+      spi1 intron variant, rs1377416: chr11:47395195
+
+      GRCh37.p13 chr 11	NC_000011.9:g.47416746C>T
+      GRCh38.p12 chr 11	NC_000011.10:g.47395195C>T
+
+      runx1.R
+
+     converted GEO bw.gz files to .bigWig:
+        see khaleesi:/local/users/pshannon/tools/wigToBigWig/
+
+*-----------------------------------------------------------------------------------------------------------------------
+* GeneHancer 411: to arian for liftover to mm10 (24 jul 2019)
+
+  cd ~/github/TrenaProjectHG38/prep/genehancer_411/forArian.R
+
+    tbl.e <- read.table("GeneHancer_elements.txt", sep="\t", as.is=TRUE, header=TRUE, nrow=-1)
+    tbl.a <- read.table("GeneHancer_gene_associations.txt", sep="\t", as.is=TRUE, header=TRUE, nrow=-1)
+    head(tbl.e)
+    tbl.ae <- merge(tbl.e, tbl.a, by="GHid")
+    dim(tbl.ae)
+    all(tbl.e$GHid %in% tbl.a$GHid)
+    coi <- c("chr", "element_start", "element_end", "symbol", "GHid")
+    tbl.ae <- tbl.ae[, coi]
+    dim(tbl.ae)
+    length(grep("CD274", tbl.ae$symbol))
+    write.table(tbl.ae, file="geneHancer-locs.tsv", sep="\t", quote=FALSE, row.names=FALSE, col.names=TRUE)
+
+       geneHancer-locs.tsv: 1669415 lines
+       
+*-----------------------------------------------------------------------------------------------------------------------
+* tau, time to contact TTC, diving gannets, 
+
+   Avoid collision with obstacles, traditional theories
+    initial distance from objects
+     depth cues etc.
+     speed
+     divide distance by speed
+     computationally complex
+    possibility of errors from different sources
+
+   ecological theory, Lee (1976)
+    all the information needed can be conveyed by only one variable
+    if speed is constant
+
+     tau = inverse of rate of expansion of retinal image
+
+
+   Behaviours that might be regulated by using time to contact
+     long jumping (Lee et al., 1982)
+     catching a bus
+     jumping over puddles
+     avoiding obstacles
+     Fishing gannets (Lee and Reddish, 1981)
+
+      • dive from height of 30m
+      • reach speed of 24m/sec
+      • wings streamlined just before reaching the water
+      • predictions based on corrected tau values
+      • predictions based on height, velocity and acceleration
+      • observation of bird’s behaviour
+      • predictions based on tau fit the data 
+
+  --- https://commons.trincoll.edu/wmace/files/2016/04/gannets.pdf
+    the theory is based on an analysis of the visual input
+    considered as an optical flow field.
+    does it also work in to explain TTC under acceleration?
+    suppose the gannet were to start streamlining an intiation time
+      t1 after detecting that tau(t) had reached a margin value
+      tau(m) 
+    texture elements (ripples) 
+
+  
+  http://psychsciencenotes.blogspot.com/2017/04/the-ecological-approach-explained-to-8.html
+  
+  How does a baseball outfielder catch a fly ball? 
+    https://www.psychologytoday.com/us/blog/cognition-without-borders/201207/the-embodied-cognition-the-baseball-outfielder
+     https://www.bioteach.ubc.ca/TeachingResources/GeneralScience/BaseballPaper.pdf
+  http://psychsciencenotes.blogspot.com/2015/04/what-kind-of-thing-is-information.html
+
+   The central contribution of the ecological approach is the idea of ecological
+   information. Information variables are higher order relations that remain invariant over time as
+   the elements of the pattern change. These relations are the kind of thing that can specify a
+   dynamical property of the environment and support direct perception of that environment.
+
+   This is all a little abstract. One nice, simple example is the variable tau which specifies
+   time-to-contact (TTC). TTC is an important property of objects approaching you that, if
+   perceived, would support you intercepting or avoiding the object. Tau is one variable that
+   specifies TTC and therefore might get used by organisms to perceive TTC.
+
+   This post will use tau as an example of information because it's straight forward and has lots of
+   the relevant key features. However, tau is a pain in the ass because organisms typically don't
+   actually use it - it's too limited in its scope to be the best information. People discussing
+   this fact sometimes says it reveals a weakness in the ecological approach. It doesn't; it just
+   reveals a weakness in tau (and the error ecological psychologists made getting as excited as they
+   did about it as an exemplar). It highlights a lot of useful issues, though, so I thought it was
+   still worth the post.
+
+  The computational strategy for figuring out time-to-contact is an algorithm that needs estimates
+  of the distance and speed of the moving object. Distance divided by speed is time (e.g. metres
+  divided by metres per second = seconds). Time needs to be derived in this approach; it's not
+  available in the stimulus, whereas distance and speed can be. You process those elements in a way
+  described by the equation 'time = distance/speed' and output time-to-contact.
+
+  The informational strategy is to look for kinematic patterns in the optic array that specify
+  time-to-contact. This pattern does not have to be identical to TTC, just specific to it. Picking
+  up that pattern is then equivalent to perceiving TTC, with no processing required.
+
+  One such pattern is that described by the variable tau. It was actually first described by
+  physicist Fred Hoyle in his book 'The Black Cloud'. A huge cloud is approaching Earth and
+  scientists want to know when it will arrive; one realises that to figure this out, all they needed
+  was the ratio of the image size to the image expansion rate (gained from images taken at different
+  times). Assuming a constant velocity, this ratio is equal to time-to-contact.
+
+  Optically, tau is the inverse of the rate of expansion (change in angular size) of the projection
+  of the approaching object in the optic array. If you simply arrange your measurement system so
+  that it works in a way described by this mathematical description, you can perceive
+  time-to-contact by detecting tau.
+
+  Key points:
+
+    tau is not composed of either distance or speed, as the physics
+    based analysis would assume.
+
+    tau is not computed, it is detected. It is a ratio, but this is
+    just a description of the relevant relation that must be
+    detected. The relation does not have to be created by the
+    organism, the relation has already been implemented by the lawful
+    projection of the approaching object into the light. A 'smart'
+    mechanism can be built that is sensitive to the pattern described
+    by the ratio rather than either of the
+    components. Psychophysically, this has been demonstrated by
+    showing thresholds for tau are lower than thresholds for either of
+    the elements in the mathematical description (Regan & Hamstra,
+    1993).
+
+    tau specifies time-to-contact but is not identical to it. This is
+    important because it reminds us to keep the world variable (the
+    thing to be perceived) and the information variable (the thing
+    that enables that perception) separate in our analysis.
+
+    tau is a temporal variable. which is actually exactly what the
+    organism needs access to. Knowing how far away an object is or how
+    fast it's moving doesn't tell you anything you need to know in
+    order to control your actions with respect to that object. An
+    organism can use time information to control when to initiate
+    interception/avoidance behaviours.
+
+
+   Further Reading
+
+   Lee, D. N., & Reddish, P. E. (1981). Plummeting gannets: a paradigm
+   of ecological optics. Nature, 293(5830), 293-294.
+
+   Regan, D., & Hamstra, S. J. (1993). Dissociation of discrimination
+   thresholds for time to contact and for rate of angular
+   expansion. Vision Research, 33(4), 447-462.
+
+   Tresilian, J. R. (1999). Visually timed action: time-out for
+   tau?. Trends in Cognitive Sciences, 3(8), 301-310.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* shiny app rna/srm plots for jeff and marjorie (23 jul 2019)
+
+   ~/github/TrenaProjectErythropoiesis/viz/srm.vs.mrna/v4/linePlot.R|js|css
+   new choice of gene or transformation strategy leads to a new plot
+
+*-----------------------------------------------------------------------------------------------------------------------
+* marjorie brand suggests CTCF ChIP-seq "almost perfect" (28 jul 2019)
+
+  --- marjorie says (email 28 jul 2019):
+
+    It seems that CTCF chip-seq are among the best quality ChIP-seq. So, here is a list of CTCF ChIP-seq datasets compiled
+    by my student that he thinks are "almost perfect".
+
+    A non-canonical SWI/SNF complex underlies synthetic lethality in cancers driven by BAF complex perturbation
+
+    EoL-1 cells, a recently established human eosinophilic leukemia cell line, have cytological features of myeloblasts
+    under normal culture conditions, and differentiate not only phenotypically but also functionally into eosinophils by
+    a number of stimuli. EoL-1 cells are particularly useful for analyzing leukemic cell differentiation and the
+    properties of malignant eosinophils. EoL-1 cells are also a useful in vitro model for studying human eosinophil
+    functions and their regulation.
+        
+
+    GSM3094375: EOL1_CTCF_Naive_ChIP-Seq, 
+    GSM3094396
+    GSM3094382
+    GSM803419
+    GSM1010903
+    GSM1010820
+    GSM1010734
+
+*-----------------------------------------------------------------------------------------------------------------------
+* mark gillespie suggests CTCF encode ChIP-seq in K562 cells
+
+   K562 cells were the first human immortalised myelogenous leukemia cell line to be
+   established. K562 cells are of the erythroleukemia type, and the cell line is derived from a
+   53-year-old female chronic myelogenous leukemia patient in blast crisis.[1][2] The cells are
+   non-adherent and rounded, are positive for the bcr:abl fusion gene, and bear some proteomic
+   resemblance to both undifferentiated granulocytes[3] and erythrocytes.[4]
+
+    https://www.encodeproject.org/search/?type=Experiment&assay_title=TF+ChIP-seq&assembly=GRCh38&target.label=CTCF&biosample_ontology.cell_slims=hematopoietic+cell&biosample_ontology.term_name=K562
+
+    
+    xargs -L 1 curl -O -L < files.txt
+
+*-----------------------------------------------------------------------------------------------------------------------
+* jeff, marjorie: averaged, in register final srm and rna for paper (20 jul 2019)
+
+   hagfish: ~/github/TrenaProjectErythropoiesis/prep/import/srm-rna-averaged-final-for-paper/SRM-and-RNA-SUMMARY-July-2019.xlsx
+
+   hand-edited the spreadsheet into 
+   readData.R     rna.tsv, srm.tsv
+   note that
+
+       boxplot(asinh(as.numeric(mtx.rna)), asinh(as.numeric(mtx.srm))) 
+
+   [[file:~/images/erythro.srm.rna.asinh.boxplot.png]]
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* d3 the wealth & health of nations
+
+  https://bost.ocks.org/mike/nations/
+  view-source:https://bost.ocks.org/mike/nations/  # does not work
+  source here?
+      http://bl.ocks.org/arthurwelle/01506d8136f6898b2123cd897b8ba59e
+      http://bl.ocks.org/jgujgu/bfbb41f5e8b90ff09d7805f71ef2538e
+
+   https://raw.githubusercontent.com/IsaKiko/D3-visualising-data/gh-pages/code/nations.json
+   
+   gapminder.json:
+      https://s3-us-west-2.amazonaws.com/s.cdpn.io/2814973/gapminder.json
+
+   https://observablehq.com/@isakiko/the-health-and-wealth-of-nations
+   https://blockbuilder.org/unbelievablehulk/89b7908c6561e5b46b70a0c85f84f8c9
+   https://gitlab.com/lajh87/r2d3MotionChart
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* alison's placenta footprints, fpdb: the "fp4" footprints called by yeon mi (1 jul 2019)
+
+  footprints already called
+    /local/trenaPlacentaProject/whole_genome_fimoCalls/LN*/LN*_fp_bc
+
+   cd /local/users/pshannon/github/TrenaProjectPlacenta/prep/fp2db/2019jul19/
+
+  --- run fptodb.R
+     khaleesi, mkdir & cd /local/users/pshannon/github/TrenaProjectPlacenta/prep/fp2db/2019jul19/
+     cp ../2019jul01/*.R .
+     mkdir /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-fp-bc-19jul2019
+     edit /local/users/pshannon/github/TrenaProjectPlacenta/prep/fp2db/2019jul19/combineSampleTsvFilesPostgresPrep.R
+        to use method.suffixes[3]:
+
+     doAll_runAndReduceChromosomes <- function() {
+        method.suffix <- method.suffixes[3]
+        for(chrom in chromosomes){
+           printf("--- runAndReduceChromosomes: %s, %s", chrom, method.suffix)
+           outfile <- file.path(resultsBaseDir, "fill-fp-bc-19jul2019", sprintf("%s_%s.RData", chrom, method.suffix))
+           x <- runAndReduceChromosomes(resultsBaseDir, method.suffix, chrom)
+           save(x, file=outfile)
+           } # for chrom
+     } # doAll_runAndReduceChromosomes
+
+
+     --- after expanding the fimo RData to per-chromosome regions & hits
+
+    find /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-fp-bc-19jul2019 -name "regions.tsv" -exec wc -l {} ';'
+
+                             fp_bc      fp4        fp
+       chr1/regions.tsv     6500534   4999404   5331304 
+       chr2/regions.tsv     8201440   3687749   3984827 
+       chr3/regions.tsv     6505883   2876468   3084239 
+       chr4/regions.tsv    12534115   1958118   2060050 
+       chr5/regions.tsv     7175657   2408761   2549536 
+       chr6/regions.tsv     5863781   2716650   2908913 
+       chr7/regions.tsv     4693940   2648636   2820744 
+       chr8/regions.tsv     5109901   2135918   2264380 
+       chr9/regions.tsv     3951820   2340559   2515478 
+       chr10/regions.tsv    3979818   2266648   2454108 
+       chr11/regions.tsv    3178877   2729135   2937774 
+       chr12/regions.tsv    3852431   2335841   2510574 
+       chr13/regions.tsv    6258731   1076553   1130147 
+       chr14/regions.tsv    2289695   1689090   1793801 
+       chr15/regions.tsv    2349084   1630120   1765663 
+       chr16/regions.tsv    1910392   2124765   2265796 
+       chr17/regions.tsv    2079493   2649170   2841222 
+       chr18/regions.tsv    4167174    964391   1024850 
+       chr19/regions.tsv    1920948   2720957   2909548 
+       chr20/regions.tsv    1514455   1415617   1514009 
+       chr21/regions.tsv    1551878    648846    690400  
+       chr22/regions.tsv     893390   1250293   1348461 
+       chrX/regions.tsv    13076597   1376088   1438472 
+       chrY/regions.tsv     3481038     39382     39382   
+
+
+    [for comparison, here is fp4]
+
+4999404  fill-fp4-01jul2019/chr1/regions.tsv
+3687749  fill-fp4-01jul2019/chr2/regions.tsv
+2876468  fill-fp4-01jul2019/chr3/regions.tsv
+1958118  fill-fp4-01jul2019/chr4/regions.tsv
+2408761  fill-fp4-01jul2019/chr5/regions.tsv
+2716650  fill-fp4-01jul2019/chr6/regions.tsv
+2648636  fill-fp4-01jul2019/chr7/regions.tsv
+2135918  fill-fp4-01jul2019/chr8/regions.tsv
+2340559  fill-fp4-01jul2019/chr9/regions.tsv
+2266648  fill-fp4-01jul2019/chr10/regions.tsv
+2729135  fill-fp4-01jul2019/chr11/regions.tsv
+2335841  fill-fp4-01jul2019/chr12/regions.tsv
+1076553  fill-fp4-01jul2019/chr13/regions.tsv
+1689090  fill-fp4-01jul2019/chr14/regions.tsv
+1630120  fill-fp4-01jul2019/chr15/regions.tsv
+2124765  fill-fp4-01jul2019/chr16/regions.tsv
+2649170  fill-fp4-01jul2019/chr17/regions.tsv
+964391   fill-fp4-01jul2019/chr18/regions.tsv
+2720957  fill-fp4-01jul2019/chr19/regions.tsv
+1415617  fill-fp4-01jul2019/chr20/regions.tsv
+648846   fill-fp4-01jul2019/chr21/regions.tsv
+1250293  fill-fp4-01jul2019/chr22/regions.tsv
+1376088  fill-fp4-01jul2019/chrX/regions.tsv
+39382    fill-fp4-01jul2019/chrY/regions.tsv
+
+
+   and fp
+
+5331304 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr1/regions.tsv     
+3984827 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr2/regions.tsv
+3084239 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr3/regions.tsv
+2060050 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr4/regions.tsv
+2549536 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr5/regions.tsv
+2908913 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr6/regions.tsv
+2820744 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr7/regions.tsv
+2264380 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr8/regions.tsv
+2515478 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr9/regions.tsv
+2454108 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr10/regions.tsv
+2937774 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr11/regions.tsv
+2510574 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr12/regions.tsv
+1130147 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr13/regions.tsv
+1793801 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr14/regions.tsv
+1765663 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr15/regions.tsv
+2265796 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr16/regions.tsv
+2841222 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr17/regions.tsv
+1024850 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr18/regions.tsv
+2909548 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr19/regions.tsv
+1514009 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr20/regions.tsv
+690400  /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr21/regions.tsv
+1348461 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chr22/regions.tsv
+1438472 /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chrX/regions.tsv
+39382   /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/chrY/regions.tsv
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* robert hubley proposes fimo alternative:  nhmmer (19 jul 2019)
+
+   https://academic.oup.com/bioinformatics/article/29/19/2487/186765
+   perhaps 10x faster?
+
+*-----------------------------------------------------------------------------------------------------------------------
 * r2d3 demo v1 for TrenaProjectErythropoiesis srm vs mrna for paper (18 jul 2019)
 
   cd ~/github/TrenaProjectErythropoiesis/viz/srm.vs.mrna/v1
@@ -76,7 +469,7 @@ bed format: chrom, start, end, name, score, strand
   data prep all done in R
   
 *-----------------------------------------------------------------------------------------------------------------------
-* ellen rothenverg's mechanistic gene regularoy networks (18 jul 2019)
+* ellen rothenberg's mechanistic gene regularoy networks (18 jul 2019)
 
   correlation netwworks( helpful for classification of cell types, no eidence for function or mechanism
   causality networks (perturbation effects): observed function, mechanism to be determeinted
@@ -14921,6 +15314,8 @@ ZCWPW1: 1
   07 jul 2019: 2 hours removing blackberry & holly
   14 jul 2019: 4 hours removing blackberry from doug fir snag, watering GZ * 36 ferns, with leo
   17 jul 2019: 2 hours sword fern monitoring: learning david perasso's protocol
+  20 jul 2019: 1 hour andrews bay HBB removal - abandoning this project
+  21 jul 2019: 2.5 hours HBB, closing trails
 
 *------------------------------------------------------------------------------------------------
 * next up for alison, CKAP2L shiny app (19 jun 2018)
@@ -17362,14 +17757,26 @@ robertianum) is another threatening invasive for this association.
 * books
   biography of george orwell
   Plant Life: A Brief History, by Frederick B. Essig
+  Speculative Empiricism: Revisiting Whitehead (Speculative Realism) Didier Debaise, Isabelle Stengers Foreword  (wrote nature as process)
 
 *------------------------------------------------------------------------------------------------
-* video
+* movies, tv, videos
 
    veronica mars: beloved detective series
    harlots: 18th century high-class strumpets
    the expanse: 3 TV seasons of award winning science fiction
    battle star galactica (reboot) prequel "caprica"
+   john ford: how green was my valley, the searchers (chilean landscape theorist recommends)
+   last chance u: 
+   
+   --- Trapped: When to watch: Now, on Amazon.
+
+    The first season of this Icelandic series (in Icelandic, with English subtitles) was a terrific snowy murder
+    thriller. The second season lives up to it, this time opening with a brazen assault on a politician — one that opens
+    old family wounds but is also deeply tied to sprawling power struggles and conflict around environmentalism and
+    industry. Olafur Darri Olafsson returns as Andri, our cop hero whose own family is still suffering from the fallout
+    of Season 1. If you’re in the mood for a potent crime show that provides the satisfaction of dense, expensive
+    multigrain bread, watch this.
 
 *------------------------------------------------------------------------------------------------
 * books for leo's birthday 2018
