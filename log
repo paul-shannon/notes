@@ -14,25 +14,6 @@ then in a subsequent loop
    color <- colors[currentColorNumber]
 
 *------------------------------------------------------------------------------------------------------------------------
-* R list tips
-
-  --- create a list with two parts, a named list
-    x <- list(fu=8, bar="cat")
-    a list can contain elements of different types: above is a numeric and a string
-    get the first element:
-       x[1]
-       x["fu"]
-    get the contents of the first element
-       x[[1]]
-       x[["fu"]]
-
-    get names:
-       names(x)
-
-   --- formals
-       
-    
-*------------------------------------------------------------------------------------------------------------------------
 * fixReg -> should become part of the FimoClient package -> TODO aka "fixFimoResults" (10 apr 2019)
 
    ~/github/TrenaProjectErythropoiesis/prep/gata-switch/createModels.R
@@ -82,6 +63,220 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* srm mrna marjorie jeff r2d3 plot (15 aug 2019)
+
+   --- marjorie's labels for the x axis
+
+     Day0: MPP
+     Day2 to Day4: MEP
+     Day4 to Day11.5: CFU-E
+     Day11.5 : ProEB
+     Day14: BasoEB
+
+   --- suggested changes (6 aug 2019) 
+       (email from jeff titled "multiple srm display, find
+       correlations [wasRe: srm vs. mrna - shiny app on the web]")
+
+
+    1. In the paper  the expression curves are not smoothed, as they
+       are on the website. Is it possible to have the option to
+       display the data with both smoothed and unsmoothed lines?
+
+    2. Can you replace the word “SRM” with “Protein” ?  Perhaps the
+       title should be "Transcription factor protein and RNA
+       expression profiles during erythropoiesis"?
+
+    3. Please change the title of the SRM co-expression to "Temporal
+       protein abundances"
+
+    4. On the SRM&RNA compared tab, please remove the Data Transform
+       “None”, the reason being that the red curve is always zero. 
+
+    5. Also please remove the  arcsinh transform for now.  We do not
+       use it in the paper, and we would like to avoid the possibility
+       of confusing reviewers.  
+
+    6. Can you enlarge the units on the x and y axes to make them more
+       readable?  Can you indicate that the x axis is days and the y
+       axis is copies/nucleus in the untransformed co-expression
+       plots.
+
+    7. For some protein , CHD4 for example, the values displayed on
+       the y axis are not displayed properly.
+
+    8. Can you include the stage of differentiation on the x axis
+       (MPP, MEP etc…) i.e. like on Figure 2D attached.
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* aluru expression compendium, which samples have high expression for WBC19? (15 aug 2019)
+
+   cd ~/github/TrenaProjectArabidopsisRoot/inst/extdata/expression/
+   mtx <- get(load("aluru.18617x1938.orfRowNames.RData"))
+
+   names(which(wbc19.expression > 4))
+      [1] "E.GEOD.24348_3"  "E.GEOD.24348_4"  "E.GEOD.24348_9"  "E.GEOD.24348_12" "Exp489_1"       
+      [6] "Exp489_2"        "Exp489_14"       "Exp490_15"      
+
+   E-GEOD-24348 - Transcription profiling by array of Arabidopsis mutant for nas4x after iron deprivation
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* genehancer 4.1.1, placenta test with foxo6 for alison (13 aug 2019)
+
+   ~/github/fillGeneHancerDatabase/timedQueries/timedQuery.R
+
+   [[file:/Users/paul/images/geneHancerPlacentaFoxo6.png]]
+
+
+   email to ali:
+     Background:  FOXO6 is a gene you suggested as regulated by DLX3.  
+     Blue: GeneHancer placenta, combined score > 1, both eqtl and Hi-C evidence.  height of bars is GH combinedScore
+     Green: DLX3 motif hits within the GH regions
+     Red:  *all* DLX3 motif hits
+
+   Seem fishy?   Seem wholesome?
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* inslee op-ed, "diseased forests" (13 aug 2019)
+
+  https://www.seattletimes.com/opinion/state-led-climate-goals-like-washingtons-will-lead-the-way/
+
+
+  We are launching a statewide advisory group to learn more about sequestering carbon on our natural
+  and working lands. And we are working to make our communities near coastlines, floodplains and
+  forests more resilient to natural disasters — through efforts such as the Floodplains by Design
+  program, which restores floodplains and helps move people from high flood-risk areas, and
+  coordinated strategies to both treat diseased forests and provide assistance to landowners so they
+  can reduce wildfire risk on their property.
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* python jquery flask single page app (10 aug 2019)
+
+  https://www.youtube.com/watch?v=AsoJL9GPi1k
+
+  code here:
+      ~/github/PythonFlaskjQueryAjax/
+
+  inspired these experiments in my calorimetry-related code:
+
+    ~/github/calorimetry-project/explorations/flask-jquery-singlePageApp/app.py, templates/test.html
+        the updateFahrenheit post request to python returns OK to javascript, and enough info to update the centigrade display
+
+*-----------------------------------------------------------------------------------------------------------------------
+* genehancer 4.11 combined query, join (12 aug 2019)
+
+  cd ~/github/fillGeneHancerDatabase/sanityCheckPlacenta
+   query <- paste0("select * from associations AS a, tissues AS t, elements as e ",
+                   "where a.symbol='FOXO6' ",
+                   "AND t.tissue in ('placenta','Placenta') ",
+                   "AND a.ghid=t.ghid ",
+                   "AND e.ghid=a.ghid")
+
+   tbl <- dbGetQuery(db, query)
+
+   query <- paste0("select * from associations AS a, tissues AS t, elements as e ",
+                   "where a.symbol='FOXO6' ",
+                   "AND a.ghid=t.ghid ",
+                   "AND e.ghid=a.ghid")
+   tbl <- dbGetQuery(db, query)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* load genehancer 4.11 into postgres database on khaleesi (9 aug 2019)
+
+   khaleesi
+   cd ~/github/fillGeneHancerDatabase/scripts/
+   raw data in ~/github/fillGeneHancerDatabase/rawData
+   
+   createdb -h khaleesi -U trena gh411
+
+   make create.elements
+   make create.associations
+   make create.tfbs
+   make create.tissues 
+
+   make fill.elements
+   make fill.associations
+   make fill.tfbs
+   make fill.tissues
+
+
+   --- up next: write join queries in TrenaProjectHG38 
+
+*-----------------------------------------------------------------------------------------------------------------------
+* d3.js line graph with dual Y axes (9 aug 2019)
+
+  proposed for rna/srm joint display, marjorie and jeff
+
+  http://bl.ocks.org/d3noob/e34791a32a54e015f57d
+  
+  running on hagfish:
+     cd ~/s/examples/js/d3/dual-y-axes
+     python3 -m http.server 8001
+     open http://localhost:8001
+     select dual-y-axes.html
+
+  example updated for d3 v5:
+    ~/s/examples/js/d3/dual-y-axes/dual-y-axes-v5.html
+
+*-----------------------------------------------------------------------------------------------------------------------
+* scRNA, drop-seq, 11 samples, arabidopsis root: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE122687
+
+*-----------------------------------------------------------------------------------------------------------------------
+* slexil at ualberta (7 aug 2019)
+
+   connect vpn: vpn.ualberta.net
+   login  pshannon oldAnimal-99
+   from a terminal on hagfish: ssh pshannon@206.12.91.237
+   mkdir ~/github
+   cd ~/github
+   git clone https://paul-shannon@github.com/paul-shannon/slexil.git
+   
+   sudo apt install python-pip      # gKx&4Lvj
+   pip install --user virtualenv 
+   cd ~/github/slexil/tests
+   ~/.local/bin/virtualenv --python=/usr/bin/python3 ./py368
+   source py368/bin/activate
+   (py368) pshannon@dbeck01:~/github/slexil/tests$ pip install -r ../requirements.txt
+   make 
+
+*-----------------------------------------------------------------------------------------------------------------------
+* gff, gtf, gff3
+
+  gff: general feature format
+  gtf: gene transfer format
+  gff3
+
+   --- arabadopsis
+*-----------------------------------------------------------------------------------------------------------------------
+* srm.vs.rna shiny apps for marjorie and jeff (5 aud 2019)
+
+  --- plot correlations rna vs srm
+
+     ~/github/TrenaProjectErythropoiesis/viz/srm.vs.mrna/v4/
+
+  --- search for correlated protein expression
+
+     ~/github/TrenaProjectErythropoiesis/viz/srm.vs.mrna/v6/
+
+  --- explore for how to combine
+    ~/s/examples/R/shiny/sidebarPanelsInTabs/app.R
+    
+*-----------------------------------------------------------------------------------------------------------------------
+* emacs tips unicode tips emacs unicode tips
+
+   raised letter z (from david beck):  ᶻ 1DB0B (U+1DBB, UTF-8 E1 B6 B8))
+
+  How to insert a Unicode character by its hexadecimal value?
+    Alt+x insert-char , then the hex of the Unicode.
+    ᶻ   ʷ  
+   
 *-----------------------------------------------------------------------------------------------------------------------
 * slexil notes
 
@@ -625,6 +820,9 @@ n   erythroid fate: gata1
      	gunicorn -w 4 myapp:app
 
 
+   --- see guide (9 aug 2019)
+     https://tutorials.technology/tutorials/71-How-to-setup-Flask-with-gunicorn-and-nginx-with-examples.html
+
 
 *-----------------------------------------------------------------------------------------------------------------------
 * GEOQuery access to rich bonneau's tf17 dataset (15 jul 2019)
@@ -773,6 +971,7 @@ n   erythroid fate: gata1
   virtualenv --python=/Users/paul/anaconda/bin/python3 ./py363
   source py363/bin/activate
   pip install -r requirements.txt
+  
 
 *-----------------------------------------------------------------------------------------------------------------------
 * encode talks
@@ -990,7 +1189,7 @@ n   erythroid fate: gata1
     25                              blood vessels     11
 
 *-----------------------------------------------------------------------------------------------------------------------
-* create new TrenaProjectArabidopsisRoot package (3 jul 2019)
+* create new TrenaProjectArabidopsisRoot package (3 jul 2019): gtf file
 
    cd ~/github/TrenaProjectArabidopsisRoot/prep/gtf
    curl -O ftp://ftp.ensemblgenomes.org/pub/release-44/plants/gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.44.gtf.gz
@@ -2611,6 +2810,10 @@ dim(tbl.match)
   A neural network based model effectively predicts enhancers from clinical ATAC-seq samples
   (needs bam files)
   https://www.nature.com/articles/s41598-018-34420-9
+
+* enhancer papers
+  SEanalysis: a web tool for super-enhancer associated regulatory analysis , nucleic acids research (apr 2019)
+  https://academic.oup.com/nar/article/47/W1/W248/5480906
 
 *-----------------------------------------------------------------------------------------------------------------------
 * TCEx papers
@@ -15316,6 +15519,8 @@ ZCWPW1: 1
   17 jul 2019: 2 hours sword fern monitoring: learning david perasso's protocol
   20 jul 2019: 1 hour andrews bay HBB removal - abandoning this project
   21 jul 2019: 2.5 hours HBB, closing trails
+  05 aug 2019: 2 hours watering ground zero
+  18 aug 2019: 1 hour HBB removal (project not abandoned after all) 2 hours watering GZ
 
 *------------------------------------------------------------------------------------------------
 * next up for alison, CKAP2L shiny app (19 jun 2018)
@@ -17755,9 +17960,15 @@ robertianum) is another threatening invasive for this association.
 
 *------------------------------------------------------------------------------------------------
 * books
+
+  milkman: belfast novel, prize winnder 2019
+  washington black
   biography of george orwell
   Plant Life: A Brief History, by Frederick B. Essig
   Speculative Empiricism: Revisiting Whitehead (Speculative Realism) Didier Debaise, Isabelle Stengers Foreword  (wrote nature as process)
+  
+   The Political Theory of Possessive Individualism: Hobbes to Locke (Wynford Books) 
+      by C.B. Macpherson  (Author), Frank Cunningham (Introduction)
 
 *------------------------------------------------------------------------------------------------
 * movies, tv, videos
