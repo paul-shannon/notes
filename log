@@ -63,6 +63,112 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* linguistic terms from david beck
+
+   “word-level phonological rules” are phonological changes that happen to units of a size that we
+   define as “word” (don’t ask me to define that!). So, in my and probably your dialect of English,
+   we have a word-level rule that changes both /t/ and /d/ to a tap /ɾ/ between vowels, so the
+   consonants in the middle of “writer” and “rider” sound the same, but that rule doesn’t apply
+   between two words (e.g., the /d/ in "red ant” is not flapped). Some rules apply to groups of
+   words or to larger units, for instance in English we often make a voiceless consonant at the end
+   of a word voiced if the next word starts with a voiced consonant (compare “tenth” in “tenth time”
+   vs “tenth day” in rapid speech).
+
+   “phonologically robust” isn’t a technical term, exactly, it just means that it can stand on its
+   own and be stressed—“not” is, “n’t” isn’t.
+
+   “morpheme distribution” is the list of places that you find the element (morpheme) in and the
+   types of things it combines with.
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* tasks for marjorie (23 aug 2019)
+
+  1) provide you a table of TBX15 motif locations within the (loosely defined) regulatory regions of GATA2
+     each location will be further annotated with its FIMO score, the motif (we have two for TBX15)
+     GeneHancer tissue-specific regions and scores, and stage-specific ATAC-seq regions and scores.
+
+  2) A first draft of the ATAC-seq analysis workflow
+
+*-----------------------------------------------------------------------------------------------------------------------
+* david beck's rtf files from the two lushootseed grammars (23 aug 2019)
+
+   ~/github/howDaylightWasStolen-harryMoses/lushootseedGrammarStories/rtfTextFromDavidBeckJul2019
+
+*-----------------------------------------------------------------------------------------------------------------------
+* david beck's correction to how daylight was stolen (22 aug 2019)
+
+
+  line 1, should mark misspoken or interrupted things as incomplete somehow ([tu-]?), remove hyphen from the transcription line,
+          should be tu= not tu- on the parsing line [= marks clitic boundary] [fixed]
+
+           A clitic is a morpheme in morphology and syntax that has syntactic characteristics of a word, but depends phonologically
+           on another word or phrase. In this sense, it is syntactically independent but phonologically dependent—always attached
+           to a host.[1] The term derives from the Greek for leaning.[2] A clitic is pronounced like an affix, but plays a syntactic
+           role at the phrase level. In other words, clitics have the form of affixes, but the distribution of function words. For
+           example, the contracted forms of the auxiliary verbs in I'm and we've are clitics.
+
+  line 2 should be tu= not tu- on the parsing line, probably without the parentheses in the first instance, since the parsing line
+         is usually used to show full or “underlying” forms of things. Also, ʔas- instead of ‑as [fixed, with question to david]
+
+  line 3, extra “w” after the first word in the transcription line and the parsing line [fixed]
+
+  line 4, you might consider ʔas- instead of ʔəs-, if you’re going for consistency on the parsing line (which also means =axʷ instead of =əxʷ throughout)
+
+  line 9, conj should be in small caps (maybe the abbreviation is missing from the grammatical terms file?)
+
+  line 20, travel.by.ater > travel.by.water
+
+  line 17, dsd should be in small caps
+  lines 19, 32, 39, altv should be in small caps
+  line 50, “mouth” should not be in small caps—BTW, I notice now that the lexical suffixes are not consistently in small caps, so if you want them like that you will need to check fro consistency. Most people reserve small caps for gramamtical abbreviations, though, and lexical suffixes aren’t really grammatical elements per se
+  line 59, I would remove the parentheses from the parsing line. They already signal what they signal on the transcription line so they aren’t needed, and the parsing line if a technical representation where parentheses and other punctuation don’t really have any status
+  line 66, remove double quotes from glossing line
+  line 73, addf > add
+  line 74, 75, 81 altv should be in small caps
+  line 76, cls should be in small caps (or “clf”?)
+  line 84, 88, 89 prvl should be in small caps
+  line 106, 112, cntrfg should be in small caps
+  line 113, dᶻixw should be dᶻixʷ
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trena paper, tcex, scheitinger
+
+  cd8 T cell chromatin changes during infection
+
+  we found that dramatic chromatin remodeling occurred as N differentiated to the effector state
+  (E5), with much less remodeling from E5 to E7 and E7 to M (Fig. 1b, c, and Extended Data
+  Fig. 3a). In N, effector gene loci such as Prf1 and Tnf shared highly
+
+  Many of the ATAC-Seq peaks gained or lost were in intronic and intergenic regions (potential
+  enhancer peaks), while peaks present in all CD8 T cells were in promoter regions (Extended Data
+  Fig. 4b, bottom); this pattern was also seen in functional CD8 T cell differentiation (Extended
+  Data Fig. 4b, top).
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trena paper tcex: lef1, tcf7, bcl6
+
+   NATURE IMMUNOLOGY | ARTICLE (June 2015)
+
+    LEF-1 and TCF-1 (aka LEF1 & TCF7) orchestrate TFH differentiation by regulating
+    differentiation circuits upstream of the transcriptional repressor Bcl6
+
+   head(tbl.geneModel)
+        gene   beta.lasso lasso.p.value pearson.coeff     rf.score  beta.ridge spearman.coeff concordance    pcaMax
+        LEF1  0.336696639  1.093581e-08     0.9271825 24.474555836  0.02876639     0.87504103   0.4616362 2.5637600
+       FOXP1  0.530204004  5.420291e-08     0.9006827 13.383763620  0.09014859     0.89211073   0.5800644 2.2109767
+       ARNT2 -0.008488160  9.658097e-05    -0.8637621 22.036353175 -0.02249347    -0.80056802   0.6257747 1.9598855
+        TLX2  0.000000000  1.000000e+00    -0.2968107  0.011702321 -0.32006168    -0.27735010   0.5506956 1.8411414
+         HLX -0.063131220  7.760001e-07    -0.8535354  3.914422177 -0.03149307    -0.83958858   0.5509229 1.3229453
+        KLF2  0.000000000  1.566211e-04     0.8682252 10.728938451  0.04250484     0.82405077   0.4700648 1.3055301
+       FOXN3  0.000000000  2.308095e-04    -0.7317324  3.790987550 -0.13857376    -0.68092789   0.4066082 1.2055869
+       FOXO1  0.000000000  2.356756e-04     0.8493228  5.402958188  0.07836379     0.94156910   0.4831901 1.1707793
+        HHEX  0.000000000  1.000000e+00    -0.8206347 11.392134236 -0.03501994    -0.88663968   0.5114109 1.1554832
+        PAX9 -0.002826544  5.888288e-06    -0.7868435  2.197140009 -0.03479626    -0.75686853   0.4943390 1.1396958
+
+
 *-----------------------------------------------------------------------------------------------------------------------
 * srm mrna marjorie jeff r2d3 plot (15 aug 2019)
 
@@ -2815,6 +2921,29 @@ dim(tbl.match)
   SEanalysis: a web tool for super-enhancer associated regulatory analysis , nucleic acids research (apr 2019)
   https://academic.oup.com/nar/article/47/W1/W248/5480906
 
+* hematopoiesis TFs
+
+   Combinatorial Transcriptional Control In Blood Stem/Progenitor Cells: Genome-wide Analysis of Ten Major Transcriptional Regulators
+   https://www.sciencedirect.com/science/article/pii/S1934590910004406
+
+   GSE22178
+
+   Here, we report genome-wide binding profiles for ten key hematopoietic transcriptional regulators
+   (SCL/TAL1, LYL1, LMO2, GATA2, RUNX1, MEIS1, PU.1, ERG, FLI-1, and GFI1B) in hematopoietic
+   progenitor cells. Integrated analysis of these data sets provides a comprehensive genome-wide
+   view of combinatorial interactions between these ten key regulators. In particular, multiple
+   independent lines of evidence demonstrate close collaboration between seven hematopoietic
+   stem/progenitor cell (HSPC)-associated TFs, including functional links between RUNX1 and other
+   key HSPC regulators. Subsequent in vitro and in vivo validation confirmed a previously
+   unrecognized synergism between the three central regulators of blood stem cell development, SCL,
+   GATA2, and RUNX1, thus demonstrating how comprehensive analysis of genome-wide data sets can
+   provide novel insights into transcriptional control of stem/progenitor cells.
+   [many interesting papers from the cite link for this paper at google scholar]
+
+
+
+   Dynamic regulatory network controlling TH17 cell differentiation (nature, 06 March 2013)
+   
 *-----------------------------------------------------------------------------------------------------------------------
 * TCEx papers
 
@@ -17959,12 +18088,24 @@ robertianum) is another threatening invasive for this association.
 
 
 *------------------------------------------------------------------------------------------------
+* forest ideas
+
+  --- ethylene as marker of plant stress
+     new yorker (21 aug 2019) article on california fire strategies
+     "the remaining trees seemed to respond well to fire, too; sensors that
+      monitor levels of ethylene gas, which plants exhale when they're
+      under stress, showed that the forest relaxed almost immediately
+      post-burn."
+
+*------------------------------------------------------------------------------------------------
 * books
 
+  gods of the upper air: how a circle of renegade anthropologists reinvented race, sex, and gender in the twentieth century 
+     charles king.  boas and his students.  reviewed by louis menand, new yorker, 20 aug 2019
   milkman: belfast novel, prize winnder 2019
   washington black
   biography of george orwell
-  Plant Life: A Brief History, by Frederick B. Essig
+  plant life: A Brief History, by Frederick B. Essig
   Speculative Empiricism: Revisiting Whitehead (Speculative Realism) Didier Debaise, Isabelle Stengers Foreword  (wrote nature as process)
   
    The Political Theory of Possessive Individualism: Hobbes to Locke (Wynford Books) 
@@ -26631,8 +26772,9 @@ McMinnville, OR  97128-6894
 
   --- my reply to hamid (27 oct 2017)
 
-I think I figured out why LEF1 drops out of the TCF7 model.  It all depends on the motifs used when creating the model:  none of our jaspar databases (core, 2014, 2016) have
-a LEF1 motif for mouse.
+   I think I figured out why LEF1 drops out of the TCF7 model.  It all depends on the motifs used
+   when creating the model: none of our jaspar databases (core, 2014, 2016) have a LEF1 motif for
+   mouse.
 
 
   The only motifs mapped to LEF1 in MotifDb are these 5:
