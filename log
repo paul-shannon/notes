@@ -1,5 +1,7 @@
-SwordFernDieOff+subscribe@groups.io
+>SwordFernDieOff+subscribe@groups.io
 org-mode:  (3 ^U) tab: open up all sections, entire buffer visible;  toggle image display: ^c^x^v
+*------------------------------------------------------------------------------------------------------------------------
+emacs for macos with ess installed: https://vigou3.gitlab.io/emacs-modified-macos/  (vincent goulet)
 *------------------------------------------------------------------------------------------------------------------------
 * RColorBrewer tips
 
@@ -57,11 +59,1242 @@ symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSY
 
 bed format: chrom, start, end, name, score, strand
 
-* -TOP-
+* -TOP-  top  *top*
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* pkgdown: https://enpiar.com/2017/11/21/getting-down-with-pkgdown/
 *-----------------------------------------------------------------------------------------------------------------------
+* trena paper: literature for background
+
+  INTEGRATIVE MODELING FOR GENOME-WIDE REGULATION OF GENE EXPRESSION
+    https://stacks.stanford.edu/file/druid:yy671zp7735/mythesis-augmented.pdf
+
+   Lineage-specific and single-cell chromatin accessibility charts human hematopoiesis and leukemia evolution.
+
+   mike snyder postdoc, many good topics in gene regulation
+      https://sites.google.com/site/mhmanoj/research
+
+   Transcription factor binding and modified histones in human bidirectional
+    promoters: https://genome.cshlp.org/content/17/6/818.full.pdf
+
+
+     Mammalian genomes are highly complex, with neighboring genes arranged in divergent, convergent,
+     tandem, anti-sense, and interleaving fashions (Carninci et al. 2005, 2006; Kapranov et al.
+     2005; Carninci 2006; Engstrom et al. 2006). Despite the vast genomic space, a substantial
+     portion of human genes (∼11%) are arranged in a divergent, head-to-head fashion and controlled
+     by bidirectional promoters (Trinklein et al. 2004). We define a bidirectional promoter as an
+     intergenic region that is <1 kb long, and flanked by the transcription start site (TSS) of a
+     plus-strand gene on one side and the TSS of a minus-strand gene on the other. This abundance
+     has been observed across several mammalian genomes (Adachi and Lieber 2002; Koyanagi et
+     al. 2005), suggesting that there is evolutionary pressure for conserving this type of gene-pair
+     structure. Some divergent genes are related by function, in particular DNA repair (Adachi and
+     Lieber 2002; Trinklein et al. 2004), and could be coregulated in a way that takes advantage of
+     their paired arrangement. Indeed, the expression patterns of divergent gene pairs are more
+     correlated than those of randomly paired genes (Trinklein et al. 2004).
+
+    Disentangling the Many Layers of Eukaryotic Transcriptional Regulation
+
+      Regulation of gene expression in eukaryotes is an extremely complex process. In this review,
+      we break down several critical steps, emphasizing new data and techniques that have expanded
+      current gene regulatory models. We begin at the level of DNA sequence where cis-regulatory
+      modules (CRMs) provide important regulatory information in the form of transcription factor
+      (TF) binding sites. In this respect, CRMs function as instructional platforms for the assembly
+      of gene regulatory complexes. We discuss multiple mechanisms controlling complex assembly,
+      including cooperative DNA binding, combinatorial codes, and CRM architecture. The second
+      section of this review places CRM assembly in the context of nucleosomes and condensed
+      chromatin. We discuss how DNA accessibility and histone modifications contribute to TF
+      function. Lastly, new advances in chromosomal mapping techniques have provided increased
+      understanding of intra- and interchromosomal interactions. We discuss how these topological
+      maps influence gene regulatory models.
+
+   What are super-enhancers?  
+    https://www.researchgate.net/profile/Jason_Lieb/publication/270344029_What_are_Super-Enhancers/links/584576a308ae8e63e62847e4/What-are-Super-Enhancers.pdf
+    
+       The term ‘super-enhancer’ has been used to describe groups of putative enhancers in close
+       genomic proximity with unusually high levels of Mediator binding, as measured by chromatin
+       immunoprecipitation and sequencing (ChIP-seq).  Here we review the identification and
+       composition of super-enhancers, describe links between super-enhancers, gene regulation and
+       disease, and discuss the functional significance of enhancer clustering. We also provide our
+       perspective regarding the proposition that super-enhancers are a regulatory entity
+       conceptually distinct from what was known before the introduction of the term. Our opinion is
+       that there is not yet strong evidence that super-enhancers are a novel paradigm in gene
+       regulation and that use of the term in this context is not currently justified. However, the
+       term likely identifies strong enhancers that exhibit behaviors consistent with previous
+       models and concepts of transcriptional regulation. In this respect, the super-enhancer
+       definition is useful in identifying regulatory elements likely to control genes important for
+       cell type specification.
+
+   simple google search: gene regulation model
+
+    Predictive models of eukaryotic transcriptional regulation reveals changes in transcription factor roles and promoter usage between metabolic conditions
+      yeast:
+
+     Transcription factors (TF) are central to transcriptional regulation, but they are often
+     studied in relative isolation and without close control of the metabolic state of the
+     cell. Here, we describe genome-wide binding (by ChIP-exo) of 15 yeast TFs in four chemostat
+     conditions that cover a range of metabolic states. We integrate this data with transcriptomics
+     and six additional recently mapped TFs to identify predictive models describing how TFs control
+     gene expression in different metabolic conditions. Contributions by TFs to gene regulation are
+     predicted to be mostly activating, additive and well approximated by assuming linear effects
+     from TF binding signal. Notably, using TF binding peaks from peak finding algorithms gave
+     distinctly worse predictions than simply summing the low-noise and high-resolution TF ChIP-exo
+     reads on promoters. Finally, we discover indications of a novel functional role for three TFs;
+     Gcn4, Ert1 and Sut1 during nitrogen limited aerobic fermentation. In only this condition, the
+     three TFs have correlated binding to a large number of genes (enriched for glycolytic and
+     translation processes) and a negative correlation to target gene transcript levels.
+
+   Mathematical modeling of gene expression: a guide for the perplexed biologist, Ahmet Ay and David N. Arnosti
+     https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3086598/
+     
+
+     Here we focus on models developed for eukaryotic systems, discussing common approaches and
+     their applications, and summarize goals, challenges and future directions.
+
+     Gene regulatory models generally employ either statistical or analytical approaches. Both
+     approaches can be highly effective in providing nonintuitive insights into gene regulatory
+     systems. The first method is especially appropriate for data sets comprising the transcriptome,
+     representing the expression levels of thousands of genes. Graph based probabilistic models such
+     as neural, Boolean and Bayesian networks are used to represent regulatory interactions
+     (Friedman et al., 2000; de Jong, 2002; Friedman, 2004; Filkov, 2005; Markowetz and Spang, 2007;
+     Hecker et al., 2009). Under different conditions, statistical correlations highlight which
+     groups of genes function together, indicating possible regulatory relations. As part of this
+     analysis, shared motifs involved in transcriptional control can be identified. The ultimate
+     goal of this approach is to discern regulatory networks that underlie the given data. Such
+     statistical approaches provide a big picture covering large fractions of genes in an organism,
+     but they cannot explain complex relations between transcription factors, polymerase and other
+     regulatory proteins, or the fine details of enhancer architecture. Because gene array data has
+     been available for some time, statistical approaches are fairly well developed and have been
+     discussed in recent reviews (de Jong, 2002; Friedman, 2004; Markowetz and Spang, 2007; Hecker
+     et al., 2009). In contrast, there is less uniformity in the types of analytical approaches
+     applied for modeling gene regulation, and their value is less generally
+
+
+    Mathematical modeling has been applied to biological systems for decades, but with respect to
+    gene expression, too few molecular components have been known to build useful, predictive
+    models. New efforts have been greatly aided by much more extensive “parts lists” of DNA
+    sequences and proteins, as well as considerably enhanced computational power. These improvements
+    make possible the use of diverse mathematical modeling methods for different biological
+    problems. As more biologists venture into systems-level studies, a general understanding of
+    diverse modeling approaches related to gene expression is necessary to facilitate close
+    collaborations between experimentalists and modelers. Here we focus on models developed for
+    eukaryotic systems, discussing common approaches and their applications, and summarize goals,
+    challenges and future directions.
+
+    Gene regulatory models generally employ either statistical or analytical approaches. Both
+    approaches can be highly effective in providing nonintuitive insights into gene regulatory
+    systems. The first method is especially appropriate for data sets comprising the transcriptome,
+    representing the expression levels of thousands of genes. Graph based probabilistic models such
+    as neural, Boolean and Bayesian networks are used to represent regulatory interactions (Friedman
+    et al., 2000; de Jong, 2002; Friedman, 2004; Filkov, 2005; Markowetz and Spang, 2007; Hecker et
+    al., 2009). Under different conditions, statistical correlations highlight which groups of genes
+    function together, indicating possible regulatory relations. As part of this analysis, shared
+    motifs involved in transcriptional control can be identified. The ultimate goal of this approach
+    is to discern regulatory networks that underlie the given data. Such statistical approaches
+    provide a big picture covering large fractions of genes in an organism, but they cannot explain
+    complex relations between transcription factors, polymerase and other regulatory proteins, or
+    the fine details of enhancer architecture. Because gene array data has been available for some
+    time, statistical approaches are fairly well developed and have been discussed in recent reviews
+    (de Jong, 2002; Friedman, 2004; Markowetz and Spang, 2007; Hecker et al., 2009). In contrast,
+    there is less uniformity in the types of analytical approaches applied for modeling gene
+    regulation, and their value is less generally appreciated, especially in the area of
+    DNA-sequence-based modeling. Here we review the second, analytical approach, which generally
+    focuses on expression of a small number of genes, and is represented by a variety of distinct
+    mathematical models. The models can include terms relating to binding of transcription factors
+    and RNA polymerase to the DNA, cooperative and inhibitory interactions between transcription
+    factors, mRNA and protein degradation, and mRNA translation rate. Unlike some statistical
+    methods, for these approaches we need an extensive knowledge of system components and hypotheses
+    about the system structure. Three major classes of mathematical models have been applied in such
+    cases: thermodynamic, Boolean, and differential equation based models. These models have been
+    used to summarize experimental data (Yuh et al., 2001), to infer new relations from complex
+    experimental data, guiding the researcher to new testable hypotheses (Jaeger et al., 2004a) and
+    to find properties of the system that are hard to measure directly but can lead to accurate
+    modeling of novel elements (Fakhouri et al., 2010). Several general features characterize these
+    models. Most often models are deterministic, that is, the change to an independent variable has
+    a predictable, reproducible impact on dependent variables, but they can also be structured as
+    stochastic models to capture the erratic behavior of many biological systems influenced by
+    intrinsic or extrinsic noise. Modeling approaches can also be categorized as discrete and
+    continuous. Discrete forms, such as Boolean models, represent time, state or space as a discrete
+    set of values, simplifying calculations, while differential equation based models utilize
+    continuous values to provide a “smoother” representation of dynamical changes.
+
+    Here we discuss the structure and applications of three major classes of models: thermodynamic,
+    differential equation-based and Boolean. The choice of which model to use usually depends on the
+    system and problem under consideration. If successful, the model chosen should fit the existing
+    data and give new biological insights on a system, not merely recapitulate what is already
+    known.
+
+   https://scholar.google.com/scholar?cites=13101427150700987493&as_sdt=5,48&sciodt=0,48&hl=en
+
+   Data- and knowledge-based modeling of gene regulatory networks: an update
+   
+
+   NI consists of three parts: the identification of potential regulators, the prediction of target
+   genes and the inference of the mode of interaction (e.g. activation or repression). The number of
+   genes may vary from only two genes to full-genomic networks. A general problem in NI is the high
+   dimensionality (thousands of genes) versus the limited number (tens to hundreds) of
+   samples. Thus, GRN inference is underdetermined (‘curse of dimensionality’) implying that there
+   could be many equivalent (indistinguishable) solutions (networks). Motivated by this fundamental
+   problem, there exists a number of NI approaches, which are compared in outstanding review
+   articles (de Jong, 2002[29]; van Someren et al., 2002[162]; Gardner and Faith, 2005[46]; Bansal
+   et al., 2007[8], Ay and Arnosti, 2011[5]; Wu and Chan, 2012[173]; Emmert-Streib et al.,
+   2014[35]). In 2009, our group thoroughly reviewed NI approaches with a focus on data integration
+   (Hecker et al., 2009[66]). In the review on hand, we present an update of the former review with
+   a special focus on novel techniques for data acquisition, NI assessment and NI for interacting
+   species.
+
+   In what follows, we give an overview about the main NI approaches focusing on novel and updated
+   methods introduced since 2009. During that time, the NI community has emphasized the inference of
+   large-scale or even full-genomic networks, the integration of additional data and the combination
+   of NI methods. The integration of data from various (omics) experiments and knowledge databases
+   into one general model is an important challenge in systems biology (Gomez-Cabrero et al.,
+   2014[49]). In the field of NI, additional data is often integrated with help of prior-knowledge,
+   i.e. predicted or known interactions based on additional data or knowledge sources.  Here we give
+   an overview about the main NI approaches focusing on novel and updated methods introduced since
+   2009. During that time, the NI community has emphasized the inference of large-scale or even
+   full-genomic networks, the integration of additional data and the combination of NI methods. The
+   integration of data from various (omics) experiments and knowledge databases into one general
+   model is an important challenge in systems biology (Gomez-Cabrero et al., 2014[49]). In the field
+   of NI, additional data is often integrated with help of prior-knowledge, i.e. predicted or known
+   interactions based on additional data or knowledge sources. Here, we give an overview of commonly
+   used prior-knowledge sources.
+
+   Inference of complex biological networks: distinguishability issues and optimization-based solutions
+   
+      The inference of biological networks can be an extremely challenging problem even in the
+      utopian case of perfect experimental information. Unfortunately, the practical situation is
+      often more complex than that, since the measurements are typically incomplete, noisy and
+      sometimes dynamically not rich enough, introducing further obstacles to the
+      structure/parameter estimation process. In this paper, we show how the structural uniqueness
+      and identifiability of the models can be guaranteed by carefully adding extra constraints, and
+      that these important properties can be checked through appropriate computation methods.
+
+   Spurious transcription factor binding: Non‐functional or genetically redundant?
+     https://onlinelibrary.wiley.com/doi/full/10.1002/bies.201400036
+
+     Transcription factor binding sites (TFBSs) on the DNA are generally accepted as the key nodes
+     of gene control. However, the multitudes of TFBSs identified in genome‐wide studies, some of
+     them seemingly unconstrained in evolution, have prompted the view that in many cases TF binding
+     may serve no biological function. Yet, insights from transcriptional biochemistry, population
+     genetics and functional genomics suggest that rather than segregating into ‘functional’ or
+     ‘non‐functional’, TFBS inputs to their target genes may be generally cumulative, with varying
+     degrees of potency and redundancy. As TFBS redundancy can be diminished by mutations and
+     environmental stress, some of the apparently ‘spurious’ sites may turn out to be important for
+     maintaining adequate transcriptional regulation under these conditions. This has significant
+     implications for interpreting the phenotypic effects of TFBS mutations, particularly in the
+     context of genome‐wide association studies for complex traits.
+
+   The Soft Touch: Low-Affinity Transcription Factor Binding Sites in Development and Evolution
+      https://www.sciencedirect.com/science/article/abs/pii/S0070215315001842
+      
+     Transcription factor proteins regulate gene expression by binding to specific DNA regions. Most
+     studies of transcription factor binding sites have focused on the highest affinity sites for
+     each factor. There is abundant evidence, however, that binding sites with a range of
+     affinities, including very low affinities, are critical to gene regulation. Here, we present
+     the theoretical and experimental evidence for the importance of low-affinity sites in gene
+     regulation and development. We also discuss the implications of the widespread use of
+     low-affinity sites in eukaryotic genomes for robustness, precision, specificity, and evolution
+     of gene regulation.
+
+    “Hit‐and‐Run” leaves its mark: Catalyst transcription factors and chromatin modification
+       https://onlinelibrary.wiley.com/doi/full/10.1002/bies.201400205
+       
+       Understanding how transcription factor (TF) binding is related to gene regulation is a moving
+       target. We recently uncovered genome‐wide evidence for a “Hit‐and‐Run” model of
+       transcription. In this model, a master TF “hits” a target promoter to initiate a rapid
+       response to a signal. As the “hit” is transient, the model invokes recruitment of partner TFs
+       to sustain transcription over time. Following the “run”, the master TF “hits” other targets
+       to propagate the response genome‐wide. As such, a TF may act as a “catalyst” to mount a broad
+       and acute response in cells that first sense the signal, while the recruited TF partners
+       promote long‐term adaptive behavior in the whole organism. This “Hit‐and‐Run” model likely
+       has broad relevance, as TF perturbation studies across eukaryotes show small overlaps between
+       TF‐regulated and TF‐bound genes, implicating transient TF‐target binding. Here, we explore
+       this “Hit‐and‐Run” model to suggest molecular mechanisms and its biological relevance.
+
+    Interplay of cis and trans mechanisms driving transcription factor binding and gene expression evolution
+       https://www.nature.com/articles/s41467-017-01037-x    2017
+
+      Noncoding regulatory variants play a central role in the genetics of human diseases and in
+      evolution. Here we measure allele-specific transcription factor binding occupancy of three
+      liver-specific transcription factors between crosses of two inbred mouse strains to elucidate
+      the regulatory mechanisms underlying transcription factor binding variations in mammals. Our
+      results highlight the pre-eminence of cis-acting variants on transcription factor occupancy
+      divergence. Transcription factor binding differences linked to cis-acting variants generally
+      exhibit additive inheritance, while those linked to trans-acting variants are most often
+      dominantly inherited. Cis-acting variants lead to local coordination of transcription factor
+      occupancies that decay with distance; distal coordination is also observed and may be
+      modulated by long-range chromatin contacts. Our results reveal the regulatory mechanisms that
+      interplay to drive transcription factor occupancy, chromatin state, and gene expression in
+      complex mammalian cell states.
+       
+    A CRISPR view of gene regulation, 2017
+       https://www.sciencedirect.com/science/article/pii/S2452310016300403
+       
+       Due to plummeting costs, whole genome sequencing of patients and cancers will soon become
+       routine medical practice; however, we cannot currently predict how non-coding genotype
+       affects cellular gene expression. Gene regulation research has recently been dominated by
+       observational approaches that correlate chromatin state with regulatory function. These
+       approaches are limited to the available genotypes and cannot scratch the surface of possible
+       sequence combinations, and thus there is a need for perturbation-based approaches to better
+       understand how DNA encodes gene regulatory functions. CRISPR/Cas9 genome editing has
+       revolutionized our ability to alter genome sequence, and CRISPR/Cas9-based assays have
+       already begun to contribute to new paradigms of gene regulation. We discuss the variety of
+       arenas in which current and future CRISPR-based technologies will aid in developing
+       predictive understanding of how genome sequence leads to gene regulatory function.
+
+    transcriptional epigenetics summarized
+    
+        Gene regulatory pathways are responsible for turning genes on or off, which in turn
+        determines availability and concentrations of the related protein molecules (Ma and Zhao,
+        2013). In eukaryotes, genes, by default, are in the off state when they are tightly bound to
+        histones. But eukaryotic genes manage to escape this silencing due to modifications in
+        histones. While histone acetylation makes DNA open and accessible to DNA binding protein,
+        methylation, coupled with histone modification obscure DNA, which in turn lead to gene
+        silencing. Once DNA is open, it is accessible to transcription factors (TFs), which can
+        either transcribe genes or repress them (Hoopes, 2008). Apart from TFs, a number of long and
+        short noncoding RNAs also participate in the ultra-complex gene regulatory network primarily
+        through post transcriptional modifications (Sengupta and Bandyopadhyay, 2011, 2013; Holoch
+        and Moazed, 2015).
+
+    Transcriptional enhancers: functional insights and role in human disease  [looks very useful]
+
+     https://www.sciencedirect.com/science/article/pii/S0959437X15000921
+     
+     In recent years, studies of cis-regulatory mechanisms have evolved from a predominant focus on
+     promoter regions to the realization that spatial and temporal gene regulation is frequently
+     driven by long-range enhancer clusters that operate within chromosomal compartments. This
+     increased understanding of genome function, together with the emergence of technologies that
+     enable whole-genome sequencing of patients’ DNAs, open the prospect of dissecting the role of
+     cis-regulatory defects in human disease. In this review we discuss how recent epigenomic
+     studies have provided insights into the function of transcriptional enhancers. We then present
+     examples that illustrate how integrative genomics can help uncover enhancer sequence variants
+     underlying Mendelian and common polygenic human disease.
+
+   Distinct and predictive chromatin signatures of transcriptional promoters and enhancers in the human genome.
+    nature genetics 2007
+
+     Eukaryotic gene transcription is accompanied by acetylation and methylation of nucleosomes near
+     promoters, but the locations and roles of histone modifications elsewhere in the genome remain
+     unclear. We determined the chromatin modification states in high resolution along 30 Mb of the
+     human genome and found that active promoters are marked by trimethylation of Lys4 of histone H3
+     (H3K4), whereas enhancers are marked by monomethylation, but not trimethylation, of H3K4. We
+     developed computational algorithms using these distinct chromatin signatures to identify new
+     regulatory elements, predicting over 200 promoters and 400 enhancers within the 30-Mb
+     region. This approach accurately predicted the location and function of independently
+     identified regulatory elements with high sensitivity and specificity and uncovered a novel
+     functional enhancer for the carnitine transporter SLC22A5 (OCTN2). Our results give insight
+     into the connections between chromatin modifications and transcriptional regulatory activity
+     and provide a new tool for the functional annotation of the human genome.
+
+
+    High-Resolution Profiling of Histone Methylations in the Human Genome
+
+     Mechanisms of Interplay between Transcription Factors and the 3D Genome, jay shendure  sep 2019
+
+   Understanding transcriptional regulation by integrative analysis of transcription factor binding data  2012
+      mike snyder, mark gerstein [important prior work]
+
+      Statistical models have been used to quantify the relationship between gene expression and
+      transcription factor (TF) binding signals. Here we apply the models to the large-scale data
+      generated by the ENCODE project to study transcriptional regulation by TFs. Our results reveal
+      a notable difference in the prediction accuracy of expression levels of transcription start
+      sites (TSSs) captured by different technologies and RNA extraction protocols. In general, the
+      expression levels of TSSs with high CpG content are more predictable than those with low CpG
+      content. For genes with alternative TSSs, the expression levels of downstream TSSs are more
+      predictable than those of the upstream ones. Different TF categories and specific TFs vary
+      substantially in their contributions to predicting expression. Between two cell lines, the
+      differential expression of TSS can be precisely reflected by the difference of TF-binding
+      signals in a quantitative manner, arguing against the conventional on-and-off model of TF
+      binding. Finally, we explore the relationships between TF-binding signals and other chromatin
+      features such as histone modifications and DNase hypersensitivity for determining
+      expression. The models imply that these features regulate transcription in a highly
+      coordinated manner.
+
+
+
+      Transcription factors: from enhancer binding to developmental control, François Spitz & Eileen E. M. Furlong
+        nature genetics reviews 2012  [very helpful,  see top among 1058 citers]
+        https://scholar.google.com/scholar?cites=10772555832298246035&as_sdt=5,48&sciodt=0,48&hl=en
+
+       Developmental progression is driven by specific spatiotemporal domains of gene expression,
+       which give rise to stereotypically patterned embryos even in the presence of environmental
+       and genetic variation. Views of how transcription factors regulate gene expression are
+       changing owing to recent genome-wide studies of transcription factor binding and RNA
+       expression. Such studies reveal patterns that, at first glance, seem to contrast with the
+       robustness of the developmental processes they encode. Here, we review our current knowledge
+       of transcription factor function from genomic and genetic studies and discuss how different
+       strategies, including extensive cooperative regulation (both direct and indirect),
+       progressive priming of regulatory elements, and the integration of activities from multiple
+       enhancers, confer specificity and robustness to transcriptional regulation during
+       development.
+
+
+    Architecture of the human regulatory network derived from ENCODE data, Mark B. Gerstein, Anshul Kundaje, […]Michael Snyder
+      [also see furlong above, imprecise mechanisms, very precise outcomes]
+
+      Transcription factors bind in a combinatorial fashion to specify the on-and-off states of
+      genes; the ensemble of these binding events forms a regulatory network, constituting the
+      wiring diagram for a cell. To examine the principles of the human transcriptional regulatory
+      network, we determined the genomic binding information of 119 transcription-related factors in
+      over 450 distinct experiments. We found the combinatorial, co-association of transcription
+      factors to be highly context specific: distinct combinations of factors bind at specific
+      genomic locations. In particular, there are significant differences in the binding proximal
+      and distal to genes. We organized all the transcription factor binding into a hierarchy and
+      integrated it with other genomic information (for example, microRNA regulation), forming a
+      dense meta-network. Factors at different levels have different properties; for instance,
+      top-level transcription factors more strongly influence expression and middle-level ones
+      co-regulate targets to mitigate information-flow bottlenecks. Moreover, these co-regulations
+      give rise to many enriched network motifs (for example, noise-buffering feed-forward
+      loops). Finally, more connected network components are under stronger selection and exhibit a
+      greater degree of allele-specific activity (that is, differential binding to the two parental
+      alleles). The regulatory information obtained in this study will be crucial for interpreting
+      personal genome sequences and understanding basic principles of human biology and disease.
+
+    Modification of Enhancer Chromatin: What, How, and Why? 2013 molecular cell
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trena paper, try marjorie's atac-seq bam files around gata2: more dramatic than macs2  narrowPeaks?  (25 sep 2019)
+
+
+   hagfish,
+      cd ~/github/TrenaProjectErythropoiesis/prep/gata-switch/tbx15.R
+      
+
+   will examine this prospect in 
+   
+  in addition to the MACS2 narrowPeaks, let's now look at the raw reads, the pileups, around GATA2,
+  to see if they tall a more interesting story with regard to tbx15 motifs.
+
+  hg38 -yes.  generous roi: chr3:128,000,000 129,000,000
+
+  use samtools to create small gata2 roi bam files to examine in igvR:
+  
+  khaleesi:~/github/TrenaProjectErythropoiesis/prep/srm.vs.atac/p300-srm-chip-atac-peas:
+
+    366957248 Jun 12  ATAC_Cord_d10_rep1_hg38_sorted.bam
+    440739776 Jun 12  ATAC_Cord_d10_rep2_hg38_sorted.bam
+    385131262 Jun 12  ATAC_Cord_d11_rep1_hg38_sorted.bam
+    453806951 Jun 12  ATAC_Cord_d11_rep2_hg38_sorted.bam
+    488445494 Jun 12  ATAC_Cord_d12_rep1_hg38_sorted.bam
+    465453635 Jun 12  ATAC_Cord_d12_rep2_hg38_sorted.bam
+   1088392198 Jun 12  ATAC_Cord_d16_rep1_hg38_sorted.bam
+    824239889 Jun 12  ATAC_Cord_d16_rep2_hg38_sorted.bam
+    722667863 Jun 12  ATAC_Cord_d4_rep1_hg38_sorted.bam
+   1058316137 Jun 12  ATAC_Cord_d4_rep2_hg38_sorted.bam
+    563226694 Jun 12  ATAC_Cord_d8_rep1_hg38_sorted.bam
+    486983626 Jun 12  ATAC_PB_CD_d10_rep1_hg38_sorted.bam
+    440217791 Jun 12  ATAC_PB_CD_d10_rep2_hg38_sorted.bam
+    534776198 Jun 12  ATAC_PB_CD_d12_rep1_hg38_sorted.bam
+    507636747 Jun 12  ATAC_PB_CD_d12_rep2_hg38_sorted.bam
+    590162158 Jun 12  ATAC_PB_CD_d16_rep1_hg38_sorted.bam
+    500507361 Jun 12  ATAC_PB_CD_d16_rep2_hg38_sorted.bam
+    340330526 Jun 12  ATAC_PB_CD_d8_rep1_hg38_sorted.bam
+    427557753 Jun 12  ATAC_PB_JH_d10_rep1_hg38_sorted.bam
+    382151472 Jun 12  ATAC_PB_JH_d10_rep2_hg38_sorted.bam
+    600522146 Jun 12  ATAC_PB_JH_d12_rep1_hg38_sorted.bam
+    594657195 Jun 12  ATAC_PB_JH_d12_rep2_hg38_sorted.bam
+    656732739 Jun 12  ATAC_PB_JH_d16_rep1_hg38_sorted.bam
+    407688266 Jun 12  ATAC_PB_JH_d8_rep1_hg38_sorted.bam
+    141592798 Jun 11  p300-Erythroid.Day14-16.GSM1067278.sorted.bam
+
+    just 116k for 1Mbase of bam file
+   samtools view -b ATAC_Cord_d10_rep1_hg38_sorted.bam  chr3:128000000-129000000 > ATAC_Cord_d10_rep1_hg38_chr3_gata2_sorted.bam
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* SCHARP statistical center for hiv/aids research and preventions
+
+   The Vaccine and Infectious Disease Division (VIDD)
+      composed of three research groups:
+
+          Population Sciences, including the Statistical Center for HIV and AIDS Research and
+          Prevention (SCHARP), led by Dr. Steve Self; Infectious Disease Sciences; and Immunology
+          and Vaccine Development, led by Dr. Julie McElrath. In addition, the international HIV
+          Vaccine Trials Network (HVTN) is headquartered at VIDD.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* packrat and CIDemo
+
+  cd ~/github/R-travis-CI-demo/
+  library(BiocManager)
+  options(repos = BiocManager::repositories())
+  library(packrat)
+  packrat::init()     # installs source packages to packrat/src
+  add source("~/.Rprofile") to ./.Rprofile()  # which had been created by packrat::init
+
+  packrat::set_opts(external.packages=c('BiocManager', 'devtools')) # modified packrat/packrat.opts
+  shell> make all
+  
+
+*-----------------------------------------------------------------------------------------------------------------------
+* packrat caching and cache invalidation
+
+  https://github.com/rstudio/packrat/issues/352
+
+  commit packrat/src, .gitignore packrat/lib*
+
+  Installing package(s) 'BH'   Error in readRDS(dest) : unknown input format
+  options(pkgType = "source")
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* packrat for travis (23 sep 2019)
+
+  on hagfish laptop, must be able to build packages from source, follow this link
+     https://support.rstudio.com/hc/en-us/articles/200486498-Package-Development-Prerequisites 
+     get macos command line tools:  https://developer.apple.com/download/more/
+     also recommends http://www.tug.org/mactex/downloading.html  (3G)
+     
+  cd  ~/github/R-travis-CI-demo/
+  biocGet("packrat")
+  library(packrat)
+  library(BiocManager)
+  options(repos = BiocManager::repositories())
+  packrat::init()
+    creates ~/github/R-travis-CI-demo/packrat/
+  packrat::snapshot()
+    Snapshot written to '/Users/paul/github/R-travis-CI-demo/packrat/packrat.lock'
+
+  .libPaths()
+    [1] "/Users/paul/github/R-travis-CI-demo/packrat/lib/x86_64-apple-darwin15.6.0/3.6.0"    
+    [2] "/Users/paul/github/R-travis-CI-demo/packrat/lib-ext/x86_64-apple-darwin15.6.0/3.6.0"
+    [3] "/Users/paul/github/R-travis-CI-demo/packrat/lib-R/x86_64-apple-darwin15.6.0/3.6.0"  
+
+  see https://milesmcbain.xyz/packrat-lite/
+
+  failed on hagfish: no c++ compiler
+  succeeded on trena.
+  next up: try to grasp it all
+
+*-----------------------------------------------------------------------------------------------------------------------
+* R CMD build, check error:  pdflatex is not available
+
+   R CMD check --no-manual --no-build-vignettes --ignore-vignettes `ls -t CIDemo_* | head -1`)
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* compare chip-seq to motifs: the example prepared for the trena paper (23 sep 2019)
+
+  ~/github/ChIPseqMotifMatch/bulk/chr19-demo
+
+   samtools view -b ../GSM749704/GSM749704_hg19_wgEncodeUwTfbsGm12878CtcfStdAlnRep1.bam chr19 > ctcf_chr19.bam 
+   samtools index ctcf_chr19.bam
+   samtools view -b ../GSM749704GSM749704_hg19_wgEncodeUwTfbsGm12878CtcfStdAlnRep1.bam chr19 > GSM749704_hg19_ctcf_chr19.bam 
+   samtools index GSM749704_hg19_ctcf_chr19.bam 
+
+
+ addFimoToMACS2NarrowPeaks.R
+
+*-----------------------------------------------------------------------------------------------------------------------
+* morphemeInfo popup for slexil texts (22 sep 2019)
+
+  first explored here:
+     ~/github/howDaylightWasStolen-harryMoses/beckAndHess2007/prosody/
+     <link rel = "stylesheet" type = "text/css" href = "pshannon.css" />
+     <script src="pshannon.js"></script>
+
+   modified ~/github/slexil/ijalLine.py in a new branch, popupExperiment, adding this:
+   
+         # create an empty div, experimentally used for explanatory morpheme text
+     with htmlDoc.tag("div", klass="morphemeInfo"):
+        pass;
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* tbx15:
+
+  ~/github/TrenaProjectErythropoiesis/prep/gata-switch/reproduce-10jun2019/
+  networks, models, expression, no footprints: gata2-tbx15-april2019.pdf
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* buenrosto revisited:  hematopoiesis good system for trena paper? (21 sep 2019)
+
+  All ensemble ATAC- and RNA-seq data is available through GEO accession number GSE74912. We provide
+  raw sequencing reads, processed BAM files, and fully processed count matrices for ATAC-seq and
+  RNA-seq at this accession. All single cell ATAC-seq data is available through GEO accession number
+  GSE74310. All analyses and coordinates referenced here are for the human reference genome hg19.
+
+   rna-seq: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE74246  81 samples
+*-----------------------------------------------------------------------------------------------------------------------
+* h2k9me3 for HSC, cd34+
+
+   types <- c("H3K4me3", "H3K27me3", "H3K36me3", "H3k4me1", "H3K9me3", "H3K27ac")
+   ah.ids <-lapply(types, function(type) names(query(aHub, c(type, "CD34",  "primary", "bigwig", "HSC")))[1])
+   names(ah.ids) <- types
+   lapply(ah.ids, function(id) aHub[[id]])   # get them in local cache
+
+*-----------------------------------------------------------------------------------------------------------------------
+* looking for bigwig of H3K27Ac layered for tbx15 study (19 sep 2019)
+
+   cd ~/github/TrenaProjectErythropoiesis/prep/gata-switch
+
+  library(AnnotationHub)
+  ah <- AnnotationHub()
+  length(as.list(query(ah, c("H3K27Ac", "cd34")))) # just 1: AH45896
+  length(query(ah, "H3K27Ac")) # 24
+
+  chose this one first
+    $AH36576
+    AnnotationHub with 1 record
+    # snapshotDate(): 2019-05-02 
+    # names(): AH36576
+    # $dataprovider: BroadInstitute
+    # $species: Homo sapiens
+    # $rdataclass: BigWigFile
+    # $rdatadateadded: 2015-05-07
+    # $title: BI.Mobilized_CD34_Primary_Cells.H3K27ac.RO_01549.pval.signal.bigwig
+    # $description: Bigwig File containing -log10(p-value) signal tracks from EpigenomeRoadMap Project
+    # $taxonomyid: 9606
+    # $genome: hg19
+    # $sourcetype: BigWig
+    # $sourceurl: http://egg2.wustl.edu/roadmap/data/byFileType/signal/unconsolidated/pval/BI.Mobilized_CD34_Primary_Cells.H3K27ac.RO_01549.pval.signal.bigwig
+    # $sourcesize: 793005203
+    # $tags: c("EpigenomeRoadMap", "signal", "unconsolidated", "pval", "NA") 
+    # retrieve record with 'object[["AH36576"]]' 
+
+*-----------------------------------------------------------------------------------------------------------------------
+* h3k4me3 methylation track for GATA2 in cd34 cells? (19 sep 2019)
+
+  library(AnnotationHub)
+  aHub <- AnnotationHub()
+  query(aHub, c("cd34", "methylation"))
+   AnnotationHub with 4 records
+   # snapshotDate(): 2019-05-02 
+   # $dataprovider: BroadInstitute
+   # $species: Homo sapiens
+   # $rdataclass: BigWigFile
+   # additional mcols(): taxonomyid, genome, description, coordinate_1_based, maintainer, rdatadateadded,
+   #   preparerclass, tags, rdatapath, sourceurl, sourcetype 
+   # retrieve records with, e.g., 'object[["AH49456"]]' 
+
+            title                                 
+  AH49456 | E035_RRBS_FractionalMethylation.bigwig
+  AH49458 | E050_RRBS_FractionalMethylation.bigwig
+  AH49459 | E051_RRBS_FractionalMethylation.bigwig
+  AH49506 | E050_WGBS_FractionalMethylation.bigwig
+
+  as.data.frame(mcols(query(aHub, c("cd34", "methylation"))))
+
+  take a look at the first one:
+     https://egg2.wustl.edu/roadmap/data/byDataType/dnamethylation/RRBS/EG.mnemonics.name.xls says
+       "CD34 primary cells"
+  x <- aHub[["AH49456"]]
+  xi <- import(x)
+  xi
+    GRanges object with 3404252 ranges and 1 metadata column:
+                seqnames    ranges strand |             score
+                   <Rle> <IRanges>  <Rle> |         <numeric>
+            [1]     chr1     10497      * | 0.899999976158142
+            [2]     chr1     10498      * | 0.899999976158142
+            [3]     chr1     10525      * | 0.959999978542328
+            [4]     chr1     10526      * | 0.959999978542328
+            [5]     chr1     10589      * | 0.730000019073486
+            ...      ...       ...    ... .               ...
+      [3404248]     chrY  59033065      * | 0.699999988079071
+      [3404249]     chrY  59033091      * |              0.25
+      [3404250]     chrY  59033092      * |              0.25
+      [3404251]     chrY  59033101      * | 0.629999995231628
+      [3404252]     chrY  59033102      * | 0.629999995231628
+      -------
+      seqinfo: 24 sequences from an unspecified genome
+   library(liftOver)
+   
+  system("curl -O http://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz")
+  system("gunzip hg19ToHg38.over.chain.gz")
+  chain <- import.chain("hg19ToHg38.over.chain")
+  x <- liftOver(gr, chain)
+  gr.hg38 <- unlist(x)
+  gr.hg38
+  seqinfo(gr.hg38) <- SeqinfoForUCSCGenome("hg38")[seqlevels(gr.hg38)]
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ucsc download track: h3k4me3
+
+   http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeUwHistone/
+   gave up, shifted back to AnnotationHub
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* methylation marks: h3k4me3
+
+   H3K4me3 is an epigenetic chemical modification involved in the regulation of gene expression.[1]
+   The name denotes the addition of three methyl groups (trimethylation) to the lysine 4 on the
+   histone H3 protein. H3 is used to package DNA in eukaryotic cells (including human cells), and
+   modifications to the histone alter the accessibility of genes for transcription. H3K4me3 is
+   commonly associated with the activation of transcription of nearby genes. H3K4 trimethylation
+   regulates gene expression through chromatin remodeling by the NURF complex.[2] In bivalent
+   chromatin, H3K4me3 is co-localized with the repressive modification H3K27me3 to control gene
+   regulation.[3] H3K4me3 also plays an important role in the genetic regulation of stem cell
+   potency and lineage.[4]
+
+   "H3K4 tri-methylation provides an epigenetic signature of active enhancers"  h3k4me3
+   https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3199384/
+
+   Recently, genome-wide studies shed brighter light on the distribution of epigenetic marks and the
+   existence of striking correlations between the local structure of the chromatin and the presence
+   and, possibly, the functional state, of transcriptional cis-regulatory elements (Bernstein et al,
+   2006; Barski et al, 2007; Guenther et al, 2007; Mikkelsen et al, 2007; Mendenhall and Bernstein,
+   2008; Wang et al, 2008). In particular, active promoters are marked by H3K4me3, repressed
+   promoters by H3K27me3 and poised promoters by both marks (Bernstein et al, 2006). These studies
+   have also led to defining chromatin signatures characteristic of discrete types of cis-regulatory
+   regions (Hon et al, 2009). In this respect, H3K4me3 was mostly found to be associated with
+   promoter regions, while H3K4me1 was found to be a hallmark of promoter-distal cis-regulatory
+   elements (i.e., enhancers) (Heintzman et al, 2007, 2009). Genome-wide detection of cell-specific
+   H3K4me1 peaks should, therefore, make it possible to identify specific enhancer
+   elements. However, since H3K4me1-enriched regions are generally larger than the associated
+   cis-regulatory elements (Barski et al, 2007), it is difficult to define the exact location of the
+   actual enhancer site(s) they contain. In addition, the presence of H3K4me1 per se does not
+   strictly correlate with the functional activity of these elements (Cui et al, 2009; Creyghton et
+   al, 2010). A more accurate definition of the chromatin signature of active enhancers is,
+   therefore, required (Bulger and Groudine, 2011).
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* herve's advice on using a browsr in the bioc linux builds (18 sep 2019)
+
+   --- my initial question to bioc-devel (12 sep 2019)
+
+     My package igvR requires a web browser.  Unit tests, examples, vignette all will all fail if
+     one is not available.
+
+     Since the bioc build system, for good reason, does not provide a web browser, I’d like to
+     condition all browser-related code on “not executing in the bioc build system”.
+
+     Is there a way my test and example code can detect that?
+
+     I prefer not to condition on 
+
+        if(interactive())
+
+     because in some settings (travis CI, my own development setup) non-interactive tests, using a
+     possibly headless browser, do make sense.
+
+
+
+   --- email (12 sep 2019)
+
+     Anyway if for some reason you need to disable the code that relies on a 
+     web browser, wouldn't it make more sense to condition this code on the 
+     presence of a web browser?
+
+   --- email from me (12 sep 2019)
+
+    How can I determine if a web browser is indeed installed?   
+       Sys.getenv("R_BROWSER”) returns:
+          macOS: “/usr/bin/open”
+          ubuntu: “xdc-open”
+   I don’t think either of these actually reveals an actual and functioning installation.
+
+   --- email from herve (12 sep 2019)
+
+      AFAIK the build machines have web browsers.
+      
+      Although that doesn't seem to be working on merida1:
+      
+       - From R:
+      
+         igv <- igvR()
+         # attempting to open websocket connection on port 15000
+         # LSOpenURLsWithRole() failed with error -10810 for the URL 
+      http://localhost:15000.
+      
+       - From the terminal (in an ssh remote session):
+      
+         merida1:~ biocbuild$ open http://www.apple.com/
+         LSOpenURLsWithRole() failed with error -10810 for the URL 
+      http://www.apple.com/.
+      
+         merida1:~ biocbuild$ /Applications/Safari.app/Contents/MacOS/Safari
+         Sep 12 18:54:20  Safari[98176] <Error>: Set a breakpoint at 
+      CGSLogError to catch errors as they are logged.
+         Sep 12 18:54:20  Safari[98176] <Error>: This user is not allowed 
+      access to the window system right now.
+         _RegisterApplication(), FAILED TO establish the default connection 
+      to the WindowServer, _CGSDefaultConnection() is NULL.
+      
+      I don't think Safari supports headless mode and we probably don't want 
+      to start the business of installing a headless browser on El Capitan.
+      
+      However things seem to work as expected on the Linux builders:
+      
+        library(igvR)
+        igv <- igvR()
+        # attempting to open websocket connection on port 15000
+        # BrowserViz websocket ready after   1.20 seconds
+        ping(igv)
+        # [1] "pong"
+      
+      Didn't try this on Windows though.
+      
+      Would a test based on the detected OS (e.g. Sys.info()[["sysname"]] != 
+      "Darwin") would be good enough for now to decide whether to run the 
+      tests and examples? Not ideal but still better than using interactive() 
+      or disabling all testing and examples on our build machines.
+ 
+   --- from me (15 sep 2019)
+      Very promising - thanks, Herve.
+      
+      I just tried this on one of my own ubuntu machines.  I see that no web browsers are yet installed.
+      Do you know which one is installed on the bioc Linux builders?  Is one of them headless?
+      
+      igv <- igvR()
+      attempting to open websocket connection on port 15000
+      /usr/bin/xdg-open: 778: /usr/bin/xdg-open: x-www-browser: not found
+      /usr/bin/xdg-open: 778: /usr/bin/xdg-open: firefox: not found
+      /usr/bin/xdg-open: 778: /usr/bin/xdg-open: iceweasel: not found
+      /usr/bin/xdg-open: 778: /usr/bin/xdg-open: seamonkey: not found
+      /usr/bin/xdg-open: 778: /usr/bin/xdg-open: mozilla: not found
+      /usr/bin/xdg-open: 778: /usr/bin/xdg-open: epiphany: not found
+      /usr/bin/xdg-open: 778: /usr/bin/xdg-open: konqueror: not found
+      /usr/bin/xdg-open: 778: /usr/bin/xdg-open: chromium-browser: not found
+      /usr/bin/xdg-open: 778: /usr/bin/xdg-open: google-chrome: not found
+      /usr/bin/xdg-open: 778: /usr/bin/xdg-open: www-browser: not found
+      /usr/bin/xdg-open: 778: /usr/bin/xdg-open: links2: not found
+      /usr/bin/xdg-open: 778: /usr/bin/xdg-open: elinks: not found
+      /usr/bin/xdg-open: 778: /usr/bin/xdg-open: links: not found
+      /usr/bin/xdg-open: 778: /usr/bin/xdg-open: lynx: not found
+      /usr/bin/xdg-open: 778: /usr/bin/xdg-open: w3m: not found
+      xdg-open: no method available for opening 'http://localhost:15000'
+      
+
+   --- from herve  (17 sep 2019)
+   We have firefox on the Linux builders:
+
+     getOption("browser")  # [1] "/usr/bin/firefox"
+     browseURL("https://www.bioconductor.org/packages/igvR")
+
+   However it could be that this works, not because firefox somehow gets 
+   started in headless mode, but because we have Xvfb (X11 virtual frame 
+   buffer) run as a service in the background so firefox is able to connect 
+   to that. I'm not sure.
+
+
+
+
+   
+
+*-----------------------------------------------------------------------------------------------------------------------
+* IIRC (immunotherapy integrated research)
+  TDS-IRC  (translational data science integrated research)
+
+  The Adair, Bleakley, Dudakov, Headley, and Rongvaux labs, a core group of Junior Faculty within
+  the Fred Hutch Immunotherapy and Translational Data Science Integrated Research Centers (IIRC and
+  TDS-IRC), are seeking a PhD level bioinformatician to fill a Staff Scientist position working
+  within and across the five groups.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* fresh run at ChIPseqMotifMatch bam file, peak calling: MACS2 is *fast* on whole genome file (16 sep 2019)
+
+    good intro: https://hbctraining.github.io/Intro-to-ChIPseq/lessons/05_peak_calling_macs.html
+    did fresh download of bam file from: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM749704
+        cd ~/github/ChIPseqMotifMatch/inst/extdata/GSM749704
+           GSM749704_hg19_wgEncodeUwTfbsGm12878CtcfStdAlnRep1.bam
+           samtools index GSM749704_hg19_wgEncodeUwTfbsGm12878CtcfStdAlnRep1.bam
+     docker run -v /Users/paul/github/ChIPseqMotifMatch/inst/extdata/GSM749704:/data/ \
+               fooliu/macs2 callpeak \
+              -t /data/GSM749704_hg19_wgEncodeUwTfbsGm12878CtcfStdAlnRep1.bam \
+              -n GSM749704 \
+              --broad \     # apparently need to run twice, with and without this switch, to get .broadPeak and .narrowPeak files
+              --outdir /data/
+
+    # extract just chr19
+   samtools view -b GSM749704_hg19_wgEncodeUwTfbsGm12878CtcfStdAlnRep1.bam chr19 > GSM749704_hg19_ctcf_chr19.bam 
+   samtools index GSM749704_hg19_ctcf_chr19.bam 
+
+   run docker, specifying volume mapping, of extdata to dockers "/data/"
+   docker run -v /Users/paul/github/ChIPseqMotifMatch/inst/extdata/:/data/ fooliu/macs2 callpeak -t /data/GSM749704_hg19_ctcf_chr19.bam  -n GSM749704_hg19_chr19 --outdir /data/
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* heatmap.2 contrasting trem2 models, for trena paper (15 sep 2019)
+
+   cd ~/github/TrenaProjectAD/explore/trenaPaper/
+   
+   load("models.RData")
+   grid <- createGrid(models, 5)
+   grid <- createGrid(models, 10)
+   grid <- createGrid(models, 15)
+   colnames(grid) <- c("Gene Expression Only",
+                       "FIMO < 1e-4, TSS +1500bp -500bp",
+                       "FIMO < 1e-3, TSS +1500bp -500bp",
+                       "FIMO < 1e-4, TSS +/-5kb",
+                       "FIMO < 1e-3, TSS +/-5kb",
+                       "Footprints (fp), FIMO < 1e-4, +1500bp -500bp",
+                       "fp, FIMO < 1e-3, +1500bp -500bp",
+                       "fp, FIMO < 1e-4, +/-5kb",
+                       "fp, FIMO < 1e-3, +/-5kb",
+                       "fp in all promoters & enhancers, FIMO < 1e-4",
+                       "fp in all promoters & enhancers, FIMO < 1e-3")
+
+   heatmap.2(t(grid), trace="none", margins=c(20,40), col=c("#dddddd", rev(heat.colors(15))),
+             density.info="none", dendrogram="none", Rowv=FALSE,
+             key=FALSE,
+             cexRow=2,
+             cexCol=2)
+
+  [[file://Users/paul/images/trem2-trena-regulators-11-scenarios-heatmap-v3.png]]
+
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* Sys.getenv("HOME")  R environment variables
+
+  hagfish:  "/Users/Paul"
+  khaleesi: "/users/pshannon"
+*-----------------------------------------------------------------------------------------------------------------------
+* carbon capture
+
+   $500-1000 per ton to do direct air capture (oliver morton, the planet remade p28)
+   average 2008 us use: 20 tons per year.  8 tons baseline (roads, military, gov't)
+   https://www.sciencedaily.com/releases/2008/04/080428120658.htm:
+     Carbon Footprint Of Best Conserving Americans Is Still Double Global Average
+     
+*-----------------------------------------------------------------------------------------------------------------------
+* MotifDb weird error turns up in FimoClient (13 sep 2019)
+
+   due to > 100 characters name limitation built into FIMO
+   nchar("Mmusculus;Rnorvegicus;Xlaevis;Stropicalis;Ggallus;Hsapiens;Btaurus;Ocuniculus-jaspar2018-ESR1-MA0112.1")
+      [1] 102
+   fails in MotifDb lookup:  Error: subscript contains invalid names
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* irf5 izkf1 spi1 regulate teem 2 for paper (12 sep 2019)
+
+  ~/github/TrenaProjectAD/explore/trenaPaper/trem2.R
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* spi1 regulates trem2, for trena paper (12 sep 2019)
+
+  cd ~/github/TrenaProjectAD/explore/trenaPaper/
+*-----------------------------------------------------------------------------------------------------------------------
+* async await igv track names, getTrackNames(),  await.html (12 spe 2019)
+
+   ~/s/examples/igv/igv.js/await/await.html
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* footprint database psql tips for seth (12 sep 2019)
+
+
+  psql -h khaleesi -U trena postgres   # prompts you for password, which is also “trena”
+  psql> \pset pager                    # allows long listings
+  psql> \list
+                                                    List of databases
+                    Name                  |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges   
+  ----------------------------------------+----------+----------+-------------+-------------+-----------------------
+   adrenal_gland_hint_16                  | trena    | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
+   adrenal_gland_hint_20                  | trena    | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =Tc/trena            +
+                                          |          |          |             |             | trena=CTc/trena
+   adrenal_gland_wellington_16            | trena    | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
+   adrenal_gland_wellington_20            | trena    | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =Tc/trena            +
+                                          |          |          |             |             | trena=CTc/trena
+   blood_vessel_hint_16                   | trena    | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
+   blood_vessel_hint_20                   | trena    | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
+   ...
+  
+  psql> \c blood_vessel_hint_20
+  psql> \dt
+  psql> select * from regions limit 5;
+           loc          | chrom |  start  | endpos  
+  ----------------------+-------+---------+---------
+   chr9:735380-735390   | chr9  |  735380 |  735390
+   chr9:2055613-2055623 | chr9  | 2055613 | 2055623
+   chr9:2242613-2242623 | chr9  | 2242613 | 2242623
+   chr9:114129-114137   | chr9  |  114129 |  114137
+   chr9:4666109-4666119 | chr9  | 4666109 | 4666119
+  
+  psql> select * from hits limit 5;
+           loc          | fp_start | fp_end  |        type        |                  name                  | length | strand |  sample_id  | method |         provenance         | score1 | score2  |  score3  | score4 | score5 | score6 
+  ----------------------+----------+---------+--------------------+----------------------------------------+--------+--------+-------------+--------+----------------------------+--------+---------+----------+--------+--------+--------
+   chr9:735380-735390   |   735376 |  735386 | motif.in.footprint | Hsapiens-jaspar2016-RUNX1-MA0002.1     |     11 | +      | ENCSR000EKF | HINT   | blood_vessel_hint_20.minid |      6 |  12.191 | 4.08e-05 |        |        |       
+   chr9:2055613-2055623 |  2055616 | 2055632 | motif.in.footprint | Hsapiens-jaspar2016-RUNX1-MA0002.1     |     11 | +      | ENCSR000EKF | HINT   | blood_vessel_hint_20.minid |     25 | 12.9213 | 2.17e-05 |        |        |       
+   chr9:2242613-2242623 |  2242606 | 2242622 | motif.in.footprint | Hsapiens-jaspar2016-RUNX1-MA0002.1     |     11 | -      | ENCSR000EKF | HINT   | blood_vessel_hint_20.minid |      6 |  11.618 | 6.09e-05 |        |        |       
+   chr9:114129-114137   |   114124 |  114139 | motif.in.footprint | Hsapiens-HOCOMOCOv10-AHR_HUMAN.H10MO.B |      9 | +      | ENCSR000EKF | HINT   | blood_vessel_hint_20.minid |     10 | 11.8202 | 5.16e-05 |        |        |       
+   chr9:4666109-4666119 |  4666105 | 4666125 | motif.in.footprint | Hsapiens-jaspar2016-RUNX1-MA0002.1     |     11 | +      | ENCSR000EKF | HINT   | blood_vessel_hint_20.minid |      6 |  12.618 | 2.96e-05 |        |        |       
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* igv.js await/update problems (10 sep 2019)
+
+   ~/s/examples/igv/igv.js/await/await.html
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <link rel="shortcut icon" href="https://igv.org/web/img/favicon.ico">
+        <title>await demo</title>
+        <script src="/Users/paul/github/igv.js/dist/igv.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.4.0.min.js"></script>
+    <script type="text/javascript">
+        var browser;
+        $(document).ready(function () {
+            console.log("ready");
+            var div, options;
+            div = $("#igvDiv")[0];
+            igv.createBrowser(document.getElementById('igvDiv'), {
+               genome: "hg19",
+               locus: "chr8:128,747,267-128,754,546"
+               })
+            .then(async function (browser) {
+                const track = await browser.loadTrack(                    {
+                    type: 'alignment',
+                    format: 'cram',
+                    url: 'https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/exome_alignment/HG00096.mapped.ILLUMINA.bwa.GBR.exome.20120522.bam.cram',
+                    indexURL: 'https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/exome_alignment/HG00096.mapped.ILLUMINA.bwa.GBR.exome.20120522.bam.cram.crai',
+                    name: 'HG00096'
+                })
+    
+                var count = browser.trackViews.length;
+                for(var i=0; i < count; i++){
+                    var trackName = browser.trackViews[i].track.name;
+                    console.log(trackName);
+                }
+            })
+        });
+    </script>
+    </head>
+    <body>
+    <div id="igvDiv" style="padding-top: 50px;padding-bottom: 20px; height: auto"></div>
+    </body>
+    </html>
+    
+
+
+   
+
+*-----------------------------------------------------------------------------------------------------------------------
+* genehancer 4.1.1 aligment to mouse (9 sep 2019)
+
+
+   from robert, multiple genome alignments:
+     https://uswest.ensembl.org/info/genome/compara/multiple_genome_alignments.html
+     software:  pecan, enredo, ortheus (old?)
+                progressive cactus (newer? - 2011 paper)
+
+
+
+   up next:
+      ~/github/TrenaProjectMM10/explore/genehancer-liftover/fromArian/read.R
+      display enhancers in mm10 and hg38 igvR instances
+      
+*------------------------------------------------------------------------------------------------------------------------   
+* cross-species longevity (3 sep 2019)
+
+   Parrot Genomes and the Evolution of Heightened Longevity and Cognition, 2018
+
+  Ma, S. and V.N. Gladyshev, Molecular signatures of longevity: Insights from cross-species comparative studies.
+    Semin Cell Dev Biol, 2017. 70: p. 190-203.
+
+  Cohen, A.A., Aging across the tree of life: The importance of a comparative perspective for the use of animal
+      models in agingg. Biochim Biophys Acta Mol Basis Dis, 2018. 1864(9 Pt A): p. 2680-2689.
+
+  Tian, X., A. Seluanov, and V. Gorbunova, Molecular Mechanisms Determining Lifespan in Short- and
+      Long-Lived Species. Trends Endocrinol Metab, 2017. 28(10): p. 722-734.
+
+  Singh, P.P., et al., The Genetics of Aging: A Vertebrate Perspective. Cell, 2019. 177(1): p. 200-220.
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* shinytest with TrenaViz (3 sep 2019)
+
+   ~/github/TrenaViz/inst/demo/app.R
+
+      library(TrenaViz)
+      tv <- TrenaViz("TrenaProjectErythropoiesis")
+      PORT=5874
+      url <- sprintf("http://0.0.0.0:%d", PORT)
+      createApp(tv, port=PORT)
+
+   cd ~/github/TrenaViz/inst/demo
+   R> recordTest(app=".", loadTimeout=20000, shinyOptions=list(port=5874))
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* suspicious debit card charge 
+
+  AUG 30 2019 Withdrawal VISA PILOT_00710 NEW MILFORD PA Date 08/30/19   489642 5542    -237.85
+  case number 601-143-8295, call 877.253.8964
+
+*-----------------------------------------------------------------------------------------------------------------------
+* spi1 tf for trem2: satisfies my skepticism:  can we reproduce known regulatrion (30 aug 2019)
+
+   see above:    * spi1 regulates trem2, for trena paper
+
+   in ~/images, screenshots
+      78929 Aug 30 15:06 spi1-activates-trem2-749bp-view.png
+      76905 Aug 30 15:06 spi1-activates-trem2-240kb-view.png
+      59634 Aug 30 15:06 spi1-activates-trem2-15kb-view.png
+
+   in ~/github/TrenaProjectAD/inst/unitTests/test_TrenaProjectAD.R, see function explore_TREM2
+
+   a single footprint in the whole spanning region, good rich monocyte/macrophage ChIP, a 97% motif match
+
+*-----------------------------------------------------------------------------------------------------------------------
+* why is placenta_fp so slow (29 aug 2019)
+
+   khaleesi
+   cd /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019
+   hagfish:
+      ~/github/trenaSGM/inst/timingTests/footprintDatabase.R
+
+   after rebuilding index on khaleesi:
+     INFO [2019-08-29 07:36:38] queryFootprints(  brain_hint_20),  20 regions,    99020 bases:   0.23   0.07  13.17   0.00   0.00
+     INFO [2019-08-29 07:38:46] queryFootprints(    placenta_fp),  20 regions,    99020 bases:   0.14   0.04 127.25   0.00   0.00
+
+
+   --- (friday, 30 aug 2019)
+     re-indexed placenta_fp, no change.
+     tracing execution in trenaSGM, FootprintDatabaseModelBuilder.R, .multiQueryFootprints
+
+     --- opening connection placenta_fp
+         2019-08-30 06:36:07.142575
+         --- querying placenta_fp for footprints across 1 regions totaling 599 bases
+         --- entering FootprintDatabaseModelBuilder, .multiQueryFootprints, regions: 1
+             2019-08-30 06:36:07.150147
+         --- .multiQueryFootprints, about to query db: select loc, chrom, start, endpos from regions where chrom='chr6' and start > 41163001 and endpos < 41163600
+             2019-08-30 06:36:07.150625
+         --- .multiQueryFootprints, after query.regions, rows returned: 49
+             2019-08-30 06:36:13.382817
+         --> 6.232192 seconds
+
+     --- opening connection brain_hint_20
+         2019-08-30 06:36:35.47934
+         --- querying brain_hint_20 for footprints across 1 regions totaling 599 bases
+         --- entering FootprintDatabaseModelBuilder, .multiQueryFootprints, regions: 1
+             2019-08-30 06:36:35.480098
+         --- .multiQueryFootprints, about to query db: select loc, chrom, start, endpos from regions where chrom='chr6' and start > 41163001 and endpos < 41163600
+             2019-08-30 06:36:35.480772
+         --- .multiQueryFootprints, after query.regions, rows returned: 189
+             2019-08-30 06:36:36.015647
+         --> 0.534875 seconds
+
+     --- on khaleesi, use psql, the identical select command takes 10 times longer.
+        cd /local/trenaPlacentaProject/whole_genome_fimoCalls/fill-24jun2019/
+        make lookBrain
+        brain_hint_20=# explain select loc, chrom, start, endpos from regions where chrom='chr6' and start > 41163001 and endpos < 41163600;
+                                                     QUERY PLAN                                              
+        -----------------------------------------------------------------------------------------------------
+         Bitmap Heap Scan on regions  (cost=177274.84..1587665.79 rows=1947369 width=36)
+           Recheck Cond: (((chrom)::text = 'chr6'::text) AND (start > 41163001) AND (endpos < 41163600))
+           ->  Bitmap Index Scan on regions_index  (cost=0.00..176787.99 rows=1947369 width=0)
+                 Index Cond: (((chrom)::text = 'chr6'::text) AND (start > 41163001) AND (endpos < 41163600))
+        (4 rows)
+
+        make look
+        placenta_fp=# explain select loc, chrom, start, endpos from regions where chrom='chr6' and start > 41163001 and endpos < 41163600;
+                                                QUERY PLAN                                         
+        -------------------------------------------------------------------------------------------
+         Seq Scan on regions  (cost=0.00..1399457.98 rows=733972 width=36)
+           Filter: ((start > 41163001) AND (endpos < 41163600) AND ((chrom)::text = 'chr6'::text))
+        (2 rows)
+
+     --- so why isn't the bitmap index used on placenta_fp, when it is on brain_hint_20?
+
+       psql> brain_hint_20=# \d regions;
+                 Table "public.regions"
+         Column |       Type        | Modifiers 
+        --------+-------------------+-----------
+         loc    | character varying | not null
+         chrom  | character varying | 
+         start  | integer           | 
+         endpos | integer           | 
+        Indexes:
+            "regions_pkey" PRIMARY KEY, btree (loc)
+            "regions_index" btree (chrom, start, endpos)
+
+        brain_hint_20=# \d hits;
+            Table "public.hits"
+            Indexes:
+            "hits_index" btree (loc)
+
+       psql>  placenta_fp=# \d regions;
+         Table "public.regions"
+         Column |       Type        | Modifiers 
+        --------+-------------------+-----------
+         loc    | character varying | not null
+         chrom  | character varying | 
+         start  | integer           | 
+         endpos | integer           | 
+        Indexes:
+            "regions_pkey" PRIMARY KEY, btree (loc)
+            "regions_index" btree (loc, chrom, start, endpos)
+        
+        placenta_fp=# \d hits;
+         Indexes:
+           "hits_index" btree (loc)
+            Table "public.hits"
+
+     --- solution: re-indexed placenta_fp regions table, removing primary key loc from the index
+       \connect placenta_fp;
+       drop index if exists regions_index;
+       create index regions_index on regions (chrom, start, endpos);
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* summary of hint-atac/genehancer analysis to marjorie for the srm paper (27 aug 2019)
+
+  work completed on (6 jul 2019)
+
+  khaleesi, /local/users/pshannon/github/TrenaProjectErythropoiesis/prep/srm.vs.atac/p300-srm-chip-atac-peas
+  (previously abandoned peas for lack of support, switched to rgt-hint)
+
+  read.table("enhancerCounts.tsv", sep="\t", header=TRUE, as.is=TRUE)
+                                             d04_rep1 d04_rep2 d08_rep1 d10_rep1 d10_rep2 d11_rep1 d11_rep2 d12_rep1 d12_rep2 d16_rep1 d16_rep2
+    macs2.peaks                                  4565     6003    44046    24473    30726    16904    22764    32211    30921    44241    46615
+    hint.footprints                              7087     9963    70200    39649    50691    33720    45376    57114    54679    95292    92000
+    peaks.with.footprintfs                       3700     4981    36163    20219    25424    14608    19626    26911    25902    38087    39334
+    peaks.with.footprints.in.enhancers            271      461     9092     4434     5851     2165     3755     6191     5808    10462    10725
+    peaks.with.footprints.in.blood.enhancers       12       16      159      106      124       88      108      144      143      227      239
+    > 
+   
+   My method:
+
+   1) downloaded bam files, e.g.,
+      wget http://dropbox.ogic.ca/mbrandlab/hg38/ATAC-BAM/ATAC_Cord_d4_rep1_hg38_sorted.bam
+   
+   2) called narrow peaks using MACS2 on each bam file, using the version 2.1.2 docker image of macs
+      https://hub.docker.com/r/fooliu/macs2
+   
+      docker run -v $$PWD:/data/ fooliu/macs2 callpeak -t /data/ATAC_Cord_d4_rep1_hg38_sorted.bam -n ATAC_Cord_d4_rep1_hg38 --outdir /data/
+   
+   3) in preparation for running hint-atac, 
+       a) eliminated (“cleaned”) all peaks from step 2 which were mapped to non-canonical chromosomes (chr1-22, X, Y, M)
+       b) built a bam index for each bam file, using samtools version 1.8
+   
+   4) used HINT from the regulatory genomics toolkit, version 0.12.3 (http://www.regulatory-genomics.org/hint/introduction/)
+      on the indexed bam file, and the cleaned peaks file
+        rgt-hint footprinting --atac-seq --organism=hg38 $(BAM) $(PEAKS)
+   
+   5) identified putative enhancer and promoter regions from GeneHancer 4.1.1, first for all tissues, then for blood only.
+      
+   6) Used the Bioconductor GenomicRanges package to calculate the intersection of macs2 narrowpeaks and hint-called ATAC-seq footprints with the two sets of enhancers.
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* pandas deprecates dataframe subset function ".ix" (25 aug 2019)
+
+  cd ~/github/slexil/tests
+  make
+
+  this proeuces lots of warnings:
+
+    .ix is deprecated. Please use
+    .loc for label based indexing or
+    .iloc for positional indexing
+    
+    See the documentation here:
+    http://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#ix-indexer-is-deprecated
+
+
+   --- solution
+    # old
+      startTimeSlotID = tbl_elements.ix[0, 'TIME_SLOT_REF1']
+    # new
+      startTimeSlotID = tbl_elements.iloc[4, tbl.columns.values.tolist().index("PREVIOUS_ANNOTATION")]
+
+
 *-----------------------------------------------------------------------------------------------------------------------
 * linguistic terms from david beck
 
@@ -81,9 +1314,30 @@ bed format: chrom, start, end, name, score, strand
    types of things it combines with.
 
 
+   --- 
+
 
 *-----------------------------------------------------------------------------------------------------------------------
 * tasks for marjorie (23 aug 2019)
+
+   ---  marjorie asks about tbx15 binding
+
+    Regarding TBX15 validation, we tried 3 shRNA, 2 of which are working in cell lines, and we are
+    currently making lentiviruses to be able to induce the knockdown in the primary erythroid
+    cells. 
+
+    Also, we will soon have cells to try the TBX15 ChIP, so I am wondering if could you send
+    me the genomic coordinates of the TBX15 binding sites on the GATA2 gene so that we can design
+    the primers for PCR?
+
+  --- and about analyzing ATACseq with HINT-ATAC
+
+    Lastly, regarding the SRM paper, here is a link to a dropbox that contains the last draft of the
+    paper: https://www.dropbox.com/sh/kdsr7zfsrp6ldcp/AACwGS-P-UXb5qvLVzw3kFe3a?dl=0 On p42 of the
+    word file, there is a section in the Math and Methods about the method you used to analyse
+    ATACseq data with HINT-ATAC, and intersect with Genehancer etc… to calculate the number of
+    enhancers.  I was wondering if you could write a short description of this?
+ 
 
   1) provide you a table of TBX15 motif locations within the (loosely defined) regulatory regions of GATA2
      each location will be further annotated with its FIMO score, the motif (we have two for TBX15)
@@ -92,13 +1346,47 @@ bed format: chrom, start, end, name, score, strand
   2) A first draft of the ATAC-seq analysis workflow
 
 *-----------------------------------------------------------------------------------------------------------------------
+* mouse cis-regulatory deletions disable gata2 expression(29 aug 2019)
+
+  Gata2 cis-element is required for hematopoietic stem cell generation in the mammalian embryo
+   http://jem.rupress.org/content/jem/early/2013/11/25/jem.20130733.full.pdf
+   +9.5kb
+
+  A Single cis Element Maintains Repression of the Key Developmental Regulator Gata2
+  https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2936534/#pgen.1001103-Grass1
+   -1.8kb
+
+*-----------------------------------------------------------------------------------------------------------------------
+* tbx15 binding sites for gata2 for marjorie (23 aug 2019)
+
+   --- previous work:
+      cd ~/github/TrenaProjectErythropoiesis/
+      find . -name "*tbx*" -type f -exec ls -l {} ';'
+        10264   Jun 11 10:29 ./inst/demos/tbx15-represses-gata2/tbx15-represses-gata2.R
+        11526   Jun  8 14:33 ./prep/gata-switch/reproduce-10jun2019/tbx15.R
+        11526   Jun  8 14:33 ./prep/gata-switch/tbx15.R
+        5882751 Jun  8 16:02 ./inst/demos/tbx15-represses-gata2/gata2-tbx15-april2019.pdf
+        5882751 Jun  7 16:25 ./prep/gata-switch/reproduce-10jun2019/gata2-tbx15-april2019.pdf
+        5882751 Jun  7 16:25 ./prep/docs/gata2-tbx15-april2019.pdf
+        5882751 Jun  7 16:25 ./prep/gata-switch/gata2-tbx15-april2019.pdf
+        3829784 Apr 10 16:16 ./prep/gata-switch/reproduce-10jun2019/tbx15.state.RData
+        3829784 Apr 10 16:16 ./prep/gata-switch/tbx15.state.RData
+
+
+    
+  1: chr3:128,483,003-128,483,009    Hsapiens-jaspar2018-TBX15-MA0803.1  chr3  128483002 128483009      +   6.642737          0.8767398 AGGGGTGA
+  2: chr3:128,483,452-128,483,457    Hsapiens-jaspar2018-TBX15-MA0803.1  chr3  128483451 128483458      +   6.658030          0.8787582 CGGTGTGA
+  3: chr3:128,486,956-128,486,962    Hsapiens-jaspar2018-TBX15-MA0803.1  chr3  128497527 128497534      +   6.658030          0.8787582 CGGTGTGA
+  4: chr3:128,497,528-128,497,534    Hsapiens-jaspar2018-TBX15-MA0803.1  chr3  128497527 128497534      +   6.658030          0.8787582 CGGTGTGA
+
+
+*-----------------------------------------------------------------------------------------------------------------------
 * david beck's rtf files from the two lushootseed grammars (23 aug 2019)
 
    ~/github/howDaylightWasStolen-harryMoses/lushootseedGrammarStories/rtfTextFromDavidBeckJul2019
 
 *-----------------------------------------------------------------------------------------------------------------------
 * david beck's correction to how daylight was stolen (22 aug 2019)
-
 
   line 1, should mark misspoken or interrupted things as incomplete somehow ([tu-]?), remove hyphen from the transcription line,
           should be tu= not tu- on the parsing line [= marks clitic boundary] [fixed]
@@ -114,7 +1402,10 @@ bed format: chrom, start, end, name, score, strand
 
   line 3, extra “w” after the first word in the transcription line and the parsing line [fixed]
 
-  line 4, you might consider ʔas- instead of ʔəs-, if you’re going for consistency on the parsing line (which also means =axʷ instead of =əxʷ throughout)
+  line 4, you might consider ʔas- instead of ʔəs-, if you’re going for consistency on
+           the  parsing line (which also means =axʷ instead of =əxʷ throughout)
+
+   [[file://users/paul/images/harryMoses-davidBeckProposesAratherThanSchwa.png]]
 
   line 9, conj should be in small caps (maybe the abbreviation is missing from the grammatical terms file?)
 
@@ -122,8 +1413,12 @@ bed format: chrom, start, end, name, score, strand
 
   line 17, dsd should be in small caps
   lines 19, 32, 39, altv should be in small caps
-  line 50, “mouth” should not be in small caps—BTW, I notice now that the lexical suffixes are not consistently in small caps, so if you want them like that you will need to check fro consistency. Most people reserve small caps for gramamtical abbreviations, though, and lexical suffixes aren’t really grammatical elements per se
-  line 59, I would remove the parentheses from the parsing line. They already signal what they signal on the transcription line so they aren’t needed, and the parsing line if a technical representation where parentheses and other punctuation don’t really have any status
+  line 50, 'mouth' should not be in small caps - BTW, I notice now that the lexical suffixes are not consistently 
+          in small caps, so if you want them like that you will need to check fro consistency. Most people reserve small caps for gramamtical 
+          abbreviations, though, and lexical suffixes aren't really grammatical elements per se
+  line 59, I would remove the parentheses from the parsing line. They already signal what they signal on the transcription 
+          line so they aren't needed, and the parsing line if a technical representation where parentheses and other 
+          punctuation don't really have any status
   line 66, remove double quotes from glossing line
   line 73, addf > add
   line 74, 75, 81 altv should be in small caps
@@ -337,10 +1632,10 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 * slexil at ualberta (7 aug 2019)
 
-   connect vpn: vpn.ualberta.net
+   connect vpn: vpn.ualberta.ca
    login  pshannon oldAnimal-99
    from a terminal on hagfish: ssh pshannon@206.12.91.237
-   mkdir ~/github
+   mkdir ~/githubb
    cd ~/github
    git clone https://paul-shannon@github.com/paul-shannon/slexil.git
    
@@ -380,7 +1675,7 @@ bed format: chrom, start, end, name, score, strand
    raised letter z (from david beck):  ᶻ 1DB0B (U+1DBB, UTF-8 E1 B6 B8))
 
   How to insert a Unicode character by its hexadecimal value?
-    Alt+x insert-char , then the hex of the Unicode.
+    esc-x insert-char , then the hex of the Unicode.
     ᶻ   ʷ  
    
 *-----------------------------------------------------------------------------------------------------------------------
@@ -2236,7 +3531,7 @@ dim(tbl.match)
         FORMAT="2.8"
 
 *-----------------------------------------------------------------------------------------------------------------------
-* hg38 whole genome fimo (14 jun 2019)
+* hg38 whole genome fimo (14 jun 2019)  fimo batch?
 
   start with chr3, which includes GATA2
   khaleesi, cd  ~/github/fptodb/R/
@@ -2252,6 +3547,7 @@ dim(tbl.match)
       runFimo(fastaFileName, resultsDirectory, threshold=5e-4)
 
   replaced last two lines with minimal bash script:
+
    /users/pshannon/meme/bin/fimo --thresh 5e-4  --verbosity 1 --text \
      ~/github/fimoService/pfms/human-jaspar2018-hocomoco-swissregulon.meme chr3.fa > chr3-fimo.tsv
     started 934am friday 14 jun, finished 326am sunday 16 jun,
@@ -2910,7 +4206,46 @@ dim(tbl.match)
        copied GeneHancer_elements.txt (presumed to be hg38) to khaleesi:
 
 *-----------------------------------------------------------------------------------------------------------------------
+* lushootseed recordings
+
+  30 minutes of stories from lushootseed texts:
+     Cassette Tape 1, Side A, accompanying the book Lushootseed Texts: An Introduction to Puget Salish Narrative Aesthetics.
+     https://soundcloud.com/uwlibraries/hilbert200501tape2467a
+
+*-----------------------------------------------------------------------------------------------------------------------
 * PAPERS
+
+* ENHANCER EPIGENETICS, Nature genetics 2017:  Is H3K4me1 at enhancers correlative or causative?
+
+* Rhabdocline parkeri, a ubiquitous foliar endophyte of Douglas-fir
+
+
+* Foliar Fungal Endophytes in Herbaceous Plants: A Marriage of Convenience?
+  doug fir mutualism
+
+  The effects of host genotype, growth rate, and needle age on the
+  distribution of a mutualistic, endophytic fungus in Douglas-fir
+  plantations
+
+    Two young plantations of Douglas-fir (Pseudotsugamenziesii (Mirb.)
+    Franco) were examined for the presence of a symptomless endophytic
+    fungus, Meriaparkeri Sherwood-Pike (Hemiphacideaceae). This fungus
+    occurred in the needles of nearly every tree examined, with
+    infection frequencies increasing with the age of the
+    needle. Previous reports have asserted that M. parkeri is a
+    mutualist that produces insecticidal toxins. The maternal
+    parentage of the trees and age of the needles were highly
+    significant predictors of infection frequencies. A detailed
+    examination of two families of trees revealed that infection
+    frequencies differed between sites and were positively correlated
+    with the height of the host. Mutualism and microhabitat effects
+    are discussed.
+
+
+* artificial photosynthesis
+  Artificial photosynthesis: opportunities and challenges of molecular catalysts
+  Artificial Photosynthesis: Molecular Systems for Catalytic Water Oxidation
+
 * ATAC-seq papers
 
   A neural network based model effectively predicts enhancers from clinical ATAC-seq samples
@@ -2923,8 +4258,18 @@ dim(tbl.match)
 
 * hematopoiesis TFs
 
+   A regulatory network governing Gata1 and Gata2 gene transcription orchestrates erythroid lineage differentiation
+   yamamoto 2014
+   https://link.springer.com/article/10.1007/s12185-014-1568-0
+   shows promoter of gata1, not gata2
+
+    High-Throughput siRNA Screening to Reveal GATA-2 Upstream Transcriptional Mechanisms in Hematopoietic Cells
+
    Combinatorial Transcriptional Control In Blood Stem/Progenitor Cells: Genome-wide Analysis of Ten Major Transcriptional Regulators
    https://www.sciencedirect.com/science/article/pii/S1934590910004406
+
+   A single cis element maintains repression of the key developmental regulator Gata2.
+   https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2936534/
 
    GSE22178
 
@@ -2943,7 +4288,22 @@ dim(tbl.match)
 
 
    Dynamic regulatory network controlling TH17 cell differentiation (nature, 06 March 2013)
-   
+
+* plant stress ethylene 
+   Mild versus severe stress and BVOCs: thresholds, priming and consequences
+   sensor: ETD-300 real time sub-ppb ethylene (C2H4) analyzer https://www.sensor-sense.nl/products/gas-analyzers/ethylene
+
+* early oxygenic photosynthesis: tanai cordona
+  https://scholar.google.com/citations?hl=en&user=wF8DPQkAAAAJ&view_op=list_works&sortby=pubdate
+
+  Evolution of photochemical reaction centres: more twists?  (evolution of photosystem 2)
+  https://www.biorxiv.org/content/biorxiv/early/2018/12/20/502450.full.pdf
+  early archean origin of heterodimeric photosystem 1  (2018) https://www.sciencedirect.com/science/article/pii/S2405844017336290
+
+  Electrons, life and the evolution of Earth's oxygen cycle.
+
+  Review article:  Recent advances in chlorophyll biosynthesis and breakdown in higher plants
+
 *-----------------------------------------------------------------------------------------------------------------------
 * TCEx papers
 
@@ -2970,6 +4330,7 @@ dim(tbl.match)
   view.R
   found some regulatory regions missing in HSC.1[AB] and MPP.2[AB] which, could be binding sites for
   a repressor, if model were built with, eg, wholeBlood.  set aside for now in favor of the chang scATAC-seq
+
 *-----------------------------------------------------------------------------------------------------------------------
 * cory's deconvolved microglia brain model: 6 days, huge files (5 jun 2019)
 
@@ -4288,6 +5649,10 @@ Martin
 
 *-----------------------------------------------------------------------------------------------------------------------
 * igvR: click on motif binding site, see motif logo: how to do this? (7 may 2019)
+
+   ~/github/igvR/inst/unitTests/test_igvR.R::
+       demo_addTrackClickFunction_proofOfConcept()
+       demo_addTrackClickFunction_addLink()   # displays a jaspar motif on track element click
 
    --- jim adds igvBrowser.off()  to remove all hand
 
@@ -7054,6 +8419,14 @@ TrenaProjectErythropoiesis, TrenaProjectMouseMa
    abline(model.gata2, col="red")
 
 
+   --- regression, scatter plot
+     x <- as.integer(runif(10) * 100)
+     y <- jitter(x, 12)
+     tbl <- data.frame(x=x, y=y)
+     
+     model <- lm(y ~ x, data=tbl)
+     plot(tbl$x, tbl$y, col="blue", pch=16, main="correlation")
+     abline(model, col="red")
 
 *-----------------------------------------------------------------------------------------------------------------------
 * buenrostro's nat genetics 2016 atac-seq and rna-seq data, incorporating it into TrenaProjectErythropoiesis (20 feb 2019)
@@ -8075,11 +9448,14 @@ that	def:fem:sg	straight–fem:sg	pathfem	be:3sg:impf	lose–partic–fem:sg
 
 
 *-----------------------------------------------------------------------------------------------------------------------
+* GenomicRanges tips, GRanges tips: subset GRanges, subset GenomicRanges
+
+
+  length(gr.hg38[chrom(gr.hg38)=="chr3" & start(gr.hg38) >= 128427292 & end(gr.hg38) <= 128566939])
+
+
+*-----------------------------------------------------------------------------------------------------------------------
 * GenomicRanges tips, GRanges tips: elimnate overlaps with reduce, preserve metadata (5 feb 2019)
-
-
-
-
   [status: not actually needed.  problem arose when liftover from mm9 to hg18.  mm9-mm10 works better!]
 
   gr <- GRanges(seqnames=rep("chr1", 10), ranges=IRanges(start=c(10,20,30,40,50,60,70,80,90,100),
@@ -9592,10 +10968,10 @@ fData(GSE12946.data) # Feature annotation
    <0 rows> (or 0-length row.names)
 
 *-----------------------------------------------------------------------------------------------------------------------
-* ggseqlog (14 jan 2019)
+* ggseqlogo (14 jan 2019)
 
    library(MotifDb)
-   library(ggseqlogo)
+   library(ggseqlogo)e
    pwm <- query(MotifDb, "MA0048.2", "jaspar2018")[[1]]
    ggseqlogo(pwm)
 
@@ -15616,6 +16992,8 @@ ZCWPW1: 1
 
 *------------------------------------------------------------------------------------------------
 * seward hours
+  
+   zone map: https://www.greenseattle.org/information-for/forest-steward-resources/gsp-restoration-map/
 
   14 jul 2018: 1 hour, grubbing blackberry roots, andrews bay
   15 jul 2018: 1 hour photographing ferns, 1.5 hours watering 36 experimental ferns
@@ -15637,9 +17015,11 @@ ZCWPW1: 1
    9 dec 2018: 2 hours blackberry removal
   30 dec 2018: 4 hours planting just ne of cistern, alder and indian plum, with omar
 
-   2 jun 2019: 1 hour grubbing blackberries, andrews bay
-  26 may 2019: 1 hour grubbing blackberries, andrews bay
+   --- cedar report submitted  (03 jan 2019): 71 hours
 
+  26 may 2019: 1 hour grubbing blackberries, andrews bay
+   2 jun 2019: 1 hour grubbing blackberries, andrews bay
+   6 jun 2019: 30 hours preparing & running sword fern meeting
   20 jun 2019: 2 hours receiving 100 women who care funds
   23 jun 2019: 1 hour removing gz cedar tree grafitti, looking at highland healthy zone
   30 jun 2019: 3.5 hours watering ferns & GZ & G1 plantings
@@ -15650,7 +17030,16 @@ ZCWPW1: 1
   21 jul 2019: 2.5 hours HBB, closing trails
   05 aug 2019: 2 hours watering ground zero
   18 aug 2019: 1 hour HBB removal (project not abandoned after all) 2 hours watering GZ
+  25 aug 2019: 1 hour watering new plants at GZ (no ferns)
+  02 sep 2019: 2.5 hours HBB removal on Andrews Bay
 
+  total: ~120 hours.  reported (sep 2019)
+    andrews bay shore: LE7 Edge
+    ground zero:   MF4
+    die-off: 60 hours
+
+  22 sep 2019:  2 hours removing HBB (sqebeqsed snag and just past the dogleg)
+  
 *------------------------------------------------------------------------------------------------
 * next up for alison, CKAP2L shiny app (19 jun 2018)
 
@@ -18097,8 +19486,33 @@ robertianum) is another threatening invasive for this association.
       under stress, showed that the forest relaxed almost immediately
       post-burn."
 
+   ---  Current methods for detecting ethylene in plants 2012
+     https://academic.oup.com/aob/article/111/3/347/146141
+     https://www.sensor-sense.nl/products/gas-analyzers/ethylene
+
+   --- Special Issue: Induced biogenic volatile organic compounds from plants
+       Mild versus severe stress and BVOCs: thresholds, priming and consequences
+       Cell Press Review, 2009
+     https://www.sciencedirect.com/science/article/pii/S1360138509002921
+
+
+*------------------------------------------------------------------------------------------------
+* igvR and genome display ideas
+  mentioned by jim robinson:   https://api.ncbi.nlm.nih.gov/variation/v0/
+    NCBI variation web service 
 *------------------------------------------------------------------------------------------------
 * books
+
+  Power and Powerlessness: Quiescence & Rebellion in an Appalachian Valley,  by John Gaventa
+
+  the grammarians:
+    https://www.nytimes.com/2019/08/30/books/review/the-grammarians-cathleen-schine.html?action=click&module=Features&pgtype=Homepage
+
+   Falter: Has the Human Game Begun to Play Itself Out? bill mckibben    (apr 2019)
+   lifespan, david sinclair, recommended by nathan, NAD+ dna repair precursor NMN
+
+  the economists' hour: false prophets, free markets, and the fracture of society, applebaum
+    op-ed innytimes (25 aug 2019)
 
   gods of the upper air: how a circle of renegade anthropologists reinvented race, sex, and gender in the twentieth century 
      charles king.  boas and his students.  reviewed by louis menand, new yorker, 20 aug 2019
@@ -18112,8 +19526,29 @@ robertianum) is another threatening invasive for this association.
       by C.B. Macpherson  (Author), Frank Cunningham (Introduction)
 
 *------------------------------------------------------------------------------------------------
+* camping biking hiking possibilities
+
+  https://www.nationalparkreservations.com/article/biking-olympic
+    good overview, account of the odt on the straits of juan de fuca
+
+    https://www.evergreenmtb.org/trails/skokomish-river#info
+    Lower South Fork Skokomish (#873)
+
+    https://www.cascadiamagazine.org/places/getoutside/get-outside-lower-south-fork-skokomish-river/
+    steep uphill at start, then mostly flat.  
+
+    The Lower Skokomish River Trail is a moderate to gradual mountain
+    bike route that climbs 10 miles through old growth forest
+    paralleling the south fork of the Skokomish River, ending at the
+    Skokomish Upper South Fork trailhead before doubling back to the
+    start. A valid Recreation Pass is required and can be obtained
+    through the Forest Service but is not available at the trailhead.
+
+*------------------------------------------------------------------------------------------------
 * movies, tv, videos
 
+   another life: 10 episode netflix sci-fi
+   brexit: amazon prime video, Benedict Cumberbatch
    veronica mars: beloved detective series
    harlots: 18th century high-class strumpets
    the expanse: 3 TV seasons of award winning science fiction
@@ -57630,7 +59065,7 @@ roles.csv
 
    remove.packages("SttrDataPackage", .libPaths())
 
-   see also: ~/oncogit/Oncoscape/removeInstalledOncoscapePackages.R
+   see also: ~/github/Oncoscape/removeInstalledOncoscapePackages.R
 
 *----------------------------------------------------------------------------------------------------
 * cleveland project (26 dec 2015)
