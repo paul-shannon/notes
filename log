@@ -1,3 +1,7 @@
+if(!exists("roundNumericColumnsInDataframe"))
+   source("~/github/trenaShinyApps/utils/roundNumericColumnsInDataframe.R")
+   tbl.rounded <- roundNumericColumnsInDataframe(tbl, digits, pvalColumnNames=NA)
+
 SwordFernDieOff+subscribe@groups.io
 org-mode:  (3 ^U) tab: open up all sections, entire buffer visible;  toggle image display: ^c^x^v
 alias gitRemote="git config --local --get branch.master.remote"
@@ -58,7 +62,6 @@ http://db.systemsbiology.net:8080/cytoscape/gaggle/test/cy2rpc/     /net/dblocal
 #tmp <- mget(keys(org.Hs.eg.db), org.Hs.egSYMBOL)
 tmp <- mget(geneIDs.of.interest, org.Hs.egSYMBOL)
 eval(parse(text=sprintf("%s <- '%s'", tolower(as.character(tmp)), names(tmp))))
-
 symbol <- function(geneIDs) as.character(mget(as.character(geneIDs), org.Hs.egSYMBOL, ifnotfound=NA))
 
 bed format: chrom, start, end, name, score, strand
@@ -71,7 +74,132 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* latest for marjorie and jeff:  proximal regulators of tal1 - looks, swims, walks and flies like a duck (27 nov 2019)
+
 *-----------------------------------------------------------------------------------------------------------------------
+* compare fimo and bioc's pwmmatch (27 apr 2019)   DO NOT USE PWMMATCH!
+
+
+   from ~/github/TrenaValidator/misc/masterRegulators/mreg.R
+
+   library(org.Hs.eg.db)
+   source("~/github/fimoService/batchMode/fimoBatchTools.R")
+
+   assessChIPPeak <- function(motif){
+     tbl.regions <- as.data.frame(getGenomicRegion(igv), stringsAsFactors=FALSE)
+     meme.file <- "tmp.meme"
+     export(motif, con=meme.file, format="meme")
+     tbl.fimo <- fimoBatch(tbl.regions, matchThreshold=1e-3, genomeName="hg38", pwmFile=meme.file)
+     seq <- as.character(with(tbl.regions, getSeq(BSgenome.Hsapiens.UCSC.hg38, chrom, start, end)))
+     hits <-  Biostrings::matchPWM(motif[[1]], seq, with.score=TRUE, min.score="50")
+     tbl.bioc <- as.data.frame(ranges(hits))
+     tbl.bioc$start <- tbl.bioc$start + tbl.regions$start
+     tbl.bioc$end <- tbl.bioc$end + tbl.regions$start
+     tbl.bioc$score <- mcols(hits)$score
+     tbl.bioc$match <-  mcols(hits)$score/Biostrings::maxScore(motif[[1]])
+     list(fimo=tbl.fimo, bioc=tbl.bioc)
+     } # assessChIPPeak
+
+   motif <- query(MotifDb, c("ZNF263", "jaspar2018"))[1]
+
+   x <- assessChIPPeak(motif)
+     $fimo
+       chrom    start      end     tf strand   score  p.value      matched_sequence                            motif_id
+     1  chr1 47228765 47228785 ZNF263      - 9.55556 7.28e-05 TAGGGTGGGGAGGCAGGAACA Hsapiens-jaspar2018-ZNF263-MA0528.1
+     2  chr1 47228772 47228792 ZNF263      - 8.48889 1.23e-04 TGAGGCCTAGGGTGGGGAGGC Hsapiens-jaspar2018-ZNF263-MA0528.1
+     $bioc
+          start      end width    score     match
+     1 47228755 47228775    21 6.946242 0.5078559
+
+
+    the fiomo matches, both with reasonable p.value, finds both of the peaks reported by remap.
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* revisiting ChIP-seq (27 nov 2019)
+
+  khaleesi
+  cd ~pshannon/s/data/postgres-fill/remap-2018
+  steal code from checkIndexing.R:
+
+    library(RPostgreSQL)
+    db <- dbConnect(PostgreSQL(), user= "trena", password="trena", dbname="hg38", host="khaleesi")
+    query <- "select * from chipseq where chrom='chr1' and start >= 47226715 and endpos <= 47236715 and tf='ZNF263'"
+    system.time(tbl <- dbGetQuery(db, query))
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* tbx15
+  farin et al: AGGTGTGA
+  consensusString(query(MotifDb, c("TBX15", "hocomoco"))[[1]])
+    [1] "GGGGGGGGG?GGGTGGG??"
+  consensusString(query(MotifDb, c("TBX15", "jaspar2018"))[[1]])
+    [1] "AGGTGTGA"
+  consensusString(query(MotifDb, c("TBX15", "swiss"))[[1]])
+    [1] "AGGTGTGA"
+  consensusString(query(MotifDb, c("TBX15", "jolma"))[[1]])
+    [1] "AGGTGTGAAATTCACACCT"
+  consensusString(query(MotifDb, c("TBX15", "jolma"))[[2]])
+    [1] "AGGTGTGA"
+
+  -GCCTTGATCGGCTCAA- ATATCGATTGGGAGGAGAAGGGGCTG-3􏰄 (Tbx15),  
+
+188   chr3 128485844 128485862    19      +
+TBX15 16.16510 1.45e-06      TAGGAGGGGTAGGTGGGGA                                             $
+
+  http://hocomoco11.autosome.ru/motif/TBX15_HUMAN.H11MO.0.D
+
+*-----------------------------------------------------------------------------------------------------------------------
+* Renato Rosaldo once called “imperialist nostalgia.”
+*-----------------------------------------------------------------------------------------------------------------------
+* before a fresh pull on slexil, record my one new element to add into david's latest (17 nov 2019)
+
+    see morphemeInfo in ~/github/slexil/ijalLine.py, toHTML, line 309:
+   
+            translation = self.getTranslation()
+            if translation:
+               with htmlDoc.tag("div", klass="freeTranslation-tier"):
+                   htmlDoc.asis(self.getTranslation())
+
+            translation2 = self.getTranslation2()
+            if translation2 != None:
+               with htmlDoc.tag("div", klass="freeTranslation-tier"):
+                   htmlDoc.text(translation2)
+
+               # create an empty div, experimentally used for explanatory morpheme text
+            with htmlDoc.tag("div", klass="morphemeInfo"):
+                pass;
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* trena paper, recapitulate gata1 regulates nfe2 (16 nov 2019)
+
+  cd ~/github/trena/misc/nfe2
+     matchMotifs.R: finds fimo and bioc motifs, permissive scores, saves, 20kb
+       ~/github/trena/misc/nfe2/tbls.motifs.RData
+
+     gtex-blood: build models, noDNA (all known TFs) and those with strong match in region, fimo + phast7
+     brand: same
+     buenrostro: coming up next
+
+
+   --- tbl.brand.fimo, 10 top
+         gene  betaLasso  lassoPValue pearsonCoeff    rfScore   betaRidge spearmanCoeff      xgboost tfbs.strong tfbs.weak
+    1    TAL1 0.36338690 4.552826e-12    0.9198312 4.28431277  0.07535847     0.9337712 7.107370e-02           1         3
+    2    KLF1 0.09545576 6.347074e-08    0.8540065 5.82412691  0.06036311     0.9644226 8.671075e-01           1         9
+    3   GATA1 0.08354317 1.595375e-08    0.8446285 2.99772775  0.06527303     0.9036672 7.011153e-06           1         9
+    4     SP2 0.00000000 6.285217e-02    0.7990486 1.40500744  0.06797041     0.8133552 0.000000e+00           1         2
+    5    KLF3 0.05992989 2.451027e-06    0.7767051 2.40698351  0.07340528     0.7651888 1.100971e-03           4        28
+    6     SP1 0.00000000 4.433919e-02    0.6887033 0.87329683  0.06511483     0.7816092 0.000000e+00           2        11
+    7     SP4 0.00000000 2.022476e-01    0.6675521 0.51629999  0.04904186     0.7126437 8.984341e-04           2         4
+    8    FLI1 0.00000000 3.687811e-01   -0.6567769 0.10926752 -0.03994757    -0.6227758 2.772161e-08           1         4
+    9    KLF8 0.00000000 4.400028e-01   -0.6495398 0.53130377 -0.03599271    -0.6431117 5.157419e-05           2         9
+    10   RARA 0.00000000 8.547277e-01   -0.6362505 0.42077528 -0.03749966    -0.5145047 1.850178e-07           2         4
+
+   
+
 *-----------------------------------------------------------------------------------------------------------------------
 * knitr tips
   ~/github/knitr-examples/tiny/tiny.Rmd
@@ -119,6 +247,8 @@ bed format: chrom, start, end, name, score, strand
      pubmedID_from_curated_resources 2461328,15358512,3243278,22951020,15833715,20564185
      kegg_pathway                                                                      -
      pubmed.count                                                                      6
+
+
               
 *-----------------------------------------------------------------------------------------------------------------------
 *  wednesday (13 nov 2019)
@@ -348,6 +478,7 @@ bed format: chrom, start, end, name, score, strand
 
 *-----------------------------------------------------------------------------------------------------------------------
 * 2020 isb hsa (may only be for the high deductible plan)
+
           isb contribution   our max   annual max
   family    1400              5700       7100
 
@@ -376,7 +507,8 @@ bed format: chrom, start, end, name, score, strand
        may roll over $500 to the next year
 
    www.gallaghervchoiceenroll.com
-  
+   saved 2020 choices to: ~/Documents/2020-isb-benefit-election.pdf  (15 nov 2019)
+   
 
 *-----------------------------------------------------------------------------------------------------------------------
 * tbx15 figure for grant (4 nov 2019)
@@ -861,7 +993,17 @@ make
 
   https://cdn.jsdelivr.net/npm/igv@2.3.2/dist/igv.min.js
 
+
 *-----------------------------------------------------------------------------------------------------------------------
+* GO erythropoeisis gene
+
+   GO:0030218, erythrocyte differentiation
+   library(org.Hs.eg.db)
+   library(GO.db)
+
+   tbl.tfe <- select(org.Hs.eg.db, keys="GO:0030218", keytype="GOALL", columns="SYMBOL")
+
+
 * GO regulatory annotated genes, requested by jeff for grant proposal (22 oct 2019)
 
    the union of two categories is satisfactory to jeff
@@ -881,6 +1023,7 @@ make
 *-----------------------------------------------------------------------------------------------------------------------
 * GO tf annotation categories, DNA-binding transcription factor activity and children (22 oct 2019)
 
+   tfs.all <- sort(unique(select(org.Hs.eg.db, keys="GO:0003700", keytype="GOALL", columns="SYMBOL")$SYMBOL))
    parents and children:  https://www.ebi.ac.uk/QuickGO/term/GO:0003700
 
    ~/github/TrenaProjectErythropoiesis/prep/grantProposal.novermber-2019/tfIdentification/tfIdentification.R
@@ -1335,21 +1478,28 @@ and these are very often arguments
 see		I 	PROX	PFV–chased–ICS	SPEC	dog
 ‘I see the ones who chased the dog’
 
-Thinking in terms of verb and noun will get you a long way, but you need to remember that Lushootseed is very flexible with what can function the way verbs and nouns typically function in a sentence.
+Thinking in terms of verb and noun will get you a long way, but you need to remember that
+Lushootseed is very flexible with what can function the way verbs and nouns typically function in a
+sentence.
 
-Thinking that is what you in fact suggest, I am trying to learn your categories of clause structure by applying them to Mink and Tetyika.  I’m a little embarrassed to say that I get stuck right away.
+Thinking that is what you in fact suggest, I am trying to learn your categories of clause structure
+by applying them to Mink and Tetyika.  I’m a little embarrassed to say that I get stuck
+right away.
 
-If my questions below show you that I am a hopeless case here, or that I should work through Thom’s grammars before doing anything else, please say so.  I fear that my questions may not be very good ones.
+If my questions below show you that I am a hopeless case here, or that I should work through
+Thom's grammars before doing anything else, please say so.  I fear that my questions may
+not be very good ones.
 
 On the contrary, they are exactly what you need to ask to come to understand this.
 
 - Paul
+
 Here is my attempt at applying your categories to lines 1 and 2 of Mink & Tetyika
 Your categories:
-[Verb Noun]
-[Verb clitic Noun]
-[Verb Noun ʔə Noun]
-[Verb clitic ʔə Noun]  
+  [Verb Noun]
+  [Verb clitic Noun]
+  [Verb Noun  Noun]
+  [Verb clitic ʔə Noun]  
 - Adverb clitic precede Verb
 - N1 N2 in the Verb slot
 - headless relative clause in the Verb slot
@@ -1710,15 +1860,25 @@ raised letter w: 02B7  ʷ
 
 
 *-----------------------------------------------------------------------------------------------------------------------
+* lushootseed sentence structure
+
+  predicate
+  subject noun phrase
+  object noun phrase
+  ʔə object noun phrase
+  modifiers
+
+*-----------------------------------------------------------------------------------------------------------------------
 * lushootseed abbreviations
 
-ˑ = emphatic lengthening
+ˑ  = emphatic lengthening   (upside down small triangle)
 = = clitic boundary
-– = affix boundary
+-  = affix boundary
 • = lexical suffix boundary
 1, 2, 3 = first, second, third person act = activity
 add = additive
-adnm = adjunctive nominalizer altv = allative applicative
+adnm = adjunctive nominalizer
+altv = allative applicative
 assc = associative
 attn = attenuative
 auto = autonomous
@@ -2518,6 +2678,9 @@ RNA-seq at this accession. All single cell ATAC-seq data is available through GE
 GSE74310. All analyses and coordinates referenced here are for the human reference genome hg19.
 
 rna-seq: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE74246  81 samples
+  paper here:  https://www.ncbi.nlm.nih.gov/pubmed/27526324
+  Lineage-specific and single-cell chromatin accessibility charts human hematopoiesis and leukemia evolution.
+  
 *-----------------------------------------------------------------------------------------------------------------------
 * h2k9me3 for HSC, cd34+
 
@@ -6128,6 +6291,31 @@ https://soundcloud.com/uwlibraries/hilbert200501tape2467a
 
 *-----------------------------------------------------------------------------------------------------------------------
 * PAPERS
+
+  --- klf1 in erytrhopoiesis: KLF1 stabilizes GATA-1 and TAL1 occupancy in the human β-globin locus
+
+    https://www.sciencedirect.com/science/article/pii/S1874939914003101
+
+    KLF1 is an erythroid specific transcription factor that binds to
+    regulatory regions of erythroid genes. Binding sites of KLF1 are
+    often found near binding sites of GATA-1 and TAL1. In the β-globin
+    locus, KLF1 is required for forming active chromatin structure,
+    although its role is unclear. To explore the role of KLF1 in
+    transcribing the human γ-globin genes, we stably reduced the
+    expression of KLF1 in erythroid K562 cells, compromising its
+    association in the β-globin locus. The γ-globin transcription was
+    reduced with disappearance of active chromatin structure of the
+    locus in the KLF1 knockdown cells. Interestingly, GATA-1 and TAL1
+    binding was reduced in the β-globin locus, even though their
+    expressions were not affected by KLF1 knockdown. The
+    KLF1-dependent GATA-1 and TAL1 binding was observed in the adult
+    locus transcribing the β-globin gene and in several erythroid
+    genes, where GATA-1 occupancy is independent from TAL1. These
+    results indicate that KLF1 plays a role in facilitating and/or
+    stabilizing GATA-1 and TAL1 occupancy in the erythroid genes,
+    contributing to the generation of active chromatin structure such
+    as histone acetylation and chromatin looping.
+
 
   --- Ldb1 complexes: The new master-regulators of erythroid gene transcription
     important!
@@ -13255,6 +13443,7 @@ ENSEMBL  SYMBOL ENTREZID
 *-----------------------------------------------------------------------------------------------------------------------
 * get all transcript factors+ from org.Hs.eg.db or org.Mm.eg.db
 
+   "DNA-binding transcription factor activity"
    library(org.Hs.eg.db)
    tbl.goTFsymbols <- suppressMessages(select(org.Hs.eg.db, keys="GO:0003700", keytype="GOALL", columns="SYMBOL"))
 
@@ -15873,7 +16062,7 @@ ZCWPW1  chr7:99892814-101231552     chr7:99490437-100874833
 
 --- reset to remote state
 git fetch origin
-get reset --hard origin/master
+git reset --hard origin/master
 
 --- from http://andrewberls.com/blog/post/git-tricks-unstaging-files#alias
 
@@ -21820,9 +22009,12 @@ NCBI variation web service
   put it another way, next time some jazz fan tells you that late Coltrane is unlistenable, or something, punch em in
   the face. Seven times. More later.
 
+*----------------------------------------------------------------------------------------------------
 * books
 
 
+   jessica james cowgirl philosopher by kelly oliver, vanderbilt philosopher
+   
    Unbound: How Inequality Constricts Our Economy and What We Can Do about It 
      by Heather Boushey (in cassidy new yorker podcast)  [audible soon?]
 
@@ -21903,11 +22095,16 @@ through the Forest Service but is not available at the trailhead.
 *------------------------------------------------------------------------------------------------
 * podcasts
 
- Three Blokes in a Pub: anti-brexi
+  Three Blokes in a Pub: anti-brexit
+  https://crosscut.com/podcast/crosscut-talks/1/29/making-rising-capturing-climate-crisis-washingtons-coast
+  
 
 *------------------------------------------------------------------------------------------------
 * movies, tv, videos
 
+ https://www.newyorker.com/culture/decade-in-review/the-twenty-seven-best-movies-of-the-decade
+
+https://www.pbs.org/show/college-behind-bars/
 no country for old men
 another life: 10 episode netflix sci-fi
 brexit: amazon prime video, Benedict Cumberbatch
@@ -22553,7 +22750,13 @@ look at underlying differences in placental transcriptional
 regulation which may attribute to this.
 
 *------------------------------------------------------------------------------------------------------------------------
-* format, prettify data.frame, round, precision, decimal points, decimal place reduction, exponentials, scientific notation
+* format tips, prettify data.frame, round, precision, decimal points, decimal place reduction, exponentials, scientific notation, format dataframe format data.frame
+
+  if(!exists("roundNumericColumnsInDataframe"))
+     source("~/github/trenaShinyApps/utils/roundNumericColumnsInDataframe.R")
+  tbl <- roundNumericColumnsInDataframe(tbl, 2, pvalColumnNames="lassoPValue")
+
+
 
 source("~/github/trenaShinyApps/utils/roundNumericColumnsInDataframe.R")
 tbl <- mtcars[1:5, ]
@@ -22581,29 +22784,28 @@ Hornet Sportabout 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2 3.68e-01
 
 # reduce the meaningless precsion in all of the numerical columns of trena models
 library(RUnit)
-round.numeric.columns.in.dataframe <- function(tbl, digits, pvalColumnNames=NA)
-{
-tbl.pvals <- data.frame()
-tbl.main <- tbl
 
-if(!(all(is.na(pvalColumnNames)))){
-pval.cols <- grep(pvalColumnNames, colnames(tbl))
-stopifnot(length(pval.cols) == length(pvalColumnNames))
-tbl.pvals <- tbl[, pval.cols, drop=FALSE]
-tbl.main <- tbl[, -pval.cols, drop=FALSE]
-}
+round.numeric.columns.in.dataframe <- function(tbl, digits, pvalColumnNames=NA) {
+  tbl.pvals <- data.frame()
+  tbl.main <- tbl
+  if(!(all(is.na(pvalColumnNames)))){
+     pval.cols <- grep(pvalColumnNames, colnames(tbl))
+     stopifnot(length(pval.cols) == length(pvalColumnNames))
+     tbl.pvals <- tbl[, pval.cols, drop=FALSE]
+     tbl.main <- tbl[, -pval.cols, drop=FALSE]
+     }
+  numeric_columns <- sapply(tbl.main, mode) == 'numeric'
+  tbl.main[numeric_columns] <-  round(tbl.main[numeric_columns], digits)
+  if(ncol(tbl.pvals) > 0){
+  tbl.pvals <- apply(tbl.pvals, 2, function(col) as.numeric(formatC(col, format = "e", digits = 2)))
+  }
 
-numeric_columns <- sapply(tbl.main, mode) == 'numeric'
-tbl.main[numeric_columns] <-  round(tbl.main[numeric_columns], digits)
+  tbl.out <- cbind(tbl.main, tbl.pvals)[, colnames(tbl)]
+  tbl.out
 
-if(ncol(tbl.pvals) > 0){
-tbl.pvals <- apply(tbl.pvals, 2, function(col) as.numeric(formatC(col, format = "e", digits = 2)))
-}
+   } # round.numeric.columns.in.dataframe
 
-tbl.out <- cbind(tbl.main, tbl.pvals)[, colnames(tbl)]
-tbl.out
 
-} # round.numeric.columns.in.dataframe
 #------------------------------------------------------------------------------------------------------------------------
 runTests <- function()
 {
@@ -23906,9 +24108,9 @@ both branches (RELEASE_3_6 and master/devel) now on PriceLab/trena
 *------------------------------------------------------------------------------------------------------------------------
 * git config, github config, git tips, github tips, switch to ssh authentication (1 mar 2018)
 
-new, in ~/github/trena/.git/config (for example)
+  new, in ~/github/trena/.git/config (for example)
 
-url = git@github.com:PriceLab/trena.git
+  url = git@github.com:PriceLab/trena.git
 
 
 *------------------------------------------------------------------------------------------------------------------------
