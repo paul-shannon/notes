@@ -74,7 +74,496 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* displayMotifs, motif tips, ggseqlogo, display logos 
+
+   ~/github/MotifDb/misc/viz/displayMotifs.R:
+     library(ggseqlogog)
+      displayMotifs <- function(motifs, ncol=3){
+        ggseqlogo(as.list(motifs), ncol=ncol)
+        } 
+ 
+   in use:
+
+     tfs <- c("TAL1", "LYL1", "LMO2", "GATA2", "RUNX1", "MEIS1", "SPI1", "FLI1", "GFI1B", "ERG")
+     motifs <- query(MotifDb, c("hsapiens"), tfs[10])
+     length(motifs)
+     names(motifs)
+     displayMotifs(motifs, 3)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* regulatory genome trena paper (12 dec 2019)
+
+   ~/github/TrenaProjectErythropoiesis/misc/haneyNetwork/
+
+*-----------------------------------------------------------------------------------------------------------------------
+* poster children for regulatory genome tools paper (11 dec 2019)
+
+  --- nfe2 activates tal1 
+  
+     cd ~/github/TrenaProjectErythropoiesis/misc/mreg
+     ~/github/TrenaProjectErythropoiesis/misc/mreg/mreg.R
+     source("mreg.R"); run.tal1()
+
+      # nfe2 is top regulator  at 0.95, fimo 5e-5, with supporting ChIP from remap, with pearson at 0.920
+      # nfe2, runx2, e2f4 are top 3 regulators with cons 0.9,  moods 1e-4, ChIP support also for runx2 (repressor)
+
+   --- hoxb3 regulates gata2
+     cd ~/github/TrenaProjectErythropoiesis/misc/mreg
+     source("gata2.R"); x <- run.gata2().  suggests HOXB3 with 4 binding sites, > 90% conservation, < 1e-3 fimo
+     substantial literature support
+  
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* comparing MOODS and FIMO (9 dec 2019)
+
+  test_MotifMatching.R: experiment with adding matching algorithms to the MotifDb package
+  ~/github/MotifDb/inst/unitTests/test_MotifMatching
+
+   #------------------------------------------------------------------------------------------------------------------------
+   library(MotifDb)
+   library(RUnit)
+   library(motifmatchr)
+   library(TFBSTools)
+   library(universalmotif)     # for convert_motifs
+   library(GenomicRanges)
+   source("~/github/fimoService/batchMode/fimoBatchTools.R")
+   
+   #------------------------------------------------------------------------------------------------------------------------
+   #------------------------------------------------------------------------------------------------------------------------
+   
+   # first intro of TAL1, with some good matches for E2F4, ZNF263: chr1:47,231,914-47,232,009
+   gr.regions <- GRanges(seqnames="chr1", ranges=IRanges(start=47231914, end=47232009))
+   tbl.regions <- as.data.frame(gr.regions)
+   colnames(tbl.regions)[1] <- "chrom"
+   
+   
+   meme.file <- "tmp.meme"
+   motifs <- query(MotifDb, c("sapiens", "jaspar2018")) # , "ZNF263"))
+   length(motifs)
+   export(motifs, con=meme.file, format="meme")
+   
+   tbl.fimo <- fimoBatch(tbl.regions, matchThreshold=1e-5, genomeName="hg38", pwmFile=meme.file)
+   print(tbl.fimo)
+   
+   out.value <- "positions"
+   motifs.converted <- convert_motifs(motifs, "TFBSTools-PWMatrixList")
+   motifs.converted <- convert_motifs(motifs)
+   matchThreshold = 1e-5
+   
+   motifs6 <- head(query(MotifDb, c("sapiens", "jaspar2018")))
+   motifs.pfmatrix <- lapply(motifs6, function(motif) convert_motifs(motif, "TFBSTools-PFMatrix"))
+   motifs.pfmList <- do.call(PFMatrixList, motifs.pwmatrix)
+   length(motifs.pfmList)
+   
+   motifs <- query(MotifDb, c("sapiens", "jaspar2018"))
+   motifs.pfmatrix <- lapply(motifs, function(motif) convert_motifs(motif, "TFBSTools-PFMatrix"))
+   motifs.pfmList <- do.call(PFMatrixList, motifs.pfmatrix)
+   length(motifs.pfmList)
+   
+   
+   
+   x.match <- matchMotifs(motifs.pfmList, gr.regions, genome="hg38", out=out.value, p.cutoff=1e-5)
+   tbl.match <- as.data.frame(x.match)
+   dim(tbl.match)
+   tbl.match
+   
+   tbl.fimo <- fimoBatch(tbl.regions, matchThreshold=1e-5, genomeName="hg38", pwmFile=meme.file)
+   #    chrom    start      end         tf strand    score  p.value      matched_sequence                                               motif_id
+   # 7   chr1 47231930 47231950     ZNF263      + 14.43330 4.67e-06 TAAGGAAAAGGGGGAAGGAAG                    Hsapiens-jaspar2018-ZNF263-MA0528.1
+   # 1   chr1 47231934 47231951 EWSR1-FLI1      + 12.75280 1.26e-07    GAAAAGGGGGAAGGAAGG                Hsapiens-jaspar2018-EWSR1-FLI1-MA0149.1
+   # 2   chr1 47231938 47231955 EWSR1-FLI1      +  6.78652 7.75e-07    AGGGGGAAGGAAGGAAGA                Hsapiens-jaspar2018-EWSR1-FLI1-MA0149.1
+   # 8   chr1 47231939 47231959     ZNF263      + 14.25560 5.22e-06 GGGGGAAGGAAGGAAGAGAGT                    Hsapiens-jaspar2018-ZNF263-MA0528.1
+   # 3   chr1 47231942 47231959 EWSR1-FLI1      +  8.31461 4.34e-07    GGAAGGAAGGAAGAGAGT                Hsapiens-jaspar2018-EWSR1-FLI1-MA0149.1
+   # 9   chr1 47231964 47231974       E2F1      + 15.05620 4.43e-06           GAGGCGGGAGG                      Hsapiens-jaspar2018-E2F1-MA0024.2
+   # 5   chr1 47231965 47231975       E2F6      + 16.00000 1.98e-06           AGGCGGGAGGG                      Hsapiens-jaspar2018-E2F6-MA0471.1
+   # 6   chr1 47231965 47231975       E2F4      + 14.74160 8.50e-06           AGGCGGGAGGG                      Hsapiens-jaspar2018-E2F4-MA0470.1
+   # 4   chr1 47231987 47231996        SP1      - 14.44940 5.76e-06            CCCCGCCCCG Mmusculus;Rnorvegicus;Hsapiens-jaspar2018-SP1-MA0079.2
+   # 11  chr1 47231987 47231997        SP1      - 15.10110 4.67e-06           CCCCCGCCCCG                       Hsapiens-jaspar2018-SP1-MA0079.3
+   # 12  chr1 47231988 47231997       KLF5      - 15.11240 5.17e-06            CCCCCGCCCC                      Hsapiens-jaspar2018-KLF5-MA0599.1
+   # 13  chr1 47231988 47232002       EGR3      - 14.71910 3.02e-06       GGACGCCCCCGCCCC                      Hsapiens-jaspar2018-EGR3-MA0732.1
+   # 14  chr1 47231988 47232001       EGR1      - 12.76400 4.23e-06        GACGCCCCCGCCCC                      Hsapiens-jaspar2018-EGR1-MA0162.3
+   # 10  chr1 47231990 47232003       EGR1      - 15.70790 2.72e-06        CGGACGCCCCCGCC                      Hsapiens-jaspar2018-EGR1-MA0162.2
+   
+   tbl.match
+   #    group                                                group_name seqnames    start      end width strand     score
+   # 1     20                         Hsapiens-jaspar2018-MZF1-MA0056.1     chr1 47231938 47231943     6      + 13.659854
+   # 2     38                         Hsapiens-jaspar2018-SPI1-MA0080.1     chr1 47231940 47231945     6      + 12.655299
+   # 3     67 Mmusculus;Rnorvegicus;Hsapiens-jaspar2018-NFATC2-MA0152.1     chr1 47232003 47232009     7      -  7.554989
+   # 4     80    Mmusculus;Rnorvegicus;Hsapiens-jaspar2018-SP1-MA0079.2     chr1 47231986 47231995    10      -  9.400558
+   # 5     86                          Hsapiens-jaspar2018-SP2-MA0516.1     chr1 47231982 47231996    15      -  7.917605
+   # 6    129                         Hsapiens-jaspar2018-EGR1-MA0162.2     chr1 47231989 47232002    14      - 11.297665
+   # 7    142                          Hsapiens-jaspar2018-SP1-MA0079.3     chr1 47231962 47231972    11      -  5.234336
+   # 8    142                          Hsapiens-jaspar2018-SP1-MA0079.3     chr1 47231986 47231996    11      -  9.069957
+   # 9    158                         Hsapiens-jaspar2018-KLF5-MA0599.1     chr1 47231987 47231996    10      -  8.382260
+   # 10   281                         Hsapiens-jaspar2018-EGR3-MA0732.1     chr1 47231987 47232001    15      -  9.448316
+   # 11   282                         Hsapiens-jaspar2018-EGR4-MA0733.1     chr1 47231986 47232001    16      -  8.677877
+   # 12   301                       Hsapiens-jaspar2018-ZNF740-MA0753.1     chr1 47231988 47231997    10      -  4.661897
+   # 13   399                        Hsapiens-jaspar2018-CEBPG-MA0838.1     chr1 47231923 47231932    10      - 10.396563
+   # 14   533                         Hsapiens-jaspar2018-EGR1-MA0162.3     chr1 47231987 47232000    14      -  6.614131
+   
+   # an ensemble approach described here:
+   # Enhanced TF binding site maps improve regulatory networks learned from accessible chromatin data
+   # https://www.biorxiv.org/content/10.1101/545780v2.full
+
+   looks better when searching all motifs against 10kb region centered on tal1 tss:
+     > gr.regions <- GRanges(seqnames="chr1", IRanges(47226365, 47236785))
+
+     > tbl.match <- tbl.match[order(tbl.match$score, decreasing=TRUE),]
+     > head(tbl.match)
+         group                          group_name seqnames    start      end width strand    score
+     137   124 Hsapiens-jaspar2018-ZNF263-MA0528.1     chr1 47229531 47229551    21      - 22.60013
+     136   124 Hsapiens-jaspar2018-ZNF263-MA0528.1     chr1 47229528 47229548    21      - 22.21787
+     131   124 Hsapiens-jaspar2018-ZNF263-MA0528.1     chr1 47234943 47234963    21      + 21.36329
+     138   124 Hsapiens-jaspar2018-ZNF263-MA0528.1     chr1 47230108 47230128    21      - 19.95449
+     135   124 Hsapiens-jaspar2018-ZNF263-MA0528.1     chr1 47229068 47229088    21      - 19.58664
+     126   124 Hsapiens-jaspar2018-ZNF263-MA0528.1     chr1 47230474 47230494    21      + 19.17605
+     > tbl.fimo <- fimoBatch(tbl.regions, matchThreshold=1e-5, genomeName="hg38", pwmFile=meme.file)
+     > head(tbl.fimo)
+         chrom    start      end     tf strand   score  p.value      matched_sequence                            motif_id
+     90   chr1 47229532 47229552 ZNF263      - 24.1333 1.56e-09 GGGGGAGGAGGGGGTAGAGGA Hsapiens-jaspar2018-ZNF263-MA0528.1
+     89   chr1 47229529 47229549 ZNF263      - 22.9444 5.43e-09 GGAGGAGGGGGTAGAGGAAAG Hsapiens-jaspar2018-ZNF263-MA0528.1
+     108  chr1 47234944 47234964 ZNF263      + 22.5778 7.85e-09 GGGGGATGAGGGAGAGGAAGG Hsapiens-jaspar2018-ZNF263-MA0528.1
+     82   chr1 47229069 47229089 ZNF263      - 21.7444 1.74e-08 GGGGGTGGGGGGAGGGGAGGA Hsapiens-jaspar2018-ZNF263-MA0528.1
+     93   chr1 47230109 47230129 ZNF263      - 21.6778 1.85e-08 GGTGGAGGGGAAGGTGGGGGA Hsapiens-jaspar2018-ZNF263-MA0528.1
+     120  chr1 47231312 47231325   EGR1      + 19.5056 7.62e-08        CCGCCGCCCCCACC   Hsapiens-jaspar2018-EGR1-MA0162.2
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* laser interaction educational map for jen eklund (9 dec 2019)
+
+  cd ~/github/cyjShiny/inst/examples/jenEklund
+  laser.tsv
+  source("app.R"); app  # displays the network.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* for regulatory genome paper: tal1 regulated by gata2 and maybe znf263
+  ~/github/TrenaProjectErythropoiesis/misc/mreg/
+  source("mreg.R")
+  run.tal1()
+    gene betaLasso lassoPValue betaRidge rfScore pearsonCoeff spearmanCoeff xgboost bindingSites
+1   E2F4     0.181    8.80e-07     0.184   4.648        0.782         0.871   0.311            1
+2    SP2     0.384    4.31e-04     0.189   3.971        0.750         0.825   0.352            1
+3    SP1     0.045    1.90e-02     0.167   3.642        0.619         0.799   0.013            1
+4  GATA2     0.000    9.59e-01    -0.129   3.359       -0.559        -0.351   0.001            1
+5 ZNF263    -0.355    4.24e-04    -0.150   4.104       -0.525        -0.221   0.310            2
+6   E2F6     0.000    4.20e-01    -0.056   2.566       -0.240        -0.044   0.004            1
+7   E2F1     0.000    8.79e-01    -0.042   1.964       -0.123         0.052   0.010            1
+[1] tf E2F4,  1 peaks
+[1] --- no ChIP found for SP2
+[1] --- no ChIP found for SP1
+[1] tf GATA2,  4 peaks
+[1] tf ZNF263,  2 peaks
+[1] tf E2F6,  4 peaks
+
+ E2F4 Is Essential for Normal Erythrocyte Maturation and Neonatal Viability
+ https://www.sciencedirect.com/science/article/pii/S1097276500000290
+
+*-----------------------------------------------------------------------------------------------------------------------
+* carol smith, kuow news editor, asked for her help in correcting the "ferns are back" story (6 dec 2019)
+
+  she will call back, or have someone else do so
+
+*-----------------------------------------------------------------------------------------------------------------------
+* hematopoiesis regulatory network, add new relations using conservation & fimo, for paper (6 dec 2019)
+
+  --- some definitions
+    see "marjorie's day-to-erythropoiesis-stage mapping (19 jun 2019)" relating corces and her data time points
+
+   see powerpoint here:
+     ~/github/TrenaProjectErythropoiesis/misc/brand-corces-timepoints-compared.pptx
+
+    hsc: hematopoietic stem cell
+    mpp: multipotent progenitor
+    cmp: common myeloid progenitor
+    mep:o megakaryocyte–erythroid progenitors
+
+    cmp: common myeloid progenitory
+
+      First, Corces do not define their cell types with exactly the same marker combinations as we do
+      (there are common markers but also specific ones). I know the field is very confusing this
+      way. Everyone has their preferred markers. Please see Slide 3 on the power point for the
+      differences. I think this is ok, but I just wanted to make sure everyone knows about this caveat
+      when we compare the data.
+      
+      Corces data is great on the very early populations (HSC, MPP, CMP and MEP), which is useful
+      because our ATACseq data starts at Day4 and by Day4, most of these early populations are gone.
+      
+      In contrast, for the late erythroid populations, our data is more detailed i.e. the "Ery" fraction
+      from Corces correspond to at least 6 different populations that span our Days 8 to 16.
+
+
+  --- tal1: big role in early stages
+
+     [[file://Users/paul/images/hematopoiesis-with-key-TFs.png]]
+     [[file://Users/paul/images/hematopoiesis-current-scheme.png]]
+
+  -- from Gottgens review, "Regulatory network control of blood stem cells"
+
+    Moignard et al surveyed the expression of 18 transcription factor genes in 690 single blood stem and progenitor
+    cells,47 and went on to exploit pairwise correlation analysis to identify putative regulatory relationships between
+    in- dividual TFs. This analysis highlighted a previously unrecognized triad composed of Gata2, Gfi1, and Gfi1b, which
+    might play an important role in regulating early fate choice decisions of differenti- ating blood stem
+    cells. Importantly, the authors went on to validate direct regulatory interactions within this triad using a variety
+    of functional assays, thus moving the analysis beyond simple statistical correlation.
+  
+    A subsequent study profiled > 80 TFs in > 250 blood stem and progenitor cells49 and again used correlation analysis to
+    predict putative regulatory connections. Integration with previously published ChIP- Seq data for 10 key HSPC TFs36
+    was used to highlight potentially direct regulatory links, and a central role for the transcription factor Gata2 was
+    further supported by analysis of Gata21/2 HSPCs, which showed altered expression of some Gata2 targets that were
+    consistent with the inferred network model. These early successes in regulatory network inference using single cell
+    expression profiling suggest that this ap- proach may be widely embraced by the scientific community. Future efforts
+    should pay attention to the principles of partial correlation analysis discussed above in the context of the Aracne
+    tool for network reconstruction from microarray expression profiles, because partial correlation analysis measures the
+    degree of association between 2 genes with the potential effects of all other genes removed and therefore focuses
+    analysis on associations that are more likely to be the result of direct regulatory relationships.
+  
+    Successful reconstruction of high-quality regulatory network models will require large-scale datasets, probably
+    consisting of thousands of single cells analyzed along a differentiation time course.
+
+    Several recent studies have provided genome-wide DNA methylation maps alongside transcriptome analysis of
+    hematopoietic differentiation and HSC aging,57-61 with the latter study by Goodell and colleagues further
+    interrogating histone modifications, in addition to DNA methylome and transcriptome analysis. Such integrated
+    approaches provide very welcome information on the likely activity and potential dynamic status of individual gene
+    regulatory elements, and as such can be used to examine to what extent emerging network models are consistent with
+    the likely activity of specific gene regulatory elements.
+
+    TF input is particularly important when cells change state from for example a progenitor type to a descendant cell
+    type. However, most of the multigene models and methods discussed in this review iden- tify distinct stable states
+    and not precursor-product relationships or developmental kinetics. Attempts to explain hematopoietic differenti-
+    ation dynamics are only seen in the small-scale models based on 2 or 3 well-studied genes.5,6
+
+    A blueprint for the integration of inter-cellular commu- nication into regulatory network models has been provided
+    by Eric Davidson’s pioneering work on sea urchin development,1 which is likely to provide an important starting
+    point for the future gener- ation of similarly comprehensive network models for blood cell development.
+
+    Many of the most commonly mutated genes in hematological malignancies encode transcrip- tional and epigenetic
+    regulators. The functional consequences of such mutations can only be truly appreciated by taking into account the
+    connectivity of a given gene within wider regulatory networks, because this critically determines how a given
+    mutation will impact on the activity of other key regulators and therefore ultimately the behavior of the entire
+    cell.
+
+   --- hematopoiesis tf network
+
+    [from moignard, 2013: Characterisation of transcriptional networks in blood stem and progenitor cells using
+     high-throughput single cell gene expression analysis.   reference from gottgen 2015 review]
+
+       Network diagrams showing putative activating relationships between TFs suggested by significant positive
+       correlations (top, red lines) and antagonistic relationships suggested by significant negative correlations
+       (bottom, blue lines) in the whole data set. Known relationships are highlighted with bold lines. This highlights a
+       putative transcription factor triad in which Gfi1 is negatively correlated with Gata2 and Gfi1b, but Gata2 and
+       Gfi1b are positively correlated.
+  
+     putative triad:
+       gata2 anti-correlates-with gfi1
+       gata2 directly activates gfi1b through distal enhancer elements
+       gfi1 regulates? gfi1b
+  
+     pu.1 anticorrelates with gata1
+     scl correlates gata2
+
+
+   --- More recently, a qualitative network model connecting 11 transcription factors controlling the differentiation of
+     common myeloid progenitors (CMPs) was constructed based on a comprehensive survey of the literature.7 
+
+     Krumsiek J, Marr C, Schroeder T, Theis FJ. Hierarchical differentiation of myeloid progenitors is encoded in the
+     transcription factor network. PLoS ONE. 2011;6(8):e22649.
+
+     [[[[file://Users/paul/images/tf-network-krumsiek.png]]]]
+
+
+   --- A second literature-curated model based on cross-regulation of 10 hematopoietic stem cell (HSC) TFs, on the other
+         hand, identified HSC-like gene expression as a stable attractor state.8
+
+   --- Bonzanni N, Garg A, Feenstra KA, et al. Hard- wired heterogeneity in blood stem cells revealed using a dynamic
+       regulatory network model. Bioinformatics. 2013;29(13):i80-i88.
+
+   --- moignard 2015:  Decoding the Regulatory Network for Blood Development from Single-Cell Gene Expression Measurements
+      [[file://Users/paul/images/tf-network-moignard-2015.png]]
+
+   --- Reconstructing blood stem cell regulatory network models from single-cell molecular profiles (hamey 2017)
+      [[file://Users/paul/images/tf-network-hamey-2017.png]]
+
+    --- nanog regulates tal1
+       The pluripotency factor NANOG controls primitive hematopoiesis and directly regulates Tal1.
+
+         Progenitors of the first hematopoietic cells in the mouse arise in the early embryo from Brachyury-positive
+         multipotent cells in the posterior-proximal region of the epiblast, but the mechanisms that specify primitive
+         blood cells are still largely unknown. Pluripotency factors maintain uncommitted cells of the blastocyst and
+         embryonic stem cells in the pluripotent state. However, little is known about the role played by these factors
+         during later development, despite being expressed in the postimplantation epiblast. Using a dual transgene
+         system for controlled expression at postimplantation stages, we found that Nanog blocks primitive hematopoiesis
+         in the gastrulating embryo, resulting in a loss of red blood cells and downregulation of erythropoietic
+         genes. Accordingly, Nanog deficient embryonic stem cells are prone to erythropoietic differentiation. Moreover,
+         Nanog expression in adults prevents the maturation of erythroid cells. By analysis of previous data for NANOG
+         binding during stem cell differentiation and CRISPR/Cas9 genome editing, we found that Tal1 is a direct NANOG
+         target. Our results show that Nanog regulates primitive hematopoiesis by directly repressing critical erythroid
+         lineage specifiers.
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* Enhanced TF binding site maps improve regulatory networks learned from accessible chromatin data: fimo, moods, cluster buster
+  in ~/Documents/  (5 dec 2019)
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* tal1 
+*-----------------------------------------------------------------------------------------------------------------------
+* joanna wysocka's fine account of enhancers (4 dec 2019)
+
+   Ever-Changing Landscapes: Transcriptional Enhancers in Development and Evolution  (2016, Cell Review)
+
+  The accurate, precise, and robust regulation of gene expression during development is a
+  cornerstone for complex biological life. Much of this information is encoded by cis-regulatory
+  ele- ments called enhancers, canonically defined as short (~100–1,000 bp) noncoding DNA sequences
+  that act to drive transcription independent of their relative distance, location, or orientation
+  to their cognate promoter (for a historical perspective on the discovery of enhancers, see
+  Schaffner, 2015). Although enhancers share many features with other classes of cis-regula- tory
+  elements, especially promoters (reviewed in Kim and Shie- khattar, 2015), it is their ability to
+  activate transcription over long genomic distances that sets them apart. This feature allows a
+  gene to be regulated by multiple distal enhancers with different spatiotemporal activities,
+  facilitating enormous combinatorial complexity of gene-expression repertoires (and, in turn, a
+  vast array of cellular states) using a relatively limited set of genes. In addition to their
+  central role in developmental gene regulation, enhancers are fertile targets for evolutionary
+  change, as they are both cell-type specific (allowing for modulation of target gene expression in
+  specific tissue context without affecting other pleiotropic gene functions) and commonly exist in
+  groups of redundant elements (facilitating accumulation of genetic varia- tion by buffering the
+  risk of lethality) (Levine, 2010; Wittkopp and Kalay, 2012).
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cory, rosmap proteins counts for targetGene (try MEF2C first) (13 dec 2019)
+
+   cd ~/github/TrenaProjectADPRN/misc/linkProteinAndExpressionMatrices
+   
+   protein matrix ~/github/TrenaProjectADPRN/inst/extdata/expression/c2-8817x400.RData     25M Dec  3 2019
+   sample ID (prot/mrna) map:
+     print(load("~/github/TrenaProjectADPRN/misc/linkProteinAndExpressionMatrices/tbl.rna.prot.map.RData")
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cory's AMP-AD rosmap proteins (3-12 dec 2019)
+
+   protein matrix ~/github/TrenaProjectADPRN/inst/extdata/expression/c2-8817x400.RData     25M Dec  3 2019
+   sample ID (prot/mrna) map:
+     print(load("~/github/TrenaProjectADPRN/misc/linkProteinAndExpressionMatrices/tbl.rna.prot.map.RData")
+
+   cd ~/github/TrenaProjectADPRN/misc/linkProteinAndExpressionMatrices
+   buildModel.R
+
+  --- mapping table created: just 208 samples have both mrna and TMT proteomics
+     see explore_mapID()
+     save(tbl.rna.prot.map, file="tbl.rna.prot.map.RData")
+     email to cory (12 dec 2019)
+        When hand-checking this unfortunate result, here is an example I found. 
+        rnaSeq for individual R1015854, dorsolateral prefrontal cortex is available, found in the rna matrix as column “563_120517”.
+        We have srm but no TMT for this individual.  The srm ID (naturally) does not appear in  the proteomic matrix.  We lose 424 rnaSeq samples this way.
+
+      > subset(tbl.md, individualID==person.id & grepl(mrna.id, specimenID))
+           individualID specimenID specimenIdSource organ                         tissue BrodmannArea sampleStatus tissueWeight tissueVolume nucleicAcidSource cellType fastingState                   notes
+      4050     R1015854 563_120517               NA brain dorsolateral prefrontal cortex           NA                        NA           NA         bulk cell                    NA geneExpression (rnaSeq)
+      > subset(tbl.md, individualID==person.id)
+            individualID          specimenID specimenIdSource organ                         tissue BrodmannArea sampleStatus tissueWeight tissueVolume nucleicAcidSource cellType fastingState                                notes
+      711       R1015854            45115248               NA brain dorsolateral prefrontal cortex           NA                      0.05           NA         bulk cell                    NA          chromatinActivity (ChIPseq)
+      1451      R1015854             PT-BZIB               NA brain dorsolateral prefrontal cortex           NA                      0.10           NA         bulk cell                    NA chromatinActivity (methylationArray)
+      2162      R1015854        DLPFC_563_6G               NA brain dorsolateral prefrontal cortex           NA                        NA           NA         bulk cell                    NA          geneExpression (mirnaArray)
+      2655      R1015854        MAP_45115248               NA brain dorsolateral prefrontal cortex           NA                        NA           NA         bulk cell                    NA            geneExpression (rnaArray)
+      3127      R1015854  Sample_R1015854-AC               NA brain        Head of caudate nucleus           NA          nan           NA           NA         bulk cell                    NA              geneExpression (rnaSeq)
+      4050      R1015854          563_120517               NA brain dorsolateral prefrontal cortex           NA                        NA           NA         bulk cell                    NA              geneExpression (rnaSeq)
+      4671      R1015854 Sample_R1015854-PCC               NA brain     posterior cingulate cortex           NA          nan           NA           NA         bulk cell                    NA              geneExpression (rnaSeq)
+      6995      R1015854         MAP45115248               NA                                                NA                        NA           NA                                      NA           genomicVariants (snpArray)
+      8194      R1015854            SM-CTDQP               NA                                                NA                        NA           NA                                      NA     genomicVariants (wholeGenomeSeq)
+      10223     R1015854             P06_A09               NA brain dorsolateral prefrontal cortex           NA                      0.02           NA         bulk cell                    NA                     proteomics (SRM)
+      
+
+  --- mapping table?
+
+    tbl <- read.table("ROSMAP_biospecimen_metadata.csv", sep=",", as.is=TRUE, header=TRUE, nrow=-1)
+    unlist(lapply(tbl, function(column) grep("120405", column)))
+     specimenID1 specimenID2 specimenID3 specimenID4 specimenID5 
+          3531        3722        3765        3795        3880 
+    grep("120405", tbl$specimenID, v=TRUE)
+      [1] "03_120405" "01_120405" "02_120405" "05_120405" "04_120405"
+
+    unlist(lapply(tbl, function(column) grep("b01.127C", column)))
+      specimenID 
+       10226 
+    grep("b01.127C", tbl$specimenID, v=TRUE)   # row 10226
+      [1] "ROSMAP.DLPFC.b01.127C.R8316516"
+
+
+  --- got 3 more files in which to find the mapping, now totaling 4:
+
+     332405 Dec  9 17:20 ROSMAP_Clinical_2019-05_v3.csv
+     916346 Dec  9 17:20 ROSMAP_biospecimen_metadata.csv
+      18325 Dec  9 17:18 ROSMAP_clinical_codebook.pdf
+      46160 Dec  9 12:40 rosmap_50batch_specimen_metadata_for_batch_correction.csv
+
+     one test case:
+       mrna sample:    "01_120405"
+       protein sample: "b01.127C"
+
+     grep -c 120405 ROSMAP_biospecimen_metadata.csv  # 1
+     grep -c 120405 *.csv
+         ROSMAP_Clinical_2019-05_v3.csv:0
+         ROSMAP_biospecimen_metadata.csv:1
+         rosmap_50batch_specimen_metadata_for_batch_correction.csv:0
+
+     grep -c b01.127C *.csv
+         ROSMAP_Clinical_2019-05_v3.csv:0
+         ROSMAP_biospecimen_metadata.csv:1
+         rosmap_50batch_specimen_metadata_for_batch_correction.csv:1
+
+  --- got alleged key to mapping between protein and mrna: failed
+    rosmap_50batch_specimen_metadata_for_batch_correction.csv
+
+  --- email (4 dec 2019)
+    I finally got the proteomics data from AMP-AD. To refresh your memory, these are the proteomic
+    measurements for a large subset of the ROSMAP samples. My hope is to build a TRN using these
+    protein levels of the TFs as inputs into trena (still using the RNA-seq levels of the target
+    genes). They have ~9,000 proteins. Not sure how many are TFs.
+
+    I've put the protein data here on khaleesi. They don't use the same identifiers as the RNA-seq
+    data, so we'll have to do some name matching, but anything we do with this will be completely
+    novel!
+
+    @khaleesi:/proj/price4/cory/protein_AMP-AD/C2.median_polish_corrected_log2(abundanceRatioCenteredOnMedianOfBatchMediansPerProtein)-8817x400.csv
+
+  --- early code
+    ~/github/TrenaProjectADPRN/misc/buildModel.R
+    cross-reference samples in mtx.protein & mtx.rna?
+
+    > colnames(mtx.rna)
+      [1] "01_120405"    "02_120405"    "03_120405"    "04_120405"    "05_120405"    "07_120410"   
+      [7] "08_120410"    "100_120417"   "101_120418"   "102_120418"   "103_120418"   "104_120418"  
+     [13] "108_120418"   "109_120418"   "111_120418"   "11_120410"    "112_120418"   "113_120418"  
+     [19] "115_120418"   "116_120418"   "118_120418"   "119_120418"   "120_120418"   "121_120418"  
+     [25] "12_120410"    "122_120418"   "124_120419"   "125_120419"   "126_120419"   "128_120419"  
+     [31] "129_120419"   "130_120419"   "131_120419"   "132_120419"   "133_120419"   "134_120419"  
+     [37] "136_120419"   "138_120419"   "140_120419"   "141_120419"   "14_120410"    "142_120419"  
+     [43] "145_120419"   "146_120419"   "149_120419"   "150_120419"   "15_120410"    "152_120419"  
+    
+   > colnames(mtx)
+      [1] "b01.127C" "b01.127N" "b01.128C" "b01.128N" "b01.129C" "b01.129N" "b01.130C" "b01.130N"
+      [9] "b02.127C" "b02.127N" "b02.128C" "b02.128N" "b02.129C" "b02.129N" "b02.130C" "b02.130N"
+     [17] "b03.127C" "b03.127N" "b03.128C" "b03.128N" "b03.129C" "b03.129N" "b03.130C" "b03.130N"
+     [25] "b04.127C" "b04.127N" "b04.128C" "b04.128N" "b04.129C" "b04.129N" "b04.130C" "b04.130N"
+     [33] "b05.127C" "b05.127N" "b05.128C" "b05.128N" "b05.129C" "b05.129N" "b05.130C" "b05.130N"
+     [41] "b06.127C" "b06.127N" "b06.128C" "b06.128N" "b06.129C" "b06.129N" "b06.130C" "b06.130N"
+     [49] "b07.127C" "b07.127N" "b07.128C" "b07.128N" "b07.129C" "b07.129N" "b07.130C" "b07.130N"
+     [57] "b08.127C" "b08.127N" "b08.128C" "b08.128N" "b08.129C" "b08.129N" "b08.130C" "b08.130N"
+     [65] "b09.127C" "b09.127N" "b09.128C" "b09.128N" "b09.129C" "b09.129N" "b09.130C" "b09.130N"
+
+
+*-----------------------------------------------------------------------------------------------------------------------
 * latest for marjorie and jeff:  proximal regulators of tal1 - looks, swims, walks and flies like a duck (27 nov 2019)
+
+   ~/github/TrenaProjectErythropoiesis/misc/mreg/mreg.R
+   
+   run.tal1 <- function() {
+     tal1(conservation=0.95, fimo=1e-5, bioc=NA_integer_, upstream=2500, downstream=500 )
+     } # run.tal1
+
 
 *-----------------------------------------------------------------------------------------------------------------------
 * compare fimo and bioc's pwmmatch (27 apr 2019)   DO NOT USE PWMMATCH!
@@ -1871,10 +2360,10 @@ raised letter w: 02B7  ʷ
 *-----------------------------------------------------------------------------------------------------------------------
 * lushootseed abbreviations
 
-ˑ  = emphatic lengthening   (upside down small triangle)
+ˑ  = emphatic lengthening   (upside down small triangle)  esc-x emph-lengthen
 = = clitic boundary
 -  = affix boundary
-• = lexical suffix boundary
+• = lexical suffix boundary     esc-x dot
 1, 2, 3 = first, second, third person act = activity
 add = additive
 adnm = adjunctive nominalizer
@@ -5491,6 +5980,10 @@ plot(mtx["TBX15",], mtx["TWIST1",], pch=16, cex=1.5, main="TBX15 vs TWIST1", yla
 
 --- from email (28 feb 2019) titled "ATACseq data - combining Ottawa with Nat Gen 2016"
 
+   see powerpoint here:
+     ~/github/TrenaProjectErythropoiesis/misc/brand-corces-timepoints-compared.pptx
+
+
 Thanks for sending this! Overall, at first glance, the data seems to correlate quite well
 indeed. Thinking more how to combine the data, I think it is possible but maybe slightly
 challenging as there are many variables that we should probably consider. What I tried to do is
@@ -5499,9 +5992,9 @@ how does that compare with the Corces data on purified populations.
 
 Some points to consider:
 
-First, I noticed that you use one of the Corces sample named “pHSC”. In their paper, “pHSC” is
-what they call “pre-leukemic HSC”: these are “HSC-like” cells that have been isolated from
-leukemia patients, so they are not true HSCs. Are there other samples named “HSC” only?
+First, I noticed that you use one of the Corces sample named pHSC. In their paper, pHSC is
+what they call pre-leukemic HSC: these are HSC-like cells that have been isolated from
+leukemia patients, so they are not true HSCs. Are there other samples named HSC only?
 
 To try to combine the Corces data and our data there may be a few things to keep in mind:
 
@@ -5514,7 +6007,7 @@ when we compare the data.
 Corces data is great on the very early populations (HSC, MPP, CMP and MEP), which is useful
 because our ATACseq data starts at Day4 and by Day4, most of these early populations are gone.
 
-In contrast, for the late erythroid populations, our data is more detailed i.e. the “Ery” fraction
+In contrast, for the late erythroid populations, our data is more detailed i.e. the "Ery" fraction
 from Corces correspond to at least 6 different populations that span our Days 8 to 16.
 
 On slide 1 of the power point, I made a table with the different proportions of cell populations
@@ -5530,7 +6023,7 @@ the data you sent Paul from this perspective, I think the 2 datasets correlates 
 instance, the Ery data seem to be more similar to our data combined, which makes sense because it
 should encompass all the stages from Day8 to the end. Maybe our Day4 ATACseq is more of a
 concern, probably because of the heterogeneity issue. Maybe we should just forget this one, and
-use Corces MEP data? And then we could also ignore the Corces “Ery” data because our data is more
+use Corces MEP data? And then we could also ignore the Corces Ery data because our data is more
 detailed for late erythropoiesis.
 
 Since one of our goal is to compare SRM data with ATACseq (and motif), do you think it would be
@@ -13399,7 +13892,7 @@ geneToMotif(MotifDb, "LYL1", source="MotifDb")
 * ggseqlogo (14 jan 2019)
 
 library(MotifDb)
-library(ggseqlogo)e
+library(ggseqlogo)
 pwm <- query(MotifDb, "MA0048.2", "jaspar2018")[[1]]
 ggseqlogo(pwm)
 
