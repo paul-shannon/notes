@@ -1,6 +1,6 @@
 if(!exists("roundNumericColumnsInDataframe"))
-   source("~/github/trenaShinyApps/utils/roundNumericColumnsInDataframe.R")
-   tbl.rounded <- roundNumericColumnsInDataframe(tbl, digits, pvalColumnNames=NA)
+  source("~/github/trenaShinyApps/utils/roundNumericColumnsInDataframe.R")
+  tbl.rounded <- roundNumericColumnsInDataframe(tbl, digits, pvalColumnNames=NA)
 
 SwordFernDieOff+subscribe@groups.io
 org-mode:  (3 ^U) tab: open up all sections, entire buffer visible;  toggle image display: ^c^x^v
@@ -10,6 +10,23 @@ git config --local priceLab|bioc|origin|paul-shannon branch.master.remote
 emacs for macos with ess installed: https://vigou3.gitlab.io/emacs-modified-macos/  (vincent goulet)
 *------------------------------------------------------------------------------------------------------------------------
 python virtual environment: source ~/github/slexil/tests/pshannon-py363/bin/activate
+*------------------------------------------------------------------------------------------------------------------------
+* discourse of modernism, timothy reiss, p30. (26 dec 2019)
+
+  my argument then will be that there is a gradual disappearance of a class of discursive activity
+  a passage from what one might call 
+    a discursive EXCHANGE WITHIN the world
+  to 
+    the expression of knowledge as a reasoning PRACTICE UPON the world.
+
+  in his study of the conceptual foundations of kepler's thought, gerard simon remarks upon the
+  striking similarity between the epistem of resemblence and Levi-Strauss's savage mind.
+
+  my take: walking in wild woods, seeing the branching patterns, the forest is/as cognitive,
+  discursive exchanges within the world are everywhere, patterns which bateson-connect to,
+  are not different from, all that we humans do, and the connected sunlight-driven multi-layered
+  structures are not so hard to see.
+ 
 *------------------------------------------------------------------------------------------------------------------------
 * RColorBrewer tips
 
@@ -73,6 +90,290 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* disney & taxes
+
+  https://www.newyorker.com/magazine/2020/01/06/the-ultra-wealthy-who-argue-that-they-should-be-paying-higher-taxes
+
+  a quote attributed to the aboriginal artist Lilla Watson: “If you have come to help me, you are
+  wasting your time. But if you have come because your liberation is bound up with mine, then let us
+  work together.”
+
+  I asked her how she felt about the pledge that billionaires such as Buffett and Bill Gates had
+  signed, promising to donate at least half of their fortunes to philanthropic causes. “I’ve given
+  away much more than fifty per cent of my net worth, and I don’t intend to stop,” she said. “And,
+  frankly, if you’re a billionaire and only want to give away half of your fortune, something is
+  wrong with you.” Disney is wary of the idea that the generosity of individual rich people can
+  solve society’s problems. Anand Giridharadas, the author of “Winners Take All: The Elite Charade
+  of Changing the World,” has argued that much philanthropy does far more to boost the reputations
+  of the donors than it does to help create a more just society. Such gifts also tend to come with
+  generous tax breaks, meaning that taxpayers are underwriting the donations that get hedge-fund
+  moguls’ names put on wings of art museums and hospitals. Instead, Disney wants to convince more
+  people that systemic change is needed. “I get messages like ‘You don’t know what you’re talking
+  about, you’ve never worked a day in your life!’ ” she told me. “And I’m, like, You’re making my
+  point! I’ve never worked a day in my life, and look at me! I’m sitting here in total comfort. You
+  can work all your life and you will never find yourself where I am today.” She said that she
+  doesn’t blame people for being resentful: “I will always be sort of an alien anthropologist
+  looking at poverty from my very rarefied air.”
+
+*-----------------------------------------------------------------------------------------------------------------------
+* google map examples (30 dec 2019)
+
+  ~/s/examples/js/googlemaps/
+     simpleMarkers/
+        index.html            
+        locations.js          
+        locationsFromFile.html
+
+     simplePolygonMarkers/
+        locations.js          
+        locationsFromFile.html
+
+     bermudaTriangle
+     markersWithInfoWindows   
+     swordFernDieOffMonitoring
+
+
+     simplePolygonMarkers/
+
+*-----------------------------------------------------------------------------------------------------------------------
+* sfdo seward map, using solocator app (29 dec 2019)
+
+  cd ~/github/swordFernData/deadSwordFernsOneByOne/
+
+  parse.R: reads csv file, converts d.m.m format into d.decimal, jitters the coordinates so they
+    spread out a bit on the map, saved as locations.js
+
+  developed simple marker map from  here:
+    ~/s/examples/js/googlemaps/simplePolygonMarkers/
+   
+  cp -p ~/s/examples/js/googlemaps/simplePolygonMarkers/* .
+
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* sfdo map: add a few of Al's latest sites (27 dec 2019)
+
+  cd ~/github/annotatedMap/regionalSwordFernDieOff/import/alSmith.20dec2019/
+  exported tsv from spreadsheet sent by nelson: AlSmith_SwordFern_Survey_12-20-19.txt
+
+   tail(subset(tbl, status==2))[, coi]
+                                  Park.Location       Address              Date status      lat       lon                                                                                                                         notes
+   128                          coal creek park                    "5-08, 2019"      2 47.54154 -122.1509                                                                                                                              
+   129 trail alongside newcastle golf club road    coal creek      "5-08, 2019"      2 47.54027 -122.1504                                       50+ dead noted along apprx.1st mi of trail (from YMCA to here) 99 dead to end of trail.
+   134                      west tiger mountain                    "5-20, 2019"      2 47.51536 -121.9874                                                                                                                              
+   171                              seward park       seattle      "5-28, 2019"      2 47.56105 -122.2541                                                                                                                     "s,sw,ne"
+   198                upper luther burbank park mercer island "august 19, 2019"      2 47.58317 -122.2259 328+ dead in park. 40 or so dead east of ridge trail and between trail down to creek. couple of new patches of ferns present.
+   200                    se 53rd st oprn space mercer island "august 22, 2019"      2 47.55502 -122.2140                                                                                                                              
+
+   cd ~/github/annotatedMap/regional.2020/
+   make
+   open console 
+   map.setCenter({lat:47.54027, lng: -122.1504}); map.setZoom(18)
+
+ var marker = new google.maps.Marker({
+    position: {lat:47.54027, lng: -122.1504},
+    map: map,
+    title: 'site 129'
+    })
+
+ var marker = new google.maps.Marker({
+    position: {lat:47.54154, lng: -122.1509},
+    map: map,
+    title: 'site 128'
+    })
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* wendy call's sqebeqsed stories 
+ 
+  http://sewardparkstories.org/
+  cd ~/github/annotatedMap/
+  mkdir 
+*-----------------------------------------------------------------------------------------------------------------------
+* michael strasser landscape suggested readings (23 dec 2019)
+
+Here's a few papers:
+
+nice overview by Sui:
+Genetic and non-genetic instability in tumor progression: link between the fitness landscape and the epigenetic landscape of cancer cells
+https://link.springer.com/article/10.1007/s10555-013-9435-7
+
+more math, a little hard to read:
+Quasi-potential landscape in complex multi-stable systems
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3481575/
+
+old paper of a friend of mine, they build a GRN for hematopoiesis, simulating its stable states in a boolean network:
+Hierarchical differentiation of myeloid progenitors is encoded in the transcription factor network.
+https://www.ncbi.nlm.nih.gov/pubmed/21853041
+
+similar idea, larger scale (80 TFs) looking for stable states in the ODEs and transitions between the attractors
+From molecular interaction to acute promyelocytic leukemia: Calculating leukemogenesis and remission from endogenous molecular-cellular network
+https://www.nature.com/articles/srep24307
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ctcf chip/fimo/phast scatter plot from mariam's latest (20 dec 2010)
+  cd ~/github/ChIPseqMotifMatch/ctcfScatterPlot/
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* gata2 models for talk and paper (20 dec 2019)
+
+  ~/github/regulatoryGenomePaper/demos/gata2-model/gata2-model.R
+   gata2.buenrosto(): uses 2016 rnaSeq and ata to build this model:
+   [see also 2019 cell paper - new, better, otherwise similar data?]
+     Ludwig, L.S., Lareau, C.A., Bao, E.L., Nandakumar, S.K., Muus, C., Ulirsch, J.C., Chowdhary,
+     K., Buenrostro, J.D., Mohandas, N., An, X. and Aryee, M.J., 2019. Transcriptional States and
+     Chromatin Accessibility Underlying Human Erythropoiesis. Cell reports, 27(11), pp.3228-3240.]
+
+         gene betaLasso betaRidge pearsonCoeff spearmanCoeff rfScore xgboost bindingSites
+    1   MEIS1      0.20      0.03         0.81          0.79  185.63    0.89            2
+    2      AR      0.11      0.03         0.77          0.70   57.39    0.00            8
+    3    ETV6      0.19      0.05         0.72          0.71   39.10    0.00            4
+    4    NFIX      0.00      0.05         0.68          0.61   34.46    0.00           12
+    5    NFE2      0.22      0.04         0.78          0.69   33.58    0.01            5
+    6  HOXA10      0.00      0.04         0.75          0.63   32.76    0.00            9
+    7   HOXB3      0.00      0.05         0.70          0.65   24.98    0.00            4
+    8     MYB      0.10      0.04         0.75          0.71   23.07    0.00            5
+    9    TFEC      0.00      0.02         0.70          0.50   15.81    0.00            4
+    10   PBX1      0.00      0.02         0.51          0.55   12.67    0.01            8
+
+   gata2.brand()  
+*-----------------------------------------------------------------------------------------------------------------------
+* tf vs target gene plot tips
+
+plot(gata2, pch=16, type="b", xaxt="n", xlab="day", ylab="mRNA", main="TBX15 vs. GATA2", ylim=c(0,12))
+x.axis.labels <- c("0.1", "0.2", "2.1", "2.2", "4.1", "4.2", "6.1", "6.2", "7.1", "7.2", "8.1", "8.2", "8.1", "8.2",
+                   "10.1", "10.2", "10.1", "10.2", "11.1", "11.2", "11.1", "11.2", "12.1", "12.2", "14.1", "14.2",
+                   "16.1", "16.2")
+
+x.locs  <- c(0, 2, 4, 6, 8, 10, 14, 18, 22, 24, 26)
+days    <- c(0, 2, 4, 6, 7,  8, 10, 11, 12, 14, 16)
+axis(side=1, at=x.locs, labels=days)
+lines(tbx15, type="b", pch=16, col="blue")
+legend(23, 12, c("GATA2", "TBX15"), c("black", "blue"))
+text(1.5, 7, "MPP")
+text(5, 7, "MEP")
+text(12, 7, "CPU-E")
+text(20, 7, "ProEB")
+text(25, 7, "BasoEB")
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* developmental transcription vs inducible transcription (19 dec 2019)
+
+
+  https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2828818/
+  Control of inducible gene expression by signal-dependent transcriptional elongation, Cell, 2009
+
+
+  Inducible transcription is triggered by signal-dependent activation of inducible DNA-binding
+  transcription factors, which account for the specificity of gene expression in response to
+  external stimuli.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ctcf chip-vs-fimo scatter plot (19 dec 2019)
+
+  ~/github/ChIPseqMotifMatch/bulk/GSM749704/addFimoToMACS2NarrowPeaks.R
+
+*-----------------------------------------------------------------------------------------------------------------------
+* tbx15 slides for 12/20 lab talk (16 dec 2019)
+
+  --- gata2 promoter:
+     cd ~/github/regulatoryGenomePaper/demos/tbx15/
+     source("tbx15.R"); new.run()
+     [[file://Users/paul/images/gata2-promoter-atac-conservation-tbx15-tfbs.png]]
+     1) loads phast7 track
+     2) genehancer
+     3) calls fimo on hocomoco motif: fimo 1e-5, phast7 0.9 (see image above)
+
+
+
+     [[file://Users/paul/images/hematopoiesis.png]]
+   
+   --- gata2 tbx anti-correlation plot
+      Day0: MPP                multipotent progenitor cells (HSCs initially give rise to the MPPs which no longer possess self-renewal ability yet keeping full-lineage differentiation potential)
+      Day2 to Day4: MEP        megakaryocyte-erythroid Progenitor
+      Day4 to Day11.5: CFU-E   colony forming unit-erythroid (A colony-forming unit is a subtype of HSC. )
+      Day11.5 : ProEB          proerythroblast
+      Day14: BasoEB            basophilic erythroblast  (basophils are cells which stain blue, indicating mitochondria
+
+     this composite image shows the different stages of erythropoiesis. The proerythroblast is
+     slightly smaller than the blast cell and appears more basophilic. It loses its nucleolus and
+     becomes a basophilic erythroblast, which is much smaller than the original blast and has an
+     intensely basophilic cytoplasm due to the accumulation of ribosomes. The basophilic
+     erythroblast develops into a polychromatic erythroblast. This cell has a gray-green cytoplasm
+     that results from the accumulation of hemoglobin. In an orthochromatic erythroblast, the
+     nucleus has shrunk and become darker and the growing concentration of hemoglobin turns the
+     cytoplasm pink. Finally, the nucleus is extruded via an asymmetric division of the cytoplasm,
+     resulting in the formation of a reticulocyte. This cell is characterized by a bluish hue due to
+     ribosomes remaining in its cytoplasm. Eventually, the loss of all organelles results in the
+     transition from reticulocyte to mature erythrocyte.  
+     [[file://Users/paul/images/erythrocyte-histology-yale.png]]
+
+HSC: hematopoietic stem cell
+MPP: multipotent progenitor cell
+CMP: common myeloid progenitor
+MEP: megakaryocyte-erythroid progenitor
+
+    [[file://Users/paul/images/modelOfTheHematopoieticHierarchy-irvWeismannn.png]]
+
+  from (29 aug 2019): ~/github/TrenaProjectErythropoiesis/inst/demos/tbx15-represses-gata2/tbx15-represses-gata2.R
+
+
+   --- marjorie on tbx15 results
+
+     (3 dec 2019)
+     Actually, Carmen is convinced that TBX15 activates Gata2. It is possible. But it’s unlikely
+     that the decrease in Gata2 would cause the proEB to EB block because GATA2 must decrease for the
+     proEB to EB transition to occur.  What is possible is that TBX15 regulates another gene that is
+     necessary for this transition. We would need TBX15 ChIP-seq to know, assuming we make sure the
+     antibody is specific.
+  
+     (2 dec 2019)
+
+     We already tried Western blots with extracts from Day 8 and there is always only one band on
+     the gel for TBX15, suggesting (but not proving) the antibody is specific (see below). From the
+     Western blot, TBX15 and GATA2 levels are correlated, not anticorrelated, which is why I wanted
+     to try CyTOF in the first place, hoping we would see the anti-correlation with refined
+     populations. We did not try Western blot at Day0: this is almost impossible to have enough
+     extract to do a western blot in these early cells.
+ 
+     We could try the TBX15 peptide blocking (would need to order the peptide) but this may be
+     tricky to interpret because the company website does not give us the exact peptide they used as
+     an immunogen. They say that the peptide they used is present within the sequence. Also, we know
+     the antibody recognizes TBX15 because we see the Cytof signal going down with the TBX15
+     shRNA. So if there was a spike at the proEB stage (like suggested by RNAseq), we should see it
+     by CyTOF even if the antibody recognizes TBX15 and something else.
+ 
+     I trust our RNAseq data, because it was done in replicate, but we have to keep in mind that the
+     level of TBX15 transcript is extremely low compared to other RNAs. I guess it is possible that
+     the spike we see at the RNA level is there but too small to be translated at the protein level.
+ 
+     We also tried RT-qPCR for TBX15, but I do not believe those results because the level of TBX15
+     is so low that the results are changing depending on what we use as a normalizing control gene:
+     we tried GAPDH, B2M and DDH5 (our usual internal controls), and they all give a different
+     answer. In that regard, RNAseq is better because normalization is genome-wide.
+ 
+     It's hard to understand what happens: maybe there is a protein similar to TBX15 that is very
+     highly expressed in Day0 cells. And maybe the spike seen at proEB stage at the RNA level is too
+     small to translate into a spike in protein.
+ 
+     I still believe the KD of TBX15 causes a block in proEB to EB: this result was very
+     clear. TBX15 is expressed in the cells, we see the knockdown, and we see the phenotype. Of
+     course, it is always possible that what we are looking at with this antibody is TBX15 +
+     something else.  SO it may be this “other protein” that is important for proEB to EB
+     transition.
+ 
+     We could try a different antibody against TBX15, but they do not all work in FACS/Cytof. In
+     fact, we have already tried 2 antibodies before the one we are using now, and they were not
+     working in FACS. This is why I thought SRM may be the best solution.
+ 
+     I think we’ll try new antibodies in the meantime too. Maybe the peptide block. We are still
+     deciding what the best would be in the short term.
+
+     file://Users/paul/images/tbx15-gata2-western.png
+
 *-----------------------------------------------------------------------------------------------------------------------
 * displayMotifs, motif tips, ggseqlogo, display logos 
 
@@ -1244,7 +1545,7 @@ dbGetQuery(db, "select * from hits limit 3")
 *-----------------------------------------------------------------------------------------------------------------------
 * phast tips, display phast conservation track in 5bp blocks 
 
-   library(GenomicScores)
+  library(GenomicScores)
   library(phastCons7way.UCSC.hg38); phast.7 <- phastCons7way.UCSC.hg38
 
 
@@ -2387,6 +2688,7 @@ fem = feminine
 foc = focus
 hab = habitual
 hmn = human
+hort = hortative
 ics = internal causative
 impf = imperfective
 inch = inchoative
@@ -5002,7 +5304,7 @@ erythropoieseis, surface marker segregation, then atac-seq
 waddington's landscapes for human hematopoiesis
 buenrostro cell 2018
 how clean are promoter cytometry reults.
-biorxiv:  101101/610550v1, umap clustering: mapping the h. hierarchy with 10x atac-seq
+biorxi: v 101101/610550v1, umap clustering: mapping the h. hierarchy with 10x atac-seq
 
 --- harvard phd student
 impact: amariuta et al 2019 ajhg, logistic regression, cell-type agnostic to gain power
@@ -19941,6 +20243,7 @@ zone map: https://www.greenseattle.org/information-for/forest-steward-resources/
 9 dec 2018: 2 hours blackberry removal
 30 dec 2018: 4 hours planting just ne of cistern, alder and indian plum, with omar
 
+
 --- cedar report submitted  (03 jan 2019): 71 hours
 
 26 may 2019: 1 hour grubbing blackberries, andrews bay
@@ -19966,7 +20269,9 @@ die-off: 60 hours
 
 22 sep 2019:  2 hours removing HBB (sqebeqsed snag and just past the dogleg)
 26 oct 2019:  1.5 hours removing HBB at dog leg
-3 nov 2019:   1.5 hours removing HBB at dog leg
+3  nov 2019:  1.5 hours removing HBB at dog leg
+14 dec 2019:  1.5 hours removing HBB at dog leg
+23 dec 2019:  2 hours on HBB and mulch berm restoration at trail entrance
 
 *------------------------------------------------------------------------------------------------
 * next up for alison, CKAP2L shiny app (19 jun 2018)
@@ -42321,7 +42626,7 @@ webpack --display-modules   # shoes hidden modules only alluded to be webpack im
 *-----------------------------------------------------------------------------------------------------------------------
 * merrell shoes/boots
 
-my currently about to degrade pair appear to be merrell chameleons, waterproof
+  my currently about to degrade pair appear to be merrell chameleons, waterproof
 
 *-----------------------------------------------------------------------------------------------------------------------
 * webpack tips
