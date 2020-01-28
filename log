@@ -2,6 +2,8 @@ if(!exists("roundNumericColumnsInDataframe"))
   source("~/github/trenaShinyApps/utils/roundNumericColumnsInDataframe.R")
   tbl.rounded <- roundNumericColumnsInDataframe(tbl, digits, pvalColumnNames=NA)
 
+round(c(1.2345678, 3.3343), digits=2)  # [1] 1.23 3.33
+
 SwordFernDieOff+subscribe@groups.io
 org-mode:  (3 ^U) tab: open up all sections, entire buffer visible;  toggle image display: ^c^x^v
 alias gitRemote="git config --local --get branch.master.remote"
@@ -43,7 +45,7 @@ color <- colors[currentColorNumber]
 *------------------------------------------------------------------------------------------------------------------------
 * fixReg -> should become part of the FimoClient package -> TODO aka "fixFimoResults" (10 apr 2019)
 
-~/github/TrenaProjectErythropoiesis/prep/gata-switch/createModels.R
+  ~/github/TrenaProjectErythropoiesis/prep/gata-switch/createModels.R
 
 *------------------------------------------------------------------------------------------------------------------------
 options(error=recover)  # debugging aid
@@ -89,7 +91,908 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* the case for regulome assays
+
+  --- Epigenetic erosion in adult stem cells: drivers and passengers of aging, 11/18
+
+     Abstract: In complex organisms, stem cells are key for tissue maintenance and regeneration. Adult stem cells
+     replenish continuously dividing tissues of the epithelial and connective types, whereas in non-growing muscle and
+     nervous tissues, they are mainly activated upon injury or stress. In addition to replacing deteriorated cells,
+     adult stem cells have to prevent their exhaustion by self-renewal. There is mounting evidence that both
+     differentiation and self-renewal are impaired upon aging, leading to tissue degeneration and functional
+     decline. Understanding the molecular pathways that become deregulate in old stem cells is crucial to counteract
+     aging-associated tissue impairment. In this review, we focus on the epigenetic mechanisms governing the transition
+     between quiescent and active states, as well as the decision between self-renewal and differentiation in three
+     different stem cell types, i.e., spermatogonial stem cells, hematopoietic stem cells, and muscle stem cells. We
+     discuss the epigenetic events that channel stem cell fate decisions, how this epigenetic regulation is altered with
+     age, and how this can lead to tissue dysfunction and disease. Finally, we provide short prospects of strategies to
+     preserve stem cell function and thus promote healthy aging
+
+
+  --- LncRNAs regulating stemness in aging
+
+  --- Cellular and epigenetic drivers of stem cell ageing
+
+  --- Single-Cell Chromatin Modification Profiling Reveals Increased Epigenetic Variations with Aging
+      Cell,  2018
+     we present a powerful platform for chromatin and immunology research. Our discoveries highlight 
+     the profound impacts of aging on chromatin modifications.
+
+  --- The Aging Epigenome, molecular cell review 2016
+      cited by:
+      https://scholar.google.com/scholar?cites=14037920040996257542&as_sdt=5,48&sciodt=0,48&hl=en
+
+
+  --- DNA methylation-based biomarkers and the epigenetic clock theory of ageing
+      S Horvath, K Raj - Nature Reviews Genetics, 2018 - nature.com
+       https://www.nature.com/articles/s41576-018-0004-3/
+
+  --- Challenges and recommendations for epigenomics in precision health, nature biotechnology 12/17
+      https://www.nature.com/articles/nbt.4030
+      cited by:
+        https://scholar.google.com/scholar?cites=13011877540070049330&as_sdt=5,48&sciodt=0,48&hl=en
+
+  --- An Integrative Multi-scale Analysis of the Dynamic DNA Methylation Landscape in Aging
+      https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4334892/
+
+  --- https://med.stanford.edu/cpdr/publications.html
+
+  --- Chromatin accessibility and the regulatory epigenome, Nature Review Genetics, april 2019,
+      Sandy L. Klemm1, Zohar Shipony,  William J. Greenleaf
+      [[file:///users/paul/Documents/Chromatin accessibility and the regulatory epigenome.pdf]]
+       https://www.nature.com/articles/s41576-018-0089-8
+
+      in conclusion section: chromatin accessibility within regulatory genomic regions is more highly correlated with
+      poised (for example, H3K4me1) than active (for example, H3K27Ac) chromatin states131 during haematopoiesis. These
+      data argue for a multilayered regulatory programme in which accessibility plays a broad licensing role but does
+      not determine the activity state.  Until recently, clinical samples have largely been refractory to epigenetic
+      analysis owing to prodigious material requirements. However, advances in small-scale chromatin accessibility
+      assays promise broad clinical impact, particularly for understanding complex disease states such as haematopoietic
+      oncogenesis and immune exhaustion171–174. Recent work on cutaneous T cell lymphoma (CTCL) has revealed both the
+      accessibility signature of oncogenic dysregulation and the epigenetic implications of therapeutic
+      intervention175. Integrating epigenetic and transcriptional measurements in single cells — including recent
+      reports of transcription and chromatin accessibility measurements in single cells176,177 — will further broaden
+      both our understanding of the epigenetic basis of disease and the clinical application space for epigenomics.
+  
+  
 *-----------------------------------------------------------------------------------------------------------------------
+* chromVAR, identifies the most deviant region in marjorie's hematopoiesis timecourse scATAC-seq (25 jan 2020)
+
+  cd ~/github/TrenaMultiScore/misc/erythropoiesis/chromVAR/
+  file: chromVAR-result.R
+
+  [[file://users/paul/images/chromVarDeviantRegion-NR1H2-promoter.png]] uses results logged below in
+  chromVAR step by step, then buildModel(NH1H2) identified in feature table ZBTB7A as an enriched
+  TF:
+
+    subset(tbl.nh1h2, gh > 500 & chip & abs(cor) > 0.8 & motifScore > 4)
+           chrom    start      end     tf strand   score  p.value matched_sequence phast7 phast30 phast100     gh tss cor                           annot.type annot.symbol chip                            motif_id motifScore targetGene
+    161625 chr19 50376413 50376425 ZBTB7A      + 13.5528 1.21e-05    GACCGGAAGTTCG   0.26    0.46     0.72 600.26 -56 0.9 1to5kb,introns,promoters,5UTRs,exons        NR1H2 TRUE Hsapiens-jaspar2018-ZBTB7A-MA0750.2       4.92      NR1H2
+    162268 chr19 50376444 50376456 ZBTB7A      - 13.8293 9.73e-06    GTCCGGAAGAGGG   0.31    0.35     0.43 600.26 -25 0.9 introns,1to5kb,promoters,5UTRs,exons        NR1H2 TRUE Hsapiens-jaspar2018-ZBTB7A-MA0750.2       5.01      NR1H2
+
+
+    subset(tbl.nh1h2, gh > 0 & chip & abs(cor) > 0.8 & motifScore > 4)
+           chrom    start      end     tf strand    score  p.value matched_sequence phast7 phast30 phast100     gh     tss  cor                           annot.type                annot.symbol chip                            motif_id motifScore targetGene
+    2654   chr19 49453479 49453492   E2F7      -  3.23596 2.39e-05   ACTCCCCGCGAAAA   0.02    0.04     0.02  14.34 -922990 0.82           1to5kb,5UTRs,exons,introns             PIH1D1,ALDH16A1 TRUE   Hsapiens-jaspar2018-E2F7-MA0758.1       4.62      NR1H2
+    161625 chr19 50376413 50376425 ZBTB7A      + 13.55280 1.21e-05    GACCGGAAGTTCG   0.26    0.46     0.72 600.26     -56 0.90 1to5kb,introns,promoters,5UTRs,exons                       NR1H2 TRUE Hsapiens-jaspar2018-ZBTB7A-MA0750.2       4.92      NR1H2
+    162268 chr19 50376444 50376456 ZBTB7A      - 13.82930 9.73e-06    GTCCGGAAGAGGG   0.31    0.35     0.43 600.26     -25 0.90 introns,1to5kb,promoters,5UTRs,exons                       NR1H2 TRUE Hsapiens-jaspar2018-ZBTB7A-MA0750.2       5.01      NR1H2
+    197564 chr19 50511315 50511327   MXI1      + 11.47470 5.47e-05    GGGCCGCGTGGCC   0.00    0.00     0.00  14.41  134846 0.88         1to5kb,5UTRs,exons,promoters                       JOSD2 TRUE   Hsapiens-jaspar2018-MXI1-MA1108.1       4.26      NR1H2
+    197664 chr19 50511316 50511328   MXI1      - 11.65660 4.95e-05    GGGCCACGCGGCC   0.00    0.00     0.00  14.41  134847 0.88         1to5kb,5UTRs,exons,promoters                       JOSD2 TRUE   Hsapiens-jaspar2018-MXI1-MA1108.1       4.31      NR1H2
+    226283 chr19 50805071 50805083   MXI1      + 15.87880 1.07e-06    CGCCCACGTGGCG   0.00    0.00     0.00  10.81  428602 0.88                     1to5kb,promoters C19orf48,SNORD88C,LINC01869 TRUE   Hsapiens-jaspar2018-MXI1-MA1108.1       5.97      NR1H2
+    226377 chr19 50805072 50805084   MXI1      - 16.07070 7.58e-07    GCGCCACGTGGGC   0.00    0.00     0.00  10.81  428603 0.88                     1to5kb,promoters C19orf48,SNORD88C,LINC01869 TRUE   Hsapiens-jaspar2018-MXI1-MA1108.1       6.12      NR1H2
+    227439 chr19 50805119 50805131 ZBTB7A      + 13.27640 1.48e-05    GGCCGGAAGGAGG   0.52    0.00     0.00  10.81  428650 0.90                     1to5kb,promoters C19orf48,SNORD88C,LINC01869 TRUE Hsapiens-jaspar2018-ZBTB7A-MA0750.2       4.83      NR1H2
+
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* chromVAR, step by step (24 jan 2020)
+
+  khaleesi, cd /local/users/pshannon/github/TrenaProjectErythropoiesis/misc/chromVAR/quickLook
+  success.R
+
+
+library(rtracklayer)
+library(SummarizedExperiment)
+
+bamFileDirectory <- "~/github/TrenaProjectErythropoiesis/prep/srm.vs.atac/p300-srm-chip-atac-peas"
+bedFileDirectory <- "~/github/TrenaProjectErythropoiesis/prep/srm.vs.atac/p300-srm-chip-atac-peas"
+
+dataDirectory <- bedFileDirectory
+
+bamFiles <- grep("ATAC_Cord.*bam$", list.files(bamFileDirectory), value=TRUE)
+bedFiles <- grep("ATAC_Cord.*bed$", list.files(bamFileDirectory), value=TRUE)
+peakFiles <- grep("ATAC_Cord.*peaks.narrowPeak$", list.files(bamFileDirectory), value=TRUE)
+
+extraCols_narrowPeak <- c(signalValue = "numeric", pValue = "numeric",
+                          qValue = "numeric", peak = "integer")
+
+  #-------------------------------------------------------------------------------------------------------------
+  # RSEx example_counts:
+  # class: RangedSummarizedExperiment 
+  # dim: 29269 50 
+  # metadata(0):
+  # ranges(example_counts) # IRanges object with 29269 ranges and 0 metadata columns:
+  # assays(1): counts
+  # dim(assay(example_counts)) [1] 29269    50, a sparse mdgCMatrix
+  # sum(assay(example_counts)) [1] 152035
+  # fivenum(assay(example_counts))  # [1]  0  0  0  0 13
+  # rownames: NULL
+  # rowData DataFrame with 29269 rows and 3 columns: score qval name
+  # colnames(50): singles-GM12878-140905-1 singles-GM12878-140905-2 ... singles-H1ESC-140820-24 singles-H1ESC-140820-25
+  # colData names(2): Cell_Type depth
+  #-------------------------------------------------------------------------------------------------------------
+
+  # emulate that with the MACS2 narrow peak "count" files
+
+  #--------------------------------------------------------------------------------
+  # 
+  #--------------------------------------------------------------------------------
+
+extraCols_narrowPeak <- c(signalValue = "numeric", pValue = "numeric", qValue = "numeric", peak = "integer")
+gr.list <- GRangesList(lapply(file.path(dataDirectory, peakFiles),
+                              function(f) import(f, format="BED", extraCols=extraCols_narrowPeak)))
+gr <- unlist(gr.list)
+peaks <- gr   # leave mcols intact for now
+counts <- getCounts(file.path(dataDirectory, peakFiles[1]), peaks, by_rg=FALSE, paired=FALSE, format="bed")
+counts <- getCounts(file.path(dataDirectory, peakFiles), peaks, by_rg=FALSE, paired=FALSE, format="bed")
+   # class: RangedSummarizedExperiment 
+   # dim: 304342 11 
+   # metadata(0):
+   # assays(1): counts
+   # rownames: NULL
+   # rowData names(6): name score ... qValue peak
+   # colnames(11): ATAC_Cord_d10_rep1_hg38_peaks.narrowPeak ATAC_Cord_d10_rep2_hg38_peaks.narrowPeak ... ATAC_Cord_d4_rep2_hg38_peaks.narrowPeak ATAC_Cord_d8_rep1_hg38_peaks.narrowPeak
+   # colData names(1): depth
+
+zz <- addGCBias(counts, genome=BSgenome.Hsapiens.UCSC.hg38)
+   # class: RangedSummarizedExperiment 
+   # dim: 304342 11 
+   # metadata(0):
+   # assays(1): counts
+   # rownames: NULL
+   # rowData names(7): name score ... peak bias
+   # colnames(11): ATAC_Cord_d10_rep1_hg38_peaks.narrowPeak ATAC_Cord_d10_rep2_hg38_peaks.narrowPeak ... ATAC_Cord_d4_rep2_hg38_peaks.narrowPeak ATAC_Cord_d8_rep1_hg38_peaks.narrowPeak
+   # colData names(1): depth
+
+counts_filtered <- filterSamples(zz, min_depth = 1500, min_in_peaks = 0.15, shiny = FALSE)
+counts_filtered.sorted <- sort(counts_filtered)
+counts_filtered <- filterPeaks(counts_filtered.sorted, non_overlapping = TRUE)
+   # class: RangedSummarizedExperiment 
+   # dim: 75053 11 
+   # metadata(0):
+   # assays(1): counts
+   # rownames: NULL
+   # rowData names(7): name score ... peak bias
+   # colnames(11): ATAC_Cord_d10_rep1_hg38_peaks.narrowPeak ATAC_Cord_d10_rep2_hg38_peaks.narrowPeak ... ATAC_Cord_d4_rep2_hg38_peaks.narrowPeak ATAC_Cord_d8_rep1_hg38_peaks.narrowPeak
+   # colData names(1): depth
+
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* chromVAR:  detect shifting motifs/TFs in scATAC-seq (24 jan 2020)
+
+  khaleesi, cd /local/users/pshannon/github/TrenaProjectErythropoiesis/misc/chromVAR/quickLook
+
+  need to create a SummarizedExperiment object from macs2 output:
+
+     library(rtracklayer)
+     bamFileDirectory <- "~/github/TrenaProjectErythropoiesis/prep/srm.vs.atac/p300-srm-chip-atac-peas"
+     bedFileDirectory <- "~/github/TrenaProjectErythropoiesis/prep/srm.vs.atac/p300-srm-chip-atac-peas"
+     dataDirectory <- bedFileDirectory
+     bamFiles <- grep("ATAC_Cord.*bam$", list.files(bamFileDirectory), value=TRUE)
+     bedFiles <- grep("ATAC_Cord.*bed$", list.files(bamFileDirectory), value=TRUE)
+     peakFiles <- grep("ATAC_Cord.*peaks.narrowPeak$", list.files(bamFileDirectory), value=TRUE)
+     gr.list <- lapply(file.path(dataDirectory, peakFiles), function(f) import(f, format="BED", extraCols=extraCols_narrowPeak))
+
+*-----------------------------------------------------------------------------------------------------------------------
+* bootstrap webpage for lushootseed stories (23 jan 2020)
+
+  first exploration of bootstrap navbar: ~/s/examples/html/bootstrap/try0/try0.html
+
+*-----------------------------------------------------------------------------------------------------------------------
+* noa's corrected brain AD expression matrix: did I mess it up? (21 jan 2019)
+  
+  solved and described and tested:   ~/github/rnaSeqNormalizer/misc/mayo.tcx/noa.R
+
+*-----------------------------------------------------------------------------------------------------------------------
+* boca: create RData file with all chromosomes, glia and neuron, all tissues (22 jan 2020)
+
+  cd ~/github/TrenaProjectAD/misc/multiScore/boca/
+  importAll.R
+
+  print(load("~/github/TrenaProjectAD/misc/multiScore/boca/tbl.boca.RData"))
+
+  table(tbl.boca$cellType)
+    glia  neuron 
+  601189 1026893 
+  table(tbl.boca$tissue)
+     ACC    AMY  DLPFC   HIPP    INS    ITC    MDT    NAC    OFC    PMC    PUT    PVC    STC  VLPFC 
+  111891  70170 120182 131986  96403 105756 125235 107668 126794 130066 152443  99618 119731 130139 
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ~/Documents/davisOldhamOnFoucaultsArcheology.pdf
+*-----------------------------------------------------------------------------------------------------------------------
+* leo, draft, selective service, register
+
+  https://www.quora.com/If-I-dont-register-for-the-Selective-Service-Act-will-I-be-prosecuted
+
+*-----------------------------------------------------------------------------------------------------------------------
+* build TrenaMultiScore models in TrenaProjectAD (17 jan 2020)
+
+  goi <- c("TREM2", "MEF2C", "APOE", "PILRA", "BIN1", "VGF", "TYROBP", "ATRX", "MAPT", "APP")
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* noa's new method for rna-seq count normalization, by gene size, to be scaled and used for cory (17 jan 2020)
+
+  cd ~/github/rnaSeqNormalizer/misc/mayo.tcx/
+  prep.R:
+    library(rnaSeqNormalizer)
+    tbl <- read.table("corrected_data.tsv", sep="\t", as.is=TRUE, nrow=-1)
+    tbl$ensembl_id <- rownames(tbl)
+    rownames(tbl) <- NULL
+    normalizer <- rnaSeqNormalizer(tbl, "log+scale", "mean")
+    mtx <- getNormalizedMatrix(normalizer)
+    save(mtx, file="mayo.tcx.16969x262.covariateCorrection.log+scale.RData")
+
+    then cp'd this mtx to ~/github/TrenaProjectAD/inst/extdata/expression/
+    
+   reveals that package rnaSeqNormalizer needs lots of cleanup: remove complexity, test ensg -> geneSymbol
+      restrict to tables with "ensembl_id" column
+
+   --- compare
+     library(EnsDb.Hsapiens.v79)
+     tbl <- read.table("corrected_data.tsv", sep="\t", as.is=TRUE, nrow=-1)
+     ensg <- rownames(tbl)
+     ensg <- sub("\\..*$", "", ensg)
+     rownames(tbl) <- ensg
+     tbl.map <- select(EnsDb.Hsapiens.v79, key=ensg,  columns=c("SYMBOL"),  keytype="GENEID")
+     tbl <- tbl[tbl.map$GENEID,]
+     dups <- which(duplicated(tbl.map$SYMBOL))
+     tbl <- tbl[-dups,]
+     tbl.map <- tbl.map[-dups,]
+     rownames(tbl) <- tbl.map$SYMBOL
+
+     indices <- match(tbl.map$GENEID, rownames(tbl))
+     length(dups) # 22
+     rownames(tbl) <- tbl.map$SYMBOL
+
+   --- my confusion of lost correlation, the remedy: always use spearman's correlation
+      see ~/github/rnaSeqNormalizer/misc/mayo.tcx/noa.R
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* data.frame tips: collapse rows   aggregate
+
+tbl <- data.frame(name=rep(c("cat", "dog", "bear"), 3),
+                  age=rep(1:3, 3),
+                  anno=letters[1:9],
+                  gene=LETTERS[1:9],
+                  stringsAsFactors=FALSE)
+  name age anno gene
+1  cat   1    a    A
+2  dog   2    b    B
+3 bear   3    c    C
+4  cat   1    d    D
+5  dog   2    e    E
+6 bear   3    f    F
+7  cat   1    g    G
+8  dog   2    h    H
+9 bear   3    i    I
+
+
+aggregate(anno ~ name, data = tbl, paste, collapse = ",")
+#   name  anno
+# 1 bear c,f,i
+# 2  cat a,d,g
+# 3  dog b,e,h
+
+aggregate(anno ~ name+age, data = tbl, paste, collapse = ",")
+
+#  name age  anno
+# 1  cat   1 a,d,g
+# 2  dog   2 b,e,h
+# 3 bear   3 c,f,i
+
+aggregate(anno ~ name+age, data = tbl, function(x) paste(x, collapse = ","))
+#   name age  anno
+# 1  cat   1 a,d,g
+# 2  dog   2 b,e,h
+# 3 bear   3 c,f,i
+
+aggregate(cbind(anno, gene) ~ name+age, data = tbl, function(x) paste(x, collapse = ","))
+#   name age  anno  gene
+# 1  cat   1 a,d,g A,D,G
+# 2  dog   2 b,e,h B,E,H
+# 3 bear   3 c,f,i C,F,I
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cory suggests single-cell brain rna and open chromatin data (14 jan 2020)
+
+  https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE97942
+
+  motivated by test_findOpenChromatin in ~/github/TrenaMultiScore/inst/unitTests/test_TrenaMultiScore.R
+  this 12G (?) file GSM2579603.tar.gz failed to download successfully
+
+  --- BOCA: Brain Open Chromatin Atlas
+
+    so now switching to khaleesi:~/s/data/public/GSM2579603/DLPFC_neuron.bw from 
+      https://bendlj01.u.hpc.mssm.edu/multireg/
+      https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6071637/#!po=63.3333
+  
+  cd ~/github/TrenaProjectAD/misc/multiScore/boca/
+  most promising: https://bendlj01.u.hpc.mssm.edu/multireg/resources/boca_peaks.zip
+  unzip -t boca_peaks.zip:
+           ACC_glia.bed
+           ACC_neuron.bed
+           AMY_glia.bed
+           AMY_neuron.bed
+           DLPFC_glia.bed
+           DLPFC_neuron.bed
+           HIPP_glia.bed
+           HIPP_neuron.bed
+           INS_glia.bed
+           INS_neuron.bed
+           ITC_glia.bed
+           ITC_neuron.bed
+           MDT_glia.bed
+           MDT_neuron.bed
+           NAC_glia.bed
+           NAC_neuron.bed
+           OFC_glia.bed
+           OFC_neuron.bed
+           PMC_glia.bed
+           PMC_neuron.bed
+           PUT_glia.bed
+           PUT_neuron.bed
+           PVC_glia.bed
+           PVC_neuron.bed
+           STC_glia.bed
+           STC_neuron.bed
+           VLPFC_glia.bed
+           VLPFC_neuron.bed
+
+    ~/github/TrenaProjectAD/misc/multiScore/boca/mef2c.R
+    [[file://users/paul/images/mef2c.boca.atac.323kb.png]]
+    [[file://users/paul/images/mef2c.boca.atac.767kb.png]]
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* TrenaMultiScore question:  should I used hint-atac footprints of brand lab atac (14 jan 2020)
+
+  khaleesi, cd
+  /local/users/pshannon/github/TrenaProjectErythropoiesis/prep/srm.vs.atac/p300-srm-chip-atac-peas/cord_d12_rep2/
+   tbl <- read.table("footprints.bed", sep="\t", as.is=TRUE, header=FALSE, nrow=-1)
+   dim(tbl)# [1] 54679     7
+   colnames(tbl) <- c("chrom", "start", "end", "name", "score", "strand")
+   widths <- with(tbl, 1 + end - start)
+   fivenum(widths)  # [1]  6 17 26 36 83
+   mean(widths)  # 26.72
+
+   compare this to the simple-region-atac, MACS2 output
+   see makefile in the current directory:
+      BAM=../ATAC_Cord_d12_rep2_hg38_sorted.bam
+      RAWPEAKS=../ATAC_Cord_d12_rep2_hg38_peaks.narrowPeak
+      PEAKS=narrowPeaks.tsv
+      default:
+      	@echo cleanPeaks, $(BAM).bai, run
+      check:
+      	ls -l $(BAM)
+      	ls -l $(RAWPEAKS)
+      cleanPeaks:
+      	Rscript cleanPeaks.R $(RAWPEAKS)
+      run: $(BAM).bai cleanPeaks
+      	rgt-hint footprinting --atac-seq --organism=hg38 $(BAM) $(PEAKS) 
+      $(BAM).bai:
+      	samtools index $(BAM)
+      peakFP:
+      	R -f ../identifyPeaksWithFootprints.R
+
+   --- look at GATA2 in igv
+     hagfish
+     cd ~/github/TrenaProjectErythropoiesis/misc/multiScore/gata2/peaksOrFootprints/      
+     peaksOrFootprints.R
+
+     [[file://~/images/gata2-brand-atac-narrowPeaks-vs-hint-atac-footprints.png]]
+     shows two footprints within a much larger called peak.  suggests
+     that using footprints is a good idea, maybe soon ALSO use the peak,
+     and treat footprint as an extra score in the multiscore table
+
+   --- resolution (14 jan 2020)
+     recreate brand lab multiscore table using footprints only.
+*-----------------------------------------------------------------------------------------------------------------------
+* new hocomoco, v11
+
+   --- historical notes about importing to MotifDb
+
+     MotifDb collects currently nine sources of protein-binding DNA sequences, with metadata, into one common format.
+     The heterogeneity of these sources is large, and sometimes daunting, but by transforming them into a standard form
+     (a list of position weightm matrices and a standard fifteen-column metadata DataFrame) they may be easily used
+     together.
+
+     In the inst/scripts/import directories you will one subdirectory for each data source.  Within each subdirectory
+     you will find a data-source-specific "import.R" which knows the details of the raw data each source provides, and
+     which transforms the raw data into two data structures: matrices, and tbl.md
+
+     The best way to learn the ropes is to run, study, and thoroughly understand 
+
+        inst/scripts/import/demo/import.R
+
+     In the demo directory you will also find the raw files, each describing four binding site motifs.  This particular
+     data is taken from the much larger extracted from the much larger jasper core data set.  It is presented here only
+     as an example.
+
+     The first of four matrices:
+     
+         >MA0004.1 Arnt
+         4	19	0	0	0	0
+         16	0	20	0	0	0
+         0	1	0	20	0	20
+         0	0	0	0	20	0
+     
+     It's metadata:
+     
+     id	jaspar.class	ma.name	unknown	gene.symbol	uniprot	ncbi.tax.code	class	comment	family	medline	tax_group	type	pazar_tf_id	description	tfbs_shape_id	consensus	jaspar	mcs	transfac	end_relative_to_tss	start_relative_to_tss	included_models	source	centrality_logp	tfe_id	symbol	alias
+     9232	CORE	MA0004	1	Arnt	P53762	10090	Zipper-Type	-	Helix-Loop-Helix	7592839	vertebrates	SELEX	TF0000003	aryl hydrocarbon receptor nuclear translocator	11	NA	NA	NA	NA	NA	NA	NA	NA	NA	580	ARNT	HIF-1beta,bHLHe2
+     
+
+   --- download
+      starting from MotifDb 1.30.0, 11dec2019
+      cd ~/github/MotifDb/misc/hocomoco-v11/
+      curl -O http://hocomoco11.autosome.ru/final_bundle/hocomoco11/core/HUMAN/mono/HOCOMOCOv11_core_HUMAN_mono_jaspar_format.txt
+   
+   --- vanya, email (9 dec 2019):
+
+     We were discussing the motif metadata in the framework of http://thegreco.org/
+     and we agree that the information on "quality" is quite valuable;
+     but "reliability" could be a better general term.
+
+     In HOCOMOCO we consider A as the highest quality/reliability, B as high, C as medium (and D is low).  The P-values
+     that we provide are not linked to the reliability, but allow some uniform scaling of PWM scores to be comparable
+     between different motifs.
+
+     I wonder should it be the name of the institution/affiliation? 
+     Technically, you may put http://autosome.ru/ there, it is our hub for related resources and tools.
+
+     Not all, but many of these fields can be found in the annotation table, downloadable here:
+     http://hocomoco11.autosome.ru/downloads_v11 - look for annotation_ files (depending on particular subcollection):
+
+        dataSource
+        geneSymbol
+        geneId
+        geneIdType
+        proteinId
+        proteinIdType
+        organism
+        sequenceCount
+        bindingSequence
+        bindingDomain
+        tfFamily
+        experimentType
+        See More
+        dataSource
+        geneSymbol
+        geneId
+        geneIdType
+        proteinId
+        proteinIdType
+        organism
+        sequenceCount
+        bindingSequence
+        bindingDomain
+        tfFamily
+        experimentType
+
+
+   --- me, email (7 dec 2019)
+
+   Yes, I'd really like to get the latest HOCOMOCO into MotifDb, and to stay current in the future.  Can I get your help
+   in figuring out how to collect metadata from your downloadable files?  I want to be sure, for example, to collect
+   your category information (A-D, right?).  And then to make that available for users in their MotifDb queries.
+
+   Below are the standard metadata columns I use in MotifDb.  There is no obvious match to your “category” annotation, which does not seem to be an attribute other motif sources use.  For instance, I don’t see it in JASPAR.  Your use of it is very valuable so I will think of a way to include it.   I might try to generalize it to “quality” or “score”.  It looks like you have P-values?  Perhaps I could informally (but still usefully) map those to a qualitative score term.  That would support a query like this:
+
+     tbl <-  query(MotifDb, andStrings=c(“sapiens”, “TBX15"), orStrings=c(“hocomoco”, “jaspar2018”))
+     tbl.highQuality <- subset(tbl, quality==“high”) 
+       or
+     tbl.notBad <- subset(tbl, quality!=“low”) 
+
+     Any suggestions for which files I should get the following information from?  Or other observations?  Thanks!
+
+          providerName
+          providerId
+          dataSource
+          geneSymbol
+          geneId
+          geneIdType
+          proteinId
+          proteinIdType
+          organism
+          sequenceCount
+          bindingSequence
+          bindingDomain
+          tfFamily
+          experimentType
+          pubmedID
+
+    new.row = list (providerName=matrix.id,
+                    providerId=matrix.id, #"HOCOMOCO v10"
+                    dataSource= dataSource,
+                    geneSymbol= id.pieces[1], #md$symbol
+                    geneId= NA,
+                    geneIdType= NA,
+                    proteinId=protID,
+                    proteinIdType="UNIPROT",
+                    organism= organism,
+                    sequenceCount=max(colSums(my.matrix)),
+                    bindingSequence=NA_character_,
+                    bindingDomain=NA,
+                    tfFamily=NA, #family
+                    experimentType="low- and high-throughput methods",
+                    pubmedID="26586801")
+
+
+
+  
+
+*-----------------------------------------------------------------------------------------------------------------------
+* epigenetic landscapes
+
+  https://embryo.asu.edu/pages/epigenetic-landscape
+  waddington 1: https://www.youtube.com/watch?v=KUvuv74_E1U
+*-----------------------------------------------------------------------------------------------------------------------
+* tss, strand
+
+   tp38 <- TrenaProjectHG38.generic()
+   getTranscriptsTable(tp38, targetGene="GATA2")
+                   ensg chrom     start       end       tss strand geneSymbol entrez       appris  tsl      transcript           type
+   14659 ENSG00000179348  chr3 128479427 128493185 128493185     -1      GATA2   2624 A_principal1 tsl1 ENST00000341105 protein_coding
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* multiScore for brand lab atac-seq, this time using footprints (more & smaller regions) (14 jan 2020)
+
+  /local/users/pshannon/github/TrenaProjectErythropoiesis/prep/srm.vs.atac/p300-srm-chip-atac-peas/
+  brandAtacSeqFootrpintCuration.R
+  creates tbl.atac.fp.RData
+  copied this to hagfish
+
+  i expected the fp version to be larger, due to more entries, but found it smaller by factor of 5:
+     10157741 Jan 12 15:57 tbl.atac.RData
+      2206891 Jan 14 15:37 tbl.atac.fp.RData
+
+     load("~/github/TrenaProjectErythropoiesis/misc/multiScore/brandAtacSeqCuration/tbl.atac.fp.RData")
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* multiScore for brand lab atac-seq, trem2 (11 jan 2020)
+
+  cd ~/github/TrenaProjectErythropoiesis/misc/multiScore/brandAtacSeqCuration/
+  brandAtacSeqCuration.R
+  load("~/github/TrenaProjectErythropoiesis/misc/multiScore/brandAtacSeqCuration/tbl.atac.RData")
+  dim(tbl.atac) # [1] 957475      7
+       chrom  start    end width strand meanScore sdScore
+     1  chr1  10069  10584   516      *   5389.11 6620.22
+     2  chr1  11024  11198   175      *     41.00    0.00
+     3  chr1 115728 115892   165      *     33.00    0.00
+     4  chr1 180542 181846  1305      *     29.12    8.44
+     5  chr1 184229 184520   292      *     33.00    0.00
+     6  chr1 196371 196568   198      *     55.00    0.00
+
+
+head(tbl.atac)
+  seqnames  start    end width strand meanScore sdScore
+1     chr1  10069  10584   516      *   5389.11 6620.22
+2     chr1  11024  11198   175      *     41.00    0.00
+3     chr1 115728 115892   165      *     33.00    0.00
+4     chr1 180542 181846  1305      *     29.12    8.44
+5     chr1 184229 184520   292      *     33.00    0.00
+6     chr1 196371 196568   198      *     55.00    0.00
+> 
+
+*-----------------------------------------------------------------------------------------------------------------------
+* multiScore for cory, trem2 (10 jan 2020)
+
+  cd ~/github/TrenaProjectAD/misc/multiScore/trem2/
+  trem2.R
+  
+
+*-----------------------------------------------------------------------------------------------------------------------
+* multiScore: present tfbs with multiple scored assays: fp, fimo, phastN.  gata2 tpe first (9 jan 2020)
+
+  cd  ~/github/TrenaProjectErythropoiesis/misc/multiScore/gata2/
+
+       chrom     start       end width         tf target   cor cor.abs fimo phast7 phast100     gh  fp  to.tss
+    1   chr3 128075697 128075711    15        SP2  GATA2 -0.07    0.07 6.62   0.10     0.00  15.73 103  417488
+    2   chr3 128075698 128075711    14       EGR1  GATA2  0.58    0.58 7.76   0.10     0.00  15.73 103  417487
+    3   chr3 128075701 128075711    11        SP1  GATA2  0.18    0.18 6.09   0.10     0.00  15.73 103  417484
+    4   chr3 128076983 128076999    17 RARA::RXRA  GATA2    NA      NA 6.11   0.90     0.86  15.73  67  416202
+    5   chr3 128095310 128095328    19       CTCF  GATA2  0.43    0.43 7.46   0.88     0.52   0.00  28  397875
+    6   chr3 128095312 128095325    14       ZIC1  GATA2  0.07    0.07 6.33   0.94     0.68   0.00  28  397873
+    7   chr3 128095314 128095327    14      CTCFL  GATA2  0.31    0.31 7.80   0.89     0.68   0.00  28  397871
+    8   chr3 128095323 128095335    13    NEUROD1  GATA2 -0.31    0.31 6.36   0.40     0.12   0.00  28  397862
+    9   chr3 128153110 128153127    18       NFYA  GATA2  0.59    0.59 6.37   0.23     0.02   0.00  63  340075
+    10  chr3 128153116 128153130    15       NFYB  GATA2  0.75    0.75 6.64   0.20     0.02   0.00  63  340069
+    11  chr3 128153134 128153151    18       NFYA  GATA2  0.59    0.59 9.12   0.10     0.04   0.00  63  340051
+    12  chr3 128153140 128153154    15       NFYB  GATA2  0.75    0.75 6.78   0.10     0.09   0.00  63  340045
+    13  chr3 128383695 128383708    14 NFIC::TLX1  GATA2    NA      NA 6.08   0.00     0.02   0.00 125  109490
+    14  chr3 128395704 128395721    18       NFYA  GATA2  0.59    0.59 6.63   0.00     0.00   0.00  72   97481
+    15  chr3 128395706 128395716    11       NFYA  GATA2  0.59    0.59 6.43   0.00     0.00   0.00  72   97479
+    16  chr3 128426579 128426589    11       E2F1  GATA2  0.67    0.67 6.21   0.00     0.00   0.00  55   66606
+    17  chr3 128488003 128488018    16       NFYA  GATA2  0.59    0.59 6.42   0.91     0.86 600.44 122    5182
+    18  chr3 128497790 128497805    16       RFX3  GATA2  0.20    0.20 6.03   1.00     0.99  17.74  40   -4605
+    19  chr3 128497791 128497809    19       RFX2  GATA2  0.55    0.55 6.02   1.00     0.98  17.74  40   -4606
+    20  chr3 128617801 128617811    11       NRF1  GATA2  0.47    0.47 6.18   0.00     0.27   4.52 260 -124616
+    21  chr3 128617844 128617862    19       CTCF  GATA2  0.43    0.43 6.77   0.04     0.22   4.52 260 -124659
+    22  chr3 128617848 128617861    14      CTCFL  GATA2  0.31    0.31 6.08   0.04     0.30   4.52 260 -124663
+
+
+  
+    tbl.gh <- getEnhancersForTissues("all", TRUE)
+    with(tbl.gh, showGenomicRegion(igv, sprintf("%s:%d-%d", chrom[1], min(start) - 1000, max(end) + 1000)))
+    tbl.fp <- get(load("tbl.gata2.d12.fp.RData"))
+    track <- DataFrameQuantitativeTrack("fp", tbl.fp[, c("chrom", "start", "end", "score")], autoscale=FALSE,
+                                        min=0, max=max(tbl.fp$score), color="random")
+    displayTrack(igv, track)
+    
+    
+    meme.file <- "jaspar2018.meme"
+    motifs <- query(MotifDb, c("sapiens", "jaspar2018"))
+    length(motifs)
+    export(motifs, con=meme.file, format="meme")
+    tbl.fimo <- fimoBatch(tbl.fp[, c("chrom", "start", "end")], matchThreshold=1e-6, genomeName="hg38", pwmFile=meme.file)
+    dim(tbl.fimo)
+    
+    with(tbl.fimo, plot(score, -log10(p.value)))
+    tbl.fimo$fimo <- round(-log10(tbl.fimo$p.value), digits=2)
+    track <- DataFrameAnnotationTrack("fimo", tbl.fimo[,c("chrom", "start", "end", "tf", "fimo")], col="red",
+                                      displayMode="EXPANDED", trackHeight=200)
+    displayTrack(igv, track)
+    tbl.cons <- as.data.frame(gscores(phast.7, GRanges(tbl.fimo[, c("chrom", "start", "end")])), stringsAsFactors=FALSE)
+    tbl.fimo$phast7 <- round(tbl.cons$default, digits=2)
+    
+    tbl.cons <- as.data.frame(gscores(phast.100, GRanges(tbl.fimo[, c("chrom", "start", "end")])), stringsAsFactors=FALSE)
+    tbl.fimo$phast100 <- round(tbl.cons$default, digits=2)
+    
+    cor <- unlist(lapply(tbl.fimo$tf, function(tf) if(tf %in% rownames(mtx)) return(cor(mtx["GATA2",], mtx[tf,])) else return(NA)))
+    cor <- round(cor, digits=2)
+    tbl.fimo$cor <- cor
+    tbl.fimo$cor.abs <- abs(cor)
+    tbl.fimo$target <- "GATA2"
+    tbl.fimo$width <- 1 + tbl.fimo$end - tbl.fimo$start
+    coi <- c("chrom", "start", "end", "width", "tf", "target", "cor", "cor.abs", "fimo", "phast7", "phast100")
+    
+    tbl <- tbl.fimo[, coi]
+    dim(tbl)
+    
+    tbl.ov <- as.data.frame(findOverlaps(GRanges(tbl), GRanges(tbl.gh)))
+    colnames(tbl.ov) <- c("fimo", "gh")
+    tbl$gh <- rep(0, nrow(tbl))
+    tbl$gh[tbl.ov$fimo] <- round(tbl.gh$combinedscore[tbl.ov$gh], digits=2)
+    
+    tbl.ov <- as.data.frame(findOverlaps(GRanges(tbl), GRanges(tbl.fp)))
+    colnames(tbl.ov) <- c("fimo", "fp")
+    tbl$fp <- rep(0, nrow(tbl))
+    tbl$fp[tbl.ov$fimo] <- tbl.fp$score[tbl.ov$fp]
+    
+    tbl$to.tss <- (targetGene.info$tss - tbl$start)  * (targetGene.info$strand) * -1
+    rownames(tbl) <- NULL
+    
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* phast7 tips, phast tips
+
+  library(phastCons7way.UCSC.hg38); phast.7 <- phastCons7way.UCSC.hg38
+  library(igv)
+  library(GenomicScores)
+
+  loc <- getGenomicRegion(igv)
+  starts <- with(loc, seq(start, end, by=5))
+  ends <- starts + 5
+  count <- length(starts)
+
+  tbl.blocks <- data.frame(chrom=rep(loc$chrom, count), start=starts, end=ends, stringsAsFactors=FALSE)
+  tbl.cons7 <- as.data.frame(gscores(phast.7, GRanges(tbl.blocks)), stringsAsFactors=FALSE)
+  tbl.cons7$chrom <- as.character(tbl.cons7$seqnames)
+  tbl.cons7 <- tbl.cons7[, c("chrom", "start", "end", "default")]
+  track <- DataFrameQuantitativeTrack("phast7", tbl.cons7, autoscale=TRUE, color="red")
+  displayTrack(igv, track)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* org.db tips, org.Hs.eg.db tips
+
+  ---  get all gene symbols
+   length(unlist(as.list(org.Hs.egSYMBOL), use.names=FALSE)) # [1] 61217
+   head(unlist(as.list(org.Hs.egSYMBOL), use.names=FALSE))
+    [1] "A1BG"  "A2M"   "A2MP1" "NAT1"  "NAT2"  "NATP" 
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* import phast30 for cory's AD model paper (7 jan 2020)
+
+  cd ~/s/data/public/phast30/
+  curl -O http://hgdownload.cse.ucsc.edu/goldenpath/hg38/phastCons30way/hg38.phastCons30way.bw
+  Jan  7 18:50 hg38.phastCons30way.bw: 325M
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* genehancer puzzles
+
+  hoxa5: why such a huge promoter?
+*-----------------------------------------------------------------------------------------------------------------------
+*
+  cd ~/github/regulatoryGenomePaper/demos/tbx15/
+  source("otherTbx15TFBS.R")   # which sources ../common.R
+  tbls.tfs <- lapply(tf.genes, function(gene) find.tfbs(gene, 1e-4, 0.5))
+  tbl.tfs <- do.call(rbind, tbls.tfs)
+  save(tbl.tfs, file="tbl.tbx15.tfbs.1699-go-tfs.RData")
+
+   fivenum(tbl.tfs[grep("^HOX", tbl.tfs$targetGene), "tfbs"])  # [1] 0 0 4 7 8
+   fivenum(tbl.tfs[,"tfbs"])   # [1]  0  0  0  1 11
+   fivenum(subset(tbl.tfs, targetGene %in% haney.erythropoiesis.tfs())$tfbs)  #  0 0 1 1 8
+   mean(tbl.tfs[,"tfbs"])                                                     #  0.5235701
+   mean(subset(tbl.tfs, targetGene %in% haney.erythropoiesis.tfs())$tfbs)     #  1.344828
+   mean(tbl.tfs[grep("^HOX", tbl.tfs$targetGene), "tfbs"])                    #  3.72973
+   mean(subset(tbl.tfs, targetGene %in% grep("^HOX", haney.erythropoiesis.tfs(), v=TRUE))$tfbs) # [1] 7.333333   
+
+   subset(tbl.tfs, targetGene %in% grep("^HOX", haney.erythropoiesis.tfs(), v=TRUE))
+   369      HOXA5    7  0.2278292
+   372      HOXA9    7 -0.1037264
+   376      HOXB4    8 -0.8254034
+  
+
+*-----------------------------------------------------------------------------------------------------------------------
+* with tbx15 silencing, erythropoiesis is blocked: other tfs regulated by tbx15? (6 jan 2020)
+
+   cd ~/github/regulatoryGenomePaper/demos/tbx15/
+   otherTbx15TFBS.R
+   next up: constrain by conservation and stricter fimo
+            use genehancer with only myeloid tissues
+            do monte carlo testing:  how robust are these results?
+
+   --- only look at correlated target genes.  notice that tbx15 generally has negative correlations, gata2 positive
+     x <- apply(mtx, 1, function(row) cor(mtx["TBX15",], row))
+     fivenum(x)  #     ACVRL1     PFKFB3       FZD3   SNORD132      TBX15 
+                 # -0.9311516 -0.7322947 -0.4783249 -0.1119479  1.0000000 
+
+     x.gata2 <- apply(mtx, 1, function(row) cor(mtx["GATA2",], row))
+     fivenum(x.gata2)
+        #      AKR1B10 LOC102606466        ADAT1        TMUB1        GATA2 
+        #   -0.9259519    0.1122063    0.4831123    0.7774702    1.0000000 
+
+
+   --- cory supplies blood/lymphocyte footprints GSM: what does TBX15 regulate there?
+     @khaleesi:/ssd/cory/lympho-footprints-2019feb22-tbl.models.all.RData
+     It's called lympho because we used the footprints from lymphoblasts, but the RNAseq was the whole blood from GTEx.
+     print(load("lympho-footprints-2019feb22-tbl.models.all.RData"))
+     dim(subset(tbl.models, tf.symbol == "TBX15")) #  4311   13
+     dim(subset(tbl.models, tf.symbol == "TBX15" & rank <=5)) #  200  13
+
+
+   cd ~/github/regulatoryGenomePaper/demos/tbx15
+     source("otherTbx15TFBS.R")   # it turn sources ../common.R
+     mean(tbl.angiogenesis.100$tfbs) # [1] 0.5108696
+     mean(tbl.apoptosis.100$tfbs)   # [1] 0.1777778
+     mean(tbl.etf28$tfbs)        # [1] 1.464286
+     mean(tbl.etf$tfbs)   # [1] 1.947368
+     fivenum(tbl.etf$tfbs)  # [1] 0.0 1.0 1.0 1.5 8.0
+     fivenum(tbl.apoptosis.100$tfbs)  # [1] 0 0 0 0 3
+     fivenum(tbl.angiogenesis.100$tfbs) # [1] 0 0 0 1 7
+
+    tbls <- lapply(sample(angiogenesis.genes(), size=100), function(gene) find.tfbs(gene, 1e-4, 0.5))
+    tbl.angiogenesis.100 <- do.call(rbind, tbls)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* erythropoiesis tfs, from haney PNAS 2017
+
+  tbl.haney <- read.table(file="~/github/TrenaProjectErythropoiesis/misc/haneyNetwork/network.tsv",  sep="\t", as.is=TRUE)
+  colnames(tbl.haney) <- c("target", "regulators")
+
+  [[file://users/paul/images/booleanHematopoiesisModelNetworkKrumsiek2011.png]]
+    ~/Documents/Hierarchical Differentiation of Myeloid Progenitors Is Encoded in the Transcription Factor Network.PDF
+      https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3154193/
+
+  [[file://users/paul/images/haneyReconstructingBloodStemCellRegulatoryNetworkFromSingleCellMolecularProfile.png]]
+    ~/Documents/Reconstructing blood stem cell regulatory network models from single-cell molecular profiles - supportingMaterial.pdf --
+    ~/Documents/Reconstructing blood stem cell regulatory network
+      https://www.pnas.org/content/114/23/5822.short
+
+  [[file://users/paul/images/doreChristonoErytrhopoiesisRegulation.png]]
+      ~/Documents/Transcription factor networks in erythroid cell and megakaryocyte development.pdf
+      https://ashpublications.org/blood/article/118/2/231/28502/Transcription-factor-networks-in-erythroid-cell
+
+*-----------------------------------------------------------------------------------------------------------------------
+blue horses, from davis (6 jan 2020)
+
+Ed Roberson
+
+the cold has put blue horses where lambs were.
+and quiet cows that fattened in the night
+upon the grass are driven in and stones
+wild veined with ice have taken over in
+the fields: the moon is chewing on the snow. 
+and something watching from a stand of pines
+has tied off screams into a hanging knot
+
+the road has spent the night of winter clean
+of passengers: the thread out of the hills
+has helped the naked trees remain in love
+on their bare bodies. the decent leaves unmade. 
+and nothing warm has passed inside the gate
+to say a word against the solid well
+nor the bucket cord that does not weave its drink.
+
+there is a man who, if he cried, the hard
+rare droppings of the wolves digesting hunger
+would tear his grunting eyes: who, if he spoke, 
+the shrill fillings of dead men’s teeth could cut
+his gums with silences they know, who lives
+one valley from the sun, who if he loved—
+would simply love and roll from her unnoticed
+by her arriving immigrant bees.
+
+from Black Nature: Four Centuries of African American Nature Poetry, ed. Camille T. Dungy. Athens: University of Georgia Press, 2009.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* al smith's latest data via nelson (3 jan 2020)
+
+  ~/github/annotatedMap/regional.2020.plus.alSmith/
+
+  evolved the python code to handle color, border color and type=circle|rectangle, all specified
+  in site.yaml files.
+
+  generated site.yaml-only sites from all's csv file as received from nelson:
+     cd ~/github/annotatedMap/regionalSwordFernDieOff/import/map.alSmith.2020/
+     R -f tsvToSites.R
+     make
+       	python ../../../regen.py . al.html
+	open al.html
+
+  copied these files to 
+    ~/github/annotatedMap/regional.2020.plus.alSmith/
+  copied caleb's and my sites from ~/github/annotatedMap/regional.2020/, updating for color & type
+    adjusting severity to a 1-3 scale (following Al's practice)
+
+  make:
+     python ../regen.py . regional.2020_alSmith.html
+     open regional.2020_alSmith.html
+  make publish
+     scp regional.2020_alSmith.html paulshannnon@pshannon.net:public_html/pshannon.net/swordFerns/regionalMap/2020_alSmith.html
+     open http://pshannon.net/swordFerns/regionalMap/2020_alSmith.html
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* al smith's latest data via nelson (2 jan 2020)
+
+   see below "* sfdo map: add a few of Al's latest sites (27 dec 2019)"
+   cd ~/github/annotatedMap/regionalSwordFernDieOff/import/alSmith.20dec2019/
+
+   goal: use this spreadsheet, once read into R, to update and/or replace al's earlier points
+   ~/github/annotatedMap/regionalSwordFernDieOff/import/alSmith.20dec2019/AlSmith_SwordFern_Survey_12-20-19.txt
+
+   --- next up:
+     cd ~/github/annotatedMap/regionalSwordFernDieOff/import/map.alSmith.2020/
+     assign marker type (circle, square, triangle, ...) as a function of site.yaml type:
+        "alSmith":  rectangle?
+        "calebProtocol": 
+     expand color to be fillColor & borderColor, for extra expressiveness
+     
+   
 *-----------------------------------------------------------------------------------------------------------------------
 * disney & taxes
 
@@ -137,18 +1040,38 @@ bed format: chrom, start, end, name, score, strand
      simplePolygonMarkers/
 
 *-----------------------------------------------------------------------------------------------------------------------
-* sfdo seward map, using solocator app (29 dec 2019)
+* sfdo seward map, using solocator app (29 dec 2019, 6 jan 2020)
 
   cd ~/github/swordFernData/deadSwordFernsOneByOne/
 
-  parse.R: reads csv file, converts d.m.m format into d.decimal, jitters the coordinates so they
-    spread out a bit on the map, saved as locations.js
+   --- procedure to follow with new points from phone using Solocator 
 
-  developed simple marker map from  here:
-    ~/s/examples/js/googlemaps/simplePolygonMarkers/
+     Solocator app:
+
+        - go to photos section
+        - scroll to the appropriate dated block of photos 
+        - tap "select" at the top right, tap the circle, see all photos marked as selected
+        - tap upload icon at lower left of the screen
+        - email csv
+
+     on mac:
+ 
+       - cp "/Users/paul/Downloads/Solocator (2019-12-29 15.03.57).csv" 29dec2019.csv
+       - in parse.R:
+           f.in <- "29dec2019.csv"
+           f.out <- "locations-29dec2019.js"
+       - in locationsAll.js
+           insert locations-29dec2019.js, make minor "," "]" edits
+
+   --- prior work
+
+     parse.R: reads csv file, converts d.m.m format into d.decimal, jitters the coordinates so they
+       spread out a bit on the map, saved as locations.js
+
+      developed simple marker map from  here:
+       ~/s/examples/js/googlemaps/simplePolygonMarkers/
    
-  cp -p ~/s/examples/js/googlemaps/simplePolygonMarkers/* .
-
+      cp -p ~/s/examples/js/googlemaps/simplePolygonMarkers/* .
   
 *-----------------------------------------------------------------------------------------------------------------------
 * sfdo map: add a few of Al's latest sites (27 dec 2019)
@@ -579,7 +1502,7 @@ MEP: megakaryocyte-erythroid progenitor
     hsc: hematopoietic stem cell
     mpp: multipotent progenitor
     cmp: common myeloid progenitor
-    mep:o megakaryocyte–erythroid progenitors
+    mep:o megakaryocyte-erythroid progenitors
 
     cmp: common myeloid progenitory
 
@@ -1781,6 +2704,8 @@ make
 *-----------------------------------------------------------------------------------------------------------------------
 * where to find the latest stable build of igv.js
 
+  find the latest version number:  https://github.com/igvteam/igv.js/, scroll to Installation
+
   https://cdn.jsdelivr.net/npm/igv@2.3.2/dist/igv.min.js
 
 
@@ -1793,7 +2718,7 @@ make
 
    tbl.tfe <- select(org.Hs.eg.db, keys="GO:0030218", keytype="GOALL", columns="SYMBOL")
 
-
+*------------------------------------------------------------------------------------------------------------------------
 * GO regulatory annotated genes, requested by jeff for grant proposal (22 oct 2019)
 
    the union of two categories is satisfactory to jeff
@@ -3463,6 +4388,10 @@ networks, models, expression, no footprints: gata2-tbx15-april2019.pdf
 *-----------------------------------------------------------------------------------------------------------------------
 * buenrosto revisited:  hematopoiesis good system for trena paper? (21 sep 2019)
 
+  2019: https://www.sciencedirect.com/science/article/pii/S2211124719306667
+      Transcriptional States and Chromatin Accessibility Underlying Human Erythropoiesis
+     ~/Documents/Transcriptional States and Chromatin Accessibility Underlying Human Erythropoiesis.pdf
+
 All ensemble ATAC- and RNA-seq data is available through GEO accession number GSE74912. We provide
 raw sequencing reads, processed BAM files, and fully processed count matrices for ATAC-seq and
 RNA-seq at this accession. All single cell ATAC-seq data is available through GEO accession number
@@ -4128,7 +5057,7 @@ https://hub.docker.com/r/fooliu/macs2
 docker run -v $$PWD:/data/ fooliu/macs2 callpeak -t /data/ATAC_Cord_d4_rep1_hg38_sorted.bam -n ATAC_Cord_d4_rep1_hg38 --outdir /data/
 
 3) in preparation for running hint-atac, 
-a) eliminated (“cleaned”) all peaks from step 2 which were mapped to non-canonical chromosomes (chr1-22, X, Y, M)
+a) eliminated ('cleaned') all peaks from step 2 which were mapped to non-canonical chromosomes (chr1-22, X, Y, M)
 b) built a bam index for each bam file, using samtools version 1.8
 
 4) used HINT from the regulatory genomics toolkit, version 0.12.3 (http://www.regulatory-genomics.org/hint/introduction/)
@@ -12679,24 +13608,25 @@ https://github.com/StamLab/hotspot/releases/tag/v4.1.1
 
 *-----------------------------------------------------------------------------------------------------------------------
 * GenomicRanges tips, GRanges tips: elimnate overlaps with reduce, preserve metadata (5 feb 2019)
-[status: not actually needed.  problem arose when liftover from mm9 to hg18.  mm9-mm10 works better!]
 
-gr <- GRanges(seqnames=rep("chr1", 10), ranges=IRanges(start=c(10,20,30,40,50,60,70,80,90,100),
-end=  c(19,29,42,49,59,69,79,89,99,105)))
-mcols(gr) <- list(score=100 * seq(1,10, 1))
+  [status: not actually needed.  problem arose when liftover from mm9 to hg18.  mm9-mm10 works better!]
 
-gr
-reduce(gr, min.gapwidth=0L)
-signature <- sprintf("%s:%d", as.character(seqnames(gr)), start(gr))
-scores <- gr$score
-names(scores) <- signature
-gr2 <- reduce(gr, min.gapwidth=0L)
-
-signature2 <- sprintf("%s:%d", as.character(seqnames(gr2)), start(gr2))
-scores[signature2]
-mcols(gr2) <- list(score=scores[signature2])
-
-
+  gr <- GRanges(seqnames=rep("chr1", 10), ranges=IRanges(start=c(10,20,30,40,50,60,70,80,90,100),
+  end=  c(19,29,42,49,59,69,79,89,99,105)))
+  mcols(gr) <- list(score=100 * seq(1,10, 1))
+  
+  gr
+  reduce(gr, min.gapwidth=0L)
+  signature <- sprintf("%s:%d", as.character(seqnames(gr)), start(gr))
+  scores <- gr$score
+  names(scores) <- signature
+  gr2 <- reduce(gr, min.gapwidth=0L)
+  
+  signature2 <- sprintf("%s:%d", as.character(seqnames(gr2)), start(gr2))
+  scores[signature2]
+  mcols(gr2) <- list(score=scores[signature2])
+  
+  
 *-----------------------------------------------------------------------------------------------------------------------
 * bedGraphToBigWig - needed for atac-seq mm10 files suggested by mark gillespie (5 feb 2019)
 
@@ -22808,8 +23738,35 @@ NCBI variation web service
   the face. Seven times. More later.
 
 *----------------------------------------------------------------------------------------------------
+* recipes
+
+  --- salmon & green beans, miso and maple syrup.
+  https://cooking.nytimes.com/recipes/1019857-maple-and-miso-sheet-pan-salmon-with-green-beans?te=1&nl=morning-briefing&emc=edit_NN_p_20200110&section=aBreak?campaign_id=9&instance_id=15090&segment_id=20204&user_id=080a49025dcd07963dee6cb41232f6f7&regi_id=74954632ction=aBreak
+
+
+  --- peanut sauce: https://minimalistbaker.com/5-ingredient-peanut-sauce/
+   1/2 cup salted creamy peanut butter* (or almond butter or sunflower butter)
+   2-3 Tbsp gluten-free tamari (if not gluten-free sub soy sauce // if soy-free sub coconut aminos*)
+   1-2 Tbsp maple syrup (or other sweetener of choice)
+   1 tsp chili garlic sauce (or 1 red Thai chili, minced // or 1/4 tsp red pepper flake // adjust to preferred spice level)
+   2-3 Tbsp lime juice
+   ~1/4 cup water (to thin)
+
+
+*----------------------------------------------------------------------------------------------------
 * books
 
+   Dying of Whiteness: How the Politics of Racial Resentment Is Killing America's Heartland Hardcover – March 5, 2019
+      by Jonathan M. Metzl
+   american spy: lauren wilkinson, rec'd by michele goldberg
+   similar, with good reviews:
+     the volunteer
+     miracle creek
+   ward just: echo house, an american romantic.  wapo vietnam reporter
+     turned novelist.
+
+
+   The Economists' Hour: False Prophets, Free Markets, and the Fracture of Society
 
    jessica james cowgirl philosopher by kelly oliver, vanderbilt philosopher
    
@@ -22898,8 +23855,23 @@ through the Forest Service but is not available at the trailhead.
   
 
 *------------------------------------------------------------------------------------------------
+* quotations
+
+  --- rilke, letters to a young poet: protecting the solitude of the other
+
+    “For one human being to love another; that is perhaps the most
+    difficult of all our tasks, the ultimate, the last test and proof,
+    the work for which all other work is but preparation. I hold this to
+    be the highest task for a bond between two people: that each
+    protects the solitude of the other. This is the miracle that happens
+    every time to those who really love: the more they give, the more
+    they possess.”
+
+*------------------------------------------------------------------------------------------------------------------------
 * movies, tv, videos
 
+ watchmen: hbo 1 season
+ british tv detective drama: endeavour
  https://www.newyorker.com/culture/decade-in-review/the-twenty-seven-best-movies-of-the-decade
 
 https://www.pbs.org/show/college-behind-bars/
@@ -42512,10 +43484,12 @@ two pair bought (jan 2019) fred meyers, 2nd pair half-price, 2 for ~$75
 *-----------------------------------------------------------------------------------------------------------------------
 * vasque breeze iii low gtx hiking shoes, boots, size 10.5, $150 (11 mar 2017)
 
-new pari (05 feb 2019) amazon prime, $104
-new pair (13 dec 2017) amazon prime, $105
+  vasque men's breeze iii low gtx waterproof hiking boot
 
-rei: (29 dec 2016):  $140
+    new pair (10 jan 2020) amazon prime, 
+    new pair (05 feb 2019) amazon prime, $104
+    new pair (13 dec 2017) amazon prime, $105
+    rei: (29 dec 2016):  $140
 
 
 
