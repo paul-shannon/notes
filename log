@@ -91,6 +91,315 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* ML tips: stochastic, batch and mini-batch gradient descent
+
+  https://machinelearningmastery.com/gentle-introduction-mini-batch-gradient-descent-configure-batch-size/
+  
+
+*-----------------------------------------------------------------------------------------------------------------------
+* python tips, pickle tips
+
+  --- read file pickled in python 2.x, containing numpy arrays
+    https://stackoverflow.com/questions/11305790/pickle-incompatibility-of-numpy-arrays-between-python-2-and-3
+    import pickle, gzip
+    file = "../data/mnist.pkl.gz"
+    with gzip.open(file, 'rb') as f:
+       train_set, valid_set, test_set = pickle.load(f, encoding="latin1")
+
+    solves this problem: UnicodeDecodeError: 'ascii' codec can't decode byte 0x90 in position 614:
+       ordinal not in range(128)
+
+    
+    
+*-----------------------------------------------------------------------------------------------------------------------
+* free online book with github repo:  neural networks and deep learning, handwritten digits  recognition (4 feb 2020)
+
+   cd ~/github/mlExamples/learningPyTorch/nielsenHandwrittenDigits/src/tests
+   make
+
+   my version here:
+      ~/github/mlExamples/learningPyTorch/nielsenHandwrittenDigits/src/  and src/tests
+      make in src runs network.py
+      make in src/test guarantees that the knotty zip/list py2-to-py3 problems is solved
+      file = "/Users/paul/github/mlExamples/learningPyTorch/nielsenHandwrittenDigits/data/mnist.pkl"
+      if read by py3-fixed src/mnist_loader.py
+
+    reading here: http://neuralnetworksanddeeplearning.com/chap1.html
+
+      
+   cd ~/github/neural-networks-and-deep-learning
+   has well-defined class object: 
+
+
+    network.py
+    ~~~~~~~~~~
+    
+    A module to implement the stochastic gradient descent learning
+    algorithm for a feedforward neural network.  Gradients are calculated
+    using backpropagation.  Note that I have focused on making the code
+    simple, easily readable, and easily modifiable.  It is not optimized,
+    and omits many desirable features.
+    """
+    
+    #### Libraries
+    # Standard library
+    import random
+    
+    # Third-party libraries
+    import numpy as np
+    
+    class Network(object):
+    
+        def __init__(self, sizes):
+            """The list ``sizes`` contains the number of neurons in the
+            respective layers of the network.  For example, if the list
+            was [2, 3, 1] then it would be a three-layer network, with the
+            first layer containing 2 neurons, the second layer 3 neurons,
+            and the third layer 1 neuron.  The biases and weights for the
+            network are initialized randomly, using a Gaussian
+            distribution with mean 0, and variance 1.  Note that the first
+            layer is assumed to be an input layer, and by convention we
+            won't set any biases for those neurons, since biases are only
+            ever used in computing the outputs from later layers."""
+
+*-----------------------------------------------------------------------------------------------------------------------
+* distill essentials from numpy-only version of simple neural network program
+
+  /Users/paul/github/neuralnet_example/*.ipynb
+      23547 Feb  4 12:10 Compare_numpy_TF.ipynb
+      10062 Feb  4 12:10 NN_in_pure_TF.ipynb
+      29259 Feb  4 12:10 NN_in_pure_numpy.ipynb
+
+
+   https://medium.com/datathings/a-neural-network-fully-coded-in-numpy-and-tensorflow-cc275c2b14dd
+   A Neural Network fully-coded in Numpy and Tensorflow Super simple, can’t be any easier, code provided
+
+   --- basic view
+      target matrix is defined and assigned, never changed:  "outputArray"
+      these three variables are not changed
+         np.random.seed(seed)
+         inputArray = np.random.uniform(-5,5,(batchSize,inputSize))
+         weights = np.random.uniform(-5,5,(inputSize,outputSize))
+         outputArray = np.matmul(inputArray,weights)
+
+
+      
+
+*-----------------------------------------------------------------------------------------------------------------------
+* python tips: multiple subplots withing one window, matplotlib
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+x1 = np.linspace(0.0, 5.0)
+x2 = np.linspace(0.0, 2.0)
+
+y1 = np.cos(2 * np.pi * x1) * np.exp(-x1)
+y2 = np.cos(2 * np.pi * x2)
+
+fig, (p1, p2) = plt.subplots(1,2)
+
+p1.plot(x1,y1)
+p2.plot(x2,y2)
+fig.show()
+
+--- two bitmaps   (then plt.close() when done)
+
+recall these functions to display a single bitmap:
+
+    plt.imshow(img1_bits); plt.show()
+
+# -*- coding: utf-8 -*-
+import numpy as np
+import matplotlib.pyplot as plt
+#------------------------------------------
+def showTwoMatricesAsBitMaps(m1, m2):
+
+   fig, (p1, p2) = plt.subplots(1,2)
+   img1 = p1.imshow(m1)
+   img2 = p2.imshow(m2)
+   fig.show()
+    
+#------------------------------------------
+m1 = np.fabs(np.random.randn(100, 100))
+m1 = m1 - np.min(m1)
+m1 = m1/np.max(m1)
+m2 = np.matrix.copy(m1)
+m1[:, 45:55] = 1
+m2[45:55, :] = 1
+showTwoMatricesAsBitMaps(m1, m2)
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* python tips:  create and display a bitmap
+
+import matplotlib.pyplot as plt
+import numpy as np
+bitmap = np.fabs(np.random.randn(100, 100))
+np.min(bitmap)
+np.max(bitmap)
+bitmap = bitmap - np.min(bitmap)
+bitmap = bitmap/np.max(bitmap)
+bitmap[:, 45:55] = 1
+img = plt.imshow(bitmap)
+plt.show() 
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* python tips: numpy arrays
+
+  vec = [1,2,3,4]
+  type(vec) # <class 'list'>
+
+  vecNP = np.array(vec)   # array([1, 2, 3, 4])
+  type(vecNP)             # <class 'numpy.ndarray'>
+  vecNP.shape             # (4,)
+  vecNP[:, np.newaxis]
+     array([[1],
+            [2],
+            [3],
+            [4]])
+  vecNP[:, np.newaxis].shape  # (4, 1)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* phastCons30way (31 jan 2020)
+
+  got tarball from Robert Costelo, now here:
+    
+
+*-----------------------------------------------------------------------------------------------------------------------
+* install R 4.0.0 on khaleesi (30 jan 2020)
+
+  cd ~/tmp
+  curl -O https://stat.ethz.ch/R/daily/R-devel_2020-01-29.tar.gz
+
+  mkdir ~/local/R400
+  cd ~/local/R400
+  mv ~/tmp/R-devel_2020-01-29.tar.gz .
+  tar zxf R-devel_2020-01-29.tar.gz 
+  cd R-devel
+  ./configure --prefix=/users/pshannon/local/R400 --enable-R-shlib --with-readline=no --with-x=yes
+
+
+mkdir /users/pshannon/local/R351
+tar zxf R-3.5.1.tar.gz
+cd  R-3.5.1
+./configure --prefix=/users/pshannon/local/R351 --enable-R-shlib --with-readline=no --with-x=yes
+make && make install
+
+*-----------------------------------------------------------------------------------------------------------------------
+* topslam (31 jan 2020)
+
+  cd ~/github
+  git clone  git@github.com:SheffieldML/GPy.git
+  git checkout git@github.com:mzwiessele/topslam.git
+  cd ~/github/topslam
+
+  python setup.py develop
+
+*-----------------------------------------------------------------------------------------------------------------------
+* landscape papers
+
+   --- from chris lausted (29 jan 2020)
+    "Topslam:  Waddington Landscape Recovery for Single CellExperiments"
+         <https://www.biorxiv.org/content/10.1101/057778v2> 
+    "Optimal-Transport Analysis of Single-Cell Gene Expression Identifies Developmental Trajectories in Reprogramming." 
+         <https://www.ncbi.nlm.nih.gov/pubmed/30712874> 
+     "Bifurcation analysis of single-cell gene expression data reveals epigenetic landscape"
+         <https://www.pnas.org/content/111/52/E5643>
+    "A deterministic map of Waddington's epigenetic landscape for cell fate specification." 
+         <https://www.ncbi.nlm.nih.gov/pubmed/21619617>
+
+
+     https://scholar.google.co.uk/citations?hl=en&user=Rz7wBW4AAAAJ&view_op=list_works&sortby=pubdate
+       laura cantini, moonlight, hope4genes
+
+     Hope4Genes: a Hopfield-like class prediction algorithm for transcriptomic data.  excellent bibliography.
+        https://www.nature.com/articles/s41598-018-36744-y
+    
+     Not just a colourful metaphor: modelling the landscape of cellular development using Hopfield
+     networks,  18 February 2016, Nature
+
+     Modeling the Attractor Landscape of Disease Progression: a Network-Based Approach
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* neural ode
+  Systems biology informed deep learning for inferring parameters and hidden dynamics
+
+  Integrating machine learning and multiscale modeling—perspectives, challenges, and opportunities in the biological, biomedical, and behavioral sciences
+
+  Latent ODEs for Irregularly-Sampled Time Series: duvenaud
+*-----------------------------------------------------------------------------------------------------------------------
+* joseph zhou's landscapes (28 jan 2020): get the python code running
+
+   private github repo:
+    ~/github/landscapes
+    cd ~/github/landscapes/joseph.v0/
+    pip install --upgrade pip
+    pip install --user virtualenv 
+    ~/anaconda/bin/virtualenv --python=/Users/paul/anaconda/bin/python ../py363
+
+    source ../py363/bin/activate
+
+    in emacs elpy
+
+     esc-x elpy-config: gives fresh buffer, ameke sure that these are right: 
+     Virtualenv........:     (/Users/paul/github/landscapes/py363/) 
+     RPC Python........: 3.6.3     (/Users/paul/github/landscapes/py363/bin/python)
+
+     then 
+     pyvenv-activate
+
+    --- fresh start
+       cd ~/github/landscapes/joseph.v0
+       ~/anaconda/bin/virtualenv --python=/Users/paul/anaconda/bin/python py363
+       source py363/bin/activate
+       pip install -r requirements.txt 
+
+*-----------------------------------------------------------------------------------------------------------------------
+* joseph zhou's landscapes (28 jan 2020)
+
+   The general concept is to use single-cell data to infer the dynamical system in the form of ODEs
+   which could generate the data. It is different from the usual trajectory inference analysis,
+   which simply infers the low dimensional manifold which contains the data but there are no real
+   dynamics in it. For example, it will not even tell me that it should flow from state A to B, or
+   vice versa. Thus, trajectory analysis from single-cell data is quite limited.
+
+   Instead, we infer the ODEs - which can be used to construct a pseudo-potential function U(X) - it
+   is the landscape that we usually call. The advantage of the landscape over the conventional
+   network analysis is that:
+
+     1. it naturally gives you the gene combinations to perturb the cell state from the optimal cell
+        state transition trajectory inferred from the landscape.
+
+     2. it gives you cell state stabilities - the higher it is in a landscape, the more unstable a
+        cell state is.
+
+     3. We can perturb cell states via multiple trajectories - multiple gene combinations. There are
+         multiple trajectories that can connect two cell states.
+
+   The code is written in Python, in which we did:
+
+    1. Simulate a 2D dynamical system and generated "single-cell" time course data in one
+    partitioned area as a training data set;
+
+    2. We use a new Machine Learning technique cell Neuron ODE which fits better to infer a
+    continuous system;
+
+    3. We learn the ODE from the training data by using Neuron ODE.
+
+   The code is here:
+
+      https://colab.research.google.com/drive/1MEiNMqGxrv31C4duIr612gbEgIza4S7O
+
+    Please keep it confidential. If you have any questions, please let me know!
+
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
 * the case for regulome assays
 
   --- Epigenetic erosion in adult stem cells: drivers and passengers of aging, 11/18
@@ -7112,9 +7421,11 @@ one genehancer/encodeDHS small promoter region, overlapping the 5' utr: chr14:74
 *-----------------------------------------------------------------------------------------------------------------------
 * tunes to learn
 
-shady grove, lee sexton, banjo, suggested by johnny
-white cockade, played by johnny
+  shady grove, lee sexton, banjo, suggested by johnny
+  white cockade, played by johnny
 
+  Learn an Easy Blues Lead On Guitar Using Only 4 Notes: https://www.youtube.com/watch?v=bLuOuD0ryDM
+  
 *-----------------------------------------------------------------------------------------------------------------------
 * articles on improving tf/motif/dna match (22 jun 2019)
 
@@ -17799,7 +18110,7 @@ git rm --cached -r .
 --- When you think your git is messed up, you can use this command to do everything up-to-date.
 
 git rm -r --cached .
-git add .
+# git add .
 git commit -am 'git cache cleared'
 git push
 
@@ -23755,6 +24066,9 @@ NCBI variation web service
 
 *----------------------------------------------------------------------------------------------------
 * books
+
+   Monoculture: How One Story is Changing Everything Kindle Edition, F.S. Michaels  (Author)
+      recommended by donut economics author
 
    Dying of Whiteness: How the Politics of Racial Resentment Is Killing America's Heartland Hardcover – March 5, 2019
       by Jonathan M. Metzl
@@ -50129,7 +50443,9 @@ The original widget PR discussion
 *------------------------------------------------------------------------------------------------------------------------
 * R tips ess tips, use other versions (11 aug 2016)
 
-Also M-x customize-variable and then inferior-R-program-name. Martin Morgan May 6 '11
+  Also M-x customize-variable and then inferior-R-program-name. Martin Morgan May 6 '11
+ (setq inferior-ess-r-program "/users/pshannon/local/R400/R-devel/bin/R")
+
 
 *------------------------------------------------------------------------------------------------------------------------
 * bug: anaconda R version 3.3.1 has system() readline missing symbol problem (11 aug 2016)
@@ -64464,9 +64780,11 @@ git fetch
 git checkout -b dataPackage
 
 *----------------------------------------------------------------------------------------------------
-* github tips, git tips: return to a previous commit (12 jan 2016)
+* github tips, git tips: return to a previous commit (12 jan 2016), git too large file problem
 
-git reset --hard 891a870953a83b04f4b077c43fef2539cf2604c8
+   git reset --hard 891a870953a83b04f4b077c43fef2539cf2604c8
+
+
 git checkout -b pshannon-refactor-server-2
 git add .
 git commit -m "creating a new branch to which commit 891a870953a83b04f4b077c43fef2539cf2604c8 has been restored"
