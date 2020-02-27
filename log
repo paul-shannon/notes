@@ -11,7 +11,7 @@ git config --local priceLab|bioc|origin|paul-shannon branch.master.remote
 *------------------------------------------------------------------------------------------------------------------------
 emacs for macos with ess installed: https://vigou3.gitlab.io/emacs-modified-macos/  (vincent goulet)
 *------------------------------------------------------------------------------------------------------------------------
-python virtual environment: source ~/github/slexil/tests/pshannon-py363/bin/activate
+python virtual environment: source ~/github/slexil-pshannon/tests/pshannon-py363/bin/activate
 *------------------------------------------------------------------------------------------------------------------------
 * discourse of modernism, timothy reiss, p30. (26 dec 2019)
 
@@ -90,6 +90,426 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* pd3c, first look (26 feb 2020)
+
+  cd ~/github/pd3c-explorations/
+  dir data/20200226-neo4j-data.tar.gz  # 172,334,016
+
+*-----------------------------------------------------------------------------------------------------------------------
+* venv
+
+  source ~/github/dash-cytoscape/pshannon/py367.cyjs/bin/activate
+  source ~/github/dash-component-boilerplate/customwidget/venv/bin/activate
+  
+*------------------------------------------------------------------------------------------------------------------------
+* dash component boilerplate, cookiecutter, custom widget demo (26 freb 2020)
+
+  cd ~/github/dash-component-boilerplate/
+
+  instructions here:
+     https://github.com/plotly/dash-component-boilerplate
+
+  source ~/github/dash-cytoscape/pshannon/py367.cyjs/bin/activate
+  pip install cookiecutter
+  installed node 12.16.1    # /usr/local/bin/node
+     
+  cookiecutter https://github.com/plotly/dash-component-boilerplate.git
+     project_name [my dash component]: 
+     project_shortname [my_dash_component]: 
+     component_name [MyDashComponent]: 
+    
+    creates ~/github/dash-component-boilerplate/my_dash_component
+    creates   my_dash_component/my_dash_component/MyDashComponent.py 
+
+    npm run start   # displays the component, javascript only, no python, in browser
+    npm run build:activated
+       Generated MyDashComponent.py
+       ~/github/dash-component-boilerplate/my_dash_component/my_dash_component/MyDashComponent.py
+
+    test with ~/github/dash-component-boilerplate/my_dash_component/app/
+        widgetOnlyNoFlask.py
+        widgetWithFlask.py
+
+    next up:
+       establish read/write actions with MyDashComponent
+
+
+
+  sudo npm i -g npm
+
+  cd ~/github/dash-component-boilerplate/customwidget/
+     # source ~/github/dash-component-boilerplate/customwidget/venv/bin/activate  # disabled for now, using py367.cyjs
+
+   touch junk
+   npm run build
+   find . -newer junk   # but ignore the R-related files
+      ./customwidget/package-info.json
+      ./customwidget/customwidget.min.js
+      ./customwidget/metadata.json
+      ./customwidget/__pycache__
+      ./customwidget/__pycache__/Customwidget.cpython-36.pyc
+      ./customwidget/__pycache__/_imports_.cpython-36.pyc
+      ./customwidget/customwidget.min.js.map
+      ./customwidget/Customwidget.py
+      ./customwidget/_imports_.py
+
+   --- create a minimal app that uses the custom widget
+      cd ~/github/dash-component-boilerplate/useComponentInApp/
+      app.py
+
+   
+
+
+
+      > customwidget@0.0.1 start /Users/paul/github/dash-component-boilerplate/customwidget
+      > webpack-serve --config ./webpack.serve.config.js --open
+      ⬡ webpack: Watching Files
+      ⬡ wps: Server Listening on: http://[::]:55555
+      ⬡ webpack: Hash: 20b3f0b8912fab101002
+        Version: webpack 4.36.1
+        Time: 982ms
+        Built at: 02/26/2020 1:00:01 PM
+              Asset      Size  Chunks             Chunk Names
+        ./output.js  2.89 MiB    main  [emitted]  main
+        Entrypoint main = ./output.js
+
+  opens webpage with html input widget and a label, "ExampleComponent"
+  console reports error however:
+      output.js:929 Warning: Failed prop type: The prop `label` is marked as required in `Customwidget`,
+         but its value is `undefined`.
+      in Customwidget (created by App)
+      in App  
+
+*------------------------------------------------------------------------------------------------------------------------
+* dash-cytoscape (26 feb 2020) build from github repo
+
+  cd ~/github/dash-cytoscape/pshannon/
+  PATH=/Users/paul/anaconda/bin:$PATH
+  conda -V   # conda 4.8.2
+  conda update conda
+   ~/anaconda/bin/virtualenv --python=/Users/paul/anaconda/bin/python py367 
+ source py367/bin/activate
+  cd ~/github/dash-cytoscape
+  pip install .
+  python pshannon/demos/app1/app.py 
+    # seems like a webpack error:
+    #  File "/Users/paul/github/dash-cytoscape/pshannon/py367-v3/lib/python3.6/site-packages/dash_cytoscape/__init__.py", line 12, in <module>
+    # from . import utils
+    # ImportError: cannot import name 'utils'
+    # workaround:
+  cp -prv dash_cytoscape/utils pshannon/py367/lib/python3.6/site-packages/dash_cytoscape/
+  python pshannon/demos/app1/app.py 
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* dash-cytoscape (25 feb 2020)
+   cd ~/github/dash-cytoscape/
+  ~/anaconda/bin/conda create -n pd3 python
+  source/Users/paul/anaconda/bin/activate pd3
+  pip install dash dash-html-components
+
+
+  cd ~/github/dash-cytoscape/pshannon/demos/app1/
+  python -i app.py
+
+     import dash
+     import dash_cytoscape as cyto
+     import dash_html_components as html
+     app = dash.Dash(__name__)
+     app.layout = html.Div([
+         cyto.Cytoscape(
+             id='cytoscape',
+             elements=[
+                 {'data': {'id': 'one', 'label': 'Node 1'}, 'position': {'x': 50, 'y': 50}},
+                 {'data': {'id': 'two', 'label': 'Node 2'}, 'position': {'x': 200, 'y': 200}},
+                 {'data': {'source': 'one', 'target': 'two','label': 'Node 1 to 2'}}
+             ],
+             layout={'name': 'preset'}
+         )
+     ])
+     
+     if __name__ == '__main__':
+         app.run_server(debug=True)
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* john earls on pd3 cloud database (25 feb 2020)
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* derive waddington landscape
+
+   ---- Quantifying Waddington’s epigenetic landscape: a comparison of single-cell potency measures 
+     Jifan Shi, Andrew E Teschendorff, Weiyan Chen, Luonan Chen, Tiejun Li
+     Briefings in Bioinformatics, Volume 21, Issue 1, January 2020, Pages 248–261, https://doi.org/10.1093/bib/bby093
+     Published: 05 October 2018
+     
+     Motivation: Estimating differentiation potency of single cells is a task of great biological
+     and clinical significance, as it may allow identification of normal and cancer stem cell
+     phenotypes. However, very few single-cell potency models have been proposed, and their
+     robustness and reliability across independent studies have not yet been fully assessed.
+
+     Results: Using nine independent single-cell RNA-Seq experiments, we here compare four different
+     single-cell potency models to each other, in their ability to discriminate cells that ought to
+     differ in terms of differentiation potency. Two of the potency models approximate potency via
+     network entropy measures that integrate the single-cell RNA-Seq profile of a cell with a
+     protein interaction network. The comparison between the four models reveals that integration of
+     RNA-Seq data with a protein interaction network dramatically improves the robustness and
+     reliability of single-cell potency estimates. We demonstrate that underlying this robustness is
+     a correlation relationship, according to which high differentiation potency is positively
+     associated with overexpression of network hubs. We further show that overexpressed network hubs
+     are strongly enriched for ribosomal mitochondrial proteins, suggesting that their mRNA levels
+     may provide a universal marker of a cell’s potency. Thus, this study provides novel
+     systems-biological insight into cellular potency and may provide a foundation for improved
+     models of differentiation potency with far-reaching implications for the discovery of novel
+     stem cell or progenitor cell phenotypes.
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* tradeseq (24 feb 2020)  erythropoiesis possibility
+
+
+   TRAjectory Differential Expression analysis for SEQuencing data
+   https://github.com/statOmics/tradeSeq
+
+
+   tradeSeq provides a flexible method for discovering genes that are differentially expressed along
+   one or multiple lineages, using a variety of tests suited to answer many questions of interest.
+
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* monocle3, landscapes, cElegans, help from max (22 feb 2020)
+
+  ~/github/monocle3/pshannon/trajectoryDemo/
+
+  ~/github/landscapes/explorations/pcaDensities/
+
+  --- two contributions from max:
+    1585 Feb 21 17:59 RadialRankGrid.R
+     778 Feb 21 17:59 ShendurePaper.R
+
+    
+*-----------------------------------------------------------------------------------------------------------------------
+* monocle3
+
+   remove all conda references from PATH, solving problem with dynlib xml (something like that)
+   
+   need Matrix.utils, no longer active on CRAN, but still in their archive:
+       https://cran.r-project.org/src/contrib/Archive/Matrix.utils/Matrix.utils_0.9.7.tar.gz
+   install gfortran:
+   
+   library(devtools)
+   devtools::install_github('cole-trapnell-lab/leidenbase')
+   devtools::install_github('cole-trapnell-lab/monocle3')
+
+   lots of prerequisites needed, biocGet does the job
+   put this in ~/.bashrc, to keep version conflict warnings as warnings in install_github:
+
+      export R_REMOTES_NO_ERRORS_FROM_WARNINGS="true"   # for install_github and newer built packages
+
+    ~/github/monocle3/pshannon/basicDemo.R mostly works
+
+
+   
+*-----------------------------------------------------------------------------------------------------------------------
+* stream, abandoned despite its promise: notebook demos quite completely unclear.  turning to monocle3 (19 feb 2020)
+
+  https://github.com/pinellolab/STREAM
+  https://www.nature.com/articles/s41467-019-09670-4
+  Single-cell trajectories reconstruction, exploration and mapping of omics data with STREAM
+  april 2019
+
+  conda update conda
+  conda -V  # conda 4.8.2
+  conda config --add channels defaults
+  conda config --add channels bioconda
+  conda config --add channels conda-forge
+  cd ~/github/STREAM/explore
+  conda create -n myenv python stream stream_atac jupyter
+  source ~/anaconda3/etc/profile.d/conda.sh
+  /Users/paul/anaconda/bin/activate streamEnv
+
+  conda create -n myenv python stream stream_atac jupyter
+
+  conda activate myenv
+
+  cd ~/github/STREAM/explore/nb11
+*-----------------------------------------------------------------------------------------------------------------------
+* How to solve an ODE with a neural network
+  https://towardsdatascience.com/how-to-solve-an-ode-with-a-neural-network-917d11918932
+  has 9 small python scripts, from gists, for example:
+     https://gist.github.com/diogoff/2de2e5d78886da9ec19e7cb9adc50320#file-part9-py
+*-----------------------------------------------------------------------------------------------------------------------
+* classes in joseph's neural ODE (19 feb 2020)
+
+class ODEF(nn.Module):   
+    def forward_with_grad(self, z, t, grad_outputs):
+    def flatten_parameters(self):
+    notes: why call an nn.Module subclass ODEF (F="function")?
+           https://stackoverflow.com/questions/44428784/when-is-a-pytorch-custom-function-needed-rather-than-only-a-module
+
+class ExampleODEF(ODEF):
+    def __init__(self, W):
+    def forward(self, x, t):
+
+class RandomExampleODEF(ExampleODEF):
+    def __init__(self):
+        super(RandomExampleODEF, self).__init__(torch.randn(2, 2)/2.)
+
+class NNODEF(ODEF):
+    def __init__(self, in_dim, hid_dim, time_invariant=False):
+    def forward(self, x, t):
+
+class ODEAdjoint(torch.autograd.Function):
+    def forward(ctx, z0, t, flat_parameters, func):
+    def backward(ctx, dLdz):
+        def augmented_dynamics(aug_z_i, t_i):
+
+class NeuralODE(nn.Module):  """Wrap ode adjoint function in nn.Module for convenience"""
+    def __init__(self, func):
+    def forward(self, z0, t=Tensor([0., 1.]), return_whole_sequence=False):
+        z = ODEAdjoint.apply(z0, t, self.func.flatten_parameters(), self.func)
+
+    notes: NeuralODE module requires aan ODEF function in its constructor
+           NeuralODE.forward passes that to ODEADjoint.apply
+           there is no NeuralODE.backward
+
+*-----------------------------------------------------------------------------------------------------------------------
+* from beck, tcga colon cancer, coad, for landscape rendering? (18 feb 2020)
+
+*-----------------------------------------------------------------------------------------------------------------------
+* 3d density plots, landscapes
+
+  --- of the iris data set, via pcr prcomp
+
+    ~/github/landscapes/explorations/pcaDensities/iris.R
+    
+    library(MASS)
+    library(plotly)
+    
+    pca <- prcomp(iris[, 1:4])
+    mtx.pca <- pca$x
+    x <- mtx.pca[, 1]
+    x <- x + abs(min(x))
+    y <- mtx.pca[, 2]
+    y <- y + abs (min(y))
+    x <- x * (10/max(x))
+    y <- y * (10/max(y))
+    kd <- kde2d(x, y)
+    plot_ly(x=kd$x, y=kd$y, z=-100*kd$z) %>% add_surface()
+    fivenum(kd$z)
+
+
+
+  ~/s/examples/R/densityPlots/3d.R   # uses persp and/or plotly
+  --- using ggplot2, with a couple of extra commands, movie, old faithful, 3 continuous variables
+     https://towardsdatascience.com/how-to-make-stunning-3d-plots-for-better-storytelling-5c93aec80503
+
+  --- STREAM
+    https://github.com/pinellolab/STREAM
+    Single-cell trajectories reconstruction, exploration and mapping of omics data with STREAM
+    nature communications, 2019.  buenrostro among the authors, 2016 single cell data one of the examples
+
+    Single-cell transcriptomic assays have enabled the de novo reconstruction of lineage differentiation trajectories,
+    along with the characterization of cellular heterogeneity and state transitions. Several methods have been developed
+    for reconstructing developmental trajectories from single-cell transcriptomic data, but efforts on analyzing
+    single-cell epigenomic data and on trajectory visualization remain limited. Here we present STREAM, an interactive
+    pipeline capable of disentangling and visualizing complex branching trajectories from both single-cell
+    transcriptomic and epigenomic data. We have tested STREAM on several synthetic and real datasets generated with
+    different single-cell technologies. We further demonstrate its utility for understanding myoblast differentiation
+    and disentangling known heterogeneity in hematopoiesis for different organisms. STREAM is an open-source software
+    package.
+
+  --- monocle 3  (monocle 2014 introduced "pseudo-time"
+    https://cole-trapnell-lab.github.io/monocle3/
+
+    Single-cell trajectory analysis how cells choose between one of several possible end states. The new reconstruction
+    algorithms introduced in Monocle 3 can robustly reveal branching trajectories, along with the genes that cells use
+    to navigate these decisions.
+
+  --- monocle and jay shendure:     The single cell transcriptional landscape of mammalian organogenesis, nature 2019
+  
+  --- from trapnell lab, cicero
+
+    Cicero is an R package that provides tools for analyzing single-cell chromatin accessibility experiments. The main
+    function of Cicero is to use single-cell chromatin accessibility data to predict cis-regulatory interactions (such
+    as those between enhancers and promoters) in the genome by examining co-accessibility. In addition, Cicero extends
+    Monocle 3 to allow clustering, ordering, and differential accessibility analysis of single cells using chromatin
+    accessibility. For more information about Cicero, explore our publications.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* marjorie brand suggests 3 know tf/targetGene pairs for erythropoiesis (10 feb 2020)
+
+  In terms of TF/target gene pairs that are well established, I would suggest:
+
+     - GATA1 binding to GATA2 gene (activation)   # GATA2/GATA1 spearman's = -0.19
+     - TAL1 binding to GATA1 gene (activation)
+     - KLF1 binding to FLI1/SPI1 gene (repression)
+
+   cd ~/github/TrenaMultiScore/misc/erythropoiesis/threeGenesForMarjorie/fimo2/
+   
+   load("FLI1.RData")
+   as.data.frame(sort(table(subset(tbl, chip & gh > 0 & annot.symbol==targetGene & cor < -0.6)$tf)))
+      Var1 Freq
+    1 KLF1    5
+    2 NFE2    8
+
+   load("SPI1.RData")
+   as.data.frame(sort(table(subset(tbl, gh > 0 & annot.symbol==targetGene & cor < -0.5 & chip)$tf)))
+        Var1 Freq
+      1 CREB3L1    1
+      2   NR2F2    1
+      3    NFE2    2
+      4   NR2F1    2
+      5   MEIS2    3
+      6    TAL1    4
+      7    KLF1    5
+
+   load("GATA1.RData")
+      as.data.frame(sort(table(subset(tbl,  chip & gh > 0 & cor > 0.85)$tf)))
+          Var1 Freq    any gh
+      1   TAL1    1    66
+      2   NFE2    3    87
+      3   E2F4    4   274
+      4   KLF1    7    94
+      5  TFDP1   15   140
+      6 ZBTB7A   25   194
+
+    table(subset(tbl,  gh > 0 & phast100 > 0.95 & cor > 0.85)$tf)
+
+      E2F4   E2F8   KLF1   NFE2   NFIX   RXRA    SP2   TAL1   TCF3  TFDP1 ZBTB7A 
+         6      4      6      1      2      2     13      3      3     11      6 
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ML tips: James Loy example (10 feb 2020) dead simple 2-layer neural net
+
+  cd ~/github/landscapes/jamesLoyExamples
+
+  numpy only: neuralNetwork.ps
+  using pytorch tensors and matrix functions: torchNeuralNetwork.py
+
+  --- next up:
+     add torch.nn Function, then Module
+
+*-----------------------------------------------------------------------------------------------------------------------
+* drugTargetInteractions
+
+   install.packages("BatchJobs")   # got diagog, chose texas something or other
+   trying URL 'https://cran.revolutionanalytics.com/bin/macosx/el-capitan/contrib/3.6/BBmisc_1.11.tgz'
+   trying URL 'https://cran.revolutionanalytics.com/bin/macosx/el-capitan/contrib/3.6/BatchJobs_1.8.tgz'
+
+  library(devtools)
+  install_github("longevity-consortium/LC_Chemoinformatics", subdir="Rpackages/drugTargetInteractions", auth_token=github_pat())
+
+  
+
+*-----------------------------------------------------------------------------------------------------------------------
+* translator project (7 feb 2020)
+
+  TKG "translator knowledge graph" severed via tools like Big GIM (gene interation manager) and the Translator Standard API
+   DOCKET dataset overview, comparison and knowledge extraction tool
+
 *-----------------------------------------------------------------------------------------------------------------------
 * ML tips: stochastic, batch and mini-batch gradient descent
 
@@ -326,11 +746,13 @@ make && make install
    
 *-----------------------------------------------------------------------------------------------------------------------
 * neural ode
+
   Systems biology informed deep learning for inferring parameters and hidden dynamics
 
-  Integrating machine learning and multiscale modeling—perspectives, challenges, and opportunities in the biological, biomedical, and behavioral sciences
+  Integrating machine learning and multiscale modeling perspectives, challenges, and opportunities in the biological, biomedical, and behavioral sciences
 
   Latent ODEs for Irregularly-Sampled Time Series: duvenaud
+
 *-----------------------------------------------------------------------------------------------------------------------
 * joseph zhou's landscapes (28 jan 2020): get the python code running
 
@@ -1122,6 +1544,16 @@ head(tbl.atac)
 
 *-----------------------------------------------------------------------------------------------------------------------
 * org.db tips, org.Hs.eg.db tips
+
+  --- get all uniprot ids for noa
+    library(org.Hs.eg.db)
+    uniprotIDs <- unlist(as.list(org.Hs.egUNIPROT), use.names=FALSE)
+    deleters <- which(is.na(uniprotIDs))
+    if(length(deleters) > 0)
+       uniprotIDs <- uniprotIDs[-deleters]
+
+    uniprotIDs <- sort(unique(uniprotIDs))
+    length(uniprotIDs)  # 32410
 
   ---  get all gene symbols
    length(unlist(as.list(org.Hs.egSYMBOL), use.names=FALSE)) # [1] 61217
@@ -7427,7 +7859,7 @@ one genehancer/encodeDHS small promoter region, overlapping the 5' utr: chr14:74
   Learn an Easy Blues Lead On Guitar Using Only 4 Notes: https://www.youtube.com/watch?v=bLuOuD0ryDM
   
 *-----------------------------------------------------------------------------------------------------------------------
-* articles on improving tf/motif/dna match (22 jun 2019)
+* Articles on improving tf/motif/dna match (22 jun 2019)
 
 https://scholar.google.com/scholar?q=related:fZnvlgL4FXQJ:scholar.google.com/&scioq=Quantitative+modeling+of+gene+expression+using
 
@@ -15843,6 +16275,19 @@ also has gene regulatory networks
 
 
 *-----------------------------------------------------------------------------------------------------------------------
+* makefile tips
+
+   .EXPORT_ALL_VARIABLES:
+   FIND_PYTHON=${HOME}/anaconda/bin
+   FIND_MODULE=..
+   VAR2=32
+   
+   all:
+   	@echo hi $$FIND_PYTHON  $$FIND_MODULE
+   run:
+   	(PATH=$$FIND_PYTHON:${PATH}; PYTHONPATH=".."; python run_all.py)
+
+*-----------------------------------------------------------------------------------------------------------------------
 * docker build makefile tips
 
 --- current best example is ~/github/trenaDockerBuilds/trenaVizAD/makefile
@@ -24051,6 +24496,11 @@ NCBI variation web service
 *----------------------------------------------------------------------------------------------------
 * recipes
 
+  --- https://www.gimmesomeoven.com/szechuan-sauce/
+  
+  --- Pasta e Ceci (Italian Pasta and Chickpea Stew) 30 minutes
+  https://cooking.nytimes.com/recipes/1020860-pasta-e-ceci-italian-pasta-and-chickpea-stew?te=1&nl=morning-briefing&emc=edit_NN_p_20200210&section=aBreak&campaign_id=9&instance_id=15871&segment_id=21131&user_id=080a49025dcd07963dee6cb41232f6f7&regi_id=74954632ction=aBreak
+  
   --- salmon & green beans, miso and maple syrup.
   https://cooking.nytimes.com/recipes/1019857-maple-and-miso-sheet-pan-salmon-with-green-beans?te=1&nl=morning-briefing&emc=edit_NN_p_20200110&section=aBreak?campaign_id=9&instance_id=15090&segment_id=20204&user_id=080a49025dcd07963dee6cb41232f6f7&regi_id=74954632ction=aBreak
 
@@ -24066,6 +24516,12 @@ NCBI variation web service
 
 *----------------------------------------------------------------------------------------------------
 * books
+
+   historical fiction about the enclosures, long-listed for booker prize:
+     Harvest: A Novel Hardcover – Deckle Edge, February 12, 2013 by Jim Crace
+
+   down and out in the magic kingdom: cory doctorow
+   rebecca solnit :Whose Story Is This?  Old Conflicts, New Chapters
 
    Monoculture: How One Story is Changing Everything Kindle Edition, F.S. Michaels  (Author)
       recommended by donut economics author
@@ -24183,6 +24639,8 @@ through the Forest Service but is not available at the trailhead.
 
 *------------------------------------------------------------------------------------------------------------------------
 * movies, tv, videos
+
+ passion fish: john sayles 1992
 
  watchmen: hbo 1 season
  british tv detective drama: endeavour
