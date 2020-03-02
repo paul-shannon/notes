@@ -1,0 +1,119 @@
+*------------------------------------------------------------------------------------------------------------------------
+* DNA sequence+shape kernel enables alignment-free modeling of transcription factor binding 
+  Wenxiu Ma,  Lin Yang,  Remo Rohs,  William Stafford Noble
+  https://bitbucket.org/wenxiu/sequence-shape/src/master/
+
+  bioinformatics 2017
+  
+  However, as evidenced by our inability to predict in vitro binding
+  derived from high-throughput assays such as PBMs or SELEX-seq
+  experiments, combinatorial factors are not the only culprit. A
+  second challenge lies in building computationally tractable,
+  physically plausible models. For example, commonly used position
+  weight matrix (PWM) methods depend on correctly aligned DNA
+  sequences and make the unrealistic assumption that each nucleotide
+  binds to the TF independently of one another. Accordingly, a variety
+  of methods have been proposed that attempt to expand this
+  approximation (Barash et al., 2003; Sharon et al., 2008; Zhao et
+  al., 2012; Zhou and Liu, 2004).
+
+  Dependencies between nucleotide positions in a TF binding site can
+  be explicitly encoded through k-mers, for instance dinucleotides or
+  trinucleotides (Gordân et al., 2013; Zhao et al., 2012). On the
+  other hand, because stacking interactions between adjacent base
+  pairs give rise to three-dimensional DNA structure, DNA shape
+  features represent an alternative approach for encoding nucleotide
+  dependencies implicitly (Zhou et al., 2015). Recent evidence
+  suggests that a crucial aspect of TF binding can be explained based
+  on the DNA shape of selected targeted sites (Rohs et al., 2009)
+
+*------------------------------------------------------------------------------------------------------------------------
+* An integrative framework for combining sequence and epigenomic data to predict transcription factor binding sites using deep learning
+  feb 2019
+
+*------------------------------------------------------------------------------------------------------------------------
+*  Gene Regulatory Network Review
+   Enze Liu, Lang Li, Lijun Cheng
+
+  Encyclopedia of Bioinformatics and Computational Biology, Volume 2, 2019, pp. 155-164
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* Protein-DNA Interactions
+
+  Preeti Pandey, ... Shandar Ahmad, in Encyclopedia of Bioinformatics
+  and Computational Biology, 2019
+
+*------------------------------------------------------------------------------------------------------------------------
+* Transcription factor–DNA binding: beyond binding site motifs
+
+  https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5447501/
+
+  Sequence-specific transcription factors (TFs) regulate gene
+  expression by binding to cis-regulatory elements in promoter and
+  enhancer DNA. While studies of TF–DNA binding have focused on TFs'
+  intrinsic preferences for primary nucleotide sequence motifs, recent
+  studies have elucidated additional layers of complexity that
+  modulate TF–DNA binding. In this review, we discuss technological
+  developments for identifying TF binding preferences and highlight
+  recent discoveries that elaborate how TF interactions, local DNA
+  structure, and genomic features influence TF–DNA binding. We
+  highlight novel approaches for characterizing functional binding
+  site motifs that promise to inform our understanding of how TF
+  binding controls gene expression and ultimately contributes to
+  phenotype.
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* DNA shape related google scholar search
+
+  https://scholar.google.com/scholar?q=related:iGc4E3tLOXUJ:scholar.google.com/&scioq=dnashape&hl=en&as_sdt=0,48
+
+*------------------------------------------------------------------------------------------------------------------------
+*  How motif environment influences transcription factor search dynamics: Finding a needle in a haystack
+
+  Iris Dror  Remo Rohs  Yael Mandel‐Gutfreund
+
+  Transcription factors (TFs) have to find their binding sites, which
+  are distributed throughout the genome. Facilitated diffusion is
+  currently the most widely accepted model for this search
+  process. Based on this model the TF alternates between
+  one‐dimensional sliding along the DNA, and three‐dimensional bulk
+  diffusion. In this view, the non‐specific associations between the
+  proteins and the DNA play a major role in the search
+  dynamics. However, little is known about how the DNA properties
+  around the motif contribute to the search. Accumulating evidence
+  showing that TF binding sites are embedded within a unique
+  environment, specific to each TF, leads to the hypothesis that the
+  search process is facilitated by favorable DNA features that help to
+  improve the search efficiency. Here, we review the field and present
+  the hypothesis that TF‐DNA recognition is dictated not only by the
+  motif, but is also influenced by the environment in which the motif
+  resides.
+
+*------------------------------------------------------------------------------------------------------------------------
+* DNA Shape Features Improve Transcription Factor Binding Site Predictions In Vivo
+
+  https://www.sciencedirect.com/science/article/pii/S2405471216302186
+
+  Interactions of transcription factors (TFs) with DNA comprise a
+  complex interplay between base-specific amino acid contacts and
+  readout of DNA structure. Recent studies have highlighted the
+  complementarity of DNA sequence and shape in modeling TF binding in
+  vitro. Here, we have provided a comprehensive evaluation of in vivo
+  datasets to assess the predictive power obtained by augmenting
+  various DNA sequence-based models of TF binding sites (TFBSs) with
+  DNA shape features (helix twist, minor groove width, propeller
+  twist, and roll). Results from 400 human ChIP-seq datasets for 76
+  TFs show that combining DNA shape features with position-specific
+  scoring matrix (PSSM) scores improves TFBS predictions. Improvement
+  has also been observed using TF flexible models and a
+  machine-learning approach using a binary encoding of nucleotides in
+  lieu of PSSMs. Incorporating DNA shape information is most
+  beneficial for E2F and MADS-domain TF families. Our findings
+  indicate that incorporating DNA sequence and shape information
+  benefits the modeling of TF binding under complex in vivo
+  conditions.
+
+
+*------------------------------------------------------------------------------------------------------------------------

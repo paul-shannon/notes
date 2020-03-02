@@ -91,6 +91,469 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* https://spoke.ucsf.edu/
+
+  --- from sui
+
+   Hi Paul – glad to hear of your interest – the more user the better.
+   So here are the options to access the SPOKE biomedical knowledge graph – it depends on to what extent you need an updated version:
+ 
+   SPOKE is to my knowledge the biggest meta-database of curated biomedical knowledge sources (total
+   ~30, of the kind such as, OMIM, GWAS catalog, DrugBank, Gene, GO, Uniprot, Uberon, FooDB
+   (latest!) ... etc) existing as one integrated graph database, as opposed to many projects with a
+   similar vision that are actually portals for querying various databases. So you can also do graph
+   theoretical stuff on it pretty quickly!
+ 
+   So here are your options:
+
+    (1) You do not need the latest data (SPOKE is updated every week): Then you can use the Oct 2019
+    “frozen” version that we use to build tools, and that I can just give you (6GB) and you can
+    query it with Neo4j desktop.
+ 
+    (2) You want the very latest data: Then you need access the latest developer version that is
+    updated weekly and also has most newly ingested data sources (FooDB, Side-effects database, etc
+    ) . But this is via remote access to UCSF where SPOKE is hosted (neo4j browser) – rather very
+    slow since they still use the free on cluster neo4j , not the enterprise version.  The process
+    to get onboarded is cumbersome, and would require you to be formally part of the new
+    Translator... but we can arrange that ... just takes a while, and then it is slow to run.
+ 
+    (3) We are porting the entire thing to Google DataCommons – a not yet well known program at
+    Google. It is the engine that powers the boxes on the right of search returns that contain the
+    objective factual information (e.g.  ‘Trump’ would return his bio in this box, and not his latest
+    tweets .... facts are facts!  The goal is to achieve the same thing for biomedical queries.... it is
+    currently partially implemented eg for genes, proteins, drugs as you may have seen.  The SPOKE
+    biomedical data on DataCommons should be rolled out soon – an increasing part of SPOKE is already
+    there’re. Much faster than neo4j (big query underneath) but hard to use. Need to write a code to
+    perform specific queries.  I can see if I can introduce you to the people doing this if you want,
+    but it would involve be some time commitment
+ 
+   So I guess the most realistic and short term solution for you would be (1) – I can just send you
+   a link to my drive with the graph.db file (but please keep it within ISB) I can tell you more
+   about (3).
+
+*-----------------------------------------------------------------------------------------------------------------------
+* debby martin, oncotypedx and invasive lobular carcinoma (ILC)
+
+  ILC contrasted often with invasive ductal carcinoma (IDC)
+  see also:  ductal carcinoma in situ (DCIS)
+
+  --- good lobsig summary
+    https://www.clinicalomics.com/news-and-features/risk-score-may-point-to-which-breast-cancer-patients-can-avoid-chemo/
+
+    Researchers have developed a test that predicts the likelihood that a person with invasive
+    lobular breast cancer (ILC) will benefit from chemotherapy. The findings were published in the
+    June 27, 2019 issue of Nature Partner Journals Breast Cancer, a joint publication between Nature
+    and the Breast Cancer Research Foundation.
+
+    “In this study, we pulled together a set of 194 genes that, when working together, act as a
+    signature to help clarify which patients are likely to have a positive outcome with their breast
+    cancer,” said lead author of the study Amy McCart Reed, Ph.D., lead author and postdoctoral
+    fellow at the University of Queensland Centre for Clinical Research, in a press release. The
+    authors of the study call these 194 genes a ‘meta gene.’
+
+    “In this study, we have derived the first meta-gene signature focused on prognostication in
+    ILC,” they wrote.
+
+    Invasive lobular breast cancer account for about 10% of the 245,000 cases of breast cancer
+    diagnosed in the U.S. every year, according to the Centers for Disease Control and
+    Prevention. It begins in themilk-producing glands (lobules) of the breast. It is considered
+    invasive when the cancer cells have broken out of the glands, giving them the potential to
+    spread to the lymph nodes and other areas of the body.
+
+    Although this type of cancer makes up a small percentage of the total cases, it is more likely
+    to spread than the more common type, invasive ductal carcinoma, which accounts for 80 percent of
+    the diagnosed cases. Women with the lobular kind are often diagnosed with large tumors that are
+    difficult to remove surgically because these kinds of tumor are harder to identify via
+    mammography and often need mastectomies. The study’s authors describe invasive lobular breast
+    cancer as having“an inherently invasive growth pattern” and can “highly metastatic.” Many don’t
+    do well on chemotherapy, but do respond well to endocrine therapy.
+
+    The goal of the new test is to save these women from the rigors of chemotherapy. It is
+    particularly important because the diagnostic tests available now were developed using ductal
+    carcinoma tumors.
+
+    In the current study, McCart Reed and her colleagues describe their new polygenic risk test,
+    which they call LobSig, as an important tool for precision oncology, allowing physicians match
+    treatments for invasive lobular breast cancer to patients based on omics data.
+
+    “If they have a low-risk signature score, it means we might relieve them of the burden of
+    chemotherapy. If they have a high-risk signature score, we could continue to recommend
+    chemotherapy as the course of treatment,” McCart Reed said.
+
+    In developing Lob Sig, the researchers used omics data for about 300 patients for which 10 years
+    of follow-up data were also available. Mathematical analysis of these data identified the 194
+    informative genes that make up LobSig. Using the signature, the researchers were able to predict
+    outcome status status predicted outcome with nearly 95 percent. Together with pathology
+    information, the test could provide a robust way to accurately predict the course of ILC in each
+    patient. “This signature warrants further analysis and development, and validation on expanded
+    retrospective cohorts of ILC with detailed treatment information,” the researchers wrote.
+
+  --- nottingham prognostic index (https://en.wikipedia.org/wiki/Nottingham_Prognostic_Index)
+       Score	         5-year survival[4]
+       >/=2.0 to </=2.4	    93%
+       >2.4 to </=3.4	    85%
+       >3.4 to </=5.4	    70%
+       >5.4	50%
+
+    NPI = [0.2 x S] + N + G
+     S is the size of the index lesion in centimetres[3]
+     N is the node status: 0 nodes = 1, 1-3 nodes = 2, >3 nodes = 3[3]
+     G is the grade of tumour: Grade I =1, Grade II =2, Grade III =3[3]
+        debby's report says: "Nottingham grade 2"
+        is this the result of the nottingham prognostic index, or 
+         the value of N to be used in its calculation?
+
+     if zero lymph nodes, N = 1
+     (1.1 * 0.2) + 1 + 2 = 3.22, 85% 5-year survival
+
+   nottingham grade: debby given score 2 from this system.
+     tubular: 3
+     nuclear: 2
+     mitotic: 1
+
+  --- web-based nottingham prognostic index: 2.2
+      http://www.pmidcalc.org/?sid=3689666&newtest=Y
+    tumor size: 11
+    lymph node involvement: A
+    histological grade: A
+
+  --- sentinel vs axillary lymph node dissection
+    https://www.cancer.net/research-and-advocacy/asco-care-and-treatment-recommendations-patients/sentinel-lymph-node-biopsy-early-stage-breast-cancer
+
+    A sentinel lymph node biopsy is an appropriate way to find out if cancer has spread outside of
+    the breast. It can often be used instead of an axillary lymph node dissection for many patients
+    with smaller tumors.
+
+    Sentinel lymphadenectomy in breast cancer, 1997, established that sentinel was 100% predictive
+    of axillary lymphadenectomy
+
+  --- N in the TMN staging system
+      https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5313289/
+
+    In the seventh TNM staging system, cut offs for definition of N parameter have been changed: N1
+    is now defined as the presence of 1 or 2 metastatic lymph nodes; involvement of 3 to 6 nodes is
+    classified as N2, while N3 defines the presence of 7–15 (N3a) or more than 15 (N3b) metastatic
+    lymph nodes (4).
+
+  --- debby's diagnosis
+    My cancer diagnosis is Invasive Lobular Carcinoma (ILC)
+    Estrogen-receptor positive (ER+)
+    Progesterone-receptor positive (PR+)
+    HER2 negative
+    Nottingham grade 2
+    Ki-67 2% positive nuclei  ("low Ki expresssion"?
+    Primary antibody MIB1
+    No lymphovascular space invasion identified
+    E-cadherin is negative in malignant cells
+
+    From the partial mastectomy surgery:
+      Tumor was 11 mm
+      Sentinel lymph node was free of cancer (node negative)
+
+    From the post-surgery pathology report:
+     Stage pT1c: between 1 and 2 cm
+     Lobular carcinoma in situ, nonpleomorphic type, small amount
+     Atypical lobular hyperplasia, small amount
+
+   Final diagnosis: Invasive Lobular Carcinoma
+
+   LobSig, nature june 2019: https://www.nature.com/articles/s41523-019-0113-y
+
+  21 oncotypedx genes:
+  [[file:///users/paul/images/oncotypedx-21genes.png]]
+  from "A Multigene Assay to Predict Recurrence of Tamoxifen-Treated,  Node-Negative Breast Cancer" 2004
+
+  ILC
+
+
+
+   --- LobSig vs. other panels
+
+     Analysis of gene expression data has led to the classification of molecular subtypes within
+     ILC.15,16 TCGA developed a 60-gene classifier and identified ‘reactive-like’, ‘immune-related’,
+     and ‘proliferative’ subtypes of the disease. The ‘reactive-like’ tumors had enriched
+     stromal/cancer fibroblast signaling and high expression of various myoepithelial genes
+     (including SOX10, KRT14, COL17A1)15 and were more likely to also be classified as normal-like
+     using the intrinsic subtyping approach. Whilst this analysis was focused more on biology than
+     prognosis, it was unsurprising that the proliferative group had a worse outcome compared to the
+     immune and reactive-like groups.15 Independently, subtyping by a European team also defined an
+     immune-related group with high expression in lymphocyte signaling, together with a
+     hormone-related subgroup with elevated levels of PGR1, ESR1, and GATA3 protein expression.16
+     However, these two ‘immune’ subtyping approaches do not identify the same cases when applied to
+     the same dataset,22 and detailed analyses confirm that ILC broadly have a low level of tumor
+     infiltrating lymphocytes.22
+
+     Despite clear biological and clinical differences, treatment of IC-NST and ILC remains the
+     same. Prognostication is routinely performed using clinico-pathologic information; namely the
+     Nottingham Prognostic Index (NPI),23 which comprises tumor size, grade and lymph node status,
+     and an IHC panel to evaluate ER, PR and HER2 (with or without Ki67, a marker of
+     proliferation).24 Ostensibly, the molecular signature market for breast cancer is a busy space
+     (reviewed in ref. 25), however the utility in ILC of some of the existing commercial tests
+     remains to be seen, and uptake is by no means global. While most focus on ER+ tumors, notably,
+     none of these signatures account for tumor morphology in their algorithms. The Genomic Grade
+     Index (GGI/MapQuantDx™) panel has been shown to be more powerful than grade alone in the ILC
+     population,26 while MammaPrint® has validated value only in node negative ILC patients.27 The
+     clinical utility in ILC of the 21-gene signature, OncotypeDx®, remains unclear with two studies
+     showing classification of 42%28 and 35.5%29 of patients as being as of intermediate risk (IR;
+     managing the IR designated patient is clinically challenging30) and further studies indicate
+     limited additional value over histology.31 Prosigna® is the commercial diagnostic test based on
+     the PAM50 ‘intrinsic’ subtyping. It generates a Risk of Recurrence score (ROR) and has a better
+     prognostic value than that of the OncotypeDx test, in ER+ node negative patients.32 Again, the
+     utility of Prosigna® in ILC specifically is unknown, and a recent study on its utility in
+     breast histological special types excluded ILC.33 A recently reported five-transcript metagene,
+     EarlyR, has shown prognostic power for recurrence-free survival over 8 years in ER+ tumors,
+     however there is no discussion of histology.34
+
+     Here, we present an integration of gene expression and copy number data to identify genes
+     influencing ILC behavior and prognosis. Through this combination of approaches we have
+     developed a 194 metagene signature, which we have termed LobSig, that could add significant
+     prognostic power to the standard clinical information for patients with ILC.
+
+   --- Correlation of Oncotype DX Recurrence Score with Histomorphology and Immunohistochemistry in over 500 Patients
+
+     The Oncotype Dx gene panel consists of 21 genes: 16 cancer genes and 5 reference genes. The
+     cancer genes are comprised of a proliferation set (5 genes: Ki67, STK15, Survivin, CCNB1,
+     MYBL2), estrogen hormone receptor genes (5 genes: ER, PGR, BCL2, SCUBE2), HER2neu set (2 genes:
+     GRB7, HER2), invasion set (2 genes: MMP11, CTSL2), and GSTM-1 (1 gene). An estimation of the
+     Oncotype Dx RS can be achieved with routine histopathologic parameters including integrated
+     mitotic activity and immunohistochemical protein expression of hormone receptors and HER2neu
+     [2, 3]. This provides an alternate more economical and effective mechanism to assess the
+     effects of most of the genes. Thus, we sought to amplify on this by attempting to identify any
+     histomorphological and or immunohistochemical correlation with Oncotype Dx.
+
+
+   --- good 2016 article
+
+     Differences between invasive lobular and invasive ductal carcinoma of the breast: results and therapeutic implications
+
+    https://journals.sagepub.com/doi/full/10.1177/1758834016644156
+
+    Conclusion: The distinct molecular portrait of ILC, along with different patterns of response to
+    available systemic therapies, highlights the need for individualized therapies for patients
+    diagnosed with ILC. Better tools are needed to identify the small fraction of patients that
+    might benefit from chemotherapy and the molecular characterization of tumors can be useful in
+    the allocation of patients to clinical trials. The role of FOXA1 and GATA3 genes in modulating
+    the ER transcription program across ILC and IDC also deserves further attention. Finally, the
+    differential effectiveness of AI when compared to tamoxifen for patients diagnosed with ILC
+    needs to be validated in larger datasets.
+
+   --- lay article: high-risk score from LobSig recommends chemotherapy
+
+     https://medicalxpress.com/news/2019-06-needless-chemotherapy-breast-cancer.html
+
+   --- R code to do the analysis, from the manuscript, 11 months old
+     https://github.com/samirlal2/LobSig
+
+
+    --- tcga ilc paper 2015
+
+      Invasive lobular carcinoma (ILC) is the second most prevalent histologic subtype of invasive
+      breast can- cer. Here, we comprehensively profiled 817 breast tumors, including 127 ILC, 490
+      ductal (IDC), and 88 mixed IDC/ILC. Besides E-cadherin loss, the best known ILC genetic
+      hallmark, we identified mutations targeting PTEN, TBX3, and FOXA1 as ILC enriched
+      features. PTEN loss associated with increased AKT phosphorylation, which was highest in ILC
+      among all breast cancer subtypes. Spatially clustered FOXA1 mutations correlated with
+      increased FOXA1 expression and activity. Conversely, GATA3 mutations and high expression
+      characterized luminal A IDC, suggesting differential modulation of ER activity in ILC and
+      IDC. Proliferation and immune-related signatures determined three ILC transcriptional subtypes
+      associated with survival differences. Mixed IDC/ILC cases were molecularly classified as
+      ILC-like and IDC-like revealing no true hybrid features. This multidimensional molecular atlas
+      sheds new light on the genetic bases of ILC and provides potential clinical options.
+
+
+       discussion: Unbiased characterization of the ILC transcriptome showed a high degree of
+       internal variability giving rise to three main subgroups: reactive-like, immune-related, and
+       proliferative. While additional validation studies will clearly be required, we do observe
+       increased expression of many druggable pathways/targets including increased levels of
+       phospho-mTOR and phospho-MEK1 expression in the immune-related subgroup as well as increased
+       SMO and ERK pathway activity in the reactive-like subgroup. These results, coupled with
+       difference in clinical outcome, suggest that these subgroups will be important for future
+       studies focused on both the clinical and biological aspects of ILC.  
+
+       Finally, we showed that mixed ILC/IDC tumors could be separated into two major groups based
+       on their molecular resemblance to either ILC (ILC-like) or IDC (IDC-like). The ability to
+       classify cancers with mixed phenotypes based on the underlying biology has implications for
+       clinical practice as well as furthering our understanding of the etiology of such
+       lesions. Indeed, ILC carcinomas often metastasize to body sites not colonized by IDCs (e.g.,
+       gastrointestinal [GI] tract and peritoneal surfaces). ILC are also typically of low
+       histologic grade and with low to inter- mediate mitotic index, thus limiting their response
+       to primary chemotherapy (Cristofanilli et al., 2005) and their ability to be de- tected on
+       PET scans. As such, clinicians must be aware of non- specific symptomatology and favor
+       diagnostic approaches such as anatomical scanning (CT scan) for ILCs. Finally, the iden-
+       tification of ILC enriched molecular features may ultimately lead to the design of
+       ILC-targeted therapies. A more refined classifica- tion of mixed cancers as IDC-like or
+       ILC-like will improve our un- derstanding, detection, and follow-up of the disease, and
+       enable a more informed and targeted treatment selection.
+
+*-----------------------------------------------------------------------------------------------------------------------
+* grok react component in python, for plotly dash (27 feb 2020)
+
+  https://dash.plot.ly/react-for-python-developers
+  ~/github/dash-component-boilerplate/my_dash_component/my_dash_component/MyDashComponent.py
+  ~/github/dash-component-boilerplate/my_dash_component/src/lib/components/MyDashComponent.react.js
+  
+
+*-----------------------------------------------------------------------------------------------------------------------
+* arivale data on dalek (27 feb 2020)
+
+  dalek:> head /proj/arivale/snapshots/arivale_snapshot_ISB_2020-01-24_0127/sal
+
+*-----------------------------------------------------------------------------------------------------------------------
+* cypher tips
+
+  docker exec -it neo4j bash
+     cypher-shell -u neo4j -p TurkeyShakeStrawD3
+
+  match(n) return count (*);    # 313688
+  match(n) return * limit 3;  
+
+  match(x:BaseMetaData:ArivaleProteinMD:ProteinMD) return x limit 3;
+
+  match(x:BaseMetaData:ProteinColumnMD) return x.source_key limit 3;
+   +---------------+
+   | x.source_key  |
+   +---------------+
+   | "CVD3_P00750" |
+   | "NEX_P30519"  |
+   | "INF_P10145"  |
+   +---------------+
+
+  match(x:BaseMetaData:ProteinColumnMD) return x limit 3;
+   +------------------------------------------------------------------------------------------------------------------------------+
+   | (:BaseMetaData:ProteinColumnMD:ColumnMD {data_type: "protcolumnmd", md_class: "ProteinColumnMD", source_key: "CVD3_P00750"}) |
+   | (:BaseMetaData:ProteinColumnMD:ColumnMD {data_type: "protcolumnmd", md_class: "ProteinColumnMD", source_key: "NEX_P30519"})  |
+   | (:BaseMetaData:ProteinColumnMD:ColumnMD {data_type: "protcolumnmd", md_class: "ProteinColumnMD", source_key: "INF_P10145"})  |
+   +------------------------------------------------------------------------------------------------------------------------------+
+
+   match(x:BaseMetaData:ArivaleProteinMD:ProteinMD) return x limit 3;
+   +----------------------------------------------------------------------------------------------------------------------------------+
+   | x                                                                                                                                |
+   +----------------------------------------------------------------------------------------------------------------------------------+
+   | (:BaseMetaData:ArivaleProteinMD:ProteinMD {data_type: "arivaleprotmd", md_class: "ArivaleProteinMD", source_key: "ONC3_Q86SF2"}) |
+   | (:BaseMetaData:ArivaleProteinMD:ProteinMD {data_type: "arivaleprotmd", md_class: "ArivaleProteinMD", source_key: "CAM_O00533"})  |
+   | (:BaseMetaData:ArivaleProteinMD:ProteinMD {data_type: "arivaleprotmd", md_class: "ArivaleProteinMD", source_key: "CVD2_P00797"}) |
+   +----------------------------------------------------------------------------------------------------------------------------------+
+
+   match(x:BaseMetaData:ProteinColumnMD)-[r]->(n) return x.source_key, r, n.source_key, n.data_type limit 3;
+
+
+    match(x:BaseMetaData:ArivaleProteinMD:ProteinMD {source_key: 'CVD3_P00750'}) return x limit 3;
+    +----------------------------------------------------------------------------------------------------------------------------------+
+    | x                                                                                                                                |
+    +----------------------------------------------------------------------------------------------------------------------------------+
+    | (:BaseMetaData:ArivaleProteinMD:ProteinMD {data_type: "arivaleprotmd", md_class: "ArivaleProteinMD", source_key: "CVD3_P00750"}) |
+    +----------------------------------------------------------------------------------------------------------------------------------+
+
+    match(x:ArivaleProteinMD {source_key: "CAM_O00533"}) return x limit 3;
+    +---------------------------------------------------------------------------------------------------------------------------------+
+    | x                                                                                                                               |
+    +---------------------------------------------------------------------------------------------------------------------------------+
+    | (:BaseMetaData:ArivaleProteinMD:ProteinMD {data_type: "arivaleprotmd", md_class: "ArivaleProteinMD", source_key: "CAM_O00533"}) |
+    +---------------------------------------------------------------------------------------------------------------------------------+
+
+match(s:BaseMetaData{source_key: "CAM_O00533"}) return s limit 3;
++---------------------------------------------------------------------------------------------------------------------------------+
+| s                                                                                                                               |
++---------------------------------------------------------------------------------------------------------------------------------+
+| (:BaseMetaData:ProteinColumnMD:ColumnMD {data_type: "protcolumnmd", md_class: "ProteinColumnMD", source_key: "CAM_O00533"})     |
+| (:BaseMetaData:ArivaleProteinMD:ProteinMD {data_type: "arivaleprotmd", md_class: "ArivaleProteinMD", source_key: "CAM_O00533"}) |
++---------------------------------------------------------------------------------------------------------------------------------+
+
+match(s:BaseMetaData{source_key: "CAM_O00533"}) -[r]-(t) return r, s.source_key, t.source_key limit 5;
++----------------------------------------------------------+
+| r                          | s.source_key | t.source_key |
++----------------------------------------------------------+
+| [:MD__ARIVALE]             | "CAM_O00533" | "CAM_O00533" |
+| [:MD__UNIPROT_GOMD]        | "CAM_O00533" | "O00533"     |
+| [:MD__UNIPROT_KEGGGENESMD] | "CAM_O00533" | "O00533"     |
+| [:MD__ARIVALE]             | "CAM_O00533" | "CAM_O00533" |
++----------------------------------------------------------+
+
+
+
+
+    match(x:BaseMetaData:ArivaleProteinMD:ProteinMD {source_key: 'CVD3_P00750'})-[r](n) return x.source_key, n.data_type, n.source_key limit 3;
+
+
+
+  --- show database/s, query and set default database, explore schema
+    the neo4j admin commands (i.e., “show databases”) are only available in version >= 4.0.
+    do you know here I can find docs for similar commands in neo4j 3.5.2?
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* install neo4j on hagfish (26 feb 2020)
+
+    docker pull neo4j:3.5.12
+    docker images | grep neo4j
+      neo4j                       3.5.12              d7e829b9af80        3 weeks ago         364MB
+      neo4j                       latest              8ed7463b8476        3 weeks ago         548MB
+
+
+   cd ~/github/pd3c-explorations/data
+   tar zxf 20200226-neo4j-data.tar.gz
+   cd ~/github/pd3c-explorations/sampleRun/
+   bash create_neo4j.sh 
+
+   docker ps
+     CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                                                      NAMES
+     e87154ccc4ff        neo4j:3.5.12        "/sbin/tini -g -- /d…"   25 minutes ago      Up 25 minutes       0.0.0.0:7474->7474/tcp, 7473/tcp, 0.0.0.0:7687->7687/tcp   neo4j
+
+   --- try R
+    ~/github/pd3c-explorations/sampleRun/neo4j-look.R
+    install_github("neo4j-rstats/neo4r")
+    library(neo4r)
+    con <- neo4j_api$new(
+      url = "http://localhost:7474",
+      user = "neo4j",
+      password = "TurkeyShakeStrawD3"
+      )
+    con$ping() # 200 when successful
+    call_neo4j(play_movies(), con)
+    
+   --- try cypher in the docker container
+     book.sampleRun> docker exec -it neo4j bash
+     neo4j@bd8c658d6b16:~$ cypher-shell -u neo4j -p TurkeyShakeStrawD3
+    neo4j> CALL db.indexes();
+    CALL db.indexes();
+    +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    | description                                  | indexName   | tokenNames               | properties     | state    | type                   | progress | provider                              | id  | failureMessage |
+    +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    | "INDEX ON :ArivaleChemistriesMD(source_key)" | "index_15"  | ["ArivaleChemistriesMD"] | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 15  | ""             |
+    | "INDEX ON :ArivaleMetaboliteMD(source_key)"  | "index_176" | ["ArivaleMetaboliteMD"]  | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 176 | ""             |
+    | "INDEX ON :ArivaleProteinMD(source_key)"     | "index_183" | ["ArivaleProteinMD"]     | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 183 | ""             |
+    | "INDEX ON :ChemOntMD(source_key)"            | "index_204" | ["ChemOntMD"]            | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 204 | ""             |
+    | "INDEX ON :ChemistriesColumnMD(source_key)"  | "index_36"  | ["ChemistriesColumnMD"]  | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 36  | ""             |
+    | "INDEX ON :GOMD(source_key)"                 | "index_57"  | ["GOMD"]                 | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 57  | ""             |
+    | "INDEX ON :HmdbMD(source_key)"               | "index_211" | ["HmdbMD"]               | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 211 | ""             |
+    | "INDEX ON :KeggBriteMD(source_key)"          | "index_64"  | ["KeggBriteMD"]          | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 64  | ""             |
+    | "INDEX ON :KeggCompoundMD(source_key)"       | "index_71"  | ["KeggCompoundMD"]       | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 71  | ""             |
+    | "INDEX ON :KeggDiseaseMD(source_key)"        | "index_78"  | ["KeggDiseaseMD"]        | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 78  | ""             |
+    | "INDEX ON :KeggDrugGroupMD(source_key)"      | "index_85"  | ["KeggDrugGroupMD"]      | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 85  | ""             |
+    | "INDEX ON :KeggDrugMD(source_key)"           | "index_92"  | ["KeggDrugMD"]           | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 92  | ""             |
+    | "INDEX ON :KeggEnvironMD(source_key)"        | "index_99"  | ["KeggEnvironMD"]        | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 99  | ""             |
+    | "INDEX ON :KeggEnzymeMD(source_key)"         | "index_106" | ["KeggEnzymeMD"]         | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 106 | ""             |
+    | "INDEX ON :KeggGenesMD(source_key)"          | "index_113" | ["KeggGenesMD"]          | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 113 | ""             |
+    | "INDEX ON :KeggGenomeMD(source_key)"         | "index_120" | ["KeggGenomeMD"]         | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 120 | ""             |
+    | "INDEX ON :KeggGlycanMD(source_key)"         | "index_127" | ["KeggGlycanMD"]         | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 127 | ""             |
+    | "INDEX ON :KeggModuleMD(source_key)"         | "index_134" | ["KeggModuleMD"]         | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 134 | ""             |
+    | "INDEX ON :KeggNetworkElementMD(source_key)" | "index_141" | ["KeggNetworkElementMD"] | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 141 | ""             |
+    | "INDEX ON :KeggOrthologyMD(source_key)"      | "index_148" | ["KeggOrthologyMD"]      | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 148 | ""             |
+    | "INDEX ON :KeggPathwayMD(source_key)"        | "index_155" | ["KeggPathwayMD"]        | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 155 | ""             |
+    | "INDEX ON :KeggReactionClassMD(source_key)"  | "index_162" | ["KeggReactionClassMD"]  | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 162 | ""             |
+    | "INDEX ON :KeggReactionMD(source_key)"       | "index_1"   | ["KeggReactionMD"]       | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 1   | ""             |
+    | "INDEX ON :KeggVariantMD(source_key)"        | "index_169" | ["KeggVariantMD"]        | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 169 | ""             |
+    | "INDEX ON :LabcorpChemistriesMD(source_key)" | "index_22"  | ["LabcorpChemistriesMD"] | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 22  | ""             |
+    | "INDEX ON :LoincChemistriesMD(source_key)"   | "index_29"  | ["LoincChemistriesMD"]   | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 29  | ""             |
+    | "INDEX ON :MetabolitesColumnMD(source_key)"  | "index_43"  | ["MetabolitesColumnMD"]  | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 43  | ""             |
+    | "INDEX ON :ProteinColumnMD(source_key)"      | "index_50"  | ["ProteinColumnMD"]      | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 50  | ""             |
+    | "INDEX ON :UniprotGOMD(source_key)"          | "index_190" | ["UniprotGOMD"]          | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 190 | ""             |
+    | "INDEX ON :UniprotKeggGenesMD(source_key)"   | "index_197" | ["UniprotKeggGenesMD"]   | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 197 | ""             |
+    | "INDEX ON :type(source_key)"                 | "index_8"   | ["type"]                 | ["source_key"] | "ONLINE" | "node_unique_property" | 100.0    | {version: "1.0", key: "native-btree"} | 8   | ""             |
+    +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    31 rows available after 134 ms, consumed after another 29 ms
+   
+*-----------------------------------------------------------------------------------------------------------------------
 * pd3c, first look (26 feb 2020)
 
   cd ~/github/pd3c-explorations/
@@ -8758,6 +9221,13 @@ https://soundcloud.com/uwlibraries/hilbert200501tape2467a
 
 *-----------------------------------------------------------------------------------------------------------------------
 * PAPERS
+
+  --- Integrating biomedical research and electronic health records to create knowledge-based biologically meaningful
+       machine-readable embeddings.  nature 2019.
+
+
+  --- cds Unremarkable AI: Fitting Intelligent Decision Support into Critical, Clinical Decision-Making Processes 2019
+  out of cmu, very good
 
   --- klf1 in erytrhopoiesis: KLF1 stabilizes GATA-1 and TAL1 occupancy in the human β-globin locus
 
@@ -24496,6 +24966,11 @@ NCBI variation web service
 *----------------------------------------------------------------------------------------------------
 * recipes
 
+  --- vegan mapo tofu (sichuan)
+
+    https://cooking.nytimes.com/recipes/1017358-vegan-mapo-tofu
+
+
   --- https://www.gimmesomeoven.com/szechuan-sauce/
   
   --- Pasta e Ceci (Italian Pasta and Chickpea Stew) 30 minutes
@@ -24516,6 +24991,21 @@ NCBI variation web service
 
 *----------------------------------------------------------------------------------------------------
 * books
+
+   Checklist Manifesto Paperback – January 4, 2011 by ATUL GAWANDE (Author)
+     Already, a simple surgical checklist from the World Health Organization designed by following the
+     ideas described here has been adopted in more than twenty countries as a standard for care and
+     has been heralded as “the biggest clinical invention in thirty years” (The Independent).
+
+
+   last town on earth (spanish flu); darktown. thomas mullen
+
+   “Fine Southern storytelling meets hard-boiled crime in a tale that connects an overlooked chapter
+   of history to our own continuing struggles with race today.” —Charles Frazier, bestselling author
+   of Cold Mountain
+
+   The Cambrian Explosion: The Construction of Animal Biodiversity by Douglas H. Erwin
+     mentioned in nature ess article, recent, well reviewed.
 
    historical fiction about the enclosures, long-listed for booker prize:
      Harvest: A Novel Hardcover – Deckle Edge, February 12, 2013 by Jim Crace
@@ -63121,7 +63611,7 @@ lapply(modifies.paths, function(path) {return (c(startNode(path)$name, endNode(p
 *----------------------------------------------------------------------------------------------------
 * neo4j tips: good cypher load website (27 jan 2016)
 
-http://jexp.de/blog/2014/06/load-csv-into-neo4j-quickly-and-successfully/
+  http://jexp.de/blog/2014/06/load-csv-into-neo4j-quickly-and-successfully/
 
 *----------------------------------------------------------------------------------------------------
 * neo4j, destroy database, clean start (28 jan 2016)
