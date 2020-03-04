@@ -88,8 +88,52 @@ bed format: chrom, start, end, name, score, strand
 * -TOP-  top  *top*
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* neo4j in docker, try to load spoke (3 mar 2020)
+
+   --- emulate what works for john
+     cd ~/github/pd3c-explorations/sampleRun/
+     docker stop john01
+     docker rm john01
+     bash  start-02.sh
+        docker run --name=john01 --publish=7474:7474 --publish=7687:7687 --volume=/Users/paul/github/pd3c-explorations/data/neo4j/data:/data --volume=/Users/paul/github/pd3c-explorations/sampleRun/logs:/logs --user=neo4j --env NEO4J_AUTH=neo4j/TurkeyShakeStrawD3 --env 'NEO4JLABS_PLUGINS=["apoc", "graph-algorithms"]' --env 'NEO4J_dbms_security_procedures_unrestricted=apoc.\*,algo.\*' neo4j:3.5.12
+        directories in use:
+            data:         /var/lib/neo4j/data
+    now examine the mounted data directory:
+      docker exec --interactive --tty john01 /bin/bash
+      ls -l /var/lib/neo4j/data
+        lrwxrwxrwx 1 root root 5 Feb  2 21:06 /var/lib/neo4j/data -> /data
+      ls -l /data
+       drwxr-xr-x 4 neo4j neo4j 128 Nov 19 20:49 databases
+       drwxr-xr-x 4 neo4j neo4j 128 Nov 19 20:49 dbms
+
 *-----------------------------------------------------------------------------------------------------------------------
+* neo4j desktop, add node to graph, find where in filesystem this is recorded (3 mar 2020)
+
+  ~/Library/Application Support/Neo4j Desktop/Application/neo4jDatabases/database-8be7eabb-8b08-47f4-8537-c0f903cb2c13/installation-3.5.14/
+  in conf/neo4j.conf, maybe changing this directory will work:
+
+    #dbms.directories.data=data
+
+   https://stackoverflow.com/questions/37931688/running-neo4j-3-0-with-specific-database-folder
+
+    /Users/paul/github/spokeExperiments/data/databases/graph.db
+
 *-----------------------------------------------------------------------------------------------------------------------
+* neo4j getting started (2 mar 2020)
+
+  /Applications/Neo4j\ Desktop.app/Contents/MacOS/Neo4j\ Desktop
+
+*-----------------------------------------------------------------------------------------------------------------------
+* simple docker neo4j (2 mar 2020)
+
+  cd ~/github/pd3c-explorations/sampleRun/
+     # if needed:
+  docker stop john01; docker rm john01
+  bash start-01.sh
+  
+  docker exec --interactive --tty john01 bin/cypher-shell -u neo4j -p TurkeyShakeStrawD3
+  neo4j> match (n)  return count(n);   #  313688 
+
 *-----------------------------------------------------------------------------------------------------------------------
 * https://spoke.ucsf.edu/
 
@@ -25155,6 +25199,31 @@ old family wounds but is also deeply tied to sprawling power struggles and confl
 industry. Olafur Darri Olafsson returns as Andri, our cop hero whose own family is still suffering from the fallout
 of Season 1. If you’re in the mood for a potent crime show that provides the satisfaction of dense, expensive
 multigrain bread, watch this.
+
+
+‘Black Christmas’: If the 2019 “Black Christmas" is not nearly as chilling as the original, it is genuinely barbed as gender satire, and it cleverly pre-empts obvious outrage.” — Ben Kenigsberg (Read the full review here.)
+
+‘A Hidden Life’ (Tuesday)“[The director Terrence] Malick’s lyricism sometimes washes out the psychological and historical details of the narrative. The political context is minimal, supplied by documentary footage of Nazi rallies at the beginning and Hitler at home in the middle. The performers don’t so much act as manifest conditions of being, like figures in a religious painting.” — A.O. Scott (Read the full review here.)
+
+‘Jumanji: The Next Level’ (Tuesday)
+“It’s perhaps unfair to call this a turkey. It’s got some sweet moments, and the cast, as it did in the previous picture, enjoys itself at least semi-infectiously.” — Glenn Kenny (Read the full review here.)
+
+‘Richard Jewell’ (Tuesday) — A Critic’s Pick
+
+“A rebuke to institutional arrogance and a defense of individual dignity, sometimes clumsy in its
+finger-pointing but mostly shrewd and sensitive in its effort to understand its protagonist and what
+happened to him.” — A.O. Scott (Read the full review here.)
+
+--- Death in Paradise
+
+  This easy-breezy procedural comes and goes from streaming platforms an awful lot, but as of
+  yesterday, the first eight seasons are available on BritBox. (Season 9 just finished airing in
+  Britain.) The show follows a series of British detectives who are dispatched to the fictional
+  Caribbean nation of Saint Marie, where they team up with local officers to solve crimes. Much as
+  you might have a favorite Doctor on “Doctor Who” or a favorite A.D.A. on “Law & Order,” you will
+  settle on a favorite fish-out-of-water detective inspector on “Death in Paradise,” but don’t close
+  your heart to the possibility of liking them all. If you like “Monk” or Hercule Poirot, and also
+  the beach, watch this.
 
 *------------------------------------------------------------------------------------------------
 * books for leo's birthday 2018
@@ -90643,17 +90712,25 @@ return (expansion)
 * nl tips
 head -85 registry.genenames.tab | tail -1 | tr '\t' '\n' | nl -ba
 *----------------------------------------------------------------------------------------------------
-* salish unicode
+* salish unicode tips lushootseed unicode
 
---  barred lambda:
-Unicode Character 'LATIN SMALL LETTER LAMBDA WITH STROKE' (U+019B)  411 &#411;
-no html entity defined  &#x019b;
+  -- query a character
+      esc-x describe-char
 
---  find a new character, example, barred-lambda
-.emacs has function lm, which places &#x019b; at point
-good website    http://www.fileformat.info/info/unicode/char/search.htm
+  --  barred lambda:
+     Unicode Character 'LATIN SMALL LETTER LAMBDA WITH STROKE' (U+019B)  411 &#411;
+     no html entity defined  &#x019b;
 
-&#x294;  &#x30c; &#x2b7;
+   --  find a new character, example, barred-lambda
+     .emacs has function lm, which places &#x019b; at point
+     good website    http://www.fileformat.info/info/unicode/char/search.htm
+
+   
+
+   wikipedia, on combining characters:  https://en.wikipedia.org/wiki/Combining_character
+
+     Unicode also contains many precomposed characters, so that in many cases it is possible to use
+     both combining diacritics and precomposed characters, at the user's or application's choice.
 
 *----------------------------------------------------------------------------------------------------
 * statistics tips, stats tips, stat tips, probability tips, prob tips
