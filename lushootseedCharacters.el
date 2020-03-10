@@ -21,6 +21,12 @@
    (insert "\u030C")
    )
 
+(defun j-wedge ()  ;;   ǰ
+   (interactive)
+   (insert "j")
+   (insert "\u030C")
+   )
+
 (defun s-wedge ()  ;; š
    (interactive)
    (insert "s")
@@ -33,10 +39,10 @@
    (insert "\u026C")
    )
 
-(defun barred-lambda ()  ;;  ƛ̓
+(defun barred-lambda ()  ;;    ƛ
    (interactive)
    (insert "\u019B")
-   (insert "\u0313")
+   ;;(insert "\u0313")
    )
 
 (defun dot () ;;    •

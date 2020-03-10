@@ -88,6 +88,254 @@ bed format: chrom, start, end, name, score, strand
 * -TOP-  top  *top*
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------------------------------------------------
+* salary calculations (10 mar 2020)
+
+ --- isb @142k annual
+ biweekly gross: 5925
+    witholdings: 1325   22%
+                          fed: 865
+                           ss: 361
+                     medicare: 84
+                        other: 55
+ 
+    deductions: 1015   17%
+                         403b: 824
+                         fsa:  83
+                     med 125:  60
+                       other:  46
+ 
+           net: 3584   60%
+                      to amy: 2175   36%
+                       to me: 1409   23%
+
+ --- hutch @90k annual
+  biweekly gross: 3750
+    withholdings:  750 20%
+      deductions:  200
+             net: 2800
+
+  --- monthly view
+
+*-----------------------------------------------------------------------------------------------------------------------
+* wa covid-19 cases
+
+  9 mar 2020: 119  22
+
+*-----------------------------------------------------------------------------------------------------------------------
+* map ensembl ids: the "new" approach (9 mar 2020)  select tips
+
+   library(EnsDb.Hsapiens.v79)
+   keytypes(EnsDb.Hsapiens.v79)
+      "ENTREZID", "EXONID", "GENEBIOTYPE", "GENEID", "GENENAME", "PROTDOMID", "PROTEINDOMAINID",
+      "PROTEINDOMAINSOURCE", "PROTEINID", "SEQNAME", "SEQSTRAND", "SYMBOL", "TXBIOTYPE", "TXID",
+      "TXNAME", "UNIPROTID"          
+
+   goi <- c("AHR", "AIRE", "ALX1")
+   tbl <- select(EnsDb.Hsapiens.v79, key=goi,  columns=c("SYMBOL", "ENTREZID", "UNIPROTID"),  keytype="SYMBOL")
+   subset(tbl, nchar(UNIPROTID)==6 & substr(UNIPROTID,1,1) %in% c("O", "P", "Q"))
+      SYMBOL ENTREZID UNIPROTID
+    2    AHR      196    P35869
+    5   AIRE      326    O43918
+    7   ALX1     8092    Q15699   
+   
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* vincent scully quoted on greek vs roman temples (6 mar 2020)
+
+  from sacred place in early medieval neoplatonism,   michael harrington
+
+scully: the earth, the temple, and the gods.
+
+the temple has only to gather and shape the already sacred characteristics
+of the landscape in their relation to human worshippers and to the gods
+embodied in the temple.
+
+contrast scully's greeks to the romans who follow them. the roman temples
+that open out onto a landscape no longer incorporate themselves within
+that landscape, but attempt to dominate it... 
+
+commanders of the vista: as it marks off the landscape to be controlled,
+the temple at the same time loses its power to be the embodying mystery
+of the god that appears in it.  for the temple is now not seen as a
+place where anything appears.  it is a control center.
+
+scully assails the neoplatonist geometry of the hagia sophia (completed
+537 AD), perfect circle/dome/sphere floating above a square: vast space
+without a body of any kind.  it set the course of european architecture
+for 1000 years.
+
+for scully, the devolution of western architecture begins with the
+appearance of philosophy, which he treats as functionally identical
+with Platonism.  the greek approach to architecture collapses "almost
+overnight" with the appearance of philosophy in 5C bc. socrates born
+in 470, plato in 427.  the greeks continue to build temples, but
+their structure is now "stiff, linear and dried out".  the platonic
+philosophers who take up the number theory of pythagoras describe
+the make of the cosmos as following a geometrical pattern when
+constructing it.  the application of this insight to the craft of
+sacred architecture leads to a homogeneity in temple design. the
+specificity of the temple to its god and landscape begins to disappear
+in favor of the presentation of the universe in visible form,
+downplaying the material character of the temple, which would render
+it here and now, in this specific place and this specific time.
+
+the elevation of the universal necessarily downplays the material
+character of the temple.  the geometrical method does not ensconce
+the temple within its local landscape, but imposes on that landscape,
+as best it can, a being of a different order: the geometrical object -
+which can never properly become visible, since it is universal, and
+the visible is always specific in character, place and time.  the
+attempt to incarnate a geometrical object in visible form can degrade
+both its material character the specificty of its surroundings
+so as to make them more amenable to human manipulation.  the
+regular is easier to control.  the term "platonic" as scully uses
+it her does not describe a school fo thought as much as a method
+of design.
+
+the dominion of the mathematicized world (husserl, heidegger)
+heidegger & eliade: seminal thinkers in the 20th century rediscovery
+of place
+
+the storyteller takes what is old and retells it. the telling will
+always be different, yet what it says remains the same.  reason, on
+the other hand, seeks to move slowly through the comprehension of
+one thing after another. it seeks the new.  heidegger blames this
+reason for the transformation of things and places into quantities,
+a slow measuring out of the landscape as human beings seek to comprehend
+it, literally piece by piece.  the history of this transformation is
+the history of platonism.
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* network visualization in R (4 mar 2020): d3, three.js, etc.
+
+   https://kateto.net/network-visualization
+   https://github.com/kateto/R-Network-Visualization-Workshop
+
+*-----------------------------------------------------------------------------------------------------------------------
+* spoke, docker, cypher, learn.R: load northwind/products.csv, parse into graph (6 mar 2020)
+
+  cd ~/github/spokeExperiments/learn/
+    got cypher commands for loading products.csv via a web search
+    put them in learn/data/import/northwind.cypher  # which must end with a semi-colon!
+    invoke that cypher script via learn/makefile:
+       load.northwind:
+	   bash ./runCypherLoadCSV.sh    
+    where runCypherLoadCSV.sh reads:
+       docker exec --interactive --tty spokelearn \
+          /bin/bash -c 'cat /data/import/northwind.cypher | ./bin/cypher-shell -u neo4j -p hoopa'
+
+    nodeCount(); edgeCount()   # [1] 1035, [1] 3139
+
+
+   next up:  debug getNodeTable and getEdgeTable on this graph.
+             add id property to every node
+
+    
+    
+*-----------------------------------------------------------------------------------------------------------------------
+* spoke, docker, cypher: first successful use, cleaned up (4 mar 2020)
+
+  cd ~/github/spokeExperiments/firstLook/
+  make    # run neo4j in docker container, database is the spoke october freeze
+  make cypher # in another shell
+  match(n) return * limit 3;
+      +-----------------------------
+      | n                           
+      +-----------------------------
+      | (:Gene {license: "CC0 1.0", 
+      | (:SideEffect {name: "Periphe
+      | (:BiologicalProcess {license
+      +-----------------------------
+
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* spoke, docker, cypher: first successful use (4 mar 2020)
+
+  cd ~/github/spokeExperiments/
+
+   --- october freeze graph db needs to be placed in a directory structure
+      data/databases/graph.db
+      with extended file system directory attributes cleared:
+          find data -exec xattr -c {} ';'
+	  
+   --- start spoke in docker
+      bash start-spoke.sh 
+         Warning: Folder mounted to "/data" is not writable from inside container. Changing folder owner to neo4j.
+         Directories in use:
+           home:         /var/lib/neo4j
+           config:       /var/lib/neo4j/conf
+           logs:         /logs
+           plugins:      /var/lib/neo4j/plugins
+           import:       /var/lib/neo4j/import
+           data:         /var/lib/neo4j/data
+           certificates: /var/lib/neo4j/certificates
+           run:          /var/lib/neo4j/run
+
+
+
+
+
+   --- make sure that the spoke graph.db is in the docker container:
+      docker exec --interactive --tty spoke02 /bin/bash
+      neo4j@fdf514fe71a7:~$ ls -l /data/databases/graph.db/neostore.nodestore.db
+             -rw-r--r-- 1 neo4j neo4j 75257910 Oct  3 12:02 /data/databases/graph.db/neostore.nodestore.db
+
+  docker exec --interactive --tty spoke02 bin/cypher-shell -u neo4j -p spoke@isb
+
+   match(n) return * limit 3;
+     +----------------------------------------------
+     | n                                            
+     +----------------------------------------------
+     | (:Gene {license: "CC0 1.0", identifier: 12823
+     | (:SideEffect {name: "Peripheral sensorimotor 
+     | (:BiologicalProcess {license: "CC BY 4.0", id
+     +----------------------------------------------
+
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* neo4j in docker, learning from john's script, trying to solve Folder mounted to "/data" is not writable from inside container (4 mar 2020)
+
+  --- possible explanation: lingering filesystem attributes
+   ls -lad data
+      drwxr-xr-x@ 5 paul  staff  160 Mar  3 04:58 data
+   find data -exec xattr -c {} ';'
+   ls -lad data
+      drwxr-xr-x  5 paul  staff  160 Mar  3 04:58 data
+
+  --- how it looks with john's script and data
+  cd ~/github/pd3c-explorations/sampleRun/
+  bash start-02.sh
+
+    docker run --name=john02 --publish=7474:7474 --publish=7687:7687 --volume=/Users/paul/github/pd3c-explorations/data/neo4j/data:/data --volume=/Users/paul/github/pd3c-explorations/sampleRun/logs:/logs --user=neo4j --env NEO4J_AUTH=neo4j/TurkeyShakeStrawD3 --env 'NEO4JLABS_PLUGINS=["apoc", "graph-algorithms"]' --env 'NEO4J_dbms_security_procedures_unrestricted=apoc.\*,algo.\*' neo4j:3.5.12
+    Fetching versions.json for Plugin 'apoc' from https://neo4j-contrib.github.io/neo4j-apoc-procedures/versions.json
+    Installing Plugin 'apoc' from https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/download/3.5.0.6/apoc-3.5.0.6-all.jar to /var/lib/neo4j/plugins/apoc.jar 
+    Fetching versions.json for Plugin 'graph-algorithms' from https://neo4j-contrib.github.io/neo4j-graph-algorithms/versions.json
+    Installing Plugin 'graph-algorithms' from https://s3-eu-west-1.amazonaws.com/com.neo4j.graphalgorithms.dist/neo4j-graph-algorithms-3.5.12.1-standalone.jar to /var/lib/neo4j/plugins/graph-algorithms.jar 
+    Active database: graph.db
+    Directories in use:
+      home:         /var/lib/neo4j
+      config:       /var/lib/neo4j/conf
+      logs:         /logs
+      plugins:      /var/lib/neo4j/plugins
+      import:       /var/lib/neo4j/import
+      data:         /var/lib/neo4j/data
+      certificates: /var/lib/neo4j/certificates
+      run:          /var/lib/neo4j/run
+    Starting Neo4j.
+    2020-03-04 18:32:15.372+0000 INFO  ======== Neo4j 3.5.12 ========
+    2020-03-04 18:32:15.394+0000 INFO  Starting...
+    2020-03-04 18:32:30.403+0000 INFO  Bolt enabled on 0.0.0.0:7687.
+    2020-03-04 18:32:33.064+0000 INFO  Started.
+    2020-03-04 18:32:34.768+0000 INFO  Remote interface available at http://localhost:7474/
+    
+*------------------------------------------------------------------------------------------------------------------------
 * neo4j in docker, try to load spoke (3 mar 2020)
 
    --- emulate what works for john
@@ -10345,6 +10593,68 @@ normalized insertion counts to the total number of insertions.
 
 downloading timecourse atac-seq bigwig files
 cd ~/github/TrenaProjectSc
+
+*-----------------------------------------------------------------------------------------------------------------------
+* learning ngl.js (7 mar 2020)
+
+   cd ~/github/nglShiny/inst/unitTests/
+   source("minimalDemoApp.R");  shinyApp(ui = ui, server = server)
+
+  (sep 2017) alex rose answers my js api console question:
+
+    1crn: cambrin protein from abyssinian cabbage, a thioni:
+
+    Crambin is a small seed storage protein from the Abyssinian
+    cabbage. It belongs to thionins. It has 46 residues (amino
+    acids). It has been extensively studied by X-ray crystallography
+    since its crystals are unique and diffract to a resolution of 0.48
+    Å. Neutron scattering measurements are available also at a
+    resolution of 1.1 Å.
+
+    a family of small proteins found solely in higher
+    plants. Typically, a thionin consists of 45–48 amino acid
+    residues. 6–8 of these are cysteine forming 3–4 disulfide
+    bonds. Alpha- and beta- thionins are related to each other. The
+    gamma thionins have a superficially similar structure but are an
+    unrelated class of protein, now called plant defensins.
+
+    The proteins are toxic to animal cells, presumably attacking the
+    cell membrane and rendering it permeable: this results in the
+    inhibition of sugar uptake and allows potassium and phosphate
+    ions, proteins, and nucleotides to leak from cells.[1] Thionins
+    are mainly found in seeds where they may act as a defence against
+    consumption by animals.
+
+
+    learn component names:
+       stage.getComponentsByName() // then navigate down to see 
+       parameters:
+          name: "1crn"
+          defaultRepresentation: true
+          sele: "/0"
+
+    stage.getComponentsByName('1crn').addRepresentation('ball+stick', { sele: '1' })
+    stage.getComponentsByName('1crn').addRepresentation('ball+stick')   // all atoms
+
+    stage.getComponentsByName('1crn').list[0].removeAllRepresentations()
+    reps = ['angle', 'axes', 'ball+stick', 'backbone', 'base', 'cartoon', 'contact',
+    'dihedral', 'distance', 'helixorient', 'licorice', 'hyperball', 'label',
+    'line', 'surface', 'point', 'ribbon', 'rocket', 'rope', 'spacefill', 'trace', 'unitcell',
+    'validation']
+    colorSchemes = ['residueIndex', 'chainIndex', 'entityType', 'entityIndex']
+    stage.getComponentsByName('1crn').addRepresentation(reps[2], {colorScheme: colorSchemes[0]})
+
+  --- color schemes
+
+    stage.loadFile("rcsb://1crn").then(function (o) {
+      o.addRepresentation("ball+stick", {colorScheme: "bfactor"});
+      o.autoView();
+      });
+
+    atomindex, bfactor, chainid, chainindex, chainname, densityfit,
+    electrostatic, element, entityindex, entitytype, geoquality,
+    hydrophobicity, modelindex, moleculetype, occupancy, random,
+    residueindex, resname, sstruc, uniform, value, volume
 
 *-----------------------------------------------------------------------------------------------------------------------
 * ngl shiny for the rhos project (16 may 2019)
@@ -23496,6 +23806,7 @@ LHII alpha, light-harvesting B800/850 protein
 http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.507.9513&rep=rep1&type=pdf
 Photosynthesis genes and their expression in Rhodobacter sphaeroides
 2.4.1: a tribute to my students and associates  (2001)
+
 *------------------------------------------------------------------------------------------------
 * git bash for windows (16 jun 2018)
 
@@ -25174,6 +25485,7 @@ through the Forest Service but is not available at the trailhead.
 *------------------------------------------------------------------------------------------------------------------------
 * movies, tv, videos
 
+ honey boy: amazon prime
  passion fish: john sayles 1992
 
  watchmen: hbo 1 season
@@ -36063,6 +36375,21 @@ carbohydrates, substrates, ligands, solvent, and metal ions.
 
 *------------------------------------------------------------------------------------------------------------------------
 * ngl tips: operations on crambin (1 oct 2017)
+
+  --- alex rose answers my question about showing only part of a structure
+    https://github.com/arose/ngl/issues/383
+    https://codepen.io/arose/pen/XebPw
+
+      var stage = new NGL.Stage( "viewport" );
+      window.addEventListener("resize", function(event){stage.handleResize();}, false);
+
+     // Load PDB entry w, show a ball and stick representation of pheophytin (PHE) in chain A (:A) and focus on it (.autoView)
+     stage.loadFile( "rcsb://1IZL" ).then(function(comp){
+        comp.addRepresentation('ball+stick', { sele: 'PHO and :A' })
+        comp.autoView('PHO and :A')
+        });
+
+
 
 file:///Users/paul/github/projects/examples/ngl/crambin/crambin.html
 c = stage.getComponentsByName("1crn").list[0]
