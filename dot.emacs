@@ -10,6 +10,7 @@
 (setq truncate-partial-width-windows t)   ;; wrap lines
 (set-default 'truncate-lines t)
 (setq inferior-ess-r-program "/usr/local/bin/R")
+(setq ess-indent-with-fancy-comments nil)
 
 (setq-default indent-tabs-mode t)
 (setq visible-bell 1)
