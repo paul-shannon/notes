@@ -92,10 +92,139 @@ bed format: chrom, start, end, name, score, strand
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
 *-----------------------------------------------------------------------------------------------------------------------
+* spoke in action
+
+   Integrating biomedical research and electronic health records to create knowledge-based
+   biologically meaningful machine-readable embeddings.
+
+   https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6620318/
+   https://precisionmedicine.ucsf.edu/building-ultimate-nexus-knowledge-biomedical-data
+
+*-----------------------------------------------------------------------------------------------------------------------
+* jeff & marjorie's srm.vs.mrna shiny app: remove password protection for readers of paper (13 mar 2020)
+
+  latest version of app apparently here on hagfish laptop:
+    ~/github/TrenaProjectErythropoiesis/viz/srm.vs.mrna/combined/
+
+  with docker version right next door:
+     ~/github/TrenaProjectErythropoiesis/viz/srm.vs.mrna/docker-combined-16aug-2019:
+
+
+  publicly available though password-protected at:
+
+     https://trena.systemsbiology.net/app/srm_rna_combined_v2
+
+  configured in trena:/etc/shinyproxy/application.yaml:
+
+     - id: srm_rna_combined_v2
+       display-name: RNA-seq/SRM comparisons + correlated SRM (+/-) (16 aug 2019, v2)
+       container-cmd: ["/usr/local/bin/R", "-e", "shiny::runApp('/home/shiny/app.R', port=3838, host='0.0.0.0')"]
+       container-image: srm_rna_combined16aug2019
+       access-groups: [admin, jeff, cv]
+  
+
+*-----------------------------------------------------------------------------------------------------------------------
+* neo4j docker tips:  working directory mounts data/ (for the db) and import/ (for csv files) 
+
+   this examples runs a docker container named "transport2"
+   uses csv files used for tutorial purposes in the O'Reilly book
+       "Graph Algorithms: Practical Examples in Apache Spark and Neo4j"
+
+   cd ~/github/spokeExperiments/learn/transport2/
+   make targets: docker, cypher, bash, load, count
+     docker: starts the image, mounting data/ and import/
+     cypher: runs cypher-shell within the image
+     bash: runs bash
+     load: loads the nodes and edges in import/transport-nodes.csv, transport-relationships.csv
+           using commands in import/loadTransport.cypher
+     count: runs cypher-shell with simplest command, reporting number of nodes currently in the image's neo4j db
+            this one-line script is import/getNodeCount.cypher
+
+*-----------------------------------------------------------------------------------------------------------------------
+* nglShiny, cambrin, domain selection now works (13 mar 2020)
+
+  ~/github/nglShiny/makefile
+  ~/github/nglShiny/R/nglShiny.R
+                   /inst/htmlwidgets/nglShiny.js
+                   /misc/demos/crambin-1crn/crambin.R
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* neo4j docker load csv tips (12 mar 2020)
+
+  csv import data must be in exactly one place:  $NEO4J_HOME/import/
+  in the current docker image, NEO4J_HOME is /var/lib/neo4j
+
+  cp, e.g., transport-nodes.csv from the laptop filesystem to the docker volume directory:
+
+  scripts and csv files now here
+
+      /Users/paul/github/spokeExperiments/learn/data/import/
+          transport-nodes.csv
+          transport-relationships.csv
+          loadTransport.cypher
+
+    made available to the docker image via this command:
+    docker run --name=$NAME \
+       --detach \
+       --publish=7475:7474 --publish=7688:7687 \
+       --volume=/Users/paul/github/spokeExperiments/learn/data:/data ...
+
+    until a better solution is found, an extra step min make (docker) bash:
+       docker.bash> pwd               # /var/lib/neo4j  NEO4J_HOME
+       cp data/import/trans*csv import/
+  
+    where the LOAD CSV WITH HEADERS FROM "file:///transport-nodes.csv" can find it
+        ls -lap /var/lib/neo4j/import/*.csv
+          neo4j neo4j 465  /var/lib/neo4j/import/transport-nodes.csv
+          neo4j neo4j 550  /var/lib/neo4j/import/transport-relationships.csv
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* bioc 3.11 release schedule
+
+  April 3: New package submission deadline (packages will still need to pass the formal review
+   process to be included). Package submitted after this date are not guaranteed to be reviewed; they
+   will be reviewed time pending.
+  April 14 Current Release 3.10 Freeze. No changes will be accepted to the Bioconductor 3.10 branch
+   after this date.
+  April 22 No API changes to devel 3.11. Also, newly submitted packages need to be accepted by this
+   date to be included in the release
+  April 24 Deadline for packages to be passing R CMD install/build/check.
+  April 27 Devel 3.11 branch is frozen to create release branch.
+  April 28 Release Bioconductor 3.11
+
+*-----------------------------------------------------------------------------------------------------------------------
+* ovarian cancer, mandy paulovitch conference call (11 mar 2020)
+
+  homologous recombination (about half of all patients)
+    Homologous recombination deficiency in ovarian cancer: a review of its epidemiology and management.
+
+  HRD (homologous recombination deficiency) to pickup refractory tumors?
+    Homologous recombination deficiency status-based classification of high-grade serous ovarian carcinoma
+      https://www.nature.com/articles/s41598-020-59671-3
+
+  myriad assay:  https://www.accessdata.fda.gov/cdrh_docs/pdf19/P190014B.pdf
+  broca: https://testguide.labmed.uw.edu/public/view/BROCA
+     Mutations in 12 genes for inherited ovarian, fallopian tube, and peritoneal carcinoma
+       identified by massively parallel sequencing
+   https://www.pnas.org/content/early/2011/10/13/1115052108.abstract       
+  
+
+  eno1 correlates with chemoresistance: multiple google scholar articles
+  LOH
+
+  sarah savage: This paper says 4.1N (EPB41L1) decreased expression is related to aggressiveness of
+   epithelial ovarian cancer.
+ 
+   Could be that phosphorylation is doing the same thing as “The FERM domain is required for
+   localization or stability of 4.1 proteins at basolateral membrane in epithelial cells, while
+   phosphorylation weakens the membrane- and cytoskeleton binding activity of FERM domain”
+
 *-----------------------------------------------------------------------------------------------------------------------
 * salary calculations (10 mar 2020)
 
  --- isb @142k annual
+
  biweekly gross: 5925
     witholdings: 1325   22%
                           fed: 865
@@ -119,12 +248,45 @@ bed format: chrom, start, end, name, score, strand
       deductions:  200
              net: 2800
 
+   hutch family healthcare costs $1350 per year:  $56 per pay period.
+   employer contributions equal to 7% of their gross pay period pay after at least one year 
+   Auto-Save Default maximum of 10% is reached.  starts at 3% pre-tax.
+
   --- monthly view
 
 *-----------------------------------------------------------------------------------------------------------------------
-* wa covid-19 cases
+* covid spread: 14 days before symptoms, virums remains median 20 days (8 - 37)
 
-  9 mar 2020: 119  22
+   https://www.washingtonpost.com/health/coronavirus-can-stay-infectious-for-days-on-surfaces/2020/03/12/9b54a99e-6472-11ea-845d-e35b0234b136_story.html
+
+   The coronavirus can be shed by people even before they develop symptoms. That pre-symptomatic
+   transmission has helped it become a stealth contagion. The coronavirus may take many days — up to
+   14 — before an infection flares into symptoms, and although most people recover without a serious
+   illness, this is not a bug that comes and goes quickly.
+
+   The virus lurks in the body even after people feel better. A new study in the Lancet, based on
+   research in China, found that the median length of time the virus remains in the respiratory
+   tract of a patient after symptoms begin is 20 days. Among patients who survived the disease, the
+   virus continued to be shed for between eight and 37 days.
+
+   This coronavirus can establish itself in the upper respiratory tract, said Vincent Munster, chief
+   of the Virus Ecology Section of Rocky Mountain Laboratories, a facility in Hamilton, Mont., that
+   is part of the National Institute of Allergy and Infectious Diseases. That enables the virus to
+   spread more easily through coughing and sneezing, and stands in contrast to another coronavirus
+   that Munster’s laboratory has studied — MERS, which tends to infect cells in the lower
+   respiratory tract, he said.
+
+*------------------------------------------------------------------------------------------------------------------------
+* wa covid-19 cases, 2020
+
+  7 mar: 136  19
+  9 mar: 119  22
+ 10 mar: 267  24
+ 11 mar: 366  29
+ 12 mar: 457  31
+ 14 mar: 643  40
+ 15 mar: 769  42
+ 16 mar: 904  48
 
 *-----------------------------------------------------------------------------------------------------------------------
 * map ensembl ids: the "new" approach (9 mar 2020)  select tips
@@ -219,7 +381,23 @@ the history of platonism.
    https://github.com/kateto/R-Network-Visualization-Workshop
 
 *-----------------------------------------------------------------------------------------------------------------------
-* spoke, docker, cypher, learn.R: load northwind/products.csv, parse into graph (6 mar 2020)
+* learn spoke, cypher in docker, with northwind demo dataset (10 mar 2020)
+
+  cd ~/github/spokeExperiments/learn/
+   # make sure that everything works with the 4-node, 3-edge, manually added movie relationships
+  source("learn.R"); runTests()
+    [1] --- test_query           # queries for node count, >= 0, so should always work
+    [1] --- test_runCypherFile   # clear.db(); check for zeros, runCypherFile("createTwoActors.cypher"), check for non-zeros
+    [1] --- test_getNodeLabels   # clear.db(); createTwoActors, 3 node labels found
+    [1] --- test_getEdgeTypes    # same, gets two edge labels (edge types)
+    [1] --- test_getNodeTable    # clear.db, 2 actors, gets dim(4,6) tbl.nodes
+    [1] --- test_getEdgeTable    # clear.db, 2 actors, dim(3,3)  directed edge table, (6,3) for undirected
+
+   --- clear the database, use docker script to load norhwind data
+  
+  
+*-----------------------------------------------------------------------------------------------------------------------
+* spoke, docker, cypher, learn.R: load northwind/products.csv, parse into tbl.nodes, tbl.edges (6 mar 2020)
 
   cd ~/github/spokeExperiments/learn/
     got cypher commands for loading products.csv via a web search
@@ -1997,6 +2175,37 @@ aggregate(cbind(anno, gene) ~ name+age, data = tbl, function(x) paste(x, collaps
 *-----------------------------------------------------------------------------------------------------------------------
 * new hocomoco, v11
 
+   --- with core set only:
+      table(tbl.md$dataSource)
+        HOCOMOCOv11A HOCOMOCOv11B HOCOMOCOv11C 
+                 181           84          135 
+   --- with full set:
+     table(tbl.md$dataSource)
+       HOCOMOCOv11A HOCOMOCOv11B HOCOMOCOv11C HOCOMOCOv11D 
+                227          103          148          290 
+
+
+   --- import, add to MotifDb, create version 1.29.2, 2020-03-09
+     cd ~/github/MotifDb/misc/hocomoco-v11/
+
+     importV11.R, see the run function, operating on these files, creating 
+
+       hocomoco.file <- "HOCOMOCOv11_core_HUMAN_mono_jaspar_format.txt"
+       metadata.file <- "HOCOMOCOv11_core_annotation_HUMAN_mono.tsv"
+
+      ~/github/MotifDb/inst/extdata/hocomoco11.RData   # might become hocomoco11-core.RData
+        
+      in these steps:
+        test_readRawMatrices()
+        test_extractMatrices()
+        test_createMetaDataTable()
+        test_renameMatrices()
+        test_normalizeMatrices()
+
+    run()
+    
+
+
    --- historical notes about importing to MotifDb
 
      MotifDb collects currently nine sources of protein-binding DNA sequences, with metadata, into one common format.
@@ -2954,7 +3163,16 @@ MEP: megakaryocyte-erythroid progenitor
 *-----------------------------------------------------------------------------------------------------------------------
 * laser interaction educational map for jen eklund (9 dec 2019)
 
-  cd ~/github/cyjShiny/inst/examples/jenEklund
+  cd ~/github/laserSchools/v1/rawDataFromGoogleSheets
+
+  --- 16 mar 2020
+    cp ~/Downloads/Co... ~/github/laserSchools/v1/rawDataFromGoogleSheets/jenEklund-04mar2020.tsv
+    edit that file to remove 2 notes, delete trailing tabs
+    cd ~/github/laserSchools/v1
+
+    cp'd to ~/github/laserSchools/v1/04mar2020.tsv
+    
+    
   laser.tsv
   source("app.R"); app  # displays the network.
 
@@ -6776,7 +6994,7 @@ correlations [wasRe: srm vs. mrna - shiny app on the web]")
 are on the website. Is it possible to have the option to
 display the data with both smoothed and unsmoothed lines?
 
-2. Can you replace the word “SRM” with “Protein” ?  Perhaps the
+2. Can you replace the word 'SRM' with 'Protein' ?  Perhaps the
 title should be "Transcription factor protein and RNA
 expression profiles during erythropoiesis"?
 
@@ -6784,7 +7002,7 @@ expression profiles during erythropoiesis"?
 protein abundances"
 
 4. On the SRM&RNA compared tab, please remove the Data Transform
-“None”, the reason being that the red curve is always zero. 
+'None', the reason being that the red curve is always zero. 
 
 5. Also please remove the  arcsinh transform for now.  We do not
 use it in the paper, and we would like to avoid the possibility
@@ -6799,7 +7017,7 @@ plots.
 the y axis are not displayed properly.
 
 8. Can you include the stage of differentiation on the x axis
-(MPP, MEP etc…) i.e. like on Figure 2D attached.
+(MPP, MEP etc) i.e. like on Figure 2D attached.
 
 
 
@@ -10595,7 +10813,27 @@ downloading timecourse atac-seq bigwig files
 cd ~/github/TrenaProjectSc
 
 *-----------------------------------------------------------------------------------------------------------------------
-* learning ngl.js (7 mar 2020)
+* nglShiny widget, parsing pdb in order to select protein domains (10 mar 2020)
+
+  as yet unsatisfying attempt to use Rpdb from cran
+  cd ~/github/nglShiny/misc/readPDB/
+  readPDB.R
+
+  next up:  just get the coordinates of helices and sheets, like this:
+
+  book.readPDB> grep -i helix 1crn.pdb 
+    REVDAT   8   29-NOV-17 1CRN    1       HELIX                                    
+    HELIX    1  H1 ILE A    7  PRO A   19  13/10 CONFORMATION RES 17,19       13    
+    HELIX    2  H2 GLU A   23  THR A   30  1DISTORTED 3/10 AT RES 30           8    
+  book.readPDB> grep -i sheet 1crn.pdb 
+    REVDAT   2   03-DEC-81 1CRN    1       SHEET                                    
+    SHEET    1  S1 2 THR A   1  CYS A   4  0                                        
+    SHEET    2  S1 2 CYS A  32  ILE A  35 -1                                        
+
+
+
+*-----------------------------------------------------------------------------------------------------------------------
+* learning ngl.js (7 mar 2020), nglShiny widget
 
    cd ~/github/nglShiny/inst/unitTests/
    source("minimalDemoApp.R");  shinyApp(ui = ui, server = server)
@@ -25321,6 +25559,10 @@ NCBI variation web service
 *----------------------------------------------------------------------------------------------------
 * recipes
 
+  --- NYT Cooking: Roasted Chicken Thighs With Winter Squash
+
+     https://cooking.nytimes.com/recipes/12881-roasted-chicken-thighs-with-winter-squash?utm_source=sharetools&utm_medium=email&utm_campaign=website
+
   --- vegan mapo tofu (sichuan)
 
     https://cooking.nytimes.com/recipes/1017358-vegan-mapo-tofu
@@ -25485,8 +25727,25 @@ through the Forest Service but is not available at the trailhead.
 *------------------------------------------------------------------------------------------------------------------------
 * movies, tv, videos
 
+‘The Current War: Director’s Cut’ (Tuesday, iTunes only)   cumberbatch plays edison
+ ken burns baseball: 7 * 2 hours
+ brockmire: nyt reviewer's favorites
+ Schitt’s Creek
+ Brooklyn Nine-Nine: cop comedy
  honey boy: amazon prime
  passion fish: john sayles 1992
+
+ Gavin & Stacey, on britbox
+
+    When times are tough, sometimes you just want to be around family — and sometimes, it’s
+    preferable when you’re not related to that family. This comedy tells the story of an English man
+    and a Welsh woman who fall in love. But it’s really about their existing loved ones, who must
+    learn to accept outsiders. The cast includes James Corden (who also co-wrote the series) as
+    Smithy, Gavin’s fiercely loyal and lazy best friend. And Smithy is just one among many weird and
+    wonderful supporting characters, including a sex-crazed elderly woman next-door neighbor and a
+    goth best friend whose age is a mystery. The core of the show is love, in all its forms, and if
+    you like silly, sweet shows, this one’s for you.
+
 
  watchmen: hbo 1 season
  british tv detective drama: endeavour
@@ -27013,7 +27272,10 @@ head(tbl)
 
 
 *------------------------------------------------------------------------------------------------------------------------
-* shiny tips: raise tab, raiseTab, updateTabsetPanel (15 mar 2018)
+* shiny tips: runApp, raise tab, raiseTab, updateTabsetPanel (15 mar 2018)
+
+  app <- shinyApp(ui=ui, server=server); runApp(app, port=9999)
+
 
 updateTabsetPanel(session, "trenaTabs", selected="debugTab")    # provided by shiny
 
@@ -36385,7 +36647,7 @@ carbohydrates, substrates, ligands, solvent, and metal ions.
 
      // Load PDB entry w, show a ball and stick representation of pheophytin (PHE) in chain A (:A) and focus on it (.autoView)
      stage.loadFile( "rcsb://1IZL" ).then(function(comp){
-        comp.addRepresentation('ball+stick', { sele: 'PHO and :A' })
+        comp.addRepresentation('ball+stick', { sele: 'PHO and :A' })   // maybe "PHE"?
         comp.autoView('PHO and :A')
         });
 
@@ -40133,6 +40395,11 @@ Ailene K. Ettinger & Benjamin R. Lee & Sarah Montgomery
 Aquila 5B Banjo Strings Set, medium tension, red B
 http://www.amazon.com/Aquila-5B-Banjo-Strings-Set/dp/B005WFSNX4/ref=sr_1_1?s=books&ie=UTF8&qid=1452820761&sr=8-1&keywords=nylgut+banjo+strings
 
+*-----------------------------------------------------------------------------------------------------------------------
+* banjo possilities, slow blues:
+
+  LIGHTNIN' HOPKINS ~ Lightnin' Declares / Slow Blues: https://www.youtube.com/watch?v=H5MBS7niZ4A
+  Possibly the Best Blues Performance Ever! https://www.youtube.com/watch?v=qtFqyNlsHXU
 *-----------------------------------------------------------------------------------------------------------------------
 *  Mike Seeger on gourd banjo: gCGA#D [7,3, 4, 5], josh thomas roustabout
 eAEGB
