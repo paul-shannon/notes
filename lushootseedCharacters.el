@@ -9,6 +9,11 @@
    (insert "\u02B7")
    )
 
+(defun rz ()  ;; ᶻ
+   (interactive)
+   (insert "\u1dbb")
+   )
+
 (defun x-wedge ()  ;; x̌
    (interactive)
    (insert "\u0078")

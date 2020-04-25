@@ -2,14 +2,72 @@
 * possible titles, phrases
 
 
-  chromaphor poetics: light, branch and leaf in the forest
-  chromaphor poetics: light, forest branch and leaf 
+  phytochrome poetics: light, branch and leaf in the forest
+    a blue-green pigment found in many plants, in which it regulates various developmental processes.
+
+  chromophore and chlorophyll poetics: light, leaf and branch in the forest
+
+     In organic chemistry, a chlorin is a tetrapyrrole. Chlorins are partially hydrogenated versions of porphyrins. The
+     parent chlorin is a rare compound, but substituted chlorins are common. Magnesium-containing chlorins are called
+     chlorophylls. Chlorophylls are the photosensitive pigment in chloroplasts.
+
+  chromophore poetics: light, branch and leaf in the forest
+    A chromophore is the part of a molecule responsible for its
+    color. The color that is seen by our eyes
+    is the one not absorbed within a certain wavelength spectrum of visible light.
+    From New Latin -phorus, from Ancient Greek -φόρος (-phóros, “bearing”), a derivative of φέρειν (phérein, “to bear, to carry”)
+      compare anaphor: From Ancient Greek ἀναφορά (anaphorá, “a carrying back”), from ἀνά (aná, “up”) + φέρω (phérō, “I carry”).
+                       a word or phrase that refers to an earlier word
+                       or phrase (e.g., in my cousin said she was coming, she is used as an anaphor for my cousin ).
+
+
+  chromophore poetics: light, forest branch and leaf 
   morphogenetic accomodataion
   mind among the trees: branch and leaf
   all the things you can do with light!
 
 *------------------------------------------------------------------------------------------------------------------------
+* clifford geertz
+
+ believing, with Max Weber, that man is an animal suspended in webs of
+ significance he himself has spun, I take culture to be those webs,
+ and the analysis of it to be therefore not an experimental science in
+ search of law but an interpretive one in search of meaning".
+
+ take stories to be those webs...
+
 *------------------------------------------------------------------------------------------------------------------------
+* narrative is "a machine to think with"
+ h. porter abbott, the cambridge introduction to narrative, p 59
+ quoting i.a. richard's pinrciples of narrative criticism p1, 1924
+
+  why machine?  not tool?  or levi-straus, simply "good to think
+  with"?
+
+  very useful, jonathan culler on levi-strauss good to think with
+     https://www.jstor.org/stable/23645872?read-now=1&seq=1#page_scan_tab_contents
+
+  Good to Think With, Marjorie Garber
+
+  In 1962, the French structural anthropologist Claude Lévi-Strauss
+  coined the phrase “good to think with.” Scholars and theorists are
+  drawn to this phrase, perhaps because it has certain validating
+  power: It explains, or purports to explain, why we do what we do and
+  why it matters. The phrase seems to explain the work of the
+  humanities to the world—as if the humanities were not in the world,
+  not the same as the world, not the language of the world. The actual
+  citation is in Lévi-Strauss's book Totemism, first published in
+  French in 1962 and translated into English the following year. The
+  context is a discussion of what would come to be a central practice
+  of structuralism: “How to make opposition, instead of being an
+  obstacle to integration, serve rather to produce it.” Lévi-Strauss
+  claims that “the animals in totemism” serve an intellectual and
+  speculative function. They are not, or not only, objects of
+  symbolism or identification, much less objects of culinary desire,
+  but part of a structure of thinking.
+
+
+
 *------------------------------------------------------------------------------------------------------------------------
 * northrop frye's fictional modes
 

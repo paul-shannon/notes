@@ -1,15 +1,40 @@
-
 ;; Added by Package.el.  This must come before configurations of
 ;; installed packages.  Don't delete this line.  If you don't want it,
 ;; just comment it out by adding a semicolon to the start of the line.
 ;; You may delete these explanatory comments.
 (require 'package)
+
+(setq package-enable-at-startup nil)
+(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
+(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
+(add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
 (package-initialize)
+
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(eval-when-compile
+  (require 'use-package))
+;;(require 'diminish)
+;;(require 'bind-key)
+
+
+;;(package-initialize)
+(use-package elpy
+  :ensure t
+  :init
+  (elpy-enable))
+
+(setq elpy-rpc-python-command  "/users/paul/anaconda/bin/python3")
+(setq python-shell-interpreter "/users/paul/anaconda/bin/python3")
+(setq scroll-down-aggressively 1)
 
 (setq make-backup-files nil)
 (setq truncate-partial-width-windows t)   ;; wrap lines
 (set-default 'truncate-lines t)
 (setq inferior-ess-r-program "/usr/local/bin/R")
+
 
 (setq-default indent-tabs-mode t)
 (setq visible-bell 1)
@@ -18,7 +43,7 @@
 ;;(set-default-font "-adobe-courier-medium-r-normal--15-*")
 ;;(set-default-font "-adobe-courier-bold-r-normal--16-*-100-100-m-90-iso10646-1")
 
-(set-background-color "#E8E8E8")
+(set-background-color "LightYellow2")
 (set-face-attribute 'region nil :background "#FCA")
 
 (defun call (who)
@@ -113,19 +138,21 @@
 
 (put 'narrow-to-region 'disabled nil)
 (add-to-list 'load-path "~/github/ESS/lisp")
-(load "ess-site") 
+;;(load "ess-site") 
 (ess-toggle-underscore nil)
 
-(custom-set-variables
+;;(custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(font-use-system-font t))
-(custom-set-faces
+;; '(font-use-system-font t))
+;;(custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:family "DejaVu Sans Mono" :foundry "PfEd" :slant normal :weight normal :height 126 :width normal)))))
+;; '(default ((t (:family "DejaVu Sans Mono" :foundry "PfEd" :slant normal :weight normal :height 126 :width normal)))))
 
+(setq ess-indent-with-fancy-comments nil)
+(setq ess-fancy-comments nil)
