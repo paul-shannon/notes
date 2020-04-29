@@ -3,7 +3,9 @@
 
 
   phytochrome poetics: light, branch and leaf in the forest
-    a blue-green pigment found in many plants, in which it regulates various developmental processes.
+    a photoreceptor, a blue-green pigment found in many plants, in which it regulates various developmental processes.
+
+
 
   chromophore and chlorophyll poetics: light, leaf and branch in the forest
 
@@ -12,8 +14,7 @@
      chlorophylls. Chlorophylls are the photosensitive pigment in chloroplasts.
 
   chromophore poetics: light, branch and leaf in the forest
-    A chromophore is the part of a molecule responsible for its
-    color. The color that is seen by our eyes
+    A chromophore is the part of a molecule responsible for its color. The color that is seen by our eyes
     is the one not absorbed within a certain wavelength spectrum of visible light.
     From New Latin -phorus, from Ancient Greek -φόρος (-phóros, “bearing”), a derivative of φέρειν (phérein, “to bear, to carry”)
       compare anaphor: From Ancient Greek ἀναφορά (anaphorá, “a carrying back”), from ἀνά (aná, “up”) + φέρω (phérō, “I carry”).
@@ -35,6 +36,28 @@
  search of law but an interpretive one in search of meaning".
 
  take stories to be those webs...
+
+*------------------------------------------------------------------------------------------------------------------------
+* Phytochrome
+
+ Phytochromes are a class of photoreceptor in plants, bacteria and fungi used to detect light. They
+ are sensitive to light in the red and far-red region of the visible spectrum and can be classed as
+ either Type I, which are activated by far-red light, or Type II that are activated by red light.[2]
+ Recent advances have suggested that phytochromes also act as temperature sensors, as warmer
+ temperatures enhance their de-activation.[3] All of these factors contribute to the plant's ability
+ to germinate.
+
+ they control many aspects of plant development. They regulate the germination of seeds
+ (photoblasty), the synthesis of chlorophyll, the elongation of seedlings, the size, shape and
+ number and movement of leaves and the timing of flowering in adult plants. Phytochromes are widely
+ expressed across many tissues and developmental stages.[2]
+
+ Other plant photoreceptors include cryptochromes and phototropins, which respond to blue and
+ ultraviolet-A light and UVR8, which is sensitive to ultraviolet-B light.
+
+ an important pigment that regulates photomorphogenic aspects of plant growth and
+ development, such as seed germination, stem elongation, leaf expansion, formation of certain
+ pigments, chloroplast development, and flowering.
 
 *------------------------------------------------------------------------------------------------------------------------
 * narrative is "a machine to think with"
