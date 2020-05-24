@@ -28,6 +28,70 @@
   all the things you can do with light!
 
 *------------------------------------------------------------------------------------------------------------------------
+* philipe descola: a phase of ontological recomposition may be beginning (19 may 2020)
+
+  p 199 Beyond Nature and Culture
+*------------------------------------------------------------------------------------------------------------------------
+* an attempt to explain phytochrome poetics webapp to dylan mendenhall (19 may 2020)
+
+
+My overall objective is, er, a bit grand.  Feel free to ignore all that follows!
+
+First, my specific technical goals:
+
+1) to animate the PHYB holoprotein so that its steric red/far-red responses, and the resulting kinase activity, can all be seen. A bacterial phytochrome (from D. radiodurans) has some the same domains and behavior - I want to add  that as well.
+
+2) then to jump 12 orders of magnitude, and capture (in time-lapse photography?) photomorphogenesis in the woods at Seward Park.  On every visit I stumble upon maple and hazelnut branching patterns (angiosperms seem to be better at this) of great beauty, different species non-conflictually negotiating access to sunlight.
+
+The broader context:
+
+I am in pursuit of what Philippe Descola calls “ontological recomposition” - a shift in the views I inherited of what
+makes up the world, how they are ordered, what relations exist among them.  I came of age in mid-century America, where
+the unquestioned ordering of beings started at the top with independent white males, and descended from there.  Some of
+that has been since overturned, or at least seriously questioned.  But we humans still resolutely hold to the view the
+we humans are distinctly different, separate, and superior.
+
+Gregory Bateson, Gilles Deleuze and Michel Foucault are my guides.  Bateson, for his broad repurposing of “mental
+systems” his ecologies of mind.  Deleuze for his emphasis upon immanent structures.  And Foucault for demonstrating that
+epistemological/ontological truths do in fact shift over time.
+
+I use the phrase “phytochrome poetics” - to bring in associations from Aristotle’s analysis of narrative structure, and
+Bachelard’s The Poetics of Space.  Which is to say: structure carries meaning, and often comes with beauty - in
+narrative, in architecture, and (my focus) in molecules and forest photomorphogenesis.
+
+I also take this from Aristotle, passed through the Joseph Meeker’s The Comedy of Survival (reviewed here).  To
+oversimplify - usefully I think - there are two kinds of stories.  Both begin with a protagonist who experiences a lack,
+something wrong in the world or in themselves.  This protagonist heads out to rectify the lack, and classic stories go
+one of two ways:
+
+  the tragedy: in which the hero sees himself as better than the common run,
+               heads out in pursuit of a transcendental victory.  
+               these stories usually end in death and funerals.  Hamlet, for instance.
+
+  the comedy:  the hero discovers he or she is really just a member of the common
+               run, that maybe the heroic quest was a bit foolish, that home
+               and imperfect community are pretty good after all.
+               these stories usually end in a wedding, a party, a pastoral romp.
+               As You Like It, for instance.
+
+We humans have spent 200,000 years, and more aggressively, the last 500, 100 and 50 years, as conquering heroes.  The
+tragic consequences are playing out in ways we know well.
+
+I use phytochrome poetics to learn about, to explore and to remind myself of that comic view: that we humans are not
+different, that our home and our imperfect community are in fact full of beautiful adaptive structures - they are our
+cousins and kin.  There is little to conquer. We have had enough funerals.  Spending some time looking into the ancient
+intricate shapes of things might just be time well spent.
+
+
+*------------------------------------------------------------------------------------------------------------------------
+* Solvitur ambulando
+
+  “It is solved by walking” is a phrase ascribed to St. Augustine. Solvitur ambulando. But do you count your steps?
+  During my occasional long walks, I’m reminded of this great walking essay, by David Sedaris, who reaches an
+  astonishing sixty thousand steps a day. If you are sitting, standing, or walking, enjoy this weekly batch of recent
+  culture stories.
+
+*------------------------------------------------------------------------------------------------------------------------
 * kim stanley robinson in the new yorker (1 may 2020) "the coronavirus and our future"
 
   The critic Raymond Williams once wrote that every historical period
@@ -199,7 +263,7 @@
 * a search thread
   old growth forest ontology
   michael pollan and cathedral pines: in second nature, a gardener's education, 2003
-  Decolonizingpolitical ecology: ontology, technologyand'critical'enchantment Karsten A. Schulz
+  Decolonizingpolitical ecology: ontology, technology and'critical'enchantment Karsten A. Schulz
      mignolo 2011 epistemic disobedience
      border thinking
      The Darker Side of the Renaissance: Literacy, Territoriality, &  Colonization, 2nd Edition
